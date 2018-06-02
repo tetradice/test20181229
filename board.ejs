@@ -75,7 +75,7 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            background-image: url(furuyoni_commons/others/sakura_token.png);
+            background-image: url(/furuyoni_commons/others/sakura_token.png);
             transform: rotate(40deg);
         }
 
@@ -84,18 +84,18 @@
         }
 
         .fbs-card.back-normal {
-            background-image: url(furuyoni_commons/cards/cardback_normal.png);
+            background-image: url(/furuyoni_commons/cards/cardback_normal.png);
         }
 
         .fbs-card.back-special {
-            background-image: url(furuyoni_commons/cards/cardback_special.png);
+            background-image: url(/furuyoni_commons/cards/cardback_special.png);
         }
         .fbs-vigor-card {
             width: 140px;
             height: 100px;
             background-size: contain;
             background-repeat: no-repeat;
-            background-image: url(furuyoni_commons/cards/vigor.png);
+            background-image: url(/furuyoni_commons/cards/vigor.png);
         }
         .area.background {
             z-index: -1;
@@ -264,7 +264,6 @@
     </style>
 </head>
 <body>
-
 <div id="BOARD">
 
     <div class="area background sakura-token-region distance">
@@ -391,6 +390,10 @@
 
         </div>
       </div>
+<script type="text/javascript">
+    var params = {boardId: '<%= boardId %>', side: '<%= side %>'};
+</script>
+<script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="/jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="/semantic/dist/semantic.min.js"></script>
 <script type="text/javascript" src="/jquery-contextmenu/dist/jquery.ui.position.js"></script>

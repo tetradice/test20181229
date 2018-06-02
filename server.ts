@@ -9,15 +9,16 @@ import * as randomstring from 'randomstring';
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'index.html');
-const BOARD = path.join(__dirname, 'board.html');
 const MAIN_JS = path.join(__dirname, 'main.js');
 
 const server = express()
+  .set('views', __dirname + '/')
+  .set('view engine', 'ejs')
   .use(express.static('public'))
   .use(express.static('node_modules'))
   .get('/main.js', (req, res) => res.sendFile(MAIN_JS) )
   .get('/', (req, res) => res.sendFile(INDEX) )
-  .get('/b/:boardId/:side', (req, res) => res.sendFile(BOARD) )
+  .get('/b/:boardId/:side', (req, res) => res.render('board', {boardId: req.params.boardId, side: req.params.side}) )
   .post('/boards.create', (req, res) => {
     // 新しい卓IDを生成
     let boardId = randomstring.generate({
@@ -43,6 +44,24 @@ const io = socketIO(server);
 io.on('connection', (socket) => {
   console.log(`Client connected - ${socket.id}`);
   socket.on('disconnect', () => console.log('Client disconnected'));
+
+  // ボード情報を受信
+  socket.on('send_board_to_server', (data) => {
+    // 
+    console.log('on send_board_to_server: ', data);
+    let boardData = {
+      body: data.board,
+      updated: new Date(),
+      logs: [],
+      p1Name: 'ポン',
+      p2Name: 'ポン2'
+    };
+    console.log('send: ', boardData);
+    RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), (error, n) => {
+      socket.broadcast.emit('send_board_to_client', boardData);
+    });
+    
+  });
 });
 
 // setInterval(() => {

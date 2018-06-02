@@ -17,6 +17,11 @@ interface JQuery {
     contextMenu(options?: Object): any;
 }
 
+declare var params: {
+    boardId: string;
+    side: "p1" | "p2" | "watch";
+}
+
 // 独自型
 type SakuraTokenArea = "aura" | "life" | "flair" | "distance" | "dust" | "on-card";
 type CardArea = "library" | "hand" | "used" | "hidden-used" | "special";
@@ -53,7 +58,7 @@ const CARD_DATA: {[key: string]: CardDataItem} = {
 
 
 // クラス
-class Card {
+class Card implements Sakuraba.Card {
     id: string;
     used?: boolean; // 切札にある場合のみ
     sakuraToken?: number; // 捨て札にある場合のみ
@@ -735,7 +740,16 @@ function moveSakuraToken(from: SakuraTokenArea, to: SakuraTokenArea, cardId: str
 
 $(function(){
 
+    // socket.ioに接続
+    const socket = io();
+    
+    // ボード情報を送信
+    socket.emit('send_board_to_server', {boardId: params.boardId, side: params.side, board: board});
 
+    // ボード情報を受信した場合、表示を更新する
+    socket.on('send_board_to_client', (receivingBoard) => {
+        console.log('receive new board', receivingBoard);
+    });
 
     // 盤を表示
     drawUsed();

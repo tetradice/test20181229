@@ -652,6 +652,14 @@ function moveSakuraToken(from, to, cardId, count) {
     return true;
 }
 $(function () {
+    // socket.ioに接続
+    var socket = io();
+    // ボード情報を送信
+    socket.emit('send_board_to_server', { boardId: params.boardId, side: params.side, board: board });
+    // ボード情報を受信した場合、表示を更新する
+    socket.on('send_board_to_client', function (receivingBoard) {
+        console.log('receive new board', receivingBoard);
+    });
     // 盤を表示
     drawUsed();
     drawHiddenUsed();
