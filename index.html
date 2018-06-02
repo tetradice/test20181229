@@ -1,13 +1,81 @@
+<!DOCTYPE html>
 <html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>ふるよにボードシミュレーター 桜庭</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
+    <style type="text/css">
+      body {
+        background-color: #FFFFFF;
+      }
+      .ui.menu .item img.logo {
+        margin-right: 1.5em;
+      }
+      .main.container {
+        margin-top: 7em;
+      }
+      .wireframe {
+        margin-top: 2em;
+      }
+      .ui.footer.segment {
+        margin: 5em 0em 0em;
+        padding: 5em 0em;
+      }
+      </style>
+  </head>
   <body>
+      <div class="ui fixed menu">
+          <div class="ui container">
+            <div class="header item">
+                ふるよにボードシミュレーター 桜庭
+            </div>
+            <a href="#" class="item">トップ</a>
+          </div>
+        </div>
+        <div class="ui main text container">
+            <button class="ui primary button" id="NEW-TABLE-BUTTON">新しい卓を作る</button>
+            <p>新しい卓を作り、自分や他の人が参加できる状態にします。（ユーザー登録は不要です）</p>
+
+            <div class="ui segment">
+            <p>新しい卓を作成しました。下記のURLにアクセスすることで、決闘への参加や観戦が可能です。</p>
+            <table class="ui definition table">
+                <tbody>
+                  <tr>
+                    <td class="collapsing">プレイヤー1の参加用URL</td>
+                    <td><a id="P1-URL" href="#" target="_blank"></a></td>
+                  </tr>
+                  <tr>
+                    <td>プレイヤー2の参加用URL</td>
+                    <td><a id="P2-URL" href="#" target="_blank"></a></td>
+                  </tr>
+                  <tr>
+                      <td>観戦用URL</td>
+                      <td><a id="WATCH-URL" href="#" target="_blank"></a></td>
+                    </tr>
+              </tbody></table>
+            </div>
+
     <p id='server-time'></p>
     <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
     <script>
       var socket = io();
       var el = document.getElementById('server-time');
       socket.on('time', function(timeString) {
         el.innerHTML = 'Server time: ' + timeString;
       });
+
+      $('#NEW-TABLE-BUTTON').click(function(e){
+        $.post('/tables.create', function(data, textStatus){
+          console.log(data);
+          $('#P1-URL').text(data.p1Url).attr('href', data.p1Url);
+          $('#P2-URL').text(data.p2Url).attr('href', data.p2Url);
+          $('#WATCH-URL').text(data.watchUrl).attr('href', data.watchUrl);
+        });
+      });
     </script>
+     </div>
   </body>
 </html>
