@@ -16,7 +16,7 @@ const server = express()
   .post('/tables.create', (req, res) => {
     // 新しい卓IDを生成
     let tableId = randomstring.generate({
-        length: 8
+        length: 10
       , readable: true
     });
 
@@ -36,7 +36,7 @@ const server = express()
 const io = socketIO(server);
 
 io.on('connection', (socket) => {
-  console.log('Client connected');
+  console.log(`Client connected - ${socket.id}`);
   socket.on('disconnect', () => console.log('Client disconnected'));
 });
 
