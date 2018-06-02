@@ -9,25 +9,30 @@ import * as randomstring from 'randomstring';
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'index.html');
+const BOARD = path.join(__dirname, 'board.html');
+const MAIN_JS = path.join(__dirname, 'main.js');
 
 const server = express()
   .use(express.static('public'))
+  .use(express.static('node_modules'))
+  .get('/main.js', (req, res) => res.sendFile(MAIN_JS) )
   .get('/', (req, res) => res.sendFile(INDEX) )
-  .post('/tables.create', (req, res) => {
+  .get('/b/:boardId/:side', (req, res) => res.sendFile(BOARD) )
+  .post('/boards.create', (req, res) => {
     // 新しい卓IDを生成
-    let tableId = randomstring.generate({
+    let boardId = randomstring.generate({
         length: 10
       , readable: true
     });
 
     // 卓を追加
-    RedisClient.HSET('tables', tableId, JSON.stringify({created: new Date().toJSON()}));
+    RedisClient.HSET('boards', boardId, JSON.stringify({created: new Date().toJSON()}));
 
     // 卓にアクセスするためのURLを生成
-    let urlBase = req.protocol + '://' + req.hostname;
-    let p1Url = `${urlBase}/t/${tableId}/p1`;
-    let p2Url = `${urlBase}/t/${tableId}/p2`;
-    let watchUrl = `${urlBase}/t/${tableId}/watch`;
+    let urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
+    let p1Url = `${urlBase}/b/${boardId}/p1`;
+    let p2Url = `${urlBase}/b/${boardId}/p2`;
+    let watchUrl = `${urlBase}/b/${boardId}/watch`;
 
     res.json({p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl});
   })

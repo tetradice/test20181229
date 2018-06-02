@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>ふるよにボードシミュレーター 桜庭</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
     <style type="text/css">
       body {
         background-color: #FFFFFF;
@@ -35,7 +35,7 @@
           </div>
         </div>
         <div class="ui main text container">
-            <button class="ui primary button" id="NEW-TABLE-BUTTON">新しい卓を作る</button>
+            <button class="ui primary button" id="NEW-BOARD-BUTTON">新しい卓を作る</button>
             <p>新しい卓を作り、自分や他の人が参加できる状態にします。（ユーザー登録は不要です）</p>
 
             <div class="ui segment">
@@ -62,13 +62,13 @@
     <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
     <script>
       var socket = io();
-      var el = document.getElementById('server-time');
-      socket.on('time', function(timeString) {
-        el.innerHTML = 'Server time: ' + timeString;
-      });
+      // var el = document.getElementById('server-time');
+      // socket.on('time', function(timeString) {
+      //   el.innerHTML = 'Server time: ' + timeString;
+      // });
 
-      $('#NEW-TABLE-BUTTON').click(function(e){
-        $.post('/tables.create', function(data, textStatus){
+      $('#NEW-BOARD-BUTTON').click(function(e){
+        $.post('/boards.create', function(data, textStatus){
           console.log(data);
           $('#P1-URL').text(data.p1Url).attr('href', data.p1Url);
           $('#P2-URL').text(data.p2Url).attr('href', data.p2Url);

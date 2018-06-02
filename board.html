@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="/jquery-contextmenu/dist/jquery.contextMenu.min.css"></link>
+    <style type="text/css">
+        /* Prevent the text contents of draggable elements from being selectable. */
+        [draggable] {
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        /* Required to make elements draggable in old WebKit */
+        -khtml-user-drag: element;
+        -webkit-user-drag: element;
+        }
+
+        #BOARD {
+            height: 80vh;
+            left: 1vw;  
+            width: 98vw;
+            top: 20vh;
+            position: absolute;
+            z-index: 0;
+        }
+
+        .ui.popup {
+            max-width: 400px;
+        }
+
+        #CONTROL-PANEL {
+            top: 2vh;
+            right: 2vw;
+            position: absolute;
+        }
+        .area, .fbs-card, .sakura-token {
+            position: absolute !important;
+        }
+        
+        .fbs-card[draggable]:hover,
+        .fbs-card.droppable.over,
+        .fbs-vigor-card .vigor0.clickable:hover,
+        .fbs-vigor-card .vigor1.clickable:hover,
+        .fbs-vigor-card .vigor2.clickable:hover{
+            box-shadow: 0 0 2px 1px #7098ff;
+        }
+
+        .fbs-card {
+            width: 100px;
+            height: 140px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: 1px solid rgb(232, 232, 232);
+            border-radius: 4px;
+        }
+
+        .fbs-vigor-card {
+            position: absolute;
+        }
+
+        .rotated {
+            transform: rotate(90deg);
+        }
+
+        .reverse-rotated {
+            transform: rotate(-90deg);
+        }
+        .sakura-token {
+            width: 26px;
+            height: 26px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-image: url(furuyoni_commons/others/sakura_token.png);
+            transform: rotate(40deg);
+        }
+
+        .fbs-card.open-normal, .fbs-card.open-special {
+            background-color: rgb(219, 235, 245);
+        }
+
+        .fbs-card.back-normal {
+            background-image: url(furuyoni_commons/cards/cardback_normal.png);
+        }
+
+        .fbs-card.back-special {
+            background-image: url(furuyoni_commons/cards/cardback_special.png);
+        }
+        .fbs-vigor-card {
+            width: 140px;
+            height: 100px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-image: url(furuyoni_commons/cards/vigor.png);
+        }
+        .area.background {
+            z-index: -1;
+            margin: 0;
+        }
+
+        .area.droppable {
+            z-index: -999;
+        }
+
+        .area.background.over {
+            background: rgb(239, 249, 252);
+        }
+        
+        .area.used {
+            left: 0px;
+            top: 80px;
+            width: 450px;
+            height: 150px;
+        }
+
+        .area.hidden-used {
+            left: 470px;
+            top: 80px;
+            width: 170px;
+            height: 140px;
+        }
+
+        .area.library {
+            left: 720px;
+            top: 80px;
+            width: 160px;
+            height: 160px;
+        }
+
+
+        .area.vigor {
+            left: 900px;
+            top: 90px;
+            width: 140px;
+            height: 140px;
+        }
+        .fbs-vigor-card .vigor0 {
+            width: 30px;
+            height: 100px;
+            left: 0;
+            z-index: 9999;
+            position: absolute;
+        }
+        .fbs-vigor-card .vigor1 {
+            width: 140px;
+            height: 30px;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            position: absolute;
+        }
+        .fbs-vigor-card .vigor2 {
+            width: 30px;
+            height: 100px;
+            right: 0;
+            z-index: 9999;
+            position: absolute;
+        }
+
+        .area.hand {
+            top: 250px;
+            width: 700px;
+            height: 150px;
+        }
+
+
+        .area.special {
+            top: 250px;
+            left: 720px;
+            width: 330px;
+            height: 150px;
+        }
+
+
+        .area.sakura-token-region {
+            height: 30px;
+        }
+
+        .area.sakura-token-region .draw-region {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            left: 4em;
+        }
+        .area.distance {
+            left: 0;
+            top: 0px;
+            width: 400px;
+        }
+
+        .area.distance.background {
+            border: 1px silver solid;
+        }
+
+        .area.dust {
+            left: 0;
+            top: 40px;
+            width: 400px;
+        }
+
+        .area.dust.background {
+            border: 1px gray solid;
+        }
+
+        .area.aura {
+            left: 500px;
+            top: 410px;
+            width: 250px;
+        }
+
+        .area.aura.background {
+            border: 1px rgb(211, 202, 78) solid;
+        }
+
+        .area.life {
+            left: 500px;
+            top: 450px;
+            width: 400px;
+        }
+
+        .area.life.background {
+            border: 1px rgb(241, 173, 153) solid;
+        }
+
+        .area.flair {
+            left: 500px;
+            top: 490px;
+            width: 400px;
+        }
+
+        .area.flair.background {
+            border: 1px rgb(253, 58, 52) solid;
+        }
+
+        .card-count {
+            position: absolute;
+            font-size: x-large;
+            color: silver;
+            font-weight: bold;
+            z-index: 5000;
+        }
+
+        #LOG-WINDOW {
+            position: absolute;
+            width: 20%;
+            height: 80%;
+            top: 5%;
+            right: 5%;
+            display: none;
+        }
+
+        #LOG-AREA {
+            width: 95%;
+            height: 95%;
+            font-size: small;
+        }
+
+
+
+    </style>
+</head>
+<body>
+
+<div id="BOARD">
+
+    <div class="area background sakura-token-region distance">
+        <span>間合：</span>
+        <div class="draw-region"></div>
+    </div>
+    <div class="area droppable sakura-token-region distance" data-background-selector=".area.background.distance">
+    </div>
+
+    <div class="area background sakura-token-region dust">
+        <span>ダスト：</span>
+        <div class="draw-region"></div>
+    </div>
+    <div class="area droppable sakura-token-region dust" data-background-selector=".area.background.dust">
+    </div>
+
+    <div class="area background used ui segment">
+        </div>
+    
+        <div class="area droppable used" data-background-selector=".area.background.used">
+        </div>
+
+        <div class="area background hidden-used ui segment">
+        </div>
+    
+        <div class="area droppable hidden-used" data-background-selector=".area.background.hidden-used">
+        </div>
+    
+
+        
+    <div class="area background library ui segment">
+        </div>
+    
+        <div class="area droppable library" data-background-selector=".area.background.library">
+        </div>
+        <div id="LIBRARY-COUNT" class="card-count"></div>
+
+
+    <div class="area background vigor">
+    </div>
+   
+    <div class="area background hand ui segment">
+    </div>
+    <div class="area droppable hand" data-background-selector=".area.background.hand">
+    </div>
+
+    <div class="area background special ui segment">
+    </div>
+    <div class="area droppable special" data-background-selector=".area.background.special">
+    </div>
+
+
+
+    <div class="area background sakura-token-region aura">
+        <span>オーラ：</span>
+        <div class="draw-region"></div>
+    </div>
+    <div class="area droppable sakura-token-region aura" data-background-selector=".area.background.aura">
+    </div>
+
+    <div class="area background sakura-token-region life">
+        <span>ライフ：</span>
+        <div class="draw-region"></div>
+    </div>
+    <div class="area droppable sakura-token-region life" data-background-selector=".area.background.life">
+    </div>
+
+    <div class="area background sakura-token-region flair">
+        <span>フレア：</span>
+        <div class="draw-region"></div>
+    </div>
+    <div class="area droppable sakura-token-region flair" data-background-selector=".area.background.flair">
+    </div>
+</div>
+<div id="CONTROL-PANEL">
+        <button class="ui basic button">直前の操作を取り消す</button>
+            <button class="ui basic button" id="TURN-END-BUTTON">ターン終了</button>
+            <button class="ui basic button" id="LOG-DISPLAY-BUTTTON">ログ表示ON/OFF</button>
+            <div class="ui basic buttons">
+                <button class="ui button">前進</button>
+                <button class="ui button">離脱</button>
+                <button class="ui button">後退</button>
+                <button class="ui button">纏い</button>
+                <button class="ui button">宿し</button>
+            </div>
+    <div>
+            <div class="ui checkbox">
+                    <input type="checkbox" tabindex="0" name="example1" class="hidden">
+                    <label>オーラ最大値無限</label>
+                  </div>
+                  <div class="ui checkbox">
+                        <input type="checkbox" tabindex="0" name="example2" class="hidden">
+                        <label>集中力最大値無限</label>
+                      </div>
+
+                      <div class="ui checkbox">
+                            <input type="checkbox" tabindex="0" class="hidden">
+                            <label>Label</label>
+                          </div>
+                      <button class="ui basic button">ゲーム外のカードを加える</button>
+    </div>
+</div>
+<div id="LOG-WINDOW" class="ui segment">
+    <div class="ui top attached label">ログ</div>
+    <div id="LOG-AREA">ゲーム開始<br></div>
+</div>
+
+<div class="ui modal tiny">
+        <i class="close icon"></i>
+        <div class="content">
+          <div class="description">
+            <p>相手がターンの終了を宣言しました。</p>
+            <p>ターンの開始処理を行いますか？<br>（集中力+1、各付与札の桜花結晶-1）</p>
+          </div>
+        </div>
+        <div class="actions">
+            <div class="ui positive right labeled icon button">
+            はい
+            <i class="checkmark icon"></i>
+            </div>
+          <div class="ui black deny button">
+            いいえ
+          </div>
+
+        </div>
+      </div>
+<script type="text/javascript" src="/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="/semantic/dist/semantic.min.js"></script>
+<script type="text/javascript" src="/jquery-contextmenu/dist/jquery.ui.position.js"></script>
+<script type="text/javascript" src="/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
+<script type="text/javascript" src="/main.js"></script>
+</body>
+</html>
