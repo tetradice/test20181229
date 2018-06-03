@@ -5,7 +5,7 @@ import * as socketIO from 'socket.io';
 import * as path from 'path';
 import * as redis from 'redis';
 import * as randomstring from 'randomstring';
-import * as sakuraba from './lib/sakuraba';
+import * as sakuraba from './src/sakuraba';
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;

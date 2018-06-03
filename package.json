@@ -6,8 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "watch": "webpack --watch",
-    "build": "webpack",
-    "server:build": "tsc"
+    "build": "npm run build:main && npm run build:server",
+    "build:main": "webpack",
+    "build:server": "tsc server.ts"
   },
   "keywords": [],
   "author": "",

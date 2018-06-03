@@ -1,11 +1,11 @@
 'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var express = require("express");
 var socketIO = require("socket.io");
 var path = require("path");
 var redis = require("redis");
 var randomstring = require("randomstring");
-var sakuraba = require("./lib/sakuraba");
+var sakuraba = require("./src/sakuraba");
 var RedisClient = redis.createClient(process.env.REDIS_URL);
 var PORT = process.env.PORT || 3000;
 var INDEX = path.join(__dirname, 'index.html');
@@ -82,4 +82,3 @@ io.on('connection', function (socket) {
         });
     });
 });
-//# sourceMappingURL=server.js.map
