@@ -651,14 +651,47 @@ function moveSakuraToken(from, to, cardId, count) {
     // 移動成功
     return true;
 }
+function messageModal(desc) {
+    $('#MESSAGE-MODAL .description').html(desc);
+    //$('#INPUT-MODAL').on('click', decideCallback);
+    $('#MESSAGE-MODAL')
+        .modal({ closable: false })
+        .modal('show');
+}
+function userInputModal(desc, decideCallback) {
+    $('#INPUT-MODAL .description-body').html(desc);
+    //$('#INPUT-MODAL').on('click', decideCallback);
+    $('#INPUT-MODAL')
+        .modal({ closable: false, onApprove: decideCallback })
+        .modal('show');
+}
 $(function () {
     // socket.ioに接続
     var socket = io();
-    // ボード情報を送信
-    socket.emit('send_board_to_server', { boardId: params.boardId, side: params.side, board: board });
-    // ボード情報を受信した場合、表示を更新する
-    socket.on('send_board_to_client', function (receivingBoard) {
-        console.log('receive new board', receivingBoard);
+    socket.on('info', function (message) {
+        console.log('[SOCKET.IO INFO] ', message);
+    });
+    // ボード情報をリクエスト
+    console.log('request_first_board_to_server');
+    socket.emit('request_first_board_to_server', { boardId: params.boardId, side: params.side });
+    //socket.emit('send_board_to_server', {boardId: params.boardId, side: params.side, board: board});
+    // ボード情報を受信した場合、メイン処理をスタート
+    socket.on('send_first_board_to_client', function (receivingBoardData) {
+        $('#P1-NAME').text(receivingBoardData.p1Side.playerName);
+        $('#P2-NAME').text(receivingBoardData.p2Side.playerName);
+        console.log('receive board: ', receivingBoardData);
+        // まだ名前が決定していなければ、名前の決定処理
+        var playerCommonName = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
+        var opponentPlayerCommonName = (params.side === 'p1' ? 'プレイヤー2' : 'プレイヤー1');
+        userInputModal("<p>\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u3078\u3088\u3046\u3053\u305D\u3002<br>\u3042\u306A\u305F\u306F" + playerCommonName + "\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3059\u3002</p><p>\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\uFF1A</p>", function ($elem) {
+            var playerName = $('#INPUT-MODAL input').val();
+            if (playerName === '') {
+                playerName = playerCommonName;
+            }
+            socket.emit('player_name_input', { boardId: params.boardId, side: params.side, name: playerName });
+            $((params.side === 'p1' ? '#P1-NAME' : '#P2-NAME')).text(playerName);
+            messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u305F\u3044\u5834\u5408\u306F\u3001\u3042\u306A\u305F\u3068" + opponentPlayerCommonName + "\u306E\u4E21\u65B9\u304C\u5353\u306B\u53C2\u52A0\u3057\u305F\u72B6\u614B\u3067<br>\u300C\u30B2\u30FC\u30E0\u958B\u59CB\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
+        });
     });
     // 盤を表示
     drawUsed();

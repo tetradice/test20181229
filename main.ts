@@ -58,7 +58,7 @@ const CARD_DATA: {[key: string]: CardDataItem} = {
 
 
 // クラス
-class Card implements Sakuraba.Card {
+class Card {
     id: string;
     used?: boolean; // 切札にある場合のみ
     sakuraToken?: number; // 捨て札にある場合のみ
@@ -738,18 +738,58 @@ function moveSakuraToken(from: SakuraTokenArea, to: SakuraTokenArea, cardId: str
     return true;
 }
 
+
+function messageModal(desc: string){
+    $('#MESSAGE-MODAL .description').html(desc);
+    //$('#INPUT-MODAL').on('click', decideCallback);
+    $('#MESSAGE-MODAL')
+        .modal({closable: false})
+        .modal('show');
+}
+function userInputModal(desc: string, decideCallback: (this: JQuery, $element: JQuery) => false | void){
+    $('#INPUT-MODAL .description-body').html(desc);
+    //$('#INPUT-MODAL').on('click', decideCallback);
+    $('#INPUT-MODAL')
+        .modal({closable: false, onApprove:decideCallback})
+        .modal('show');
+}
+
 $(function(){
 
     // socket.ioに接続
     const socket = io();
-    
-    // ボード情報を送信
-    socket.emit('send_board_to_server', {boardId: params.boardId, side: params.side, board: board});
 
-    // ボード情報を受信した場合、表示を更新する
-    socket.on('send_board_to_client', (receivingBoard) => {
-        console.log('receive new board', receivingBoard);
+    socket.on('info', (message) => {
+        console.log('[SOCKET.IO INFO] ', message);
     });
+    
+
+    // ボード情報をリクエスト
+    console.log('request_first_board_to_server');
+    socket.emit('request_first_board_to_server', {boardId: params.boardId, side: params.side});
+    //socket.emit('send_board_to_server', {boardId: params.boardId, side: params.side, board: board});
+
+    // ボード情報を受信した場合、メイン処理をスタート
+    socket.on('send_first_board_to_client', (receivingBoardData) => {
+        $('#P1-NAME').text(receivingBoardData.p1Side.playerName);
+        $('#P2-NAME').text(receivingBoardData.p2Side.playerName);
+
+        console.log('receive board: ', receivingBoardData);
+
+        // まだ名前が決定していなければ、名前の決定処理
+        let playerCommonName = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
+        let opponentPlayerCommonName = (params.side === 'p1' ? 'プレイヤー2' : 'プレイヤー1');
+        userInputModal(`<p>ふるよにボードシミュレーターへようこそ。<br>あなたは${playerCommonName}として卓に参加します。</p><p>プレイヤー名：</p>`, ($elem) => {
+            let playerName = $('#INPUT-MODAL input').val() as string;
+            if(playerName === ''){
+                playerName = playerCommonName;
+            }
+            socket.emit('player_name_input', {boardId: params.boardId, side: params.side, name: playerName});
+            $((params.side === 'p1' ? '#P1-NAME' : '#P2-NAME')).text(playerName);
+            messageModal(`<p>ゲームを始めたい場合は、あなたと${opponentPlayerCommonName}の両方が卓に参加した状態で<br>「ゲーム開始」ボタンをクリックしてください。</p>`);
+        });
+    });
+
 
     // 盤を表示
     drawUsed();
@@ -768,7 +808,7 @@ $(function(){
     // ポップアップ初期化
     $('[data-html],[data-content]').popup({
         delay: {show: 500, hide: 0},
-        onShow: function(){
+        onShow: function(): false | void{
             if(draggingFrom !== null) return false;
         },
     });

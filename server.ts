@@ -5,6 +5,7 @@ import * as socketIO from 'socket.io';
 import * as path from 'path';
 import * as redis from 'redis';
 import * as randomstring from 'randomstring';
+import * as sakuraba from './lib/sakuraba';
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
@@ -27,7 +28,8 @@ const server = express()
     });
 
     // 卓を追加
-    RedisClient.HSET('boards', boardId, JSON.stringify({created: new Date().toJSON()}));
+    let board = new sakuraba.Board();
+    RedisClient.HSET('boards', boardId, JSON.stringify(board.data));
 
     // 卓にアクセスするためのURLを生成
     let urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
@@ -44,7 +46,33 @@ const io = socketIO(server);
 io.on('connection', (socket) => {
   console.log(`Client connected - ${socket.id}`);
   socket.on('disconnect', () => console.log('Client disconnected'));
+  
+  // ボード情報のリクエスト
+  socket.on('request_first_board_to_server', (data) => {
+    console.log('on request_first_board_to_server: ', data);
+    // ボード情報を取得
+    RedisClient.HGET('boards', data.boardId, (err, json) => {
+      let boardData = JSON.parse(json) as sakuraba.BoardData;
+      console.log('emit send_first_board_to_client: ', socket.id, boardData);
+      socket.emit('send_first_board_to_client', boardData);
+    });
+  });
 
+  // 名前の入力
+  socket.on('player_name_input', (data) => {
+    console.log('on player_name_input: ', data);
+    // ボード情報を取得
+    RedisClient.HGET('boards', data.boardId, (err, json) => {
+      let boardData = JSON.parse(json) as sakuraba.BoardData;
+      // 名前をアップデートして保存
+      if(data.side === 'p1'){
+        boardData.p1Side.playerName = data.name;
+      } else if(data.side === 'p2'){
+        boardData.p2Side.playerName = data.name;
+      }
+      RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData));
+    });
+  });
   // ボード情報を受信
   socket.on('send_board_to_server', (data) => {
     // 

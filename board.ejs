@@ -365,31 +365,80 @@
                           </div>
                       <button class="ui basic button">ゲーム外のカードを加える</button>
     </div>
+
+    <table class="ui definition table" style="width: 25em;">
+            <tbody>
+              <tr>
+                <td class="collapsing">プレイヤー1</td>
+                <td id="P1-NAME"></td>
+              </tr>
+              <tr>
+                <td>プレイヤー2</td>
+                <td id="P2-NAME"></td>
+              </tr>
+              <tr>
+                <td>観戦者</td>
+                <td></td>
+            </tr>
+          </tbody></table>
+
 </div>
 <div id="LOG-WINDOW" class="ui segment">
     <div class="ui top attached label">ログ</div>
     <div id="LOG-AREA">ゲーム開始<br></div>
 </div>
 
-<div class="ui modal tiny">
-        <i class="close icon"></i>
-        <div class="content">
-          <div class="description">
-            <p>相手がターンの終了を宣言しました。</p>
-            <p>ターンの開始処理を行いますか？<br>（集中力+1、各付与札の桜花結晶-1）</p>
-          </div>
+<div class="ui modal tiny" id="INPUT-MODAL">
+    <div class="content">
+        <div class="description">
+            <div class="description-body"></div>
+                <div class="ui input">
+                        <input style="width: 20em;">
+                    </div>
         </div>
-        <div class="actions">
-            <div class="ui positive right labeled icon button">
-            はい
-            <i class="checkmark icon"></i>
-            </div>
-          <div class="ui black deny button">
-            いいえ
-          </div>
 
+    </div>
+    <div class="actions">
+        <div class="ui positive labeled icon button">
+        確定
+        <i class="checkmark icon"></i>
         </div>
-      </div>
+    </div>
+</div>
+
+<div class="ui modal tiny" id="MESSAGE-MODAL">
+    <div class="content">
+        <div class="description">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui positive labeled icon button">
+        OK
+        <i class="checkmark icon"></i>
+        </div>
+
+    </div>
+</div>
+
+<div class="ui modal tiny" id="CONFIRM-MODAL">
+    <i class="close icon"></i>
+    <div class="content">
+        <div class="description">
+        <p>相手がターンの終了を宣言しました。</p>
+        <p>ターンの開始処理を行いますか？<br>（集中力+1、各付与札の桜花結晶-1）</p>
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui positive labeled icon button">
+        確定
+        <i class="checkmark icon"></i>
+        </div>
+        <div class="ui black deny button">
+        いいえ
+        </div>
+
+    </div>
+</div>
 <script type="text/javascript">
     var params = {boardId: '<%= boardId %>', side: '<%= side %>'};
 </script>
