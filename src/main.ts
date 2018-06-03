@@ -1,3 +1,5 @@
+//import * as sakuraba from '../lib/sakuraba';
+
 // jquery-contextMenuの定義
 interface JQueryStatic {
     contextMenu(options: {

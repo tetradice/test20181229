@@ -10,14 +10,14 @@ import * as sakuraba from './lib/sakuraba';
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'index.html');
-const MAIN_JS = path.join(__dirname, 'main.js');
+const MAIN_JS = path.join(__dirname, 'dist/main.js');
 
 const server = express()
   .set('views', __dirname + '/')
   .set('view engine', 'ejs')
   .use(express.static('public'))
   .use(express.static('node_modules'))
-  .get('/main.js', (req, res) => res.sendFile(MAIN_JS) )
+  .get('/dist/main.js', (req, res) => res.sendFile(MAIN_JS) )
   .get('/', (req, res) => res.sendFile(INDEX) )
   .get('/b/:boardId/:side', (req, res) => res.render('board', {boardId: req.params.boardId, side: req.params.side}) )
   .post('/boards.create', (req, res) => {

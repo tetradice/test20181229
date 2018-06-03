@@ -9,13 +9,13 @@ var sakuraba = require("./lib/sakuraba");
 var RedisClient = redis.createClient(process.env.REDIS_URL);
 var PORT = process.env.PORT || 3000;
 var INDEX = path.join(__dirname, 'index.html');
-var MAIN_JS = path.join(__dirname, 'main.js');
+var MAIN_JS = path.join(__dirname, 'dist/main.js');
 var server = express()
     .set('views', __dirname + '/')
     .set('view engine', 'ejs')
     .use(express.static('public'))
     .use(express.static('node_modules'))
-    .get('/main.js', function (req, res) { return res.sendFile(MAIN_JS); })
+    .get('/dist/main.js', function (req, res) { return res.sendFile(MAIN_JS); })
     .get('/', function (req, res) { return res.sendFile(INDEX); })
     .get('/b/:boardId/:side', function (req, res) { return res.render('board', { boardId: req.params.boardId, side: req.params.side }); })
     .post('/boards.create', function (req, res) {
