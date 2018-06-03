@@ -737,6 +737,16 @@ function userInputModal(desc: string, decideCallback: (this: JQuery, $element: J
         .modal('show');
 }
 
+/**
+ * ゲームを開始可能かどうか判定
+ */
+function checkGameStartable(board: sakuraba.Board){
+    // 両方のプレイヤー名が決定済みであれば、ゲーム開始許可
+    if(board.data.p1Side.playerName !== null && board.data.p2Side.playerName !== null){
+        $('#GAME-START-BUTTON').removeClass('disabled');
+    }
+}
+
 $(function(){
 
     // socket.ioに接続
@@ -758,21 +768,42 @@ $(function(){
         $('#P2-NAME').text(receivingBoardData.p2Side.playerName);
 
         console.log('receive board: ', receivingBoardData);
+        let board = new sakuraba.Board(receivingBoardData);
+        let mySide = board.getMySide(params.side);
+        let opponentSide = board.getOpponentSide(params.side);
 
         // まだ名前が決定していなければ、名前の決定処理
-        let playerCommonName = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
-        let opponentPlayerCommonName = (params.side === 'p1' ? 'プレイヤー2' : 'プレイヤー1');
-        userInputModal(`<p>ふるよにボードシミュレーターへようこそ。<br>あなたは${playerCommonName}として卓に参加します。</p><p>プレイヤー名：</p>`, ($elem) => {
-            let playerName = $('#INPUT-MODAL input').val() as string;
-            if(playerName === ''){
-                playerName = playerCommonName;
-            }
-            socket.emit('player_name_input', {boardId: params.boardId, side: params.side, name: playerName});
-            $((params.side === 'p1' ? '#P1-NAME' : '#P2-NAME')).text(playerName);
-            messageModal(`<p>ゲームを始めたい場合は、あなたと${opponentPlayerCommonName}の両方が卓に参加した状態で<br>「ゲーム開始」ボタンをクリックしてください。</p>`);
-        });
+        if(mySide.playerName === null){
+            let playerCommonName = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
+            let opponentPlayerCommonName = (params.side === 'p1' ? 'プレイヤー2' : 'プレイヤー1');
+            userInputModal(`<p>ふるよにボードシミュレーターへようこそ。<br>あなたは${playerCommonName}として卓に参加します。</p><p>プレイヤー名：</p>`, ($elem) => {
+                let playerName = $('#INPUT-MODAL input').val() as string;
+                if(playerName === ''){
+                    playerName = playerCommonName;
+                }
+                socket.emit('player_name_input', {boardId: params.boardId, side: params.side, name: playerName});
+                mySide.playerName = playerName;
+                $((params.side === 'p1' ? '#P1-NAME' : '#P2-NAME')).text(playerName);
+                checkGameStartable(board);
+                messageModal(`<p>ゲームを始めたい場合は、あなたと${opponentPlayerCommonName}の両方が卓に参加した状態で<br>「ゲーム開始」ボタンをクリックしてください。</p>`);
+            });
+        }
+        checkGameStartable(board);
     });
 
+    // 他のプレイヤーがプレイヤー名を入力した
+    socket.on('on_player_name_input', (receivingBoardData: sakuraba.BoardData) => {
+        let board = new sakuraba.Board(receivingBoardData);
+        $('#P1-NAME').text(board.data.p1Side.playerName);
+        $('#P2-NAME').text(board.data.p2Side.playerName);
+
+        checkGameStartable(board);
+    });
+
+    // ゲーム開始ボタン
+    $('#GAME-START-BUTTON').click((e) => {
+        messageModal(`<p>ゲームを開始します。</p>`);
+    });
 
     // 盤を表示
     drawUsed();

@@ -1,3 +1,5 @@
+export type Side = 'p1' | 'p2' | 'watch';
+
 export class Board {
     data: BoardData;
 
@@ -7,6 +9,24 @@ export class Board {
         } else {
             this.data = new BoardData();
         }
+    }
+
+    getMySide(side: Side){
+        if(side === 'p1'){
+            return this.data.p1Side;
+        } else if(side === 'p2'){
+            return this.data.p2Side;
+        }
+        return null;
+    }
+
+    getOpponentSide(side: Side){
+        if(side === 'p1'){
+            return this.data.p2Side;
+        } else if(side === 'p2'){
+            return this.data.p1Side;
+        }
+        return null;
     }
 }
 
@@ -29,7 +49,7 @@ export class BoardData {
 }
 
 export class BoardSide {
-    playerName; string = null;
+    playerName: string = null;
 
     megamis: string[] = null;
 

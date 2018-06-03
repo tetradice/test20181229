@@ -70,7 +70,10 @@ io.on('connection', (socket) => {
       } else if(data.side === 'p2'){
         boardData.p2Side.playerName = data.name;
       }
-      RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData));
+      RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), (err, success) => {
+        // プレイヤー名が入力されたイベントを他ユーザーに配信
+        socket.broadcast.emit('on_player_name_input', boardData);
+      });
     });
   });
   // ボード情報を受信

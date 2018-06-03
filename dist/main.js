@@ -106,6 +106,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var sakuraba = __webpack_require__(/*! ./sakuraba */ "./src/sakuraba.ts");
 var CARD_DATA = {
     '01-yurina-o-n-1': { name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: "3-4", damage: '3/1', text: '' },
     '01-yurina-o-n-2': { name: '一閃', ruby: 'いっせん', baseType: 'normal', types: ['attack'], range: "3", damage: '2/2', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+1/+0となる。' },
@@ -763,6 +764,15 @@ function userInputModal(desc, decideCallback) {
         .modal({ closable: false, onApprove: decideCallback })
         .modal('show');
 }
+/**
+ * ゲームを開始可能かどうか判定
+ */
+function checkGameStartable(board) {
+    // 両方のプレイヤー名が決定済みであれば、ゲーム開始許可
+    if (board.data.p1Side.playerName !== null && board.data.p2Side.playerName !== null) {
+        $('#GAME-START-BUTTON').removeClass('disabled');
+    }
+}
 $(function () {
     // socket.ioに接続
     var socket = io();
@@ -778,18 +788,37 @@ $(function () {
         $('#P1-NAME').text(receivingBoardData.p1Side.playerName);
         $('#P2-NAME').text(receivingBoardData.p2Side.playerName);
         console.log('receive board: ', receivingBoardData);
+        var board = new sakuraba.Board(receivingBoardData);
+        var mySide = board.getMySide(params.side);
+        var opponentSide = board.getOpponentSide(params.side);
         // まだ名前が決定していなければ、名前の決定処理
-        var playerCommonName = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
-        var opponentPlayerCommonName = (params.side === 'p1' ? 'プレイヤー2' : 'プレイヤー1');
-        userInputModal("<p>\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u3078\u3088\u3046\u3053\u305D\u3002<br>\u3042\u306A\u305F\u306F" + playerCommonName + "\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3059\u3002</p><p>\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\uFF1A</p>", function ($elem) {
-            var playerName = $('#INPUT-MODAL input').val();
-            if (playerName === '') {
-                playerName = playerCommonName;
-            }
-            socket.emit('player_name_input', { boardId: params.boardId, side: params.side, name: playerName });
-            $((params.side === 'p1' ? '#P1-NAME' : '#P2-NAME')).text(playerName);
-            messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u305F\u3044\u5834\u5408\u306F\u3001\u3042\u306A\u305F\u3068" + opponentPlayerCommonName + "\u306E\u4E21\u65B9\u304C\u5353\u306B\u53C2\u52A0\u3057\u305F\u72B6\u614B\u3067<br>\u300C\u30B2\u30FC\u30E0\u958B\u59CB\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
-        });
+        if (mySide.playerName === null) {
+            var playerCommonName_1 = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
+            var opponentPlayerCommonName_1 = (params.side === 'p1' ? 'プレイヤー2' : 'プレイヤー1');
+            userInputModal("<p>\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u3078\u3088\u3046\u3053\u305D\u3002<br>\u3042\u306A\u305F\u306F" + playerCommonName_1 + "\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3059\u3002</p><p>\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\uFF1A</p>", function ($elem) {
+                var playerName = $('#INPUT-MODAL input').val();
+                if (playerName === '') {
+                    playerName = playerCommonName_1;
+                }
+                socket.emit('player_name_input', { boardId: params.boardId, side: params.side, name: playerName });
+                mySide.playerName = playerName;
+                $((params.side === 'p1' ? '#P1-NAME' : '#P2-NAME')).text(playerName);
+                checkGameStartable(board);
+                messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u305F\u3044\u5834\u5408\u306F\u3001\u3042\u306A\u305F\u3068" + opponentPlayerCommonName_1 + "\u306E\u4E21\u65B9\u304C\u5353\u306B\u53C2\u52A0\u3057\u305F\u72B6\u614B\u3067<br>\u300C\u30B2\u30FC\u30E0\u958B\u59CB\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
+            });
+        }
+        checkGameStartable(board);
+    });
+    // 他のプレイヤーがプレイヤー名を入力した
+    socket.on('on_player_name_input', function (receivingBoardData) {
+        var board = new sakuraba.Board(receivingBoardData);
+        $('#P1-NAME').text(board.data.p1Side.playerName);
+        $('#P2-NAME').text(board.data.p2Side.playerName);
+        checkGameStartable(board);
+    });
+    // ゲーム開始ボタン
+    $('#GAME-START-BUTTON').click(function (e) {
+        messageModal("<p>\u30B2\u30FC\u30E0\u3092\u958B\u59CB\u3057\u307E\u3059\u3002</p>");
     });
     // 盤を表示
     drawUsed();
@@ -1222,6 +1251,111 @@ $(function () {
     // ]);
     ;
 });
+
+
+/***/ }),
+
+/***/ "./src/sakuraba.ts":
+/*!*************************!*\
+  !*** ./src/sakuraba.ts ***!
+  \*************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var Board = /** @class */ (function () {
+    function Board(data) {
+        if (data !== undefined) {
+            this.data = data;
+        }
+        else {
+            this.data = new BoardData();
+        }
+    }
+    Board.prototype.getMySide = function (side) {
+        if (side === 'p1') {
+            return this.data.p1Side;
+        }
+        else if (side === 'p2') {
+            return this.data.p2Side;
+        }
+        return null;
+    };
+    Board.prototype.getOpponentSide = function (side) {
+        if (side === 'p1') {
+            return this.data.p2Side;
+        }
+        else if (side === 'p2') {
+            return this.data.p1Side;
+        }
+        return null;
+    };
+    return Board;
+}());
+exports.Board = Board;
+var BoardData = /** @class */ (function () {
+    function BoardData() {
+        this.dataVersion = 1;
+        this.distance = 10;
+        this.dust = 0;
+        this.actionLog = [];
+        this.chatLog = [];
+        this.p1Side = new BoardSide();
+        this.p2Side = new BoardSide();
+    }
+    return BoardData;
+}());
+exports.BoardData = BoardData;
+var BoardSide = /** @class */ (function () {
+    function BoardSide() {
+        this.playerName = null;
+        this.megamis = null;
+        this.aura = 3;
+        this.life = 10;
+        this.flair = 0;
+        this.vigor = 0;
+        this.library = [];
+        this.hands = [];
+        this.used = [];
+        this.hiddenUsed = [];
+    }
+    return BoardSide;
+}());
+exports.BoardSide = BoardSide;
+var LogRecord = /** @class */ (function () {
+    function LogRecord() {
+    }
+    return LogRecord;
+}());
+exports.LogRecord = LogRecord;
+var Card = /** @class */ (function () {
+    function Card() {
+    }
+    return Card;
+}());
+exports.Card = Card;
+var SpecialCard = /** @class */ (function (_super) {
+    __extends(SpecialCard, _super);
+    function SpecialCard() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.used = false;
+        return _this;
+    }
+    return SpecialCard;
+}(Card));
+exports.SpecialCard = SpecialCard;
 
 
 /***/ })
