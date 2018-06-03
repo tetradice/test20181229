@@ -5,7 +5,11 @@
     "module": "commonjs",
     "moduleResolution": "classic",
     "target": "es5",
-    "sourceMap" : true
+    "sourceMap" : true,
+    "typeRoots": [
+        "./node_modules/@types"
+      , "./src/typings"
+    ]
   },
   "compileOnSave": true,
   "exclude": [
