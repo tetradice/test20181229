@@ -5,7 +5,8 @@
     "moduleResolution": "node",
     "noImplicitReturns": true,
     "target": "es5",
-    "typeRoots" : ["./typings", "./node_modules/@types"]
+    "typeRoots" : ["./typings", "./node_modules/@types"],
+    "sourceMap" : true
   },
   "compileOnSave": true,
   "exclude": [
