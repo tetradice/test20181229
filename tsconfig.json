@@ -3,12 +3,14 @@
     "noImplicitReturns": true,
     "lib": ["es6", "dom"],
     "module": "commonjs",
-    "moduleResolution": "classic",
+    "moduleResolution": "node",
     "target": "es5",
     "sourceMap" : true,
+    "jsx": "react",
+    "jsxFactory": "h",
     "typeRoots": [
-        "./node_modules/@types"
-      , "./src/typings"
+      "./node_modules/@types"
+    , "./src/typings"
     ]
   },
   "compileOnSave": true,

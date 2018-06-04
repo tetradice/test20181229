@@ -3,6 +3,7 @@ module.exports = {
 
   // メインとなるJavaScriptファイル（エントリーポイント）
   entry: {
+    "main2": "./src/main2.tsx",
     "main": "./src/main.ts"
   },
   // ファイルの出力設定
@@ -19,7 +20,7 @@ module.exports = {
     rules: [
       {
         // 拡張子 .ts の場合
-        test: /\.ts$/,
+        test: /\.ts$|\.tsx$/,
         // TypeScript をコンパイルする
         use: 'ts-loader'
       }
@@ -27,7 +28,7 @@ module.exports = {
   },
   resolve: {
     extensions: [
-      '.ts'
+      '.ts', '.tsx'
     ]
   }
 };
