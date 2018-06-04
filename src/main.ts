@@ -243,6 +243,8 @@ function createCardComponent(card: Card, region: RegionName, indexOfRegion: numb
     newCard.indexOfRegion = indexOfRegion;
     newCard.opened = opened;
     components.push(newCard);
+
+    return newCard;
 }
 
 function createVigorComponent(){
@@ -366,66 +368,7 @@ function updateComponents(){
                 $elem = $(`#${component.htmlElementId}`);
             }
 
-            // ドラッグ可能の判定
-            if(component.draggable){
-                $elem.attr('draggable', '');
-            } else {
-                $elem.removeAttr('draggable');
-            }
-
-            // 回転
-            $elem.removeClass(['rotated', 'reverse-rotated']);
-            if(component.rotated === 1){
-                $elem.addClass('rotated');
-            } else if(component.rotated === -1){
-                $elem.addClass('reverse-rotated');
-            }
-
-            // カード用の処理
-            if(component instanceof CardComponent){
-                // 裏表の更新
-                $elem.removeClass(['open-normal', 'back-normal', 'open-special', 'back-special']);
-                if(component.card.data.baseType === 'normal'){
-                    if(component.opened){
-                        $elem.addClass('open-normal');
-                    } else {
-                        $elem.addClass('back-normal');
-                    }
-                }
-                if(component.card.data.baseType === 'special'){
-                    if(component.opened){
-                        $elem.addClass('open-special');
-                    } else {
-                        $elem.addClass('back-special');
-                    }
-                }
-
-                // 名称表示の更新
-                $elem.text(component.opened ? component.card.data.name : '');
-
-            }
-
-            // 集中力用の処理
-            if (component instanceof VigorComponent) {
-                if(board.vigor === 0){
-                    $elem.find('.vigor1').addClass('clickable');
-                    $elem.find(':not(.vigor1)').removeClass('clickable');
-                }
-                if(board.vigor === 1){
-                    $elem.find('.vigor0, .vigor2').addClass('clickable');
-                    $elem.find('.vigor1').removeClass('clickable');
-                }
-                if(board.vigor === 2){
-                    $elem.find('.vigor1').addClass('clickable');
-                    $elem.find(':not(.vigor1)').removeClass('clickable');
-                }
-            }
-            // 位置を移動 (向きを変えた後に実行する必要がある）
-            $elem.css({left: component.left, top: component.top});
-            $elem.css({zIndex: component.zIndexOffset + component.indexOfRegion});
-            
-            // リージョン属性付加
-            $elem.attr('data-region', component.region);
+            updateComponentAttributes(component, $elem);
 
             // 古い位置情報を捨てる
             component.updateLocation();
@@ -439,6 +382,69 @@ function updateComponents(){
 
     // ライブラリカウント増減
     $('#LIBRARY-COUNT').text(board.library.length).css({right: parseInt($('.area.library.background').css('right')) + 8, bottom: parseInt($('.area.library.background').css('bottom')) + 8});
+}
+
+function updateComponentAttributes(component: Component, $elem: JQuery){
+    // ドラッグ可能の判定
+    if(component.draggable){
+        $elem.attr('draggable', '');
+    } else {
+        $elem.removeAttr('draggable');
+    }
+
+    // 回転
+    $elem.removeClass(['rotated', 'reverse-rotated']);
+    if(component.rotated === 1){
+        $elem.addClass('rotated');
+    } else if(component.rotated === -1){
+        $elem.addClass('reverse-rotated');
+    }
+
+    // カード用の処理
+    if(component instanceof CardComponent){
+        // 裏表の更新
+        $elem.removeClass(['open-normal', 'back-normal', 'open-special', 'back-special']);
+        if(component.card.data.baseType === 'normal'){
+            if(component.opened){
+                $elem.addClass('open-normal');
+            } else {
+                $elem.addClass('back-normal');
+            }
+        }
+        if(component.card.data.baseType === 'special'){
+            if(component.opened){
+                $elem.addClass('open-special');
+            } else {
+                $elem.addClass('back-special');
+            }
+        }
+
+        // 名称表示の更新
+        $elem.text(component.opened ? component.card.data.name : '');
+
+    }
+
+    // 集中力用の処理
+    if (component instanceof VigorComponent) {
+        if(board.vigor === 0){
+            $elem.find('.vigor1').addClass('clickable');
+            $elem.find(':not(.vigor1)').removeClass('clickable');
+        }
+        if(board.vigor === 1){
+            $elem.find('.vigor0, .vigor2').addClass('clickable');
+            $elem.find('.vigor1').removeClass('clickable');
+        }
+        if(board.vigor === 2){
+            $elem.find('.vigor1').addClass('clickable');
+            $elem.find(':not(.vigor1)').removeClass('clickable');
+        }
+    }
+    // 位置を移動 (向きを変えた後に実行する必要がある）
+    $elem.css({left: component.left, top: component.top});
+    $elem.css({zIndex: component.zIndexOffset + component.indexOfRegion});
+    
+    // リージョン属性付加
+    $elem.attr('data-region', component.region);
 }
   
 
@@ -737,14 +743,24 @@ function userInputModal(desc: string, decideCallback: (this: JQuery, $element: J
         .modal('show');
 }
 
-/**
- * ゲームを開始可能かどうか判定
- */
-function checkGameStartable(board: sakuraba.Board){
-    // 両方のプレイヤー名が決定済みであれば、ゲーム開始許可
-    if(board.data.p1Side.playerName !== null && board.data.p2Side.playerName !== null){
-        $('#GAME-START-BUTTON').removeClass('disabled');
-    }
+// /**
+//  * ゲームを開始可能かどうか判定
+//  */
+// function checkGameStartable(board: sakuraba.Board){
+//     // 両方のプレイヤー名が決定済みであれば、ゲーム開始許可
+//     if(board.data.p1Side.playerName !== null && board.data.p2Side.playerName !== null){
+//         $('#GAME-START-BUTTON').removeClass('disabled');
+//     }
+// }
+
+function setPopup(){
+    // ポップアップ初期化
+    $('[data-html],[data-content]').popup({
+        delay: {show: 500, hide: 0},
+        onShow: function(): false | void{
+            if(draggingFrom !== null) return false;
+        },
+    });
 }
 
 $(function(){
@@ -784,11 +800,10 @@ $(function(){
                 socket.emit('player_name_input', {boardId: params.boardId, side: params.side, name: playerName});
                 mySide.playerName = playerName;
                 $((params.side === 'p1' ? '#P1-NAME' : '#P2-NAME')).text(playerName);
-                checkGameStartable(board);
-                messageModal(`<p>ゲームを始めたい場合は、あなたと${opponentPlayerCommonName}の両方が卓に参加した状態で<br>「ゲーム開始」ボタンをクリックしてください。</p>`);
+
+                messageModal(`<p>ゲームを始める準備ができたら、まずは「メガミ選択」ボタンをクリックしてください。</p>`);
             });
         }
-        checkGameStartable(board);
     });
 
     // 他のプレイヤーがプレイヤー名を入力した
@@ -796,13 +811,48 @@ $(function(){
         let board = new sakuraba.Board(receivingBoardData);
         $('#P1-NAME').text(board.data.p1Side.playerName);
         $('#P2-NAME').text(board.data.p2Side.playerName);
-
-        checkGameStartable(board);
     });
 
-    // ゲーム開始ボタン
-    $('#GAME-START-BUTTON').click((e) => {
-        messageModal(`<p>ゲームを開始します。</p>`);
+    // メガミ選択ボタン
+    $('#MEGAMI-SELECT-BUTTON').click((e) => {
+        $('#MEGAMI-SELECT-MODAL').modal({closable: false, autofocus: false, onApprove:function(){
+            $('#DECK-BUILD-BUTTON').removeClass('disabled');
+        }}).modal('show');
+    });
+
+    // デッキ構築ボタン
+    $('#DECK-BUILD-BUTTON').click((e) => {
+        let cardIds: string[] = [];
+        for(let key in CARD_DATA){
+            if(key.match(/01-yurina/)){
+                cardIds.push(key);
+            }
+        }
+
+        cardIds.forEach((cardId, i) => {
+                
+            let card = new Card(cardId);
+            let comp = new CardComponent();
+            comp.card = card;
+            comp.htmlElementId = `deck-${card.id}`;
+            comp.opened = true;
+            comp.top = 4;
+            comp.left = 4 + i * (100 + 4);
+            
+            $('#DECK-BUILD-CARD-AREA').append(comp.toHtml());
+            
+            updateComponentAttributes(comp, $(`#${comp.htmlElementId}`));
+        });
+
+
+
+        let settings: SemanticUI.ModalSettings = {closable: false, autofocus: false, onShow: function(){
+            setPopup();
+        },
+        onApprove:function(){
+
+        }}
+        $('#DECK-BUILD-MODAL').modal(settings).modal('show');
     });
 
     // 盤を表示
@@ -819,15 +869,38 @@ $(function(){
     // コンポーネントの表示を更新
     updateComponents();
 
-    // ポップアップ初期化
-    $('[data-html],[data-content]').popup({
-        delay: {show: 500, hide: 0},
-        onShow: function(): false | void{
-            if(draggingFrom !== null) return false;
-        },
+    // ポップアップを設定
+    setPopup();
+
+    // ドロップダウン初期化
+    let values = [
+        {name: 'ユリナ (刀)', value: 'yurina'},
+        {name: 'ヒミカ (銃)', value: 'himika'},
+        {name: 'サイネ (薙刀)', value: 'saine'},
+        {name: 'シンラ (書)', value: 'shinra'},
+        {name: 'オボロ (忍)', value: 'oboro'},
+        {name: 'ユキヒ (傘)', value: 'yukihi'},
+        
+    ]
+    $('#MEGAMI1-SELECTION').dropdown({
+        placeholder: '1柱目を選択...',
+        values: values
+    });
+    $('#MEGAMI2-SELECTION').dropdown({
+        placeholder: '2柱目を選択...',
+        values: values
     });
 
+    $('#MEGAMI1-SELECTION input[type=hidden], #MEGAMI2-SELECTION input[type=hidden]').on('change', function(e){
+        let megami1 = $('#MEGAMI1-SELECTION input[type=hidden]').val() as string;
+        let megami2 = $('#MEGAMI2-SELECTION input[type=hidden]').val() as string;
 
+        if(megami1 !== '' && megami2 !== ''){
+            $('#MEGAMI-SELECT-MODAL .positive.button').removeClass('disabled');
+        } else {
+            $('#MEGAMI-SELECT-MODAL .positive.button').addClass('disabled');
+        }
+    });
 
     // ドラッグ開始
     $('#BOARD').on('dragstart', '.fbs-card,.sakura-token', function(e){

@@ -364,7 +364,8 @@
                             <label>Label</label>
                           </div>
                       <button class="ui basic button">ゲーム外のカードを加える</button>
-                      <button class="ui basic button disabled" id="GAME-START-BUTTON">ゲーム開始</button>
+                      <button class="ui basic button" id="MEGAMI-SELECT-BUTTON">メガミ選択</button>
+                      <button class="ui basic button disabled" id="DECK-BUILD-BUTTON">デッキ構築</button>
     </div>
 
     <table class="ui definition table" style="width: 25em;">
@@ -421,8 +422,56 @@
     </div>
 </div>
 
+<div class="ui modal" id="MEGAMI-SELECT-MODAL">
+    <div class="content">
+        <div class="description" style="margin-bottom: 2em;">
+            <p>使用するメガミを2柱選択してください。</p>
+        </div>
+        <div class="ui selection dropdown" id="MEGAMI1-SELECTION">
+            <input type="hidden" name="megami1">
+            <i class="dropdown icon"></i>
+            <div class="default text"></div>
+        </div>
+        <div class="ui selection dropdown" id="MEGAMI2-SELECTION">
+            <input type="hidden" name="megami2">
+            <i class="dropdown icon"></i>
+            <div class="default text"></div>
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui positive labeled icon button disabled">
+        決定
+        <i class="checkmark icon"></i>
+        </div>
+        <div class="ui black deny button">
+        キャンセル
+        </div>
+    </div>
+</div>
+
+<div class="ui modal" id="DECK-BUILD-MODAL">
+    <div class="content">
+        <div class="description" style="margin-bottom: 2em;">
+            <p>使用するカードを選択してください。</p>
+        </div>
+        <div style="width: 100%; overflow: scroll; max-height: 320px; position: relative;">
+            <div style="width: 1400px; height: 310px; position: relative;" id="DECK-BUILD-CARD-AREA">
+                
+            </div>
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui positive labeled icon button disabled">
+        決定
+        <i class="checkmark icon"></i>
+        </div>
+        <div class="ui black deny button">
+        キャンセル
+        </div>
+    </div>
+</div>
+
 <div class="ui modal tiny" id="CONFIRM-MODAL">
-    <i class="close icon"></i>
     <div class="content">
         <div class="description">
         <p>相手がターンの終了を宣言しました。</p>
@@ -431,7 +480,7 @@
     </div>
     <div class="actions">
         <div class="ui positive labeled icon button">
-        確定
+        OK
         <i class="checkmark icon"></i>
         </div>
         <div class="ui black deny button">
