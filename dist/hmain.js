@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/main2.tsx");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/hyper/hmain.tsx");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -491,10 +491,34 @@ function app(state, actions, view, container) {
 
 /***/ }),
 
-/***/ "./src/main2.tsx":
-/*!***********************!*\
-  !*** ./src/main2.tsx ***!
-  \***********************/
+/***/ "./src/hyper/actions.tsx":
+/*!*******************************!*\
+  !*** ./src/hyper/actions.tsx ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var actions = {
+    getBoardSide: function (side) { return function (state) {
+        if (side === 1)
+            return state.board.p1Side;
+        if (side === 2)
+            return state.board.p2Side;
+        return null;
+    }; }
+};
+exports.default = actions;
+
+
+/***/ }),
+
+/***/ "./src/hyper/hmain.tsx":
+/*!*****************************!*\
+  !*** ./src/hyper/hmain.tsx ***!
+  \*****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -502,21 +526,74 @@ function app(state, actions, view, container) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var state = {
-    count: 0
+var state = __webpack_require__(/*! ./state */ "./src/hyper/state.tsx");
+var actions_1 = __webpack_require__(/*! ./actions */ "./src/hyper/actions.tsx");
+// 初期ステートを生成
+var st = state.createState();
+// カードコンポーネント
+var CardComponent = function (params) {
+    var styles = { left: 0, top: 0 };
+    return hyperapp_1.h("div", { class: "fbs-card", style: styles });
 };
-var actions = {
-    down: function (value) { return function (state) { return ({ count: state.count - value }); }; },
-    up: function (value) { return function (state) { return ({ count: state.count + value }); }; }
+// 桜花結晶コンポーネント
+var SakuraTokenComponent = function (params, children) {
+    var styles = { left: 0, top: 0 };
+    hyperapp_1.h("div", { class: "fbs-sakura-token", style: styles });
 };
-var view = function (state, actions) { return (hyperapp_1.h("div", null,
-    hyperapp_1.h("h1", null, state.count),
-    hyperapp_1.h("button", { onclick: function () { return actions.down(1); } }, "-"),
-    hyperapp_1.h("button", { onclick: function () { return actions.up(1); } }, "+"))); };
-hyperapp_1.app(state, actions, view, document.body);
+// ビュー
+var view = function (state, actions) { return (hyperapp_1.h("div", null, state.board.cards.forEach(function (card) { return (hyperapp_1.h(CardComponent, { id: card.id, key: card.id })); }))); };
+hyperapp_1.app(st, actions_1.default, view, document.getElementById('APP-CONTAINER'));
+
+
+/***/ }),
+
+/***/ "./src/hyper/state.tsx":
+/*!*****************************!*\
+  !*** ./src/hyper/state.tsx ***!
+  \*****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+// 新しいステートを生成する関数
+function createState() {
+    var st = {
+        board: {
+            dataVersion: 1,
+            distance: 10,
+            dust: 0,
+            actionLog: [],
+            chatLog: [],
+            cards: [],
+            p1Side: null,
+            p2Side: null
+        },
+        zoom: 1.0
+    };
+    var getInitialBoardSide = function () {
+        return {
+            playerName: null,
+            megamis: null,
+            aura: 3,
+            life: 10,
+            flair: 0,
+            vigor: 0,
+            library: [],
+            hands: [],
+            used: [],
+            hiddenUsed: []
+        };
+    };
+    st.board.p1Side = getInitialBoardSide();
+    st.board.p2Side = getInitialBoardSide();
+    return st;
+}
+exports.createState = createState;
 
 
 /***/ })
 
 /******/ });
-//# sourceMappingURL=main2.js.map
+//# sourceMappingURL=hmain.js.map

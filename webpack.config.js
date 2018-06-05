@@ -3,7 +3,7 @@ module.exports = {
 
   // メインとなるJavaScriptファイル（エントリーポイント）
   entry: {
-    "main2": "./src/main2.tsx",
+    "hmain": "./src/hyper/hmain.tsx",
     "main": "./src/main.ts"
   },
   // ファイルの出力設定
