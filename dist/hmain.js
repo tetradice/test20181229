@@ -501,16 +501,65 @@ function app(state, actions, view, container) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var actions = {
-    getBoardSide: function (side) { return function (state) {
-        if (side === 1)
-            return state.board.p1Side;
-        if (side === 2)
-            return state.board.p2Side;
-        return null;
-    }; }
-};
+var updating;
+updating = function () { return function (state) { return { aa: 1 }; }; };
+var st = { sasasasasasasas: 1 };
+var actions = {};
+actions.updating = updating;
 exports.default = actions;
+
+
+/***/ }),
+
+/***/ "./src/hyper/helpers.tsx":
+/*!*******************************!*\
+  !*** ./src/hyper/helpers.tsx ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function getBoardSide(state, side) {
+    if (side === 1)
+        return state.board.p1Side;
+    if (side === 2)
+        return state.board.p2Side;
+    return null;
+}
+exports.getBoardSide = getBoardSide;
+/** 新しいステートの生成 */
+function createState() {
+    var st = {
+        board: {
+            dataVersion: 1,
+            distance: 10,
+            dust: 0,
+            actionLog: [],
+            chatLog: [],
+            cards: [],
+            p1Side: null,
+            p2Side: null
+        },
+        sakuraTokens: [],
+        zoom: 1.0
+    };
+    var getInitialBoardSide = function () {
+        return {
+            playerName: null,
+            megamis: null,
+            aura: 3,
+            life: 10,
+            flair: 0,
+            vigor: 0
+        };
+    };
+    st.board.p1Side = getInitialBoardSide();
+    st.board.p2Side = getInitialBoardSide();
+    return st;
+}
+exports.createState = createState;
 
 
 /***/ }),
@@ -526,10 +575,11 @@ exports.default = actions;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var state = __webpack_require__(/*! ./state */ "./src/hyper/state.tsx");
+var utils = __webpack_require__(/*! ./utils */ "./src/hyper/utils.tsx");
+var helpers_1 = __webpack_require__(/*! ./helpers */ "./src/hyper/helpers.tsx");
 var actions_1 = __webpack_require__(/*! ./actions */ "./src/hyper/actions.tsx");
 // 初期ステートを生成
-var st = state.createState();
+var st = helpers_1.createState();
 // カードコンポーネント
 var CardComponent = function (params) {
     var styles = { left: 0, top: 0 };
@@ -541,15 +591,19 @@ var SakuraTokenComponent = function (params, children) {
     hyperapp_1.h("div", { class: "fbs-sakura-token", style: styles });
 };
 // ビュー
-var view = function (state, actions) { return (hyperapp_1.h("div", null, state.board.cards.forEach(function (card) { return (hyperapp_1.h(CardComponent, { id: card.id, key: card.id })); }))); };
+var view = function (state, actions) { return (hyperapp_1.h("div", null,
+    state.board.cards.map(function (card) { return (hyperapp_1.h(CardComponent, { id: card.id, key: card.id })); }),
+    utils.loop(state.board.distance, function (i) {
+        return hyperapp_1.h(SakuraTokenComponent, { key: "token-distance-" + i });
+    }))); };
 hyperapp_1.app(st, actions_1.default, view, document.getElementById('APP-CONTAINER'));
 
 
 /***/ }),
 
-/***/ "./src/hyper/state.tsx":
+/***/ "./src/hyper/utils.tsx":
 /*!*****************************!*\
-  !*** ./src/hyper/state.tsx ***!
+  !*** ./src/hyper/utils.tsx ***!
   \*****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -557,40 +611,13 @@ hyperapp_1.app(st, actions_1.default, view, document.getElementById('APP-CONTAIN
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-// 新しいステートを生成する関数
-function createState() {
-    var st = {
-        board: {
-            dataVersion: 1,
-            distance: 10,
-            dust: 0,
-            actionLog: [],
-            chatLog: [],
-            cards: [],
-            p1Side: null,
-            p2Side: null
-        },
-        zoom: 1.0
-    };
-    var getInitialBoardSide = function () {
-        return {
-            playerName: null,
-            megamis: null,
-            aura: 3,
-            life: 10,
-            flair: 0,
-            vigor: 0,
-            library: [],
-            hands: [],
-            used: [],
-            hiddenUsed: []
-        };
-    };
-    st.board.p1Side = getInitialBoardSide();
-    st.board.p2Side = getInitialBoardSide();
-    return st;
+/** 指定回数の繰り返し */
+function loop(count, action) {
+    for (var i = 0; i < count; i++) {
+        action.call(this, i);
+    }
 }
-exports.createState = createState;
+exports.loop = loop;
 
 
 /***/ })

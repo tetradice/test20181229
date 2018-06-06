@@ -1,17 +1,14 @@
-export type TimeStr = string;
-export type PlayerSide = 1 | 2;
-export type SerializableObject = {[key: string]: SerializableValue};
-export type SerializableArray = Array<SerializablePrimaryValue> | Array<SerializableObject>;
-export type SerializableValue = SerializablePrimaryValue | SerializableArray | SerializableObject;
-export type SerializablePrimaryValue = undefined | null | boolean | string | number;
+import { SerializableObject, TimeStr, PlayerSide, RegionName } from "./types";
 
-
-export interface Root extends SerializableObject {
+/** ステートルート */
+export default interface Root extends SerializableObject {
     board: Board;
+    sakuraTokens: SakuraToken[];
     zoom: number;
 }
 
-export interface Board extends SerializableObject {
+/** 卓情報 */
+interface Board extends SerializableObject {
     dataVersion: number;
 
     distance: number;
@@ -25,12 +22,13 @@ export interface Board extends SerializableObject {
     p2Side: BoardSide;
 }
 
-export interface LogRecord extends SerializableObject {
+/** ログ1行分のデータ */
+interface LogRecord extends SerializableObject {
     body: string;
     time: TimeStr;
 }
 
-export interface BoardSide extends SerializableObject {
+interface BoardSide extends SerializableObject {
     playerName: string;
 
     megamis: string[];
@@ -42,53 +40,17 @@ export interface BoardSide extends SerializableObject {
     vigor: number;
 }
 
-export interface Card extends SerializableObject {
+interface Card extends SerializableObject {
     id: string;
     side: PlayerSide;
-    region: string;
+    region: RegionName;
+    indexOfRegion: number;
+
+    used?: boolean;
+}
+
+interface SakuraToken extends SerializableObject {
+    region: RegionName;
     indexOfRegion: number;
 }
 
-// 新しいステートを生成する関数
-export function createState(): Root{
-    let st: Root = {
-        board: {
-              dataVersion: 1
-
-            , distance: 10
-            , dust: 0
-
-            , actionLog: []
-            , chatLog: []
-
-            , cards: []
-            , p1Side: null
-            , p2Side: null
-        },
-        zoom: 1.0
-    };
-
-    let getInitialBoardSide = function(){
-        return {
-            playerName: null
-  
-          , megamis: null
-  
-          , aura: 3
-          , life: 10
-          , flair: 0
-  
-          , vigor: 0
-  
-          , library: []
-          , hands: []
-          , used: []
-          , hiddenUsed: []
-      }
-    }
-
-    st.board.p1Side = getInitialBoardSide();
-    st.board.p2Side = getInitialBoardSide();
-
-    return st;
-}

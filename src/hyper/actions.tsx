@@ -1,15 +1,19 @@
-import * as state from './state'
-import { ActionsType, ActionResult } from 'hyperapp';
+import * as utils from './utils'
+import State from './state'
 
-interface Acts {
-    getBoardSide: (side: state.PlayerSide) => (s: state.Root) => state.BoardSide;
-}
+const actions = {
+    /** 桜花結晶トークンの領域情報を更新 */
+    updateSakuraTokens: () => (state: State) => {
+        let res: Partial<State> = {};
+        res.sakuraTokens = [];
 
-const actions: ActionsType<state.Root, Acts> = {
-    getBoardSide: (side) => (state) => {
-        if(side === 1) return state.board.p1Side;
-        if(side === 2) return state.board.p2Side;
-        return null;
+        utils.loop(state.board.distance, (i) => {
+            res.sakuraTokens.push({region: 'distance', indexOfRegion: i});
+        });
+        utils.loop(state.board.dust, (i) => {
+            res.sakuraTokens.push({region: 'dust', indexOfRegion: i});
+        });
+        
     }
 };
 
