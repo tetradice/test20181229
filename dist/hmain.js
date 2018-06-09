@@ -501,11 +501,20 @@ function app(state, actions, view, container) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var updating;
-updating = function () { return function (state) { return { aa: 1 }; }; };
-var st = { sasasasasasasas: 1 };
-var actions = {};
-actions.updating = updating;
+var utils = __webpack_require__(/*! ./utils */ "./src/hyper/utils.tsx");
+var actions = {
+    /** 桜花結晶トークンの領域情報を更新 */
+    updateSakuraTokens: function () { return function (state) {
+        var res = {};
+        res.sakuraTokens = [];
+        utils.loop(state.board.distance, function (i) {
+            res.sakuraTokens.push({ region: 'distance', indexOfRegion: i });
+        });
+        utils.loop(state.board.dust, function (i) {
+            res.sakuraTokens.push({ region: 'dust', indexOfRegion: i });
+        });
+    }; }
+};
 exports.default = actions;
 
 
@@ -576,10 +585,10 @@ exports.createState = createState;
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var utils = __webpack_require__(/*! ./utils */ "./src/hyper/utils.tsx");
-var helpers_1 = __webpack_require__(/*! ./helpers */ "./src/hyper/helpers.tsx");
+var helpers = __webpack_require__(/*! ./helpers */ "./src/hyper/helpers.tsx");
 var actions_1 = __webpack_require__(/*! ./actions */ "./src/hyper/actions.tsx");
 // 初期ステートを生成
-var st = helpers_1.createState();
+var st = helpers.createState();
 // カードコンポーネント
 var CardComponent = function (params) {
     var styles = { left: 0, top: 0 };
@@ -590,13 +599,15 @@ var SakuraTokenComponent = function (params, children) {
     var styles = { left: 0, top: 0 };
     hyperapp_1.h("div", { class: "fbs-sakura-token", style: styles });
 };
-// ビュー
+// メインビュー
 var view = function (state, actions) { return (hyperapp_1.h("div", null,
     state.board.cards.map(function (card) { return (hyperapp_1.h(CardComponent, { id: card.id, key: card.id })); }),
     utils.loop(state.board.distance, function (i) {
         return hyperapp_1.h(SakuraTokenComponent, { key: "token-distance-" + i });
     }))); };
-hyperapp_1.app(st, actions_1.default, view, document.getElementById('APP-CONTAINER'));
+var acts = hyperapp_1.app(st, actions_1.default, view, document.getElementById('APP-CONTAINER'));
+// 桜花結晶の情報を更新
+acts.updateSakuraTokens();
 
 
 /***/ }),

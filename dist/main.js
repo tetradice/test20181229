@@ -107,33 +107,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var sakuraba = __webpack_require__(/*! ./sakuraba */ "./src/sakuraba.ts");
-var CARD_DATA = {
-    '01-yurina-o-n-1': { name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: "3-4", damage: '3/1', text: '' },
-    '01-yurina-o-n-2': { name: '一閃', ruby: 'いっせん', baseType: 'normal', types: ['attack'], range: "3", damage: '2/2', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+1/+0となる。' },
-    '01-yurina-o-n-3': { name: '柄打ち', ruby: 'つかうち', baseType: 'normal', types: ['attack'], range: "1-2", damage: '2/1', text: '【攻撃後】決死-あなたのライフが3以下ならば、このターンにあなたが次に行う《攻撃》は+1/+0となる。' },
-    '01-yurina-o-n-4': { name: '居合', ruby: 'いあい', baseType: 'normal', types: ['attack', 'fullpower'], range: "3-4", damage: '4/3', text: '' },
-    '01-yurina-o-n-5': { name: '足捌き', ruby: 'あしさばき', baseType: 'normal', types: ['action'], text: '現在の間合が4以上ならば、間合→ダスト：2' },
-    '01-yurina-o-n-6': { name: '圧気', ruby: 'あっき', baseType: 'normal', types: ['enhance'], capacity: '4', text: '隙\n【破棄時】攻撃『適正距離1-4、3/-』を行う。' },
-    '01-yurina-o-n-7': { name: '気炎万丈', ruby: 'きえんばんじょう', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '2', text: '【展開中】決死-あなたのライフが3以下ならば、あなたの他のメガミによる《攻撃》は+1/+1となるとともに超克を得る。' },
-    '01-yurina-o-s-1': { name: '月影落', ruby: 'つきかげおとし', baseType: 'special', cost: '7', types: ['attack'], range: '3-4', damage: '4/4', text: '' },
-    '01-yurina-o-s-2': { name: '浦波嵐', ruby: 'うらなみあらし', baseType: 'special', cost: '3', types: ['attack', 'reaction'], range: '0-10', damage: '2/-', text: '【攻撃後】対応した《攻撃》は-2/+0となる。' },
-    '01-yurina-o-s-3': { name: '浮舟宿', ruby: 'うきふねやどし', baseType: 'special', cost: '3', types: ['action'], text: 'ダスト→自オーラ：5 \n【再起】決死-あなたのライフが3以下である。' },
-    '01-yurina-o-s-4': { name: '天音揺波の底力', ruby: 'あまねゆりなのそこぢから', baseType: 'special', cost: '5', types: ['attack', 'fullpower'], range: '1-4', damage: '5/5', text: '【常時】決死-あなたのライフが3以下でないと、このカードは使用できない。' }
-};
-// クラス
-var Card = /** @class */ (function () {
-    function Card(id) {
-        this.id = id;
-    }
-    Object.defineProperty(Card.prototype, "data", {
-        get: function () {
-            return CARD_DATA[this.id];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return Card;
-}());
 var Layouter = /** @class */ (function () {
     function Layouter() {
     }
@@ -275,20 +248,8 @@ var VigorComponent = /** @class */ (function (_super) {
     return VigorComponent;
 }(Component));
 // 盤を定義
-var board = {
-    library: [new Card('01-yurina-o-n-1'), new Card('01-yurina-o-n-2'), new Card('01-yurina-o-n-3'), new Card('01-yurina-o-n-4')],
-    hands: [new Card('01-yurina-o-n-7'), new Card('01-yurina-o-n-5'), new Card('01-yurina-o-n-6')],
-    specials: [new Card('01-yurina-o-s-1'), new Card('01-yurina-o-s-2'), new Card('01-yurina-o-s-3')],
-    used: [],
-    hiddenUsed: [],
-    vigor: 1,
-    tokensOnCard: {},
-    aura: 3,
-    life: 10,
-    flair: 0,
-    distance: 10,
-    dust: 0
-};
+var board = new sakuraba.Board();
+var myBoardSide = board.getMySide(params.side);
 // コンポーネント一覧
 var components = [];
 // 変数を定義
@@ -430,7 +391,7 @@ function updateComponents() {
         }
     });
     // ライブラリカウント増減
-    $('#LIBRARY-COUNT').text(board.library.length).css({ right: parseInt($('.area.library.background').css('right')) + 8, bottom: parseInt($('.area.library.background').css('bottom')) + 8 });
+    $('#LIBRARY-COUNT').text(myBoardSide.library.length).css({ right: parseInt($('.area.library.background').css('right')) + 8, bottom: parseInt($('.area.library.background').css('bottom')) + 8 });
 }
 function updateComponentAttributes(component, $elem) {
     // ドラッグ可能の判定
@@ -473,15 +434,15 @@ function updateComponentAttributes(component, $elem) {
     }
     // 集中力用の処理
     if (component instanceof VigorComponent) {
-        if (board.vigor === 0) {
+        if (myBoardSide.vigor === 0) {
             $elem.find('.vigor1').addClass('clickable');
             $elem.find(':not(.vigor1)').removeClass('clickable');
         }
-        if (board.vigor === 1) {
+        if (myBoardSide.vigor === 1) {
             $elem.find('.vigor0, .vigor2').addClass('clickable');
             $elem.find('.vigor1').removeClass('clickable');
         }
-        if (board.vigor === 2) {
+        if (myBoardSide.vigor === 2) {
             $elem.find('.vigor1').addClass('clickable');
             $elem.find(':not(.vigor1)').removeClass('clickable');
         }
@@ -493,27 +454,27 @@ function updateComponentAttributes(component, $elem) {
     $elem.attr('data-region', component.region);
 }
 function drawLibrary() {
-    board.library.forEach(function (card, i) {
+    myBoardSide.library.forEach(function (card, i) {
         createCardComponent(card, 'library', i);
     });
 }
 function drawHands() {
-    board.hands.forEach(function (card, i) {
+    myBoardSide.hands.forEach(function (card, i) {
         createCardComponent(card, 'hand', i, true);
     });
 }
 function drawSpecials() {
-    board.specials.forEach(function (card, i) {
+    myBoardSide.specials.forEach(function (card, i) {
         createCardComponent(card, 'special', i);
     });
 }
 function drawUsed() {
-    board.used.forEach(function (card, i) {
+    myBoardSide.used.forEach(function (card, i) {
         createCardComponent(card, 'used', innerWidth, true);
     });
 }
 function drawHiddenUsed() {
-    board.hiddenUsed.forEach(function (card, i) {
+    myBoardSide.hiddenUsed.forEach(function (card, i) {
         createCardComponent(card, 'hidden-used', i);
     });
 }
@@ -536,29 +497,29 @@ function moveCard(from, fromIndex, to, addToBottom) {
     // 移動
     var card;
     if (from === 'library') {
-        card = board.library.splice(fromIndex, 1)[0];
+        card = myBoardSide.library.splice(fromIndex, 1)[0];
     }
     if (from === 'hand') {
-        card = board.hands.splice(fromIndex, 1)[0];
+        card = myBoardSide.hands.splice(fromIndex, 1)[0];
     }
     if (from === 'used') {
-        card = board.used.splice(fromIndex, 1)[0];
+        card = myBoardSide.used.splice(fromIndex, 1)[0];
     }
     if (from === 'hidden-used') {
-        card = board.hiddenUsed.splice(fromIndex, 1)[0];
+        card = myBoardSide.hiddenUsed.splice(fromIndex, 1)[0];
     }
     var toTarget;
     if (to === 'library') {
-        toTarget = board.library;
+        toTarget = myBoardSide.library;
     }
     if (to === 'hand') {
-        toTarget = board.hands;
+        toTarget = myBoardSide.hands;
     }
     if (to === 'used') {
-        toTarget = board.used;
+        toTarget = myBoardSide.used;
     }
     if (to === 'hidden-used') {
-        toTarget = board.hiddenUsed;
+        toTarget = myBoardSide.hiddenUsed;
     }
     if (addToBottom) {
         toTarget.unshift(card);
@@ -597,23 +558,23 @@ function moveCard(from, fromIndex, to, addToBottom) {
 function refreshCardComponentRegionInfo(region) {
     var cards;
     if (region === 'library') {
-        cards = board.library;
+        cards = myBoardSide.library;
     }
     if (region === 'hand') {
-        cards = board.hands;
+        cards = myBoardSide.hands;
     }
     if (region === 'used') {
-        cards = board.used;
+        cards = myBoardSide.used;
     }
     if (region === 'hidden-used') {
-        cards = board.hiddenUsed;
+        cards = myBoardSide.hiddenUsed;
     }
     // カード情報の更新
     cards.forEach(function (card, i) {
         var comp = components.find(function (x) { return x instanceof CardComponent && x.card === card; });
         comp.region = region;
         comp.indexOfRegion = i;
-        comp.draggable = (comp.region !== 'library' || comp.indexOfRegion === board.library.length - 1);
+        comp.draggable = (comp.region !== 'library' || comp.indexOfRegion === myBoardSide.library.length - 1);
         // 領域に依存する情報更新
         if (region === 'hand' || region === 'used') {
             comp.opened = true;
@@ -634,40 +595,39 @@ function refreshSakuraTokenComponentInfo() {
     var allSakuraTokens = components.filter(function (x) { return x instanceof SakuraTokenComponent; });
     var tokenIndex = 0;
     // 対象領域にある結晶数に応じて表示更新
-    for (var i = 0; i < board.distance; i++) {
+    for (var i = 0; i < board.data.distance; i++) {
         var comp = allSakuraTokens[tokenIndex];
         comp.region = 'distance';
         comp.indexOfRegion = i;
         tokenIndex++;
     }
-    for (var i = 0; i < board.dust; i++) {
+    for (var i = 0; i < board.data.dust; i++) {
         var comp = allSakuraTokens[tokenIndex];
         comp.region = 'dust';
         comp.indexOfRegion = i;
         tokenIndex++;
     }
-    for (var i = 0; i < board.aura; i++) {
+    for (var i = 0; i < myBoardSide.aura; i++) {
         var comp = allSakuraTokens[tokenIndex];
         comp.region = 'aura';
         comp.indexOfRegion = i;
         tokenIndex++;
     }
-    for (var i = 0; i < board.life; i++) {
+    for (var i = 0; i < myBoardSide.life; i++) {
         var comp = allSakuraTokens[tokenIndex];
         comp.region = 'life';
         comp.indexOfRegion = i;
         tokenIndex++;
     }
-    for (var i = 0; i < board.flair; i++) {
+    for (var i = 0; i < myBoardSide.flair; i++) {
         var comp = allSakuraTokens[tokenIndex];
         comp.region = 'flair';
         comp.indexOfRegion = i;
         tokenIndex++;
     }
-    for (var cardId in board.tokensOnCard) {
-        if (board.tokensOnCard.hasOwnProperty(cardId)) {
-            console.log("key:", cardId);
-            for (var i = 0; i < board.tokensOnCard[cardId]; i++) {
+    for (var cardId in board.data.tokensOnCard) {
+        if (board.data.tokensOnCard.hasOwnProperty(cardId)) {
+            for (var i = 0; i < board.data.tokensOnCard[cardId]; i++) {
                 var comp = allSakuraTokens[tokenIndex];
                 comp.region = 'on-card';
                 comp.cardId = cardId;
@@ -683,68 +643,68 @@ function moveSakuraToken(from, to, cardId, count) {
     console.log('move sakura token (%s -> %s * %d)', from, to, count);
     // 移動可能かどうかをチェック
     if (from === 'distance') {
-        if (board.distance < count)
+        if (board.data.distance < count)
             return false; // 桜花結晶がなければ失敗
     }
     else if (from === 'dust') {
-        if (board.dust < count)
+        if (board.data.dust < count)
             return false; // 桜花結晶がなければ失敗
     }
     else if (from === 'aura') {
-        if (board.aura < count)
+        if (myBoardSide.aura < count)
             return false; // 桜花結晶がなければ失敗
     }
     else if (from === 'life') {
-        if (board.life < count)
+        if (myBoardSide.life < count)
             return false; // 桜花結晶がなければ失敗
     }
     else if (from === 'flair') {
-        if (board.flair < count)
+        if (myBoardSide.flair < count)
             return false; // 桜花結晶がなければ失敗
     }
     if (to === 'distance') {
-        if ((board.distance + count) > 10)
+        if ((board.data.distance + count) > 10)
             return false; // 間合い最大値を超える場合は失敗
     }
     else if (to === 'aura') {
-        if ((board.aura + count) > 5)
+        if ((myBoardSide.aura + count) > 5)
             return false; // オーラ最大値を超える場合は失敗
     }
     // 移動
     if (from === 'distance') {
-        board.distance -= count;
+        board.data.distance -= count;
     }
     else if (from === 'dust') {
-        board.dust -= count;
+        board.data.dust -= count;
     }
     else if (from === 'aura') {
-        board.aura -= count;
+        myBoardSide.aura -= count;
     }
     else if (from === 'life') {
-        board.life -= count;
+        myBoardSide.life -= count;
     }
     else if (from === 'flair') {
-        board.flair -= count;
+        myBoardSide.flair -= count;
     }
     if (to === 'distance') {
-        board.distance += count;
+        board.data.distance += count;
     }
     else if (to === 'dust') {
-        board.dust += count;
+        board.data.dust += count;
     }
     else if (to === 'aura') {
-        board.aura += count;
+        myBoardSide.aura += count;
     }
     else if (to === 'life') {
-        board.life += count;
+        myBoardSide.life += count;
     }
     else if (to === 'flair') {
-        board.flair += count;
+        myBoardSide.flair += count;
     }
     else if (to === 'on-card') {
-        if (board.tokensOnCard[cardId] === undefined)
-            board.tokensOnCard[cardId] = 0;
-        board.tokensOnCard[cardId] += count;
+        if (board.data.tokensOnCard[cardId] === undefined)
+            board.data.tokensOnCard[cardId] = 0;
+        board.data.tokensOnCard[cardId] += count;
     }
     console.log(board);
     // コンポーネントのインデックス更新
@@ -829,20 +789,34 @@ $(function () {
     });
     // メガミ選択ボタン
     $('#MEGAMI-SELECT-BUTTON').click(function (e) {
+        var megami2Rule = { identifier: 'megami2', rules: [{ type: 'different[megami1]', prompt: '同じメガミを選択することはできません。' }] };
+        $('#MEGAMI-SELECT-MODAL .ui.form').form({
+            fields: {
+                megami2: megami2Rule
+            }
+        });
         $('#MEGAMI-SELECT-MODAL').modal({ closable: false, autofocus: false, onApprove: function () {
+                if (!$('#MEGAMI-SELECT-MODAL .ui.form').form('validate form')) {
+                    return false;
+                }
                 $('#DECK-BUILD-BUTTON').removeClass('disabled');
+                // 選択したメガミを設定
+                var megamis = [$('#MEGAMI1-SELECTION input[type=hidden]').val(), $('#MEGAMI2-SELECTION input[type=hidden]').val()];
+                var mySide = board.getMySide(params.side);
+                // イベント送信
+                socket.emit('megami_select', { boardId: params.boardId, side: params.side, megamis: megamis });
             } }).modal('show');
     });
     // デッキ構築ボタン
     $('#DECK-BUILD-BUTTON').click(function (e) {
         var cardIds = [];
-        for (var key in CARD_DATA) {
+        for (var key in sakuraba.CARD_DATA) {
             if (key.match(/01-yurina/)) {
                 cardIds.push(key);
             }
         }
         cardIds.forEach(function (cardId, i) {
-            var card = new Card(cardId);
+            var card = new sakuraba.Card(cardId);
             var comp = new CardComponent();
             comp.card = card;
             comp.htmlElementId = "deck-" + card.id;
@@ -873,14 +847,11 @@ $(function () {
     // ポップアップを設定
     setPopup();
     // ドロップダウン初期化
-    var values = [
-        { name: 'ユリナ (刀)', value: 'yurina' },
-        { name: 'ヒミカ (銃)', value: 'himika' },
-        { name: 'サイネ (薙刀)', value: 'saine' },
-        { name: 'シンラ (書)', value: 'shinra' },
-        { name: 'オボロ (忍)', value: 'oboro' },
-        { name: 'ユキヒ (傘)', value: 'yukihi' },
-    ];
+    var values = [];
+    for (var key in sakuraba.MEGAMI_DATA) {
+        var data = sakuraba.MEGAMI_DATA[key];
+        values.push({ name: data.name + " (" + data.symbol + ")", value: key });
+    }
     $('#MEGAMI1-SELECTION').dropdown({
         placeholder: '1柱目を選択...',
         values: values
@@ -1050,32 +1021,32 @@ $(function () {
     // 集中力のクリック
     function vigorProcess() {
         var vigComp = components.find(function (x) { return x instanceof VigorComponent; });
-        vigComp.setVigor(board.vigor);
+        vigComp.setVigor(myBoardSide.vigor);
         updateComponents();
     }
     $('#BOARD').on('click', '.fbs-vigor-card .vigor0.clickable', function (e) {
         e.preventDefault();
         appendLog("\u96C6\u4E2D\u529B\uFF0D1\u3000(\u21920)");
-        board.vigor = 0;
+        myBoardSide.vigor = 0;
         vigorProcess();
         return false;
     });
     $('#BOARD').on('click', '.fbs-vigor-card .vigor1.clickable', function (e) {
         e.preventDefault();
-        if (board.vigor === 2) {
+        if (myBoardSide.vigor === 2) {
             appendLog("\u96C6\u4E2D\u529B\uFF0D1\u3000(\u21921)");
         }
         else {
             appendLog("\u96C6\u4E2D\u529B\uFF0B1\u3000(\u21921)");
         }
-        board.vigor = 1;
+        myBoardSide.vigor = 1;
         vigorProcess();
         return false;
     });
     $('#BOARD').on('click', '.fbs-vigor-card .vigor2.clickable', function (e) {
         e.preventDefault();
         appendLog("\u96C6\u4E2D\u529B\uFF0B1\u3000(\u21922)");
-        board.vigor = 2;
+        myBoardSide.vigor = 2;
         vigorProcess();
         return false;
     });
@@ -1092,8 +1063,8 @@ $(function () {
         e.preventDefault();
         var cardIndex = $('.fbs-card[data-region=special]').index(this);
         console.log('double click', cardIndex);
-        var card = board.specials[cardIndex];
-        var comp = components.find(function (x) { return x instanceof CardComponent && x.card === board.specials[cardIndex]; });
+        var card = myBoardSide.specials[cardIndex];
+        var comp = components.find(function (x) { return x instanceof CardComponent && x.card === myBoardSide.specials[cardIndex]; });
         if (card.used) {
             card.used = false;
             comp.opened = false;
@@ -1152,15 +1123,15 @@ $(function () {
             }
             if (key === 'reshuffle' || key === 'reshuffleWithoutDamage') {
                 // 山札、捨て札、伏せ札を全て加えてシャッフル
-                board.library = board.library.concat(board.hiddenUsed.splice(0));
-                board.used.forEach(function (card, i) {
+                myBoardSide.library = myBoardSide.library.concat(myBoardSide.hiddenUsed.splice(0));
+                myBoardSide.used.forEach(function (card, i) {
                     if (card.sakuraToken === undefined || card.sakuraToken === 0) {
-                        board.library.push(card);
-                        board.used[i] = undefined;
+                        myBoardSide.library.push(card);
+                        myBoardSide.used[i] = undefined;
                     }
                 });
-                board.used = board.used.filter(function (c) { return c !== undefined; });
-                board.library = shuffle(board.library);
+                myBoardSide.used = myBoardSide.used.filter(function (c) { return c !== undefined; });
+                myBoardSide.library = shuffle(myBoardSide.library);
                 refreshCardComponentRegionInfo('library');
                 refreshCardComponentRegionInfo('used');
                 refreshCardComponentRegionInfo('hidden-used');
@@ -1171,9 +1142,9 @@ $(function () {
             }
         },
         items: {
-            'draw': { name: '1枚引く', disabled: function () { return board.library.length === 0; } },
+            'draw': { name: '1枚引く', disabled: function () { return myBoardSide.library.length === 0; } },
             'sep1': '---------',
-            'reshuffle': { name: '再構成する', disabled: function () { return board.life === 0; } },
+            'reshuffle': { name: '再構成する', disabled: function () { return myBoardSide.life === 0; } },
             'reshuffleWithoutDamage': { name: '再構成する (ライフ減少なし)' },
         }
     });
@@ -1196,19 +1167,19 @@ $(function () {
             var region = $elem.attr('data-region');
             var tokenCount = 0;
             if (region === 'distance') {
-                tokenCount = board.distance;
+                tokenCount = board.data.distance;
             }
             if (region === 'dust') {
-                tokenCount = board.dust;
+                tokenCount = board.data.dust;
             }
             if (region === 'aura') {
-                tokenCount = board.aura;
+                tokenCount = myBoardSide.aura;
             }
             if (region === 'life') {
-                tokenCount = board.life;
+                tokenCount = myBoardSide.life;
             }
             if (region === 'flair') {
-                tokenCount = board.flair;
+                tokenCount = myBoardSide.flair;
             }
             var items = {};
             var itemBaseData = [
@@ -1335,6 +1306,34 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MEGAMI_DATA = {
+    'yurina': { name: 'ユリナ', symbol: '刀' },
+    'saine': { name: 'サイネ', symbol: '薙刀' },
+    'himika': { name: 'ヒミカ', symbol: '銃' },
+    'tokoyo': { name: 'トコヨ', symbol: '扇' },
+    'oboro': { name: 'オボロ', symbol: '忍' },
+    'yukihi': { name: 'ユキヒ', symbol: '傘/簪' },
+    'shinra': { name: 'シンラ', symbol: '書' },
+    'hagane': { name: 'ハガネ', symbol: '槌' },
+    'chikage': { name: 'チカゲ', symbol: '毒' },
+    'kururu': { name: 'クルル', symbol: '絡繰' },
+    'thallya': { name: 'サリヤ', symbol: '乗騎' },
+    'raira': { name: 'ライラ', symbol: '爪' }
+};
+exports.CARD_DATA = {
+    '01-yurina-o-n-1': { megami: 'yurina', name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: "3-4", damage: '3/1', text: '' },
+    '01-yurina-o-n-2': { megami: 'yurina', name: '一閃', ruby: 'いっせん', baseType: 'normal', types: ['attack'], range: "3", damage: '2/2', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+1/+0となる。' },
+    '01-yurina-o-n-3': { megami: 'yurina', name: '柄打ち', ruby: 'つかうち', baseType: 'normal', types: ['attack'], range: "1-2", damage: '2/1', text: '【攻撃後】決死-あなたのライフが3以下ならば、このターンにあなたが次に行う《攻撃》は+1/+0となる。' },
+    '01-yurina-o-n-4': { megami: 'yurina', name: '居合', ruby: 'いあい', baseType: 'normal', types: ['attack', 'fullpower'], range: "3-4", damage: '4/3', text: '' },
+    '01-yurina-o-n-5': { megami: 'yurina', name: '足捌き', ruby: 'あしさばき', baseType: 'normal', types: ['action'], text: '現在の間合が4以上ならば、間合→ダスト：2' },
+    '01-yurina-o-n-6': { megami: 'yurina', name: '圧気', ruby: 'あっき', baseType: 'normal', types: ['enhance'], capacity: '4', text: '隙\n【破棄時】攻撃『適正距離1-4、3/-』を行う。' },
+    '01-yurina-o-n-7': { megami: 'yurina', name: '気炎万丈', ruby: 'きえんばんじょう', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '2', text: '【展開中】決死-あなたのライフが3以下ならば、あなたの他のメガミによる《攻撃》は+1/+1となるとともに超克を得る。' },
+    '01-yurina-o-s-1': { megami: 'yurina', name: '月影落', ruby: 'つきかげおとし', baseType: 'special', cost: '7', types: ['attack'], range: '3-4', damage: '4/4', text: '' },
+    '01-yurina-o-s-2': { megami: 'yurina', name: '浦波嵐', ruby: 'うらなみあらし', baseType: 'special', cost: '3', types: ['attack', 'reaction'], range: '0-10', damage: '2/-', text: '【攻撃後】対応した《攻撃》は-2/+0となる。' },
+    '01-yurina-o-s-3': { megami: 'yurina', name: '浮舟宿', ruby: 'うきふねやどし', baseType: 'special', cost: '3', types: ['action'], text: 'ダスト→自オーラ：5 \n【再起】決死-あなたのライフが3以下である。' },
+    '01-yurina-o-s-4': { megami: 'yurina', name: '天音揺波の底力', ruby: 'あまねゆりなのそこぢから', baseType: 'special', cost: '5', types: ['attack', 'fullpower'], range: '1-4', damage: '5/5', text: '【常時】決死-あなたのライフが3以下でないと、このカードは使用できない。' }
+};
+// クラス
 var Board = /** @class */ (function () {
     function Board(data) {
         if (data !== undefined) {
@@ -1370,6 +1369,7 @@ var BoardData = /** @class */ (function () {
         this.dataVersion = 1;
         this.distance = 10;
         this.dust = 0;
+        this.tokensOnCard = {};
         this.actionLog = [];
         this.chatLog = [];
         this.p1Side = new BoardSide();
@@ -1390,6 +1390,7 @@ var BoardSide = /** @class */ (function () {
         this.hands = [];
         this.used = [];
         this.hiddenUsed = [];
+        this.specials = [];
     }
     return BoardSide;
 }());
@@ -1401,8 +1402,16 @@ var LogRecord = /** @class */ (function () {
 }());
 exports.LogRecord = LogRecord;
 var Card = /** @class */ (function () {
-    function Card() {
+    function Card(id) {
+        this.id = id;
     }
+    Object.defineProperty(Card.prototype, "data", {
+        get: function () {
+            return exports.CARD_DATA[this.id];
+        },
+        enumerable: true,
+        configurable: true
+    });
     return Card;
 }());
 exports.Card = Card;

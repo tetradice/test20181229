@@ -3,3 +3,4 @@ node_modules
 /public/semantic
 /src/*.js
 /src/*.js.map
+/semantic

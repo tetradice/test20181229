@@ -61,23 +61,38 @@ io.on('connection', (socket) => {
   });
 
   // 名前の入力
-  socket.on('player_name_input', (data) => {
+  socket.on('player_name_input', (data: {boardId: string, side: sakuraba.Side, name: string}) => {
     console.log('on player_name_input: ', data);
     // ボード情報を取得
     RedisClient.HGET('boards', data.boardId, (err, json) => {
       let boardData = JSON.parse(json) as sakuraba.BoardData;
+      let board = new sakuraba.Board(boardData);
       // 名前をアップデートして保存
-      if(data.side === 'p1'){
-        boardData.p1Side.playerName = data.name;
-      } else if(data.side === 'p2'){
-        boardData.p2Side.playerName = data.name;
-      }
+      board.getMySide(data.side).playerName = data.name;
       RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), (err, success) => {
         // プレイヤー名が入力されたイベントを他ユーザーに配信
         socket.broadcast.emit('on_player_name_input', boardData);
       });
     });
   });
+
+
+  // メガミの選択
+  socket.on('megami_select', (data: {boardId: string, side: sakuraba.Side, megamis: sakuraba.Megami[]}) => {
+    console.log('on megami_select: ', data);
+    // ボード情報を取得
+    RedisClient.HGET('boards', data.boardId, (err, json) => {
+      let boardData = JSON.parse(json) as sakuraba.BoardData;
+      let board = new sakuraba.Board(boardData);
+      // メガミをアップデートして保存
+      board.getMySide(data.side).megamis = data.megamis;
+      RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), (err, success) => {
+        // プレイヤー名が入力されたイベントを他ユーザーに配信
+        socket.broadcast.emit('on_megami_select', boardData);
+      });
+    });
+  });
+
   // ボード情報を受信
   socket.on('send_board_to_server', (data) => {
     // 

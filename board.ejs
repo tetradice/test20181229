@@ -421,30 +421,39 @@
 
     </div>
 </div>
-
 <div class="ui modal" id="MEGAMI-SELECT-MODAL">
     <div class="content">
         <div class="description" style="margin-bottom: 2em;">
             <p>使用するメガミを2柱選択してください。</p>
         </div>
-        <div class="ui selection dropdown" id="MEGAMI1-SELECTION">
-            <input type="hidden" name="megami1">
-            <i class="dropdown icon"></i>
-            <div class="default text"></div>
-        </div>
-        <div class="ui selection dropdown" id="MEGAMI2-SELECTION">
-            <input type="hidden" name="megami2">
-            <i class="dropdown icon"></i>
-            <div class="default text"></div>
+        <div class="ui form">
+            <div class="fields">
+                <div class="field">
+                    <div class="ui selection dropdown" id="MEGAMI1-SELECTION">
+                        <input type="hidden" name="megami1">
+                        <i class="dropdown icon"></i>
+                        <div class="default text"></div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui selection dropdown" id="MEGAMI2-SELECTION">
+                        <input type="hidden" name="megami2">
+                        <i class="dropdown icon"></i>
+                        <div class="default text"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui error message"></div>
         </div>
     </div>
+
     <div class="actions">
-        <div class="ui positive labeled icon button disabled">
-        決定
-        <i class="checkmark icon"></i>
+        <div class="ui positive labeled icon submit button disabled">
+            決定
+            <i class="checkmark icon"></i>
         </div>
         <div class="ui black deny button">
-        キャンセル
+            キャンセル
         </div>
     </div>
 </div>
@@ -494,7 +503,7 @@
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="/jquery-3.3.1.min.js"></script>
-<script type="text/javascript" src="/semantic/dist/semantic.min.js"></script>
+<script type="text/javascript" src="/semantic/dist/semantic.js"></script>
 <script type="text/javascript" src="/jquery-contextmenu/dist/jquery.ui.position.js"></script>
 <script type="text/javascript" src="/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
 <script type="text/javascript" src="/dist/main.js"></script>

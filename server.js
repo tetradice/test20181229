@@ -57,16 +57,27 @@ io.on('connection', function (socket) {
         // ボード情報を取得
         RedisClient.HGET('boards', data.boardId, function (err, json) {
             var boardData = JSON.parse(json);
+            var board = new sakuraba.Board(boardData);
             // 名前をアップデートして保存
-            if (data.side === 'p1') {
-                boardData.p1Side.playerName = data.name;
-            }
-            else if (data.side === 'p2') {
-                boardData.p2Side.playerName = data.name;
-            }
+            board.getMySide(data.side).playerName = data.name;
             RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), function (err, success) {
                 // プレイヤー名が入力されたイベントを他ユーザーに配信
                 socket.broadcast.emit('on_player_name_input', boardData);
+            });
+        });
+    });
+    // メガミの選択
+    socket.on('megami_select', function (data) {
+        console.log('on megami_select: ', data);
+        // ボード情報を取得
+        RedisClient.HGET('boards', data.boardId, function (err, json) {
+            var boardData = JSON.parse(json);
+            var board = new sakuraba.Board(boardData);
+            // メガミをアップデートして保存
+            board.getMySide(data.side).megamis = data.megamis;
+            RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), function (err, success) {
+                // プレイヤー名が入力されたイベントを他ユーザーに配信
+                socket.broadcast.emit('on_megami_select', boardData);
             });
         });
     });
