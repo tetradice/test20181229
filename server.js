@@ -43,15 +43,18 @@ function getStoredBoard(boardId, callback) {
     // ボード情報を取得
     RedisClient.HGET('boards', boardId, function (err, json) {
         var boardData = JSON.parse(json);
-        var board = new sakuraba.Board(boardData);
+        console.log('getStoredBoard: ', boardData);
+        var board = new sakuraba.Board();
+        board.deserialize(boardData);
         // コールバックを実行
         callback.call(undefined, board);
     });
 }
 /** Redisへボードデータを保存 */
 function saveBoard(boardId, board, callback) {
+    console.log('saveBoard: ', JSON.stringify(board.serialize()));
     // ボード情報を保存
-    RedisClient.HSET('boards', boardId, JSON.stringify(board), function (err, success) {
+    RedisClient.HSET('boards', boardId, JSON.stringify(board.serialize()), function (err, success) {
         // コールバックを実行
         callback.call(undefined);
     });
@@ -66,6 +69,37 @@ io.on('connection', function (socket) {
         getStoredBoard(data.boardId, function (board) {
             console.log('emit send_first_board_to_client: ', socket.id, board);
             socket.emit('send_first_board_to_client', board);
+        });
+    });
+    // ログ追加
+    socket.on('append_action_log', function (data) {
+        console.log('on append_action_log: ', data);
+        // ボード情報を取得
+        getStoredBoard(data.boardId, function (board) {
+            // ログをアップデートして保存
+            var rec = new sakuraba.LogRecord();
+            Object.assign(rec, data.log);
+            board.actionLog.push(rec);
+            saveBoard(data.boardId, board, function () {
+                // イベントを他ユーザーに配信
+                var param = { log: rec };
+                socket.broadcast.emit('bc_append_action_log', param);
+            });
+        });
+    });
+    socket.on('append_chat_log', function (data) {
+        console.log('on append_chat_log: ', data);
+        // ボード情報を取得
+        getStoredBoard(data.boardId, function (board) {
+            // ログをアップデートして保存
+            var rec = new sakuraba.LogRecord();
+            Object.assign(rec, data.log);
+            board.chatLog.push(rec);
+            saveBoard(data.boardId, board, function () {
+                // イベントを他ユーザーに配信
+                var param = { log: rec };
+                socket.broadcast.emit('bc_append_chat_log', param);
+            });
         });
     });
     // 名前の入力
@@ -100,12 +134,29 @@ io.on('connection', function (socket) {
         // ボード情報を取得
         getStoredBoard(data.boardId, function (board) {
             var myBoardSide = board.getMySide(data.side);
-            // デッキをアップデートして保存
-            myBoardSide.library = data.library;
-            myBoardSide.specials = data.specials;
+            var serialized = board.serialize();
+            serialized.p1Side.library = data.library;
+            serialized.p1Side.specials = data.specials;
+            board.deserialize(serialized);
             saveBoard(data.boardId, board, function () {
                 // デッキが構築されたイベントを他ユーザーに配信
                 socket.broadcast.emit('on_deck_build', board);
+            });
+        });
+    });
+    // 初期手札を引く
+    socket.on('hand_set', function (data) {
+        console.log('on hand_set: ', data);
+        // ボード情報を取得
+        getStoredBoard(data.boardId, function (board) {
+            var myBoardSide = board.getMySide(data.side);
+            var serialized = board.serialize();
+            serialized.p1Side.library = data.library;
+            serialized.p1Side.hands = data.hands;
+            board.deserialize(serialized);
+            saveBoard(data.boardId, board, function () {
+                // デッキが構築されたイベントを他ユーザーに配信
+                socket.broadcast.emit('on_hand_set', board);
             });
         });
     });

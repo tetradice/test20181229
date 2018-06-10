@@ -4,6 +4,7 @@ import * as express from 'express';
 import * as socketIO from 'socket.io';
 import * as path from 'path';
 import * as redis from 'redis';
+import * as moment from 'moment';
 import * as randomstring from 'randomstring';
 import * as sakuraba from './src/sakuraba';
 
@@ -50,7 +51,9 @@ function getStoredBoard(boardId: string, callback: (board: sakuraba.Board) => vo
   // ボード情報を取得
   RedisClient.HGET('boards', boardId, (err, json) => {
     let boardData = JSON.parse(json);
-    let board = new sakuraba.Board(boardData);
+    console.log('getStoredBoard: ', boardData);
+    let board = new sakuraba.Board();
+    board.deserialize(boardData);
 
     // コールバックを実行
     callback.call(undefined, board);
@@ -59,8 +62,9 @@ function getStoredBoard(boardId: string, callback: (board: sakuraba.Board) => vo
 
 /** Redisへボードデータを保存 */
 function saveBoard(boardId: string, board: sakuraba.Board, callback: () => void){
+  console.log('saveBoard: ', JSON.stringify(board.serialize()));
   // ボード情報を保存
-  RedisClient.HSET('boards', boardId, JSON.stringify(board), (err, success) => {
+  RedisClient.HSET('boards', boardId, JSON.stringify(board.serialize()), (err, success) => {
     // コールバックを実行
     callback.call(undefined);
   });
@@ -77,6 +81,38 @@ io.on('connection', (socket) => {
     getStoredBoard(data.boardId, (board) => {
       console.log('emit send_first_board_to_client: ', socket.id, board);
       socket.emit('send_first_board_to_client', board);
+    });
+  });
+
+  // ログ追加
+  socket.on('append_action_log', (data: sakuraba.SocketParam.appendActionLog) => {
+    console.log('on append_action_log: ', data);
+    // ボード情報を取得
+    getStoredBoard(data.boardId, (board) => {
+      // ログをアップデートして保存
+      let rec = new sakuraba.LogRecord();
+      Object.assign(rec, data.log);
+      board.actionLog.push(rec);
+      saveBoard(data.boardId, board, () => {
+        // イベントを他ユーザーに配信
+        let param: sakuraba.SocketParam.bcAppendActionLog = {log: rec};
+        socket.broadcast.emit('bc_append_action_log', param);
+      });
+    });
+  });
+  socket.on('append_chat_log', (data: sakuraba.SocketParam.appendChatLog) => {
+    console.log('on append_chat_log: ', data);
+    // ボード情報を取得
+    getStoredBoard(data.boardId, (board) => {
+      // ログをアップデートして保存
+      let rec = new sakuraba.LogRecord();
+      Object.assign(rec, data.log);
+      board.chatLog.push(rec);
+      saveBoard(data.boardId, board, () => {
+        // イベントを他ユーザーに配信
+        let param: sakuraba.SocketParam.bcAppendChatLog = {log: rec};
+        socket.broadcast.emit('bc_append_chat_log', param);
+      });
     });
   });
 
@@ -112,16 +148,38 @@ io.on('connection', (socket) => {
   // デッキの構築
   socket.on('deck_build', (data: {boardId: string, side: sakuraba.Side, library: sakuraba.Card[], specials: sakuraba.Card[]}) => {
     console.log('on deck_build: ', data);
+
     // ボード情報を取得
     getStoredBoard(data.boardId, (board) => {
       let myBoardSide = board.getMySide(data.side);
 
-      // デッキをアップデートして保存
-      myBoardSide.library = data.library;
-      myBoardSide.specials = data.specials;
+      let serialized = board.serialize();
+      serialized.p1Side.library = data.library;
+      serialized.p1Side.specials = data.specials;
+      board.deserialize(serialized);
+
       saveBoard(data.boardId, board, () => {
         // デッキが構築されたイベントを他ユーザーに配信
         socket.broadcast.emit('on_deck_build',  board);
+      });
+    });
+  });
+
+  // 初期手札を引く
+  socket.on('hand_set', (data: {boardId: string, side: sakuraba.Side, library: sakuraba.Card[], hands: sakuraba.Card[]}) => {
+    console.log('on hand_set: ', data);
+    // ボード情報を取得
+    getStoredBoard(data.boardId, (board) => {
+      let myBoardSide = board.getMySide(data.side);
+
+      let serialized = board.serialize();
+      serialized.p1Side.library = data.library;
+      serialized.p1Side.hands = data.hands;
+      board.deserialize(serialized);
+
+      saveBoard(data.boardId, board, () => {
+        // デッキが構築されたイベントを他ユーザーに配信
+        socket.broadcast.emit('on_hand_set',  board);
       });
     });
   });
