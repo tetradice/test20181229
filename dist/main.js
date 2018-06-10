@@ -18236,6 +18236,13 @@ $(function () {
             $('#MEGAMI-SELECT-MODAL .positive.button').addClass('disabled');
         }
     }
+    // チャットログ送信ボタン
+    $('#CHAT-SEND-BUTTON').click(function (e) {
+        var $input = $('#CHAT-SEND-BUTTON').closest('form').find('input[type=text]');
+        appendChatLog($input.val());
+        $input.val('');
+        return false;
+    });
     // メガミ選択ボタン
     $('#MEGAMI-SELECT-BUTTON').click(function (e) {
         var megami2Rule = { identifier: 'megami2', rules: [{ type: 'different[megami1]', prompt: '同じメガミを選択することはできません。' }] };

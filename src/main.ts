@@ -857,6 +857,14 @@ $(function(){
         }
     }
 
+    // チャットログ送信ボタン
+    $('#CHAT-SEND-BUTTON').click((e) => {
+        let $input = $('#CHAT-SEND-BUTTON').closest('form').find('input[type=text]');
+        appendChatLog($input.val() as string);
+        $input.val('');
+        return false;
+    });
+
     // メガミ選択ボタン
     $('#MEGAMI-SELECT-BUTTON').click((e) => {
         let megami2Rule: SemanticUI.Form.Field = {identifier: 'megami2', rules: [{type: 'different[megami1]', prompt: '同じメガミを選択することはできません。'}]};
