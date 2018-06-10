@@ -1,5 +1,10 @@
 // jquery ui
+interface ResizableOptions {
+    stop: Function;
+    minWidth: number;
+    minHeight: number;
+}
 interface JQuery {
     draggable({stop: Function}): any;
-    resizable({stop: Function, minWidth: number, minHeight: number}): any;
+    resizable(ResizableOptions): any;
 }
