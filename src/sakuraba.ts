@@ -69,36 +69,6 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
 
 // クラス
 export class Board {
-    data: BoardData;
-
-    constructor(data?: BoardData){
-        if(data !== undefined){
-            this.data = data;
-        } else {
-            this.data = new BoardData();
-        }
-    }
-
-    getMySide(side: Side){
-        if(side === 'p1'){
-            return this.data.p1Side;
-        } else if(side === 'p2'){
-            return this.data.p2Side;
-        }
-        return null;
-    }
-
-    getOpponentSide(side: Side){
-        if(side === 'p1'){
-            return this.data.p2Side;
-        } else if(side === 'p2'){
-            return this.data.p1Side;
-        }
-        return null;
-    }
-}
-
-export class BoardData {
     dataVersion = 1;
 
     distance: number = 10;
@@ -111,11 +81,33 @@ export class BoardData {
     p1Side: BoardSide;
     p2Side: BoardSide;
 
-    constructor(){
+    constructor(baseData?: Object){
         this.p1Side = new BoardSide();
         this.p2Side = new BoardSide();
+        if(baseData !== undefined){
+            Object.assign(this, baseData);
+        }
+    }
+
+    getMySide(side: Side){
+        if(side === 'p1'){
+            return this.p1Side;
+        } else if(side === 'p2'){
+            return this.p2Side;
+        }
+        return null;
+    }
+
+    getOpponentSide(side: Side){
+        if(side === 'p1'){
+            return this.p2Side;
+        } else if(side === 'p2'){
+            return this.p1Side;
+        }
+        return null;
     }
 }
+
 
 export class BoardSide {
     playerName: string = null;

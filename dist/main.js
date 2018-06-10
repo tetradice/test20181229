@@ -172,6 +172,10 @@ var CardComponent = /** @class */ (function (_super) {
         this.oldOpened = this.opened;
     };
     CardComponent.prototype.getDescriptionHtml = function () {
+        console.log(board);
+        var board2 = new sakuraba.Board();
+        board2.p1Side.library.push(new sakuraba.Card('01-yurina-o-n-3'));
+        console.log(board2);
         var cardTitleHtml = "<ruby><rb>" + this.card.data.name + "</rb><rp>(</rp><rt>" + this.card.data.ruby + "</rt><rp>)</rp></ruby>";
         var html = "<div class='ui header' style='margin-right: 2em;'>" + cardTitleHtml;
         html += "</div><div class='ui content'>";
@@ -597,13 +601,13 @@ function refreshSakuraTokenComponentInfo() {
     var allSakuraTokens = components.filter(function (x) { return x instanceof SakuraTokenComponent; });
     var tokenIndex = 0;
     // 対象領域にある結晶数に応じて表示更新
-    for (var i = 0; i < board.data.distance; i++) {
+    for (var i = 0; i < board.distance; i++) {
         var comp = allSakuraTokens[tokenIndex];
         comp.region = 'distance';
         comp.indexOfRegion = i;
         tokenIndex++;
     }
-    for (var i = 0; i < board.data.dust; i++) {
+    for (var i = 0; i < board.dust; i++) {
         var comp = allSakuraTokens[tokenIndex];
         comp.region = 'dust';
         comp.indexOfRegion = i;
@@ -627,9 +631,9 @@ function refreshSakuraTokenComponentInfo() {
         comp.indexOfRegion = i;
         tokenIndex++;
     }
-    for (var cardId in board.data.tokensOnCard) {
-        if (board.data.tokensOnCard.hasOwnProperty(cardId)) {
-            for (var i = 0; i < board.data.tokensOnCard[cardId]; i++) {
+    for (var cardId in board.tokensOnCard) {
+        if (board.tokensOnCard.hasOwnProperty(cardId)) {
+            for (var i = 0; i < board.tokensOnCard[cardId]; i++) {
                 var comp = allSakuraTokens[tokenIndex];
                 comp.region = 'on-card';
                 comp.cardId = cardId;
@@ -645,11 +649,11 @@ function moveSakuraToken(from, to, cardId, count) {
     console.log('move sakura token (%s -> %s * %d)', from, to, count);
     // 移動可能かどうかをチェック
     if (from === 'distance') {
-        if (board.data.distance < count)
+        if (board.distance < count)
             return false; // 桜花結晶がなければ失敗
     }
     else if (from === 'dust') {
-        if (board.data.dust < count)
+        if (board.dust < count)
             return false; // 桜花結晶がなければ失敗
     }
     else if (from === 'aura') {
@@ -665,7 +669,7 @@ function moveSakuraToken(from, to, cardId, count) {
             return false; // 桜花結晶がなければ失敗
     }
     if (to === 'distance') {
-        if ((board.data.distance + count) > 10)
+        if ((board.distance + count) > 10)
             return false; // 間合い最大値を超える場合は失敗
     }
     else if (to === 'aura') {
@@ -674,10 +678,10 @@ function moveSakuraToken(from, to, cardId, count) {
     }
     // 移動
     if (from === 'distance') {
-        board.data.distance -= count;
+        board.distance -= count;
     }
     else if (from === 'dust') {
-        board.data.dust -= count;
+        board.dust -= count;
     }
     else if (from === 'aura') {
         myBoardSide.aura -= count;
@@ -689,10 +693,10 @@ function moveSakuraToken(from, to, cardId, count) {
         myBoardSide.flair -= count;
     }
     if (to === 'distance') {
-        board.data.distance += count;
+        board.distance += count;
     }
     else if (to === 'dust') {
-        board.data.dust += count;
+        board.dust += count;
     }
     else if (to === 'aura') {
         myBoardSide.aura += count;
@@ -704,9 +708,9 @@ function moveSakuraToken(from, to, cardId, count) {
         myBoardSide.flair += count;
     }
     else if (to === 'on-card') {
-        if (board.data.tokensOnCard[cardId] === undefined)
-            board.data.tokensOnCard[cardId] = 0;
-        board.data.tokensOnCard[cardId] += count;
+        if (board.tokensOnCard[cardId] === undefined)
+            board.tokensOnCard[cardId] = 0;
+        board.tokensOnCard[cardId] += count;
     }
     console.log(board);
     // コンポーネントのインデックス更新
@@ -739,7 +743,7 @@ function userInputModal(desc, decideCallback) {
 //  */
 // function checkGameStartable(board: sakuraba.Board){
 //     // 両方のプレイヤー名が決定済みであれば、ゲーム開始許可
-//     if(board.data.p1Side.playerName !== null && board.data.p2Side.playerName !== null){
+//     if(board.p1Side.playerName !== null && board.p2Side.playerName !== null){
 //         $('#GAME-START-BUTTON').removeClass('disabled');
 //     }
 // }
@@ -752,6 +756,28 @@ function setPopup() {
                 return false;
         },
     });
+}
+function updatePhaseState(first) {
+    if (first === void 0) { first = false; }
+    // メガミが決定済みであれば、デッキ構築ボタンを有効化し、メガミ選択ボタンのラベルを変更
+    if (myBoardSide.megamis !== null) {
+        $('#MEGAMI-SELECT-BUTTON').text('メガミ変更');
+        $('#DECK-BUILD-BUTTON').removeClass('disabled');
+    }
+    // デッキが構築済みであれば、場のカードを表示し、初期手札ボタンを有効化し、デッキ構築ボタンのラベルを変更
+    if (myBoardSide.library.length >= 1) {
+        if (first) {
+            drawLibrary();
+            refreshCardComponentRegionInfo('library');
+            drawSpecials();
+            refreshCardComponentRegionInfo('special');
+            updateComponents();
+            // ポップアップをセット
+            setPopup();
+        }
+        $('#DECK-BUILD-BUTTON').text('デッキ変更');
+        $('#HAND-SET-BUTTON').removeClass('disabled');
+    }
 }
 $(function () {
     // socket.ioに接続
@@ -786,29 +812,13 @@ $(function () {
                 messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u308B\u6E96\u5099\u304C\u3067\u304D\u305F\u3089\u3001\u307E\u305A\u306F\u300C\u30E1\u30AC\u30DF\u9078\u629E\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
             });
         }
-        // メガミが決定済みであれば、デッキ構築ボタンを有効化し、メガミ選択ボタンのラベルを変更
-        if (myBoardSide.megamis !== null) {
-            $('#MEGAMI-SELECT-BUTTON').text('メガミ変更');
-            $('#DECK-BUILD-BUTTON').removeClass('disabled');
-        }
-        // デッキが構築済みであれば、場のカードを表示し、初期手札ボタンを有効化し、デッキ構築ボタンのラベルを変更
-        if (myBoardSide.library.length >= 1) {
-            drawLibrary();
-            refreshCardComponentRegionInfo('library');
-            drawSpecials();
-            refreshCardComponentRegionInfo('special');
-            updateComponents();
-            // ポップアップをセット
-            setPopup();
-            $('#DECK-BUILD-BUTTON').text('デッキ変更');
-            $('#HAND-SET-BUTTON').removeClass('disabled');
-        }
+        updatePhaseState(true);
     });
     // 他のプレイヤーがプレイヤー名を入力した
-    socket.on('on_player_name_input', function (receivingBoardData) {
-        var board = new sakuraba.Board(receivingBoardData);
-        $('#P1-NAME').text(board.data.p1Side.playerName);
-        $('#P2-NAME').text(board.data.p2Side.playerName);
+    socket.on('on_player_name_input', function (receivingBoard) {
+        var board = new sakuraba.Board(receivingBoard);
+        $('#P1-NAME').text(board.p1Side.playerName);
+        $('#P2-NAME').text(board.p2Side.playerName);
     });
     // // ドロップダウン初期化
     // let values: {name: string, value: string}[] = [];
@@ -829,7 +839,6 @@ $(function () {
         $('#MEGAMI1-SELECTION').append("<option value='" + key + "'>" + data.name + " (" + data.symbol + ")</option>");
         $('#MEGAMI2-SELECTION').append("<option value='" + key + "'>" + data.name + " (" + data.symbol + ")</option>");
     }
-    $('#MEGAMI1-SELECTION').val('kururu');
     // メガミ選択ダイアログでのボタン表示更新
     function updateMegamiSelectModalView() {
         var megami1 = $('#MEGAMI1-SELECTION').val();
@@ -861,7 +870,7 @@ $(function () {
                 if (!$('#MEGAMI-SELECT-MODAL .ui.form').form('validate form')) {
                     return false;
                 }
-                $('#DECK-BUILD-BUTTON').removeClass('disabled');
+                updatePhaseState(true);
                 // 選択したメガミを設定
                 var megamis = [$('#MEGAMI1-SELECTION').val(), $('#MEGAMI2-SELECTION').val()];
                 var mySide = board.getMySide(params.side);
@@ -939,15 +948,8 @@ $(function () {
                 var specialCards = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').map(function (i, elem) { return new sakuraba.Card($(elem).attr('data-card-id')); }).get();
                 myBoardSide.specials = specialCards;
                 console.log(myBoardSide);
-                drawLibrary();
-                refreshCardComponentRegionInfo('library');
-                drawSpecials();
-                refreshCardComponentRegionInfo('special');
-                updateComponents();
-                // ポップアップをセット
-                setPopup();
-                // 初期手札引くボタンの有効化
-                $('#HAND-SET-BUTTON').removeClass('disabled');
+                // カードの初期化、配置、ポップアップ設定などを行う
+                updatePhaseState(true);
                 // socket.ioでイベント送信
                 socket.emit('deck_build', { boardId: params.boardId, side: params.side, library: myBoardSide.library, specials: myBoardSide.specials });
             },
@@ -1260,10 +1262,10 @@ $(function () {
             var region = $elem.attr('data-region');
             var tokenCount = 0;
             if (region === 'distance') {
-                tokenCount = board.data.distance;
+                tokenCount = board.distance;
             }
             if (region === 'dust') {
-                tokenCount = board.data.dust;
+                tokenCount = board.dust;
             }
             if (region === 'aura') {
                 tokenCount = myBoardSide.aura;
@@ -1439,37 +1441,7 @@ exports.CARD_DATA = {
 };
 // クラス
 var Board = /** @class */ (function () {
-    function Board(data) {
-        if (data !== undefined) {
-            this.data = data;
-        }
-        else {
-            this.data = new BoardData();
-        }
-    }
-    Board.prototype.getMySide = function (side) {
-        if (side === 'p1') {
-            return this.data.p1Side;
-        }
-        else if (side === 'p2') {
-            return this.data.p2Side;
-        }
-        return null;
-    };
-    Board.prototype.getOpponentSide = function (side) {
-        if (side === 'p1') {
-            return this.data.p2Side;
-        }
-        else if (side === 'p2') {
-            return this.data.p1Side;
-        }
-        return null;
-    };
-    return Board;
-}());
-exports.Board = Board;
-var BoardData = /** @class */ (function () {
-    function BoardData() {
+    function Board(baseData) {
         this.dataVersion = 1;
         this.distance = 10;
         this.dust = 0;
@@ -1478,10 +1450,31 @@ var BoardData = /** @class */ (function () {
         this.chatLog = [];
         this.p1Side = new BoardSide();
         this.p2Side = new BoardSide();
+        if (baseData !== undefined) {
+            Object.assign(this, baseData);
+        }
     }
-    return BoardData;
+    Board.prototype.getMySide = function (side) {
+        if (side === 'p1') {
+            return this.p1Side;
+        }
+        else if (side === 'p2') {
+            return this.p2Side;
+        }
+        return null;
+    };
+    Board.prototype.getOpponentSide = function (side) {
+        if (side === 'p1') {
+            return this.p2Side;
+        }
+        else if (side === 'p2') {
+            return this.p1Side;
+        }
+        return null;
+    };
+    return Board;
 }());
-exports.BoardData = BoardData;
+exports.Board = Board;
 var BoardSide = /** @class */ (function () {
     function BoardSide() {
         this.playerName = null;

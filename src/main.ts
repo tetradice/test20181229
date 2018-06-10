@@ -79,6 +79,10 @@ class CardComponent extends Component {
     }
 
     getDescriptionHtml(): string{
+        console.log(board);
+        let board2 = new sakuraba.Board();
+        board2.p1Side.library.push(new sakuraba.Card('01-yurina-o-n-3'));
+        console.log(board2);
         let cardTitleHtml = `<ruby><rb>${this.card.data.name}</rb><rp>(</rp><rt>${this.card.data.ruby}</rt><rp>)</rp></ruby>`
         let html = `<div class='ui header' style='margin-right: 2em;'>${cardTitleHtml}`
 
@@ -551,14 +555,14 @@ function refreshSakuraTokenComponentInfo(){
     let tokenIndex = 0;
 
     // 対象領域にある結晶数に応じて表示更新
-    for(let i = 0; i < board.data.distance; i++){
+    for(let i = 0; i < board.distance; i++){
         let comp = allSakuraTokens[tokenIndex] as SakuraTokenComponent;
         comp.region = 'distance';
         comp.indexOfRegion = i;
         tokenIndex++;
     }
 
-    for(let i = 0; i < board.data.dust; i++){
+    for(let i = 0; i < board.dust; i++){
         let comp = allSakuraTokens[tokenIndex] as SakuraTokenComponent;
         comp.region = 'dust';
         comp.indexOfRegion = i;
@@ -586,9 +590,9 @@ function refreshSakuraTokenComponentInfo(){
         tokenIndex++;
     }
 
-    for(let cardId in board.data.tokensOnCard) {
-        if(board.data.tokensOnCard.hasOwnProperty(cardId)) {
-            for(let i = 0; i < board.data.tokensOnCard[cardId]; i++){
+    for(let cardId in board.tokensOnCard) {
+        if(board.tokensOnCard.hasOwnProperty(cardId)) {
+            for(let i = 0; i < board.tokensOnCard[cardId]; i++){
                 let comp = allSakuraTokens[tokenIndex] as SakuraTokenComponent;
                 comp.region = 'on-card';
                 comp.cardId = cardId;
@@ -605,9 +609,9 @@ function moveSakuraToken(from: sakuraba.SakuraTokenArea, to: sakuraba.SakuraToke
 
     // 移動可能かどうかをチェック
     if(from === 'distance'){
-        if(board.data.distance < count) return false; // 桜花結晶がなければ失敗
+        if(board.distance < count) return false; // 桜花結晶がなければ失敗
     } else if(from === 'dust'){
-        if(board.data.dust < count) return false; // 桜花結晶がなければ失敗
+        if(board.dust < count) return false; // 桜花結晶がなければ失敗
     } else if(from === 'aura'){
         if(myBoardSide.aura < count) return false; // 桜花結晶がなければ失敗
     } else if(from === 'life'){
@@ -616,16 +620,16 @@ function moveSakuraToken(from: sakuraba.SakuraTokenArea, to: sakuraba.SakuraToke
         if(myBoardSide.flair < count) return false; // 桜花結晶がなければ失敗
     }
     if(to === 'distance'){
-        if((board.data.distance + count) > 10) return false; // 間合い最大値を超える場合は失敗
+        if((board.distance + count) > 10) return false; // 間合い最大値を超える場合は失敗
     } else if(to === 'aura'){
         if((myBoardSide.aura + count) > 5) return false; // オーラ最大値を超える場合は失敗
     }
 
     // 移動
     if(from === 'distance'){
-        board.data.distance -= count;
+        board.distance -= count;
     } else if(from === 'dust'){
-        board.data.dust -= count;
+        board.dust -= count;
     } else if(from === 'aura'){
         myBoardSide.aura -= count;
     } else if(from === 'life'){
@@ -635,9 +639,9 @@ function moveSakuraToken(from: sakuraba.SakuraTokenArea, to: sakuraba.SakuraToke
     }
 
     if(to === 'distance'){
-        board.data.distance += count;
+        board.distance += count;
     } else if(to === 'dust'){
-        board.data.dust += count;
+        board.dust += count;
     } else if(to === 'aura'){
         myBoardSide.aura += count;
     } else if(to === 'life'){
@@ -645,8 +649,8 @@ function moveSakuraToken(from: sakuraba.SakuraTokenArea, to: sakuraba.SakuraToke
     } else if(to === 'flair'){
         myBoardSide.flair += count;
     } else if(to === 'on-card'){
-        if(board.data.tokensOnCard[cardId] === undefined) board.data.tokensOnCard[cardId] = 0;
-        board.data.tokensOnCard[cardId] += count;
+        if(board.tokensOnCard[cardId] === undefined) board.tokensOnCard[cardId] = 0;
+        board.tokensOnCard[cardId] += count;
     }
     console.log(board);
 
@@ -687,7 +691,7 @@ function userInputModal(desc: string, decideCallback: (this: JQuery, $element: J
 //  */
 // function checkGameStartable(board: sakuraba.Board){
 //     // 両方のプレイヤー名が決定済みであれば、ゲーム開始許可
-//     if(board.data.p1Side.playerName !== null && board.data.p2Side.playerName !== null){
+//     if(board.p1Side.playerName !== null && board.p2Side.playerName !== null){
 //         $('#GAME-START-BUTTON').removeClass('disabled');
 //     }
 // }
@@ -700,6 +704,32 @@ function setPopup(){
             if(draggingFrom !== null) return false;
         },
     });
+}
+
+function updatePhaseState(first: boolean = false){
+    // メガミが決定済みであれば、デッキ構築ボタンを有効化し、メガミ選択ボタンのラベルを変更
+    if(myBoardSide.megamis !== null){
+        $('#MEGAMI-SELECT-BUTTON').text('メガミ変更');
+        $('#DECK-BUILD-BUTTON').removeClass('disabled');
+    }
+
+    // デッキが構築済みであれば、場のカードを表示し、初期手札ボタンを有効化し、デッキ構築ボタンのラベルを変更
+    if(myBoardSide.library.length >= 1){
+
+        if(first){
+            drawLibrary();
+            refreshCardComponentRegionInfo('library');
+            drawSpecials();
+            refreshCardComponentRegionInfo('special');
+            updateComponents();
+
+            // ポップアップをセット
+            setPopup();
+        }
+
+        $('#DECK-BUILD-BUTTON').text('デッキ変更');
+        $('#HAND-SET-BUTTON').removeClass('disabled');
+    }
 }
 
 $(function(){
@@ -744,35 +774,15 @@ $(function(){
             });
         }
 
-        // メガミが決定済みであれば、デッキ構築ボタンを有効化し、メガミ選択ボタンのラベルを変更
-        if(myBoardSide.megamis !== null){
-            $('#MEGAMI-SELECT-BUTTON').text('メガミ変更');
-            $('#DECK-BUILD-BUTTON').removeClass('disabled');
-        }
+        updatePhaseState(true);
 
-        // デッキが構築済みであれば、場のカードを表示し、初期手札ボタンを有効化し、デッキ構築ボタンのラベルを変更
-        if(myBoardSide.library.length >= 1){
-
-            drawLibrary();
-            refreshCardComponentRegionInfo('library');
-            drawSpecials();
-            refreshCardComponentRegionInfo('special');
-            updateComponents();
-
-            // ポップアップをセット
-            setPopup();
-
-            
-            $('#DECK-BUILD-BUTTON').text('デッキ変更');
-            $('#HAND-SET-BUTTON').removeClass('disabled');
-        }
     });
 
     // 他のプレイヤーがプレイヤー名を入力した
-    socket.on('on_player_name_input', (receivingBoardData: sakuraba.BoardData) => {
-        let board = new sakuraba.Board(receivingBoardData);
-        $('#P1-NAME').text(board.data.p1Side.playerName);
-        $('#P2-NAME').text(board.data.p2Side.playerName);
+    socket.on('on_player_name_input', (receivingBoard: sakuraba.Board) => {
+        let board = new sakuraba.Board(receivingBoard);
+        $('#P1-NAME').text(board.p1Side.playerName);
+        $('#P2-NAME').text(board.p2Side.playerName);
     });
 
     // // ドロップダウン初期化
@@ -795,7 +805,6 @@ $(function(){
         $('#MEGAMI1-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
         $('#MEGAMI2-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
     }
-    $('#MEGAMI1-SELECTION').val('kururu');
 
     // メガミ選択ダイアログでのボタン表示更新
     function updateMegamiSelectModalView(){
@@ -832,7 +841,7 @@ $(function(){
                 return false;
             }
             
-            $('#DECK-BUILD-BUTTON').removeClass('disabled');
+            updatePhaseState(true);
 
             // 選択したメガミを設定
             let megamis = [$('#MEGAMI1-SELECTION').val() as sakuraba.Megami, $('#MEGAMI2-SELECTION').val() as sakuraba.Megami];
@@ -926,17 +935,8 @@ $(function(){
                 myBoardSide.specials = specialCards as sakuraba.Card[];
                 console.log(myBoardSide);
 
-                drawLibrary();
-                refreshCardComponentRegionInfo('library');
-                drawSpecials();
-                refreshCardComponentRegionInfo('special');
-                updateComponents();
-
-                // ポップアップをセット
-                setPopup();
-
-                // 初期手札引くボタンの有効化
-                $('#HAND-SET-BUTTON').removeClass('disabled');
+                // カードの初期化、配置、ポップアップ設定などを行う
+                updatePhaseState(true);
 
                 // socket.ioでイベント送信
                 socket.emit('deck_build', {boardId: params.boardId, side: params.side, library: myBoardSide.library, specials: myBoardSide.specials});
@@ -1287,10 +1287,10 @@ $(function(){
             let region = $elem.attr('data-region') as sakuraba.SakuraTokenArea;
             let tokenCount = 0;
             if(region === 'distance'){
-                tokenCount = board.data.distance;
+                tokenCount = board.distance;
             }
             if(region === 'dust'){
-                tokenCount = board.data.dust;
+                tokenCount = board.dust;
             }
             if(region === 'aura'){
                 tokenCount = myBoardSide.aura;

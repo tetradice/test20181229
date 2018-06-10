@@ -28,7 +28,7 @@ var server = express()
     });
     // 卓を追加
     var board = new sakuraba.Board();
-    RedisClient.HSET('boards', boardId, JSON.stringify(board.data));
+    RedisClient.HSET('boards', boardId, JSON.stringify(board));
     // 卓にアクセスするためのURLを生成
     var urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
     var p1Url = urlBase + "/b/" + boardId + "/p1";
@@ -51,7 +51,7 @@ function getStoredBoard(boardId, callback) {
 /** Redisへボードデータを保存 */
 function saveBoard(boardId, board, callback) {
     // ボード情報を保存
-    RedisClient.HSET('boards', boardId, JSON.stringify(board.data), function (err, success) {
+    RedisClient.HSET('boards', boardId, JSON.stringify(board), function (err, success) {
         // コールバックを実行
         callback.call(undefined);
     });
@@ -64,8 +64,8 @@ io.on('connection', function (socket) {
         console.log('on request_first_board_to_server: ', data);
         // ボード情報を取得
         getStoredBoard(data.boardId, function (board) {
-            console.log('emit send_first_board_to_client: ', socket.id, board.data);
-            socket.emit('send_first_board_to_client', board.data);
+            console.log('emit send_first_board_to_client: ', socket.id, board);
+            socket.emit('send_first_board_to_client', board);
         });
     });
     // 名前の入力
@@ -77,7 +77,7 @@ io.on('connection', function (socket) {
             board.getMySide(data.side).playerName = data.name;
             saveBoard(data.boardId, board, function () {
                 // プレイヤー名が入力されたイベントを他ユーザーに配信
-                socket.broadcast.emit('on_player_name_input', board.data);
+                socket.broadcast.emit('on_player_name_input', board);
             });
         });
     });
@@ -90,7 +90,7 @@ io.on('connection', function (socket) {
             board.getMySide(data.side).megamis = data.megamis;
             saveBoard(data.boardId, board, function () {
                 // メガミが選択されたイベントを他ユーザーに配信
-                socket.broadcast.emit('on_megami_select', board.data);
+                socket.broadcast.emit('on_megami_select', board);
             });
         });
     });
@@ -105,7 +105,7 @@ io.on('connection', function (socket) {
             myBoardSide.specials = data.specials;
             saveBoard(data.boardId, board, function () {
                 // デッキが構築されたイベントを他ユーザーに配信
-                socket.broadcast.emit('on_deck_build', board.data);
+                socket.broadcast.emit('on_deck_build', board);
             });
         });
     });
