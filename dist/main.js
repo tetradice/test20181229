@@ -17467,6 +17467,35 @@ $(function () {
     socket.on('info', function (message) {
         console.log('[SOCKET.IO INFO] ', message);
     });
+    function saveWindowState(elem) {
+        var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top'), width: $(elem).css('width'), height: $(elem).css('height') };
+        localStorage.setItem(elem.id + "-WindowState", JSON.stringify(current));
+        console.log(JSON.stringify(current));
+    }
+    // 一部ウインドウをリサイズ可能にする
+    $('.draggable').draggable({
+        stop: function () {
+            saveWindowState(this);
+        },
+    });
+    $('.resizable').resizable({
+        minWidth: 200,
+        minHeight: 200,
+        stop: function () {
+            saveWindowState(this);
+        },
+    });
+    // ウインドウの状態を復元
+    var actionLogWindowStateJson = localStorage.getItem("ACTION-LOG-WINDOW-WindowState");
+    if (actionLogWindowStateJson) {
+        var windowState = JSON.parse(actionLogWindowStateJson);
+        $('#ACTION-LOG-WINDOW').css(windowState);
+    }
+    var chatLogWindowStateJson = localStorage.getItem("CHAT-LOG-WINDOW-WindowState");
+    if (chatLogWindowStateJson) {
+        var windowState = JSON.parse(chatLogWindowStateJson);
+        $('#CHAT-LOG-WINDOW').css(windowState);
+    }
     var Layouter = /** @class */ (function () {
         function Layouter() {
         }
@@ -18559,9 +18588,11 @@ $(function () {
     // ログ表示
     $('#ACTION-LOG-DISPLAY-BUTTTON').on('click', function (e) {
         $('#ACTION-LOG-WINDOW').toggle();
+        saveWindowState($('#ACTION-LOG-WINDOW')[0]);
     });
     $('#CHAT-LOG-DISPLAY-BUTTTON').on('click', function (e) {
         $('#CHAT-LOG-WINDOW').toggle();
+        saveWindowState($('#CHAT-LOG-WINDOW')[0]);
     });
     // ターン終了
     $('#TURN-END-BUTTON').on('click', function () {

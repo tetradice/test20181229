@@ -5,7 +5,6 @@ declare var params: {
     side: "p1" | "p2" | "watch";
 }
 
-
 $(function(){
     // socket.ioに接続
     const socket = io();
@@ -14,6 +13,37 @@ $(function(){
         console.log('[SOCKET.IO INFO] ', message);
     });
     
+    function saveWindowState(elem: HTMLElement){
+        let current = {display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top'), width: $(elem).css('width'), height: $(elem).css('height')};
+        localStorage.setItem(`${elem.id}-WindowState`, JSON.stringify(current));
+        console.log(JSON.stringify(current));
+    }
+    
+    // 一部ウインドウをリサイズ可能にする
+    $('.draggable').draggable({
+        stop: function(){
+            saveWindowState(this);
+        },
+    });
+    $('.resizable').resizable({
+        minWidth: 200,
+        minHeight: 200,
+        stop: function(){
+            saveWindowState(this);
+        },
+    });
+
+    // ウインドウの状態を復元
+    let actionLogWindowStateJson = localStorage.getItem(`ACTION-LOG-WINDOW-WindowState`);
+    if(actionLogWindowStateJson){
+        let windowState = JSON.parse(actionLogWindowStateJson);
+        $('#ACTION-LOG-WINDOW').css(windowState);
+    }
+    let chatLogWindowStateJson = localStorage.getItem(`CHAT-LOG-WINDOW-WindowState`);
+    if(chatLogWindowStateJson){
+        let windowState = JSON.parse(chatLogWindowStateJson);
+        $('#CHAT-LOG-WINDOW').css(windowState);
+    }
     
     
     class Layouter {
@@ -1230,9 +1260,11 @@ $(function(){
     // ログ表示
     $('#ACTION-LOG-DISPLAY-BUTTTON').on('click', function(e){
         $('#ACTION-LOG-WINDOW').toggle();
+        saveWindowState($('#ACTION-LOG-WINDOW')[0]);
     });
     $('#CHAT-LOG-DISPLAY-BUTTTON').on('click', function(e){
         $('#CHAT-LOG-WINDOW').toggle();
+        saveWindowState($('#CHAT-LOG-WINDOW')[0]);
     });
 
 

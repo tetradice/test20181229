@@ -17,3 +17,4 @@ interface JQuery {
     contextMenu(options?: Object): any;
 }
 
+

@@ -5,6 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Page Title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/jquery-ui/jquery-ui.css"></link>
+    <link rel="stylesheet" href="/jquery-ui/jquery-ui.structure.css"></link>
     <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
     <link rel="stylesheet" type="text/css" href="/jquery-contextmenu/dist/jquery.contextMenu.min.css"></link>
     <style type="text/css">
@@ -252,8 +254,6 @@
             position: absolute;
             width: 20%;
             height: 80%;
-            top: 5%;
-            right: 5%;
             display: none;
         }
 
@@ -395,11 +395,11 @@
           </tbody></table>
 
 </div>
-<div id="ACTION-LOG-WINDOW" class="ui segment">
+<div id="ACTION-LOG-WINDOW" class="ui segment draggable ui-widget-content resizable">
     <div class="ui top attached label">ログ</div>
     <div id="ACTION-LOG-AREA"></div>
 </div>
-<div id="CHAT-LOG-WINDOW" class="ui segment">
+<div id="CHAT-LOG-WINDOW" class="ui segment draggable ui-widget-content resizable">
     <div class="ui top attached label">チャット</div>
     <div id="CHAT-LOG-AREA"></div>
     <div>
@@ -524,6 +524,7 @@
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="/jquery-ui/jquery-ui.js"></script>
 <script type="text/javascript" src="/semantic/dist/semantic.js"></script>
 <script type="text/javascript" src="/jquery-contextmenu/dist/jquery.ui.position.js"></script>
 <script type="text/javascript" src="/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
