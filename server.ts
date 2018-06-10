@@ -45,6 +45,27 @@ const server = express()
 
 const io = socketIO(server);
 
+/** Redis上に保存されたボードデータを取得 */
+function getStoredBoard(boardId: string, callback: (board: sakuraba.Board) => void){
+  // ボード情報を取得
+  RedisClient.HGET('boards', boardId, (err, json) => {
+    let boardData = JSON.parse(json) as sakuraba.BoardData;
+    let board = new sakuraba.Board(boardData);
+
+    // コールバックを実行
+    callback.call(undefined, board);
+  });
+}
+
+/** Redisへボードデータを保存 */
+function saveBoard(boardId: string, board: sakuraba.Board, callback: () => void){
+  // ボード情報を保存
+  RedisClient.HSET('boards', boardId, JSON.stringify(board.data), (err, success) => {
+    // コールバックを実行
+    callback.call(undefined);
+  });
+}
+
 io.on('connection', (socket) => {
   console.log(`Client connected - ${socket.id}`);
   socket.on('disconnect', () => console.log('Client disconnected'));
@@ -53,10 +74,9 @@ io.on('connection', (socket) => {
   socket.on('request_first_board_to_server', (data) => {
     console.log('on request_first_board_to_server: ', data);
     // ボード情報を取得
-    RedisClient.HGET('boards', data.boardId, (err, json) => {
-      let boardData = JSON.parse(json) as sakuraba.BoardData;
-      console.log('emit send_first_board_to_client: ', socket.id, boardData);
-      socket.emit('send_first_board_to_client', boardData);
+    getStoredBoard(data.boardId, (board) => {
+      console.log('emit send_first_board_to_client: ', socket.id, board.data);
+      socket.emit('send_first_board_to_client', board.data);
     });
   });
 
@@ -64,14 +84,12 @@ io.on('connection', (socket) => {
   socket.on('player_name_input', (data: {boardId: string, side: sakuraba.Side, name: string}) => {
     console.log('on player_name_input: ', data);
     // ボード情報を取得
-    RedisClient.HGET('boards', data.boardId, (err, json) => {
-      let boardData = JSON.parse(json) as sakuraba.BoardData;
-      let board = new sakuraba.Board(boardData);
+    getStoredBoard(data.boardId, (board) => {
       // 名前をアップデートして保存
       board.getMySide(data.side).playerName = data.name;
-      RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), (err, success) => {
+      saveBoard(data.boardId, board, () => {
         // プレイヤー名が入力されたイベントを他ユーザーに配信
-        socket.broadcast.emit('on_player_name_input', boardData);
+        socket.broadcast.emit('on_player_name_input', board.data);
       });
     });
   });
@@ -81,37 +99,33 @@ io.on('connection', (socket) => {
   socket.on('megami_select', (data: {boardId: string, side: sakuraba.Side, megamis: sakuraba.Megami[]}) => {
     console.log('on megami_select: ', data);
     // ボード情報を取得
-    RedisClient.HGET('boards', data.boardId, (err, json) => {
-      let boardData = JSON.parse(json) as sakuraba.BoardData;
-      let board = new sakuraba.Board(boardData);
+    getStoredBoard(data.boardId, (board) => {
       // メガミをアップデートして保存
       board.getMySide(data.side).megamis = data.megamis;
-      RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), (err, success) => {
-        // プレイヤー名が入力されたイベントを他ユーザーに配信
-        socket.broadcast.emit('on_megami_select', boardData);
+      saveBoard(data.boardId, board, () => {
+        // メガミが選択されたイベントを他ユーザーに配信
+        socket.broadcast.emit('on_megami_select', board.data);
       });
     });
   });
 
-  // ボード情報を受信
-  socket.on('send_board_to_server', (data) => {
-    // 
-    console.log('on send_board_to_server: ', data);
-    let boardData = {
-      body: data.board,
-      updated: new Date(),
-      logs: [],
-      p1Name: 'ポン',
-      p2Name: 'ポン2'
-    };
-    console.log('send: ', boardData);
-    RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), (error, n) => {
-      socket.broadcast.emit('send_board_to_client', boardData);
+  // デッキの構築
+  socket.on('deck_build', (data: {boardId: string, side: sakuraba.Side, library: sakuraba.Card[], specials: sakuraba.Card[]}) => {
+    console.log('on deck_build: ', data);
+    // ボード情報を取得
+    getStoredBoard(data.boardId, (board) => {
+      let myBoardSide = board.getMySide(data.side);
+
+      // デッキをアップデートして保存
+      myBoardSide.library = data.library;
+      myBoardSide.specials = data.specials;
+      saveBoard(data.boardId, board, () => {
+        // デッキが構築されたイベントを他ユーザーに配信
+        socket.broadcast.emit('on_deck_build',  board.data);
+      });
     });
-    
   });
 });
-
 // setInterval(() => {
 //   let count = RedisClient.INCR('counter', (error, n) => {
 //     io.emit('time', n);

@@ -188,11 +188,11 @@ var CardComponent = /** @class */ (function (_super) {
             typeCaptions.push("<span style='color: gold; font-weight: bold;'>全力</span>");
         html += "" + typeCaptions.join('/');
         if (this.card.data.range !== undefined) {
-            html += "<span style='margin-left: 1em;'>" + this.card.data.range + "</span>";
+            html += "<span style='margin-left: 1em;'>\u9069\u6B63\u8DDD\u96E2" + this.card.data.range + "</span>";
         }
         html += "<br>";
         if (this.card.data.baseType === 'special') {
-            html += "<div class='ui top right attached label'>" + this.card.data.cost + "</div>";
+            html += "<div class='ui top right attached label'>\u6D88\u8CBB: " + this.card.data.cost + "</div>";
         }
         if (this.card.data.types.indexOf('enhance') >= 0) {
             html += "\u7D0D: " + this.card.data.capacity + "<br>";
@@ -266,14 +266,13 @@ function shuffle(array) {
     }
     return array;
 }
-function createCardComponent(card, region, indexOfRegion, opened) {
-    if (opened === void 0) { opened = false; }
+function createCardComponent(card, region, indexOfRegion) {
     var newCard = new CardComponent;
     newCard.card = card;
     newCard.htmlElementId = "fbs-card-" + card.id;
     newCard.region = region;
     newCard.indexOfRegion = indexOfRegion;
-    newCard.opened = opened;
+    newCard.opened = false;
     components.push(newCard);
     return newCard;
 }
@@ -460,7 +459,7 @@ function drawLibrary() {
 }
 function drawHands() {
     myBoardSide.hands.forEach(function (card, i) {
-        createCardComponent(card, 'hand', i, true);
+        createCardComponent(card, 'hand', i);
     });
 }
 function drawSpecials() {
@@ -470,7 +469,7 @@ function drawSpecials() {
 }
 function drawUsed() {
     myBoardSide.used.forEach(function (card, i) {
-        createCardComponent(card, 'used', innerWidth, true);
+        createCardComponent(card, 'used', innerWidth);
     });
 }
 function drawHiddenUsed() {
@@ -568,6 +567,9 @@ function refreshCardComponentRegionInfo(region) {
     }
     if (region === 'hidden-used') {
         cards = myBoardSide.hiddenUsed;
+    }
+    if (region === 'special') {
+        cards = myBoardSide.specials;
     }
     // カード情報の更新
     cards.forEach(function (card, i) {
@@ -716,14 +718,18 @@ function moveSakuraToken(from, to, cardId, count) {
 }
 function messageModal(desc) {
     $('#MESSAGE-MODAL .description').html(desc);
-    //$('#INPUT-MODAL').on('click', decideCallback);
     $('#MESSAGE-MODAL')
         .modal({ closable: false })
         .modal('show');
 }
+function confirmModal(desc, yesCallback) {
+    $('#CONFIRM-MODAL .description').html(desc);
+    $('#CONFIRM-MODAL')
+        .modal({ closable: false, onApprove: yesCallback })
+        .modal('show');
+}
 function userInputModal(desc, decideCallback) {
     $('#INPUT-MODAL .description-body').html(desc);
-    //$('#INPUT-MODAL').on('click', decideCallback);
     $('#INPUT-MODAL')
         .modal({ closable: false, onApprove: decideCallback })
         .modal('show');
@@ -762,11 +768,11 @@ $(function () {
         $('#P1-NAME').text(receivingBoardData.p1Side.playerName);
         $('#P2-NAME').text(receivingBoardData.p2Side.playerName);
         console.log('receive board: ', receivingBoardData);
-        var board = new sakuraba.Board(receivingBoardData);
-        var mySide = board.getMySide(params.side);
+        board = new sakuraba.Board(receivingBoardData);
+        myBoardSide = board.getMySide(params.side);
         var opponentSide = board.getOpponentSide(params.side);
         // まだ名前が決定していなければ、名前の決定処理
-        if (mySide.playerName === null) {
+        if (myBoardSide.playerName === null) {
             var playerCommonName_1 = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
             var opponentPlayerCommonName = (params.side === 'p1' ? 'プレイヤー2' : 'プレイヤー1');
             userInputModal("<p>\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u3078\u3088\u3046\u3053\u305D\u3002<br>\u3042\u306A\u305F\u306F" + playerCommonName_1 + "\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3059\u3002</p><p>\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\uFF1A</p>", function ($elem) {
@@ -775,10 +781,27 @@ $(function () {
                     playerName = playerCommonName_1;
                 }
                 socket.emit('player_name_input', { boardId: params.boardId, side: params.side, name: playerName });
-                mySide.playerName = playerName;
+                myBoardSide.playerName = playerName;
                 $((params.side === 'p1' ? '#P1-NAME' : '#P2-NAME')).text(playerName);
                 messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u308B\u6E96\u5099\u304C\u3067\u304D\u305F\u3089\u3001\u307E\u305A\u306F\u300C\u30E1\u30AC\u30DF\u9078\u629E\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
             });
+        }
+        // メガミが決定済みであれば、デッキ構築ボタンを有効化し、メガミ選択ボタンのラベルを変更
+        if (myBoardSide.megamis !== null) {
+            $('#MEGAMI-SELECT-BUTTON').text('メガミ変更');
+            $('#DECK-BUILD-BUTTON').removeClass('disabled');
+        }
+        // デッキが構築済みであれば、場のカードを表示し、初期手札ボタンを有効化し、デッキ構築ボタンのラベルを変更
+        if (myBoardSide.library.length >= 1) {
+            drawLibrary();
+            refreshCardComponentRegionInfo('library');
+            drawSpecials();
+            refreshCardComponentRegionInfo('special');
+            updateComponents();
+            // ポップアップをセット
+            setPopup();
+            $('#DECK-BUILD-BUTTON').text('デッキ変更');
+            $('#HAND-SET-BUTTON').removeClass('disabled');
         }
     });
     // 他のプレイヤーがプレイヤー名を入力した
@@ -787,6 +810,37 @@ $(function () {
         $('#P1-NAME').text(board.data.p1Side.playerName);
         $('#P2-NAME').text(board.data.p2Side.playerName);
     });
+    // // ドロップダウン初期化
+    // let values: {name: string, value: string}[] = [];
+    // for(let key in sakuraba.MEGAMI_DATA){
+    //     let data = sakuraba.MEGAMI_DATA[key];
+    //     values.push({name: `${data.name} (${data.symbol})`, value: key});
+    // }
+    // $('#MEGAMI1-SELECTION').dropdown({
+    //     placeholder: '1柱目を選択...',
+    //     values: values
+    // });
+    // $('#MEGAMI2-SELECTION').dropdown({
+    //     placeholder: '2柱目を選択...',
+    //     values: values
+    // });
+    for (var key in sakuraba.MEGAMI_DATA) {
+        var data = sakuraba.MEGAMI_DATA[key];
+        $('#MEGAMI1-SELECTION').append("<option value='" + key + "'>" + data.name + " (" + data.symbol + ")</option>");
+        $('#MEGAMI2-SELECTION').append("<option value='" + key + "'>" + data.name + " (" + data.symbol + ")</option>");
+    }
+    $('#MEGAMI1-SELECTION').val('kururu');
+    // メガミ選択ダイアログでのボタン表示更新
+    function updateMegamiSelectModalView() {
+        var megami1 = $('#MEGAMI1-SELECTION').val();
+        var megami2 = $('#MEGAMI2-SELECTION').val();
+        if (megami1 !== '' && megami2 !== '') {
+            $('#MEGAMI-SELECT-MODAL .positive.button').removeClass('disabled');
+        }
+        else {
+            $('#MEGAMI-SELECT-MODAL .positive.button').addClass('disabled');
+        }
+    }
     // メガミ選択ボタン
     $('#MEGAMI-SELECT-BUTTON').click(function (e) {
         var megami2Rule = { identifier: 'megami2', rules: [{ type: 'different[megami1]', prompt: '同じメガミを選択することはできません。' }] };
@@ -795,80 +849,119 @@ $(function () {
                 megami2: megami2Rule
             }
         });
-        $('#MEGAMI-SELECT-MODAL').modal({ closable: false, autofocus: false, onApprove: function () {
+        $('#MEGAMI-SELECT-MODAL').modal({ closable: false, autofocus: false, onShow: function () {
+                // メガミが選択済みであれば、あらかじめドロップダウンに設定しておく
+                if (myBoardSide.megamis !== null) {
+                    $('#MEGAMI1-SELECTION').val(myBoardSide.megamis[0]);
+                    $('#MEGAMI2-SELECTION').val(myBoardSide.megamis[1]);
+                }
+                // 表示の更新
+                updateMegamiSelectModalView();
+            }, onApprove: function () {
                 if (!$('#MEGAMI-SELECT-MODAL .ui.form').form('validate form')) {
                     return false;
                 }
                 $('#DECK-BUILD-BUTTON').removeClass('disabled');
                 // 選択したメガミを設定
-                var megamis = [$('#MEGAMI1-SELECTION input[type=hidden]').val(), $('#MEGAMI2-SELECTION input[type=hidden]').val()];
+                var megamis = [$('#MEGAMI1-SELECTION').val(), $('#MEGAMI2-SELECTION').val()];
                 var mySide = board.getMySide(params.side);
-                // イベント送信
+                mySide.megamis = megamis;
+                // socket.ioでイベント送信
                 socket.emit('megami_select', { boardId: params.boardId, side: params.side, megamis: megamis });
+                return undefined;
             } }).modal('show');
+    });
+    $('#MEGAMI1-SELECTION, #MEGAMI2-SELECTION').on('change', function (e) {
+        updateMegamiSelectModalView();
+    });
+    // 選択カード数、ボタン等の表示更新
+    function updateDeckCounts() {
+        var normalCardCount = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').length;
+        var specialCardCount = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').length;
+        var normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
+        $('#DECK-NORMAL-CARD-COUNT').text(normalCardCount).css({ color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold') });
+        var specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
+        $('#DECK-SPECIAL-CARD-COUNT').text(specialCardCount).css({ color: specialColor, fontWeight: (specialColor === 'black' ? 'normal' : 'bold') });
+        if (normalCardCount === 7 && specialCardCount === 3) {
+            $('#DECK-BUILD-MODAL .positive.button').removeClass('disabled');
+        }
+        else {
+            $('#DECK-BUILD-MODAL .positive.button').addClass('disabled');
+        }
+    }
+    // デッキ構築モーダル内のカードをクリック
+    $('body').on('click', '#DECK-BUILD-MODAL .fbs-card', function (e) {
+        // 選択切り替え
+        $(this).toggleClass('selected');
+        // 選択数の表示を更新
+        updateDeckCounts();
     });
     // デッキ構築ボタン
     $('#DECK-BUILD-BUTTON').click(function (e) {
-        var cardIds = [];
+        var cardIds = [[], [], []];
+        // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート
         for (var key in sakuraba.CARD_DATA) {
-            if (key.match(/01-yurina/)) {
-                cardIds.push(key);
+            var data = sakuraba.CARD_DATA[key];
+            if (data.megami === myBoardSide.megamis[0] && data.baseType === 'normal') {
+                cardIds[0].push(key);
+            }
+            if (data.megami === myBoardSide.megamis[1] && data.baseType === 'normal') {
+                cardIds[1].push(key);
+            }
+            if (myBoardSide.megamis.indexOf(data.megami) >= 0 && data.baseType === 'special') {
+                cardIds[2].push(key);
             }
         }
-        cardIds.forEach(function (cardId, i) {
-            var card = new sakuraba.Card(cardId);
-            var comp = new CardComponent();
-            comp.card = card;
-            comp.htmlElementId = "deck-" + card.id;
-            comp.opened = true;
-            comp.top = 4;
-            comp.left = 4 + i * (100 + 4);
-            $('#DECK-BUILD-CARD-AREA').append(comp.toHtml());
-            updateComponentAttributes(comp, $("#" + comp.htmlElementId));
+        cardIds.forEach(function (cardIdsInRow, r) {
+            cardIdsInRow.forEach(function (cardId, c) {
+                var card = new sakuraba.Card(cardId);
+                var comp = new CardComponent();
+                comp.card = card;
+                comp.htmlElementId = "deck-" + card.id;
+                comp.opened = true;
+                comp.top = 4 + r * (160 + 8);
+                comp.left = 4 + c * (100 + 8);
+                $('#DECK-BUILD-CARD-AREA').append(comp.toHtml());
+                updateComponentAttributes(comp, $("#" + comp.htmlElementId));
+            });
         });
-        var settings = { closable: false, autofocus: false, onShow: function () {
+        var settings = {
+            closable: false, autofocus: false, onShow: function () {
+                // 選択数の表示を更新
+                updateDeckCounts();
+                // ポップアップの表示をセット
                 setPopup();
             },
             onApprove: function () {
-            } };
+                // 選択したカードを自分の山札、切札にセット
+                var normalCards = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').map(function (i, elem) { return new sakuraba.Card($(elem).attr('data-card-id')); }).get();
+                myBoardSide.library = normalCards;
+                var specialCards = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').map(function (i, elem) { return new sakuraba.Card($(elem).attr('data-card-id')); }).get();
+                myBoardSide.specials = specialCards;
+                console.log(myBoardSide);
+                drawLibrary();
+                refreshCardComponentRegionInfo('library');
+                drawSpecials();
+                refreshCardComponentRegionInfo('special');
+                updateComponents();
+                // ポップアップをセット
+                setPopup();
+                // 初期手札引くボタンの有効化
+                $('#HAND-SET-BUTTON').removeClass('disabled');
+                // socket.ioでイベント送信
+                socket.emit('deck_build', { boardId: params.boardId, side: params.side, library: myBoardSide.library, specials: myBoardSide.specials });
+            },
+            onHide: function () {
+                // カード表示をクリア
+                $('#DECK-BUILD-CARD-AREA').empty();
+            }
+        };
         $('#DECK-BUILD-MODAL').modal(settings).modal('show');
     });
-    // 盤を表示
-    drawUsed();
-    drawHiddenUsed();
-    drawLibrary();
-    drawHands();
-    drawSpecials();
-    drawVigor();
-    drawSakuraTokens();
-    refreshCardComponentRegionInfo('library');
-    // コンポーネントの表示を更新
-    updateComponents();
-    // ポップアップを設定
-    setPopup();
-    // ドロップダウン初期化
-    var values = [];
-    for (var key in sakuraba.MEGAMI_DATA) {
-        var data = sakuraba.MEGAMI_DATA[key];
-        values.push({ name: data.name + " (" + data.symbol + ")", value: key });
-    }
-    $('#MEGAMI1-SELECTION').dropdown({
-        placeholder: '1柱目を選択...',
-        values: values
-    });
-    $('#MEGAMI2-SELECTION').dropdown({
-        placeholder: '2柱目を選択...',
-        values: values
-    });
-    $('#MEGAMI1-SELECTION input[type=hidden], #MEGAMI2-SELECTION input[type=hidden]').on('change', function (e) {
-        var megami1 = $('#MEGAMI1-SELECTION input[type=hidden]').val();
-        var megami2 = $('#MEGAMI2-SELECTION input[type=hidden]').val();
-        if (megami1 !== '' && megami2 !== '') {
-            $('#MEGAMI-SELECT-MODAL .positive.button').removeClass('disabled');
-        }
-        else {
-            $('#MEGAMI-SELECT-MODAL .positive.button').addClass('disabled');
-        }
+    // 初期手札セットボタン
+    $('#HAND-SET-BUTTON').on('click', function () {
+        confirmModal('初期手札を引くと、メガミやデッキの変更は行えないようになります。<br>よろしいですか？', function () {
+        });
     });
     // ドラッグ開始
     $('#BOARD').on('dragstart', '.fbs-card,.sakura-token', function (e) {
@@ -1331,7 +1424,18 @@ exports.CARD_DATA = {
     '01-yurina-o-s-1': { megami: 'yurina', name: '月影落', ruby: 'つきかげおとし', baseType: 'special', cost: '7', types: ['attack'], range: '3-4', damage: '4/4', text: '' },
     '01-yurina-o-s-2': { megami: 'yurina', name: '浦波嵐', ruby: 'うらなみあらし', baseType: 'special', cost: '3', types: ['attack', 'reaction'], range: '0-10', damage: '2/-', text: '【攻撃後】対応した《攻撃》は-2/+0となる。' },
     '01-yurina-o-s-3': { megami: 'yurina', name: '浮舟宿', ruby: 'うきふねやどし', baseType: 'special', cost: '3', types: ['action'], text: 'ダスト→自オーラ：5 \n【再起】決死-あなたのライフが3以下である。' },
-    '01-yurina-o-s-4': { megami: 'yurina', name: '天音揺波の底力', ruby: 'あまねゆりなのそこぢから', baseType: 'special', cost: '5', types: ['attack', 'fullpower'], range: '1-4', damage: '5/5', text: '【常時】決死-あなたのライフが3以下でないと、このカードは使用できない。' }
+    '01-yurina-o-s-4': { megami: 'yurina', name: '天音揺波の底力', ruby: 'あまねゆりなのそこぢから', baseType: 'special', cost: '5', types: ['attack', 'fullpower'], range: '1-4', damage: '5/5', text: '【常時】決死-あなたのライフが3以下でないと、このカードは使用できない。' },
+    '02-saine-o-n-1': { megami: 'saine', name: '八方振り', ruby: 'はっぽうぶり', baseType: 'normal', types: ['attack'], range: "4-5", damage: '2/1', text: '【攻撃後】八相-あなたのオーラが0ならば、攻撃『適正距離4-5、2/1』を行う。' },
+    '02-saine-o-n-2': { megami: 'saine', name: '薙斬り', ruby: 'なぎぎり', baseType: 'normal', types: ['attack', 'reaction'], range: "4-5", damage: '3/1', text: '' },
+    '02-saine-o-n-3': { megami: 'saine', name: '返し刃', ruby: 'かえしやいば', baseType: 'normal', types: ['attack'], range: "3-5", damage: '1/1', text: '【攻撃後】このカードを対応で使用したならば、攻撃『適正距離3-5、2/1、対応不可』を行う。' },
+    '02-saine-o-n-4': { megami: 'saine', name: '見切り', ruby: 'みきり', baseType: 'normal', types: ['action'], text: '【常時】八相-あなたのオーラが0ならば、このカードを《対応》を持つかのように相手の《攻撃》に割り込んで使用できる。\n間合⇔ダスト：1' },
+    '02-saine-o-n-5': { megami: 'saine', name: '圏域', ruby: 'けんいき', baseType: 'normal', types: ['enhance'], capacity: '3', text: '【展開時】ダスト→間合：1\n【展開中】達人の間合は2大きくなる。' },
+    '02-saine-o-n-6': { megami: 'saine', name: '衝音晶', ruby: 'しょうおんしょう', baseType: 'normal', types: ['enhance', 'reaction'], capacity: '1', text: '【展開時】対応した《攻撃》は-1/+0となる。 \n【破棄時】攻撃『適正距離0-10、1/-、対応不可』を行う。' },
+    '02-saine-o-n-7': { megami: 'saine', name: '無音壁', ruby: 'むおんへき', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '5', text: '【展開中】あなたへのダメージを解決するに際し、このカードの上に置かれた桜花結晶をあなたのオーラにあるかのように扱う。' },
+    '02-saine-o-s-1': { megami: 'saine', name: '律動弧戟', ruby: 'りつどうこげき', baseType: 'special', cost: '5', types: ['action'], range: '3-4', damage: '4/4', text: '攻撃『適正距離3-4、1/1』を行う。\n攻撃『適正距離4-5、1/1』を行う。\n攻撃『適正距離3-5、2/2』を行う。' },
+    '02-saine-o-s-2': { megami: 'saine', name: '響鳴共振', ruby: 'きょうめいきょうしん', baseType: 'special', cost: '1', types: ['action'], text: '相手のオーラが5以上ならば、相オーラ→間合：3' },
+    '02-saine-o-s-3': { megami: 'saine', name: '音無砕氷', ruby: 'おとなしさいひょう', baseType: 'special', cost: '1', types: ['action', 'reaction'], text: '対応した《攻撃》は-1/-1となる。\n【再起】八相-あなたのオーラが0である。' },
+    '02-saine-o-s-4': { megami: 'saine', name: '氷雨細音の果ての果て', ruby: 'ひさめさいねのはてのはて', baseType: 'special', cost: '4', types: ['attack', 'reaction'], range: '1-5', damage: '5/5', text: '【常時】このカードは切札に対する対応でしか使用できない。' }
 };
 // クラス
 var Board = /** @class */ (function () {

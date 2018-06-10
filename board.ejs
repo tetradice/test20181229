@@ -48,6 +48,9 @@
         .fbs-vigor-card .vigor2.clickable:hover{
             box-shadow: 0 0 2px 1px #7098ff;
         }
+        .fbs-card.selected{
+            border: 2px solid rgb(0, 100, 255);
+        }
 
         .fbs-card {
             width: 100px;
@@ -363,9 +366,10 @@
                             <input type="checkbox" tabindex="0" class="hidden">
                             <label>Label</label>
                           </div>
-                      <button class="ui basic button">ゲーム外のカードを加える</button>
+                      <button class="ui basic button">ゲーム外のカードを加える</button><br>
                       <button class="ui basic button" id="MEGAMI-SELECT-BUTTON">メガミ選択</button>
                       <button class="ui basic button disabled" id="DECK-BUILD-BUTTON">デッキ構築</button>
+                      <button class="ui basic button disabled" id="HAND-SET-BUTTON">初期手札3枚を引く</button>
     </div>
 
     <table class="ui definition table" style="width: 25em;">
@@ -408,18 +412,38 @@
     </div>
 </div>
 
-<div class="ui modal tiny" id="MESSAGE-MODAL">
+<div class="ui modal tiny" id="INPUT-MODAL">
+        <div class="content">
+            <div class="description">
+                <div class="description-body"></div>
+                    <div class="ui input">
+                            <input style="width: 20em;">
+                        </div>
+            </div>
+    
+        </div>
+        <div class="actions">
+            <div class="ui positive labeled icon button">
+            確定
+            <i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
+
+<div class="ui modal tiny" id="CONFIRM-MODAL">
     <div class="content">
         <div class="description">
         </div>
     </div>
     <div class="actions">
-        <div class="ui positive labeled icon button">
-        OK
-        <i class="checkmark icon"></i>
+            <div class="ui positive labeled icon button">
+                はい
+                <i class="checkmark icon"></i>
+            </div>
+            <div class="ui black deny button">
+                いいえ
+            </div>
         </div>
-
-    </div>
 </div>
 <div class="ui modal" id="MEGAMI-SELECT-MODAL">
     <div class="content">
@@ -429,18 +453,14 @@
         <div class="ui form">
             <div class="fields">
                 <div class="field">
-                    <div class="ui selection dropdown" id="MEGAMI1-SELECTION">
-                        <input type="hidden" name="megami1">
-                        <i class="dropdown icon"></i>
-                        <div class="default text"></div>
-                    </div>
+                    <select id="MEGAMI1-SELECTION" name="megami1">
+                        <option value=""></option>
+                    </select>
                 </div>
                 <div class="field">
-                    <div class="ui selection dropdown" id="MEGAMI2-SELECTION">
-                        <input type="hidden" name="megami2">
-                        <i class="dropdown icon"></i>
-                        <div class="default text"></div>
-                    </div>
+                    <select id="MEGAMI2-SELECTION" name="megami2">
+                            <option value=""></option>
+                    </select>
                 </div>
             </div>
             <div class="ui error message"></div>
@@ -468,6 +488,7 @@
                 
             </div>
         </div>
+        <div style="margin-top: 1em; font-size: larger;">通常札: <span id="DECK-NORMAL-CARD-COUNT"></span>/7　　切札: <span id="DECK-SPECIAL-CARD-COUNT"></span>/3</div>
     </div>
     <div class="actions">
         <div class="ui positive labeled icon button disabled">

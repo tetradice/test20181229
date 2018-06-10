@@ -38,6 +38,24 @@ var server = express()
 })
     .listen(PORT, function () { return console.log("Listening on " + PORT); });
 var io = socketIO(server);
+/** Redis上に保存されたボードデータを取得 */
+function getStoredBoard(boardId, callback) {
+    // ボード情報を取得
+    RedisClient.HGET('boards', boardId, function (err, json) {
+        var boardData = JSON.parse(json);
+        var board = new sakuraba.Board(boardData);
+        // コールバックを実行
+        callback.call(undefined, board);
+    });
+}
+/** Redisへボードデータを保存 */
+function saveBoard(boardId, board, callback) {
+    // ボード情報を保存
+    RedisClient.HSET('boards', boardId, JSON.stringify(board.data), function (err, success) {
+        // コールバックを実行
+        callback.call(undefined);
+    });
+}
 io.on('connection', function (socket) {
     console.log("Client connected - " + socket.id);
     socket.on('disconnect', function () { return console.log('Client disconnected'); });
@@ -45,24 +63,21 @@ io.on('connection', function (socket) {
     socket.on('request_first_board_to_server', function (data) {
         console.log('on request_first_board_to_server: ', data);
         // ボード情報を取得
-        RedisClient.HGET('boards', data.boardId, function (err, json) {
-            var boardData = JSON.parse(json);
-            console.log('emit send_first_board_to_client: ', socket.id, boardData);
-            socket.emit('send_first_board_to_client', boardData);
+        getStoredBoard(data.boardId, function (board) {
+            console.log('emit send_first_board_to_client: ', socket.id, board.data);
+            socket.emit('send_first_board_to_client', board.data);
         });
     });
     // 名前の入力
     socket.on('player_name_input', function (data) {
         console.log('on player_name_input: ', data);
         // ボード情報を取得
-        RedisClient.HGET('boards', data.boardId, function (err, json) {
-            var boardData = JSON.parse(json);
-            var board = new sakuraba.Board(boardData);
+        getStoredBoard(data.boardId, function (board) {
             // 名前をアップデートして保存
             board.getMySide(data.side).playerName = data.name;
-            RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), function (err, success) {
+            saveBoard(data.boardId, board, function () {
                 // プレイヤー名が入力されたイベントを他ユーザーに配信
-                socket.broadcast.emit('on_player_name_input', boardData);
+                socket.broadcast.emit('on_player_name_input', board.data);
             });
         });
     });
@@ -70,31 +85,28 @@ io.on('connection', function (socket) {
     socket.on('megami_select', function (data) {
         console.log('on megami_select: ', data);
         // ボード情報を取得
-        RedisClient.HGET('boards', data.boardId, function (err, json) {
-            var boardData = JSON.parse(json);
-            var board = new sakuraba.Board(boardData);
+        getStoredBoard(data.boardId, function (board) {
             // メガミをアップデートして保存
             board.getMySide(data.side).megamis = data.megamis;
-            RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), function (err, success) {
-                // プレイヤー名が入力されたイベントを他ユーザーに配信
-                socket.broadcast.emit('on_megami_select', boardData);
+            saveBoard(data.boardId, board, function () {
+                // メガミが選択されたイベントを他ユーザーに配信
+                socket.broadcast.emit('on_megami_select', board.data);
             });
         });
     });
-    // ボード情報を受信
-    socket.on('send_board_to_server', function (data) {
-        // 
-        console.log('on send_board_to_server: ', data);
-        var boardData = {
-            body: data.board,
-            updated: new Date(),
-            logs: [],
-            p1Name: 'ポン',
-            p2Name: 'ポン2'
-        };
-        console.log('send: ', boardData);
-        RedisClient.HSET('boards', data.boardId, JSON.stringify(boardData), function (error, n) {
-            socket.broadcast.emit('send_board_to_client', boardData);
+    // デッキの構築
+    socket.on('deck_build', function (data) {
+        console.log('on deck_build: ', data);
+        // ボード情報を取得
+        getStoredBoard(data.boardId, function (board) {
+            var myBoardSide = board.getMySide(data.side);
+            // デッキをアップデートして保存
+            myBoardSide.library = data.library;
+            myBoardSide.specials = data.specials;
+            saveBoard(data.boardId, board, function () {
+                // デッキが構築されたイベントを他ユーザーに配信
+                socket.broadcast.emit('on_deck_build', board.data);
+            });
         });
     });
 });
