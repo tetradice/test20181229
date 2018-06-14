@@ -17496,21 +17496,134 @@ $(function () {
         var windowState = JSON.parse(chatLogWindowStateJson);
         $('#CHAT-LOG-WINDOW').css(windowState);
     }
+    // class Layouter {
+    //     // 横に並んだカードやトークンをレイアウトする
+    //     static exec(selector: string, frameWidth: number, spacing: number = 8, padding: number = 4){
+    //         let $elems = $(selector);
+    //         let itemWidth = $elems.outerWidth();
+    //         $elems.each(function(i, elem){
+    //             $(elem).css('left', `${padding + (itemWidth + spacing) * i}px`).css('top', `${padding}px`);
+    //         });
+    //     }
+    // }
     var Layouter = /** @class */ (function () {
         function Layouter() {
+            this.zoom = 1.0;
+            this.children = [];
         }
-        // 横に並んだカードやトークンをレイアウトする
-        Layouter.exec = function (selector, frameWidth, spacing, padding) {
-            if (spacing === void 0) { spacing = 8; }
-            if (padding === void 0) { padding = 4; }
-            var $elems = $(selector);
-            var itemWidth = $elems.outerWidth();
-            $elems.each(function (i, elem) {
-                $(elem).css('left', padding + (itemWidth + spacing) * i + "px").css('top', padding + "px");
-            });
+        Layouter.prototype.execute = function () {
+            this.children.forEach(function (area) { return area.execute(); });
+        };
+        Layouter.prototype.addArea = function () {
+            var area = new LayoutArea(this);
+            this.children.push(area);
+            return area;
         };
         return Layouter;
     }());
+    var LayoutBase = /** @class */ (function () {
+        function LayoutBase() {
+            this.left = 0;
+            this.top = 0;
+            this.width = 100;
+            this.height = 100;
+            this.zoom = 1.0;
+        }
+        LayoutBase.prototype.locate = function (left, top, width, height) {
+            if (left !== undefined)
+                this.left = left;
+            if (top !== undefined)
+                this.top = top;
+            if (width !== undefined)
+                this.width = width;
+            if (height !== undefined)
+                this.height = height;
+        };
+        return LayoutBase;
+    }());
+    var LayoutArea = /** @class */ (function (_super) {
+        __extends(LayoutArea, _super);
+        function LayoutArea(parent) {
+            var _this = _super.call(this) || this;
+            _this.children = [];
+            _this.padding = 4;
+            _this.spacing = 8;
+            _this.layoutType = 'vertical';
+            _this.parent = parent;
+            _this.zoom = parent.zoom;
+            return _this;
+        }
+        LayoutArea.prototype.addCard = function (component) {
+            var card = new LayoutCard(this, component);
+            this.children.push(card);
+            return card;
+        };
+        LayoutArea.prototype.execute = function () {
+            var _this = this;
+            // 子カードがあれば配置する
+            if (this.children.length === 0)
+                return;
+            var cx = this.padding;
+            var cy = this.padding;
+            if (this.layoutType === 'vertical') {
+                var innerWidth_1 = this.width - (this.padding * 2);
+                var requiredWidth = this.children[0].width * this.children.length + this.padding * (this.children.length - 1);
+                if (requiredWidth <= innerWidth_1) {
+                    this.children.forEach(function (child, i) {
+                        child.left = cx;
+                        cx += child.width;
+                        cx += _this.spacing;
+                        child.top = cy;
+                        console.log("locate: ", child);
+                    });
+                }
+                else {
+                    var overlapWidth_1 = ((this.children[0].width * this.children.length) - innerWidth_1) / this.children.length;
+                    this.children.forEach(function (child, i) {
+                        child.left = cx;
+                        cx += child.width;
+                        cx -= overlapWidth_1;
+                        child.top = cy;
+                    });
+                }
+            }
+            if (this.layoutType === 'stack') {
+                this.children.forEach(function (child, i) {
+                    child.left = cx;
+                    child.top = cy;
+                    cx += _this.spacing;
+                    cy += _this.spacing;
+                });
+            }
+            this.children.forEach(function (child, i) {
+                child.component.left = _this.left + child.left;
+                child.component.top = _this.top + child.top;
+            });
+        };
+        return LayoutArea;
+    }(LayoutBase));
+    var LayoutItem = /** @class */ (function (_super) {
+        __extends(LayoutItem, _super);
+        function LayoutItem(parent, component) {
+            var _this = _super.call(this) || this;
+            _this.parent = parent;
+            _this.component = component;
+            _this.zoom = parent.zoom;
+            return _this;
+        }
+        return LayoutItem;
+    }(LayoutBase));
+    var LayoutCard = /** @class */ (function (_super) {
+        __extends(LayoutCard, _super);
+        function LayoutCard(parent, component) {
+            var _this = _super.call(this, parent, component) || this;
+            _this.locate(undefined, undefined, LayoutCard.NORMAL_WIDTH, LayoutCard.NORMAL_HEIGHT);
+            return _this;
+        }
+        LayoutCard.NORMAL_WIDTH = 100;
+        LayoutCard.NORMAL_HEIGHT = 140;
+        return LayoutCard;
+    }(LayoutItem));
     var Component = /** @class */ (function () {
         function Component() {
             this.draggable = true;
@@ -17705,36 +17818,40 @@ $(function () {
     }
     // 盤上のコンポーネント表示を更新
     function updateComponents() {
-        // 山札の再配置
-        var libraryOffset = $('.area.library.background').position();
-        components.filter(function (x) { return x.region === 'library'; }).forEach(function (comp, i) {
-            comp.left = libraryOffset.left + 4 + comp.indexOfRegion * 8;
-            comp.top = libraryOffset.top + 4 + comp.indexOfRegion * 3;
-        });
-        // 手札の再配置
-        var handOffset = $('.area.hand.background').position();
-        components.filter(function (x) { return x.region === 'hand'; }).forEach(function (comp, i) {
-            comp.left = handOffset.left + 4 + comp.indexOfRegion * 108;
-            comp.top = handOffset.top + 4;
-        });
-        // 切り札の再配置
-        var specialOffset = $('.area.special.background').position();
-        components.filter(function (x) { return x.region === 'special'; }).forEach(function (comp, i) {
-            comp.left = specialOffset.left + 4 + comp.indexOfRegion * 108;
-            comp.top = specialOffset.top + 4;
-        });
-        // 使用済札の再配置
-        var usedOffset = $('.area.used.background').position();
+        // エリアとコンポーネントの配置処理を実行する
+        var layouter = new Layouter();
+        // 使用済エリアと使用済カードの配置
+        var usedArea = layouter.addArea();
+        usedArea.locate(0, 80, 450, 150);
         components.filter(function (x) { return x.region === 'used'; }).forEach(function (comp, i) {
-            comp.left = usedOffset.left + 4 + comp.indexOfRegion * 108;
-            comp.top = usedOffset.top + 4;
+            usedArea.addCard(comp);
         });
-        // 伏せ札の再配置
-        var hiddenUsedOffset = $('.area.hidden-used.background').position();
+        // 伏せ札エリアと伏せ札カードの配置
+        var hiddenUsedArea = layouter.addArea();
+        hiddenUsedArea.locate(470, 80, 170, 140);
         components.filter(function (x) { return x.region === 'hidden-used'; }).forEach(function (comp, i) {
-            comp.left = 20 + hiddenUsedOffset.left + 4 + comp.indexOfRegion * 8;
-            comp.top = -20 + hiddenUsedOffset.top + 4 + comp.indexOfRegion * 3;
+            hiddenUsedArea.addCard(comp);
         });
+        // 山札エリアと山札カードの配置
+        var libraryArea = layouter.addArea();
+        libraryArea.locate(720, 80, 160, 160);
+        components.filter(function (x) { return x.region === 'library'; }).forEach(function (comp, i) {
+            libraryArea.addCard(comp);
+        });
+        // 手札エリアと手札カードの配置
+        var handArea = layouter.addArea();
+        handArea.locate(0, 250, 700, 150);
+        components.filter(function (x) { return x.region === 'hand'; }).forEach(function (comp, i) {
+            handArea.addCard(comp);
+        });
+        // 切札エリアと切札カードの配置
+        var specialArea = layouter.addArea();
+        specialArea.locate(250, 720, 330, 150);
+        components.filter(function (x) { return x.region === 'special'; }).forEach(function (comp, i) {
+            specialArea.addCard(comp);
+        });
+        // レイアウト実行 (すべての対象コンポーネントの座標とサイズを確定)
+        layouter.execute();
         // 集中力の再配置
         var vigorOffset = $('.area.vigor').position();
         components.filter(function (x) { return x instanceof VigorComponent; }).forEach(function (comp, i) {
@@ -18176,6 +18293,8 @@ $(function () {
                 refreshCardComponentRegionInfo('special');
                 drawHands();
                 refreshCardComponentRegionInfo('hand');
+                drawSakuraTokens();
+                refreshSakuraTokenComponentInfo();
                 updateComponents();
                 // ポップアップをセット
                 setPopup();
