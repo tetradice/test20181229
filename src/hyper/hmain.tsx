@@ -23,6 +23,8 @@ const SakuraTokenComponent = (params: {key: string}, children) => {
 }
 
 // メインビュー
+let components = new Map();
+
 const view: View<State, typeof actions> = (state, actions) => (
   <div>
     {/* 全カードを出力 */}

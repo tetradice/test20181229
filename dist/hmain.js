@@ -501,18 +501,17 @@ function app(state, actions, view, container) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var utils = __webpack_require__(/*! ./utils */ "./src/hyper/utils.tsx");
 var actions = {
     /** 桜花結晶トークンの領域情報を更新 */
     updateSakuraTokens: function () { return function (state) {
-        var res = {};
-        res.sakuraTokens = [];
-        utils.loop(state.board.distance, function (i) {
-            res.sakuraTokens.push({ region: 'distance', indexOfRegion: i });
-        });
-        utils.loop(state.board.dust, function (i) {
-            res.sakuraTokens.push({ region: 'dust', indexOfRegion: i });
-        });
+        // res.sakuraTokens = [];
+        // utils.loop(state.board.distance, (i) => {
+        //     res.sakuraTokens.push({region: 'distance', indexOfRegion: i});
+        // });
+        // utils.loop(state.board.dust, (i) => {
+        //     res.sakuraTokens.push({region: 'dust', indexOfRegion: i});
+        // });
+        return { sakuraTokens: null };
     }; }
 };
 exports.default = actions;
@@ -600,6 +599,7 @@ var SakuraTokenComponent = function (params, children) {
     hyperapp_1.h("div", { class: "fbs-sakura-token", style: styles });
 };
 // メインビュー
+var components = new Map();
 var view = function (state, actions) { return (hyperapp_1.h("div", null,
     state.board.cards.map(function (card) { return (hyperapp_1.h(CardComponent, { id: card.id, key: card.id })); }),
     utils.loop(state.board.distance, function (i) {
