@@ -6,7 +6,7 @@ import { ActionsType } from "../actions";
 export const BoardObject = (params: {target: state.BoardObject}) => (state: state.State, acts: ActionsType) => {
     let obj = params.target;
     if(obj.type === 'card'){
-        return <Card target={obj}></Card>;
+        return <Card card={obj}></Card>;
     }
     return null;
 }
