@@ -15,9 +15,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "engines": {
-    "node": "6.2.0"
-  },
   "dependencies": {
     "express": "4.16.3",
     "hyperapp": "^1.2.6",
