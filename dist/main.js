@@ -38029,7 +38029,7 @@ exports.Board = Board;
 Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 exports.default = {
-    /** カードを指定した領域へ1枚追加する */
+    /** カードを1枚追加する */
     addCard: function (region, cardId) { return function (state) {
         console.log(state);
         // 現在カード数 + 1で新しい連番を振る

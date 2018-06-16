@@ -1,7 +1,7 @@
 import * as  _ from "lodash";
 
 export default {
-    /** カードを指定した領域へ1枚追加する */
+    /** カードを1枚追加する */
     addCard: (region: string, cardId: string) => (state: state.State) => {
         console.log(state);
 
