@@ -1,4 +1,5 @@
 import * as sakuraba from './sakuraba';
+import './sakuraba/app';
 
 declare var params: {
     boardId: string;

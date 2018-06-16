@@ -7,6 +7,8 @@ import * as redis from 'redis';
 import * as moment from 'moment';
 import * as randomstring from 'randomstring';
 import * as sakuraba from './src/sakuraba';
+import * as browserSync from 'browser-sync';
+import * as connectBrowserSync from 'connect-browser-sync';
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
@@ -14,7 +16,9 @@ const INDEX = path.join(__dirname, 'index.html');
 const MAIN_JS = path.join(__dirname, 'dist/main.js');
 const MAIN_JS_MAP = path.join(__dirname, 'dist/main.js.map');
 
+const browserSyncConfigurations = { "files": "dist/*.js" };
 const server = express()
+  .use(connectBrowserSync(browserSync(browserSyncConfigurations)))
   .set('views', __dirname + '/')
   .set('view engine', 'ejs')
   .use(express.static('public'))

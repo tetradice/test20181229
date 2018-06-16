@@ -1,4 +1,5 @@
-import { h, app, View } from "hyperapp"
+import { h, app, View } from "hyperapp";
+import { withLogger} from "@hyperapp/logger";
 
 import * as components from "./components";
 import { actions, ActionsType } from "./actions";
@@ -24,4 +25,7 @@ const view: View<state.State, ActionsType> = (state, actions) => (
 )
 
 // アプリケーション起動
-let wiredActs = app(st, actions, view, document.getElementById('BOARD')) as ActionsType;
+let wiredActs = withLogger(app)(st, actions, view, document.getElementById('BOARD')) as ActionsType;
+console.log('hyperapp OK.');
+
+wiredActs.addCard('hand', 'yurina-01');

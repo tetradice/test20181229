@@ -6,12 +6,16 @@ var path = require("path");
 var redis = require("redis");
 var randomstring = require("randomstring");
 var sakuraba = require("./src/sakuraba");
+var browserSync = require("browser-sync");
+var connectBrowserSync = require("connect-browser-sync");
 var RedisClient = redis.createClient(process.env.REDIS_URL);
 var PORT = process.env.PORT || 3000;
 var INDEX = path.join(__dirname, 'index.html');
 var MAIN_JS = path.join(__dirname, 'dist/main.js');
 var MAIN_JS_MAP = path.join(__dirname, 'dist/main.js.map');
+var browserSyncConfigurations = { "files": "dist/*.js" };
 var server = express()
+    .use(connectBrowserSync(browserSync(browserSyncConfigurations)))
     .set('views', __dirname + '/')
     .set('view engine', 'ejs')
     .use(express.static('public'))
