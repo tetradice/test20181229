@@ -46,136 +46,18 @@ $(function(){
     }
     
     
-    // class Layouter {
-    //     // 横に並んだカードやトークンをレイアウトする
-    //     static exec(selector: string, frameWidth: number, spacing: number = 8, padding: number = 4){
-    //         let $elems = $(selector);
-    //         let itemWidth = $elems.outerWidth();
-    
-    //         $elems.each(function(i, elem){
-    //             $(elem).css('left', `${padding + (itemWidth + spacing) * i}px`).css('top', `${padding}px`);
-    //         });
-    //     }
-    // }
-
     class Layouter {
-        zoom: number = 1.0;
-        children: LayoutArea[] = [];
-
-        execute(){
-            this.children.forEach((area) => area.execute());
-        }
-
-        addArea(): LayoutArea{
-            let area = new LayoutArea(this);
-            this.children.push(area);
-            return area;
-        }
-    }
-
-    abstract class LayoutBase {
-        left: number = 0;
-        top: number = 0;
-        width: number = 100;
-        height: number = 100;
-        zoom: number = 1.0;
-
-        locate(left?: number, top?: number, width?: number, height?: number){
-            if(left !== undefined) this.left = left;
-            if(top !== undefined) this.top = top;
-            if(width !== undefined) this.width = width;
-            if(height !== undefined) this.height = height;
-        }
-    }
-
-    class LayoutArea extends LayoutBase {
-        parent: Layouter;
-        children: LayoutItem[] = [];
-        padding: number = 4;
-        spacing: number = 8;
-
-        layoutType: 'vertical' | 'stack' = 'vertical';
-
-        constructor(parent: Layouter){
-            super();
-            this.parent = parent;
-            this.zoom = parent.zoom;
-        }
-
-        addCard(component: CardComponent): LayoutCard{
-            let card = new LayoutCard(this, component);
-            this.children.push(card);
-            return card;
-        }
-
-        execute(){
-            // 子カードがあれば配置する
-            if(this.children.length === 0) return;
-            let cx = this.padding;
-            let cy = this.padding;
-
-            if(this.layoutType === 'vertical'){
-                let innerWidth = this.width - (this.padding * 2);
-                let requiredWidth = this.children[0].width * this.children.length + this.padding * (this.children.length - 1);
-
-                if(requiredWidth <= innerWidth){
-                    this.children.forEach((child, i) => {
-                        child.left = cx;
-                        cx += child.width;
-                        cx += this.spacing;
-                        child.top = cy;
-                        console.log(`locate: `, child);
-                    });
-                } else {
-                    let overlapWidth = ((this.children[0].width * this.children.length) - innerWidth) / this.children.length;
-                    this.children.forEach((child, i) => {
-                        child.left = cx;
-                        cx += child.width;
-                        cx -= overlapWidth;
-                        child.top = cy;
-                    });        
-                }
-            }
-
-            if(this.layoutType === 'stack'){
-                this.children.forEach((child, i) => {
-                    child.left = cx;
-                    child.top = cy;
-                    cx += this.spacing;
-                    cy += this.spacing;
-                });
-            }
-
-            this.children.forEach((child, i) => {
-                child.component.left = this.left + child.left;
-                child.component.top = this.top + child.top;
+        // 横に並んだカードやトークンをレイアウトする
+        static exec(selector: string, frameWidth: number, spacing: number = 8, padding: number = 4){
+            let $elems = $(selector);
+            let itemWidth = $elems.outerWidth();
+    
+            $elems.each(function(i, elem){
+                $(elem).css('left', `${padding + (itemWidth + spacing) * i}px`).css('top', `${padding}px`);
             });
         }
-
     }
-
-    class LayoutItem extends LayoutBase {
-        parent: LayoutArea;
-        children: LayoutItem;
-        component: Component;
-
-        constructor(parent: LayoutArea, component: Component){
-            super();
-            this.parent = parent;
-            this.component = component;
-            this.zoom = parent.zoom;
-        }
-    }
-    class LayoutCard extends LayoutItem {
-        static NORMAL_WIDTH = 100;
-        static NORMAL_HEIGHT = 140;
-
-        constructor(parent: LayoutArea, component: CardComponent){
-            super(parent, component);
-            this.locate(undefined, undefined, LayoutCard.NORMAL_WIDTH, LayoutCard.NORMAL_HEIGHT);
-        }
-    }
-
+    
     abstract class Component {
     
         region: sakuraba.RegionName;
@@ -386,52 +268,41 @@ $(function(){
     
     // 盤上のコンポーネント表示を更新
     function updateComponents(){
-        // エリアとコンポーネントの配置処理を実行する
-        let layouter = new Layouter();
-
-        // 使用済エリアと使用済カードの配置
-        let usedArea = layouter.addArea();
-        usedArea.locate(0, 80, 450, 150);
-        
-        components.filter(x => x.region === 'used').forEach((comp, i) => {
-            usedArea.addCard(comp as CardComponent);
-        });
-
-        // 伏せ札エリアと伏せ札カードの配置
-        let hiddenUsedArea = layouter.addArea();
-        hiddenUsedArea.locate(470, 80, 170, 140);
-        
-        components.filter(x => x.region === 'hidden-used').forEach((comp, i) => {
-            hiddenUsedArea.addCard(comp as CardComponent);
-        });
-        
-        // 山札エリアと山札カードの配置
-        let libraryArea = layouter.addArea();
-        libraryArea.locate(720, 80, 160, 160);
-        
+        // 山札の再配置
+        let libraryOffset = $('.area.library.background').position();
         components.filter(x => x.region === 'library').forEach((comp, i) => {
-            libraryArea.addCard(comp as CardComponent);
+            comp.left = libraryOffset.left + 4 + comp.indexOfRegion * 8;
+            comp.top = libraryOffset.top + 4 + comp.indexOfRegion * 3;
         });
-
-        // 手札エリアと手札カードの配置
-        let handArea = layouter.addArea();
-        handArea.locate(0, 250, 700, 150);
-        
+    
+        // 手札の再配置
+        let handOffset = $('.area.hand.background').position();
         components.filter(x => x.region === 'hand').forEach((comp, i) => {
-            handArea.addCard(comp as CardComponent);
+            comp.left = handOffset.left + 4 + comp.indexOfRegion * 108;
+            comp.top = handOffset.top + 4;
         });
-
-        // 切札エリアと切札カードの配置
-        let specialArea = layouter.addArea();
-        specialArea.locate(250, 720, 330, 150);
-        
+    
+        // 切り札の再配置
+        let specialOffset = $('.area.special.background').position();
         components.filter(x => x.region === 'special').forEach((comp, i) => {
-            specialArea.addCard(comp as CardComponent);
+            comp.left = specialOffset.left + 4 + comp.indexOfRegion * 108;
+            comp.top = specialOffset.top + 4;
         });
-        
-        // レイアウト実行 (すべての対象コンポーネントの座標とサイズを確定)
-        layouter.execute();
-
+    
+        // 使用済札の再配置
+        let usedOffset = $('.area.used.background').position();
+        components.filter(x => x.region === 'used').forEach((comp, i) => {
+            comp.left = usedOffset.left + 4 + comp.indexOfRegion * 108;
+            comp.top = usedOffset.top + 4;
+        });
+    
+        // 伏せ札の再配置
+        let hiddenUsedOffset = $('.area.hidden-used.background').position();
+        components.filter(x => x.region === 'hidden-used').forEach((comp, i) => {
+            comp.left = 20 + hiddenUsedOffset.left + 4 + comp.indexOfRegion * 8;
+            comp.top = -20 + hiddenUsedOffset.top + 4 + comp.indexOfRegion * 3;
+        });
+    
         // 集中力の再配置
         let vigorOffset = $('.area.vigor').position();
         components.filter(x => x instanceof VigorComponent).forEach((comp, i) => {
@@ -909,8 +780,6 @@ $(function(){
                 refreshCardComponentRegionInfo('special');
                 drawHands();
                 refreshCardComponentRegionInfo('hand');
-                drawSakuraTokens();
-                refreshSakuraTokenComponentInfo();
                 updateComponents();
     
                 // ポップアップをセット

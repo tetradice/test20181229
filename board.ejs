@@ -28,7 +28,6 @@
             top: 20vh;
             position: absolute;
             z-index: 0;
-            border: 1px dashed cornflowerblue;
         }
 
         .ui.popup {
@@ -184,21 +183,14 @@
 
 
         .area.sakura-token-region {
-            padding: 0;
             height: 30px;
-            display: flex;
-            align-items: center;        }
-
-        .area.sakura-token-region .caption {
-            font-weight: bold;
-            margin-left: 0.3em;
         }
 
         .area.sakura-token-region .draw-region {
             position: absolute;
             top: 0;
             height: 100%;
-            left: 5em;
+            left: 4em;
         }
         .area.distance {
             left: 0;
@@ -206,11 +198,18 @@
             width: 400px;
         }
 
+        .area.distance.background {
+            border: 1px silver solid;
+        }
 
         .area.dust {
             left: 0;
             top: 40px;
             width: 400px;
+        }
+
+        .area.dust.background {
+            border: 1px gray solid;
         }
 
         .area.aura {
@@ -219,16 +218,28 @@
             width: 250px;
         }
 
+        .area.aura.background {
+            border: 1px rgb(211, 202, 78) solid;
+        }
+
         .area.life {
             left: 500px;
             top: 450px;
             width: 400px;
         }
 
+        .area.life.background {
+            border: 1px rgb(241, 173, 153) solid;
+        }
+
         .area.flair {
             left: 500px;
             top: 490px;
             width: 400px;
+        }
+
+        .area.flair.background {
+            border: 1px rgb(253, 58, 52) solid;
         }
 
         .card-count {
@@ -263,15 +274,15 @@
 <body>
 <div id="BOARD">
 
-    <div class="area background sakura-token-region distance ui segment">
-        <div class="caption"><span>間合</span></div>
+    <div class="area background sakura-token-region distance">
+        <span>間合：</span>
         <div class="draw-region"></div>
     </div>
     <div class="area droppable sakura-token-region distance" data-background-selector=".area.background.distance">
     </div>
 
-    <div class="area background sakura-token-region dust ui segment">
-        <div class="caption"><span>ダスト</span></div>
+    <div class="area background sakura-token-region dust">
+        <span>ダスト：</span>
         <div class="draw-region"></div>
     </div>
     <div class="area droppable sakura-token-region dust" data-background-selector=".area.background.dust">
@@ -314,22 +325,22 @@
 
 
 
-    <div class="area background sakura-token-region aura ui segment">
-        <div class="caption"><span>オーラ</span></div>
+    <div class="area background sakura-token-region aura">
+        <span>オーラ：</span>
         <div class="draw-region"></div>
     </div>
     <div class="area droppable sakura-token-region aura" data-background-selector=".area.background.aura">
     </div>
 
-    <div class="area background sakura-token-region life ui segment">
-        <div class="caption"><span>ライフ</span></div>
+    <div class="area background sakura-token-region life">
+        <span>ライフ：</span>
         <div class="draw-region"></div>
     </div>
     <div class="area droppable sakura-token-region life" data-background-selector=".area.background.life">
     </div>
 
-    <div class="area background sakura-token-region flair ui segment">
-        <div class="caption"><span>フレア</span></div>
+    <div class="area background sakura-token-region flair">
+        <span>フレア：</span>
         <div class="draw-region"></div>
     </div>
     <div class="area droppable sakura-token-region flair" data-background-selector=".area.background.flair">
