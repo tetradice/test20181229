@@ -2,7 +2,7 @@ import * as  _ from "lodash";
 
 export default {
     /** カードを1枚追加する */
-    addCard: (region: string, cardId: string) => (state: state.State) => {
+    addCard: (region: CardRegion, cardId: string) => (state: state.State) => {
         console.log(state);
 
         // 現在カード数 + 1で新しい連番を振る
@@ -10,7 +10,7 @@ export default {
         let objectId = `card-${cardCount + 1}`;
 
         // カードを1枚追加
-        let newCard: state.Card = {type: "card", id: objectId, region: region, indexOfRegion: 0, side: 1};
+        let newCard: state.Card = {type: "card", cardId: cardId, id: objectId, region: region, indexOfRegion: 0, side: 'p1', rotated: false, opened: false};
         let newObjects = {};
         newObjects[objectId] = newCard;
         let newBoard = _.merge({}, state.board, {objects: newObjects});

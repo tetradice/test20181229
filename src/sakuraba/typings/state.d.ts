@@ -26,31 +26,36 @@ export type BoardObject = Card | SakuraToken | Vigor;
 export interface BoardObjectBase extends SerializableObject {
     id: string;
     type: 'card' | 'sakura-token' | 'vigor';
-    side: 1 | 2 | null;
+    side: PlayerSide;
 }
 
 export interface Card extends BoardObjectBase {
     type: 'card'
 
-    region: string;
+    cardId: string;
+    region: CardRegion;
     indexOfRegion: number;
+    rotated: boolean;
+    opened: boolean;
 }
 
 export interface SakuraToken extends BoardObjectBase {
     type: 'sakura-token'
 
-    region: string;
+    region: SakuraTokenRegion;
     indexOfRegion: number;
     onCardId: string;
 }
 
 export interface Vigor extends BoardObjectBase {
     type: 'vigor'
+    value: number;
 }
 
 /** ログ1行分のデータ */
 export interface LogRecord extends SerializableObject {
     body: string;
     time: string; // momentから変換した値を渡す
+    playerSide?: PlayerSide;
 }
 
