@@ -39,6 +39,7 @@ $(function(){
     const st: state.State = utils.createInitialState();
     st.socket = socket;
     st.boardId = params.boardId;
+    st.side = params.side;
 
     // アプリケーション起動
     let appActions = devtools(app)(st, actions, view, document.getElementById('BOARD2')) as ActionsType;
@@ -63,7 +64,7 @@ $(function(){
                     playerName = playerCommonName;
                 }
                 socket.emit('player_name_input', {boardId: params.boardId, side: params.side, name: playerName});
-                actions.setPlayerName(params.side, playerName);
+                appActions.setPlayerName({side: params.side, name: playerName});
 
                 messageModal(`<p>ゲームを始める準備ができたら、まずは「メガミ選択」ボタンをクリックしてください。</p>`);
             });
