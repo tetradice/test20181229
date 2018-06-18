@@ -1,18 +1,24 @@
 import { SerializableObject } from "./serializable";
+import { Megami } from "../../sakuraba";
 
 export as namespace state
 
 /** ステート */
-export interface State extends SerializableObject {
+export interface State {
     stateDataVersion: number;
 
     board: Board;
     zoom: number;
+    socket?: SocketIOClient.Socket;
+    boardId?: string;
+    side?: PlayerSide;
 }
 
 /** 卓情報 */
 export interface Board extends SerializableObject {
     objects: {[id: string]: BoardObject};
+    playerNames: {p1: string, p2: string};
+    megamis: {p1: Megami[], p2: Megami[]};
 
     actionLog: LogRecord[];
     chatLog: LogRecord[];

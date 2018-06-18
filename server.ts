@@ -7,8 +7,11 @@ import * as redis from 'redis';
 import * as moment from 'moment';
 import * as randomstring from 'randomstring';
 import * as sakuraba from './src/sakuraba';
+import { createInitialState } from './src/sakuraba/utils';
 import * as browserSync from 'browser-sync';
 import * as connectBrowserSync from 'connect-browser-sync';
+import { app, h } from 'hyperapp';
+import { actions, ActionsType } from './src/sakuraba/actions';
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
@@ -35,8 +38,8 @@ const server = express()
     });
 
     // 卓を追加
-    let board = new sakuraba.Board();
-    RedisClient.HSET('boards', boardId, JSON.stringify(board));
+    let state = createInitialState();
+    RedisClient.HSET('boards', boardId, JSON.stringify(state.board));
 
     // 卓にアクセスするためのURLを生成
     let urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
@@ -51,28 +54,29 @@ const server = express()
 const io = socketIO(server);
 
 /** Redis上に保存されたボードデータを取得 */
-function getStoredBoard(boardId: string, callback: (board: sakuraba.Board) => void){
+function getStoredBoard(boardId: string, callback: (board: state.Board) => void){
   // ボード情報を取得
   RedisClient.HGET('boards', boardId, (err, json) => {
-    let boardData = JSON.parse(json);
+    let boardData = JSON.parse(json) as state.Board;
     console.log('getStoredBoard: ', boardData);
-    let board = new sakuraba.Board();
-    board.deserialize(boardData);
 
     // コールバックを実行
-    callback.call(undefined, board);
+    callback.call(undefined, boardData);
   });
 }
 
 /** Redisへボードデータを保存 */
-function saveBoard(boardId: string, board: sakuraba.Board, callback: () => void){
-  console.log('saveBoard: ', JSON.stringify(board.serialize()));
+function saveBoard(boardId: string, board: state.Board, callback: () => void){
+  console.log('saveBoard: ', JSON.stringify(board));
   // ボード情報を保存
-  RedisClient.HSET('boards', boardId, JSON.stringify(board.serialize()), (err, success) => {
+  RedisClient.HSET('boards', boardId, JSON.stringify(board), (err, success) => {
     // コールバックを実行
     callback.call(undefined);
   });
 }
+
+let view = () => h('div');
+let appActions = app(createInitialState(), actions, view, null) as ActionsType;
 
 io.on('connection', (socket) => {
   console.log(`Client connected - ${socket.id}`);
@@ -126,7 +130,7 @@ io.on('connection', (socket) => {
     // ボード情報を取得
     getStoredBoard(data.boardId, (board) => {
       // 名前をアップデートして保存
-      board.getMySide(data.side).playerName = data.name;
+      board.playerNames[data.side] = data.name;
       saveBoard(data.boardId, board, () => {
         // プレイヤー名が入力されたイベントを他ユーザーに配信
         socket.broadcast.emit('on_player_name_input', board);
@@ -134,6 +138,22 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('reset_board', (data: {boardId: string}) => {
+    console.log('on reset_board: ', data);
+    // ボード情報を取得
+    getStoredBoard(data.boardId, (board) => {
+      // 盤を初期状態に戻す
+      appActions.setBoard(board);
+      appActions.resetBoard();
+      appActions.getState();
+      let st = (appActions.getState() as any) as state.State;
+
+      saveBoard(data.boardId, st.board, () => {
+        // プレイヤー名が入力されたイベントを他ユーザーに配信
+        socket.broadcast.emit('on_player_name_input', board);
+      });
+    });
+  });
 
   // メガミの選択
   socket.on('megami_select', (data: {boardId: string, side: sakuraba.Side, megamis: sakuraba.Megami[]}) => {

@@ -6,8 +6,11 @@ var path = require("path");
 var redis = require("redis");
 var randomstring = require("randomstring");
 var sakuraba = require("./src/sakuraba");
+var utils_1 = require("./src/sakuraba/utils");
 var browserSync = require("browser-sync");
 var connectBrowserSync = require("connect-browser-sync");
+var hyperapp_1 = require("hyperapp");
+var actions_1 = require("./src/sakuraba/actions");
 var RedisClient = redis.createClient(process.env.REDIS_URL);
 var PORT = process.env.PORT || 3000;
 var INDEX = path.join(__dirname, 'index.html');
@@ -31,8 +34,8 @@ var server = express()
         readable: true
     });
     // 卓を追加
-    var board = new sakuraba.Board();
-    RedisClient.HSET('boards', boardId, JSON.stringify(board));
+    var state = utils_1.createInitialState();
+    RedisClient.HSET('boards', boardId, JSON.stringify(state.board));
     // 卓にアクセスするためのURLを生成
     var urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
     var p1Url = urlBase + "/b/" + boardId + "/p1";
@@ -48,21 +51,21 @@ function getStoredBoard(boardId, callback) {
     RedisClient.HGET('boards', boardId, function (err, json) {
         var boardData = JSON.parse(json);
         console.log('getStoredBoard: ', boardData);
-        var board = new sakuraba.Board();
-        board.deserialize(boardData);
         // コールバックを実行
-        callback.call(undefined, board);
+        callback.call(undefined, boardData);
     });
 }
 /** Redisへボードデータを保存 */
 function saveBoard(boardId, board, callback) {
-    console.log('saveBoard: ', JSON.stringify(board.serialize()));
+    console.log('saveBoard: ', JSON.stringify(board));
     // ボード情報を保存
-    RedisClient.HSET('boards', boardId, JSON.stringify(board.serialize()), function (err, success) {
+    RedisClient.HSET('boards', boardId, JSON.stringify(board), function (err, success) {
         // コールバックを実行
         callback.call(undefined);
     });
 }
+var view = function () { return hyperapp_1.h('div'); };
+var appActions = hyperapp_1.app(utils_1.createInitialState(), actions_1.actions, view, null);
 io.on('connection', function (socket) {
     console.log("Client connected - " + socket.id);
     socket.on('disconnect', function () { return console.log('Client disconnected'); });
@@ -112,8 +115,23 @@ io.on('connection', function (socket) {
         // ボード情報を取得
         getStoredBoard(data.boardId, function (board) {
             // 名前をアップデートして保存
-            board.getMySide(data.side).playerName = data.name;
+            board.playerNames[data.side] = data.name;
             saveBoard(data.boardId, board, function () {
+                // プレイヤー名が入力されたイベントを他ユーザーに配信
+                socket.broadcast.emit('on_player_name_input', board);
+            });
+        });
+    });
+    socket.on('reset_board', function (data) {
+        console.log('on reset_board: ', data);
+        // ボード情報を取得
+        getStoredBoard(data.boardId, function (board) {
+            // 盤を初期状態に戻す
+            appActions.setBoard(board);
+            appActions.resetBoard();
+            appActions.getState();
+            var st = appActions.getState();
+            saveBoard(data.boardId, st.board, function () {
                 // プレイヤー名が入力されたイベントを他ユーザーに配信
                 socket.broadcast.emit('on_player_name_input', board);
             });

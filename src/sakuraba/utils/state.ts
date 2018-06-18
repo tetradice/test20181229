@@ -4,6 +4,8 @@ export function createInitialState(): state.State{
           stateDataVersion: 1
         , board: {
               objects: {}
+            , playerNames: {p1: null, p2: null}
+            , megamis: {p1: null, p2: null}
             , actionLog: []
             , chatLog: []
           }

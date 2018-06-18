@@ -5,7 +5,6 @@ module.exports = {
 
   // メインとなるJavaScriptファイル（エントリーポイント）
   entry: {
-    "hmain": "./src/hyper/hmain.tsx",
     "main": "./src/main.ts"
   },
   // ファイルの出力設定
@@ -23,9 +22,15 @@ module.exports = {
       {
         // 拡張子 .ts の場合
         test: /\.ts$|\.tsx$/,
-        // TypeScript をコンパイルする
-        use: 'ts-loader'
-      }
+        // shebangを取り除いて、TypeScriptでビルド
+        use: ['shebang-loader', 'ts-loader']
+      },
+      {
+        // 拡張子 .js の場合
+        test: /\.js$/,
+        // shebangを取り除いてビルド
+        use: ['shebang-loader']
+      },
     ]
   },
   resolve: {

@@ -102,6 +102,11 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         });
     });
 
-    return <div>{objectNodes}</div>;
+    return(
+        <div>
+            {objectNodes}
+            <components.ControlPanel />
+        </div>
+    );
   }
   

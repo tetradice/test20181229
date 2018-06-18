@@ -3,6 +3,6 @@ node_modules
 /public/semantic/src
 /public/semantic/tasks
 /public/semantic/gulpfile.js
-/src/*.js
-/src/*.js.map
+/src/**/*.js
+/src/**/*.js.map
 /semantic

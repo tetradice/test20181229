@@ -10,7 +10,7 @@
     "watch:server": "tsc --watch server.ts",
     "build": "npm run build:main && npm run build:server",
     "build:main": "webpack",
-    "build:server": "tsc server.ts"
+    "build:server": "tsc --out server.js server.ts"
   },
   "keywords": [],
   "author": "",
@@ -28,6 +28,7 @@
     "moment": "^2.22.2",
     "randomstring": "^1.1.5",
     "redis": "^2.8.0",
+    "shebang-loader": "^0.0.1",
     "socket.io": "2.1.1"
   },
   "devDependencies": {
