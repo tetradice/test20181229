@@ -3,6 +3,7 @@ import { ActionsType } from "../actions";
 import * as sakuraba from "../../sakuraba";
 import * as utils from "../utils";
 import { Card } from "./Card";
+import * as styles from "./ControlPanel.css"
 import * as devtools from 'hyperapp-redux-devtools';
 
 /** コントロールパネル */
@@ -141,17 +142,17 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 });
             });
             return(
-                <div>
+                <div class="ui modal transition visible active" id="MEGAMI-SELECT-MODAL">
                     <div class="content">
-                        <div class="description" style={{marginBottom: '2em'}}>
+                        <div class="description" style="margin-bottom: 2em;">
                             <p>使用するカードを選択してください。</p>
                         </div>
-                        <div style={{width: '100%', overflow: 'scroll', maxHeight: '320px', position: 'relative'}}>
-                            <div style={{width: '1400px', height: '310px', position: 'relative'}} id="DECK-BUILD-CARD-AREA">
+                        <div class={styles.outer}>
+                            <div class={styles.cardArea} id="DECK-BUILD-CARD-AREA">
                                 {cardElements}
                             </div>
                         </div>
-                        <div style={{marginTop: '1em', fontSize: 'larger'}}>通常札: <span id="DECK-NORMAL-CARD-COUNT"></span>/7　　切札: <span id="DECK-SPECIAL-CARD-COUNT"></span>/3</div>
+                        <div class={styles.countCaption}>通常札: <span id="DECK-NORMAL-CARD-COUNT"></span>/7　　切札: <span id="DECK-SPECIAL-CARD-COUNT"></span>/3</div>
                     </div>
                     <div class="actions">
                         <div class="ui positive labeled icon button disabled">
@@ -161,10 +162,12 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                             キャンセル
                         </div>
                     </div>
-                </div>
+                    </div>
             );
         }   
 
+
+        
         // すでに選択しているカードは選択済みとする
         // let selectedIds: string[] = [];
         // selectedIds = selectedIds.concat(myBoardSide.library.map(c => c.id));
