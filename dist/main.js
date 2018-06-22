@@ -36328,37 +36328,39 @@ exports.default = {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var sakuraba = __webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts");
 // 説明を取得する関数
-function getDescriptionHtml() {
-    var cardTitleHtml = "<ruby><rb>" + this.card.data.name + "</rb><rp>(</rp><rt>" + this.card.data.ruby + "</rt><rp>)</rp></ruby>";
+function getDescriptionHtml(cardId) {
+    var cardData = sakuraba.CARD_DATA[cardId];
+    var cardTitleHtml = "<ruby><rb>" + cardData.name + "</rb><rp>(</rp><rt>" + cardData.ruby + "</rt><rp>)</rp></ruby>";
     var html = "<div class='ui header' style='margin-right: 2em;'>" + cardTitleHtml;
     html += "</div><div class='ui content'>";
     var typeCaptions = [];
-    if (this.card.data.types.indexOf('attack') >= 0)
+    if (cardData.types.indexOf('attack') >= 0)
         typeCaptions.push("<span style='color: red; font-weight: bold;'>攻撃</span>");
-    if (this.card.data.types.indexOf('action') >= 0)
+    if (cardData.types.indexOf('action') >= 0)
         typeCaptions.push("<span style='color: blue; font-weight: bold;'>行動</span>");
-    if (this.card.data.types.indexOf('enhance') >= 0)
+    if (cardData.types.indexOf('enhance') >= 0)
         typeCaptions.push("<span style='color: green; font-weight: bold;'>付与</span>");
-    if (this.card.data.types.indexOf('reaction') >= 0)
+    if (cardData.types.indexOf('reaction') >= 0)
         typeCaptions.push("<span style='color: purple; font-weight: bold;'>対応</span>");
-    if (this.card.data.types.indexOf('fullpower') >= 0)
+    if (cardData.types.indexOf('fullpower') >= 0)
         typeCaptions.push("<span style='color: gold; font-weight: bold;'>全力</span>");
     html += "" + typeCaptions.join('/');
-    if (this.card.data.range !== undefined) {
-        html += "<span style='margin-left: 1em;'>\u9069\u6B63\u8DDD\u96E2" + this.card.data.range + "</span>";
+    if (cardData.range !== undefined) {
+        html += "<span style='margin-left: 1em;'>\u9069\u6B63\u8DDD\u96E2" + cardData.range + "</span>";
     }
     html += "<br>";
-    if (this.card.data.baseType === 'special') {
-        html += "<div class='ui top right attached label'>\u6D88\u8CBB: " + this.card.data.cost + "</div>";
+    if (cardData.baseType === 'special') {
+        html += "<div class='ui top right attached label'>\u6D88\u8CBB: " + cardData.cost + "</div>";
     }
-    if (this.card.data.types.indexOf('enhance') >= 0) {
-        html += "\u7D0D: " + this.card.data.capacity + "<br>";
+    if (cardData.types.indexOf('enhance') >= 0) {
+        html += "\u7D0D: " + cardData.capacity + "<br>";
     }
-    if (this.card.data.damage !== undefined) {
-        html += this.card.data.damage + "<br>";
+    if (cardData.damage !== undefined) {
+        html += cardData.damage + "<br>";
     }
-    html += "" + this.card.data.text.replace('\n', '<br>');
+    html += "" + cardData.text.replace('\n', '<br>');
     html += "</div>";
     return html;
 }
@@ -36368,7 +36370,15 @@ exports.Card = function (params) { return function (state, actions) {
         left: params.left + "px",
         top: params.top + "px"
     };
-    return hyperapp_1.h("div", { class: "fbs-card", id: 'board-object-' + params.target.id, style: styles, draggable: "true", "data-html": getDescriptionHtml() });
+    var cardData = sakuraba.CARD_DATA[params.target.cardId];
+    var className = "fbs-card";
+    if (params.target.opened) {
+        className += " open-normal";
+    }
+    else {
+        className += " back-normal";
+    }
+    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + params.target.id, style: styles, draggable: "true", "data-html": getDescriptionHtml(params.target.cardId) }, (params.target.opened ? cardData.name : '')));
 }; };
 
 
@@ -36386,6 +36396,9 @@ exports.Card = function (params) { return function (state, actions) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var sakuraba = __webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts");
+var utils = __webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts");
+var Card_1 = __webpack_require__(/*! ./Card */ "./src/sakuraba/components/Card.tsx");
+var devtools = __webpack_require__(/*! hyperapp-redux-devtools */ "./node_modules/hyperapp-redux-devtools/index.js");
 /** コントロールパネル */
 exports.ControlPanel = function () { return function (state, actions) {
     var reset = function () {
@@ -36394,6 +36407,16 @@ exports.ControlPanel = function () { return function (state, actions) {
         if (state.socket)
             state.socket.emit('reset_board', { boardId: state.boardId });
     };
+    /** ポップアップ初期化 */
+    function setPopup() {
+        // ポップアップ初期化
+        $('[data-html],[data-content]').popup({
+            delay: { show: 500, hide: 0 },
+            onShow: function () {
+                //if(draggingFrom !== null) return false;
+            },
+        });
+    }
     /** メガミ選択処理 */
     var megamiSelect = function () {
         // メガミ選択ダイアログでのボタン表示更新
@@ -36441,12 +36464,117 @@ exports.ControlPanel = function () { return function (state, actions) {
             updateMegamiSelectModalView();
         });
     };
+    /** デッキ構築処理 */
+    var deckBuild = function () {
+        // 選択カード数、ボタン等の表示更新
+        function updateDeckCounts() {
+            var normalCardCount = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').length;
+            var specialCardCount = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').length;
+            var normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
+            $('#DECK-NORMAL-CARD-COUNT').text(normalCardCount).css({ color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold') });
+            var specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
+            $('#DECK-SPECIAL-CARD-COUNT').text(specialCardCount).css({ color: specialColor, fontWeight: (specialColor === 'black' ? 'normal' : 'bold') });
+            if (normalCardCount === 7 && specialCardCount === 3) {
+                $('#DECK-BUILD-MODAL .positive.button').removeClass('disabled');
+            }
+            else {
+                $('#DECK-BUILD-MODAL .positive.button').addClass('disabled');
+            }
+        }
+        // デッキ構築モーダル内のカードをクリック
+        $('body').on('click', '#DECK-BUILD-MODAL .fbs-card', function (e) {
+            // 選択切り替え
+            $(this).toggleClass('selected');
+            // 選択数の表示を更新
+            updateDeckCounts();
+        });
+        // デッキ構築ボタン
+        var cardIds = [[], [], []];
+        // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート
+        for (var key in sakuraba.CARD_DATA) {
+            var data = sakuraba.CARD_DATA[key];
+            if (data.megami === state.board.megamis[state.side][0] && data.baseType === 'normal') {
+                cardIds[0].push(key);
+            }
+            if (data.megami === state.board.megamis[state.side][1] && data.baseType === 'normal') {
+                cardIds[1].push(key);
+            }
+            if (state.board.megamis[state.side].indexOf(data.megami) >= 0 && data.baseType === 'special') {
+                cardIds[2].push(key);
+            }
+        }
+        // デッキ構築エリアをセット
+        var view = function () {
+            var cardElements = [];
+            cardIds.forEach(function (cardIdsInRow, r) {
+                cardIdsInRow.forEach(function (cardId, c) {
+                    var card = utils.createCard("deck-" + cardId, cardId, null);
+                    card.opened = true;
+                    var top = 4 + r * (160 + 8);
+                    var left = 4 + c * (100 + 8);
+                    cardElements.push(hyperapp_1.h(Card_1.Card, { target: card, left: left, top: top }));
+                });
+            });
+            return (hyperapp_1.h("div", null,
+                hyperapp_1.h("div", { class: "content" },
+                    hyperapp_1.h("div", { class: "description", style: { marginBottom: '2em' } },
+                        hyperapp_1.h("p", null, "\u4F7F\u7528\u3059\u308B\u30AB\u30FC\u30C9\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002")),
+                    hyperapp_1.h("div", { style: { width: '100%', overflow: 'scroll', maxHeight: '320px', position: 'relative' } },
+                        hyperapp_1.h("div", { style: { width: '1400px', height: '310px', position: 'relative' }, id: "DECK-BUILD-CARD-AREA" }, cardElements)),
+                    hyperapp_1.h("div", { style: { marginTop: '1em', fontSize: 'larger' } },
+                        "\u901A\u5E38\u672D: ",
+                        hyperapp_1.h("span", { id: "DECK-NORMAL-CARD-COUNT" }),
+                        "/7\u3000\u3000\u5207\u672D: ",
+                        hyperapp_1.h("span", { id: "DECK-SPECIAL-CARD-COUNT" }),
+                        "/3")),
+                hyperapp_1.h("div", { class: "actions" },
+                    hyperapp_1.h("div", { class: "ui positive labeled icon button disabled" },
+                        "\u6C7A\u5B9A ",
+                        hyperapp_1.h("i", { class: "checkmark icon" })),
+                    hyperapp_1.h("div", { class: "ui black deny button" }, "\u30AD\u30E3\u30F3\u30BB\u30EB"))));
+        };
+        // すでに選択しているカードは選択済みとする
+        // let selectedIds: string[] = [];
+        // selectedIds = selectedIds.concat(myBoardSide.library.map(c => c.id));
+        // selectedIds = selectedIds.concat(myBoardSide.specials.map(c => c.id));
+        // console.log(selectedIds);
+        // if(selectedIds.length >= 1){
+        //     let selector = selectedIds.map(id => `#DECK-BUILD-CARD-AREA [data-card-id=${id}]`).join(',');
+        //     $(selector).addClass('selected');
+        // }
+        var settings = {
+            closable: false, autofocus: false,
+            onShow: function () {
+                // 選択数の表示を更新
+                updateDeckCounts();
+                // ポップアップの表示をセット
+                devtools(hyperapp_1.app)({}, {}, view, document.getElementById('DECK-BUILD-AREA'));
+            },
+            onApprove: function () {
+                // 選択したカードを自分の山札、切札にセット
+                //let normalCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
+                //myBoardSide.library = normalCards as sakuraba.Card[];
+                //let specialCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
+                //myBoardSide.specials = specialCards as sakuraba.Card[];
+                //console.log(myBoardSide);
+                // カードの初期化、配置、ポップアップ設定などを行う
+                //updatePhaseState(true);
+                // socket.ioでイベント送信
+                //state.socket.emit('deck_build', {boardId: params.boardId, side: params.side, library: myBoardSide.library, specials: myBoardSide.specials});
+            },
+            onHide: function () {
+                // カード表示をクリア
+                $('#DECK-BUILD-CARD-AREA').empty();
+            }
+        };
+        $('#DECK-BUILD-MODAL').modal(settings).modal('show');
+    };
     var board = state.board;
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
         hyperapp_1.h("button", { class: "ui basic button", onclick: reset }, "\u2605\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8"),
         hyperapp_1.h("br", null),
         hyperapp_1.h("button", { class: "ui basic button", onclick: megamiSelect }, "\u30E1\u30AC\u30DF\u9078\u629E"),
-        hyperapp_1.h("button", { class: "ui basic button " + (state.board.megamis[state.side] !== null ? '' : 'disabled') }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
+        hyperapp_1.h("button", { class: "ui basic button " + (state.board.megamis[state.side] !== null ? '' : 'disabled'), onclick: deckBuild }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
         hyperapp_1.h("button", { class: "ui basic button " + 'disabled' }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F"),
         hyperapp_1.h("table", { class: "ui definition table", style: { width: '25em' } },
             hyperapp_1.h("tbody", null,
@@ -36606,6 +36734,20 @@ function getSakuraCount(state, region, side) {
     return ret;
 }
 exports.getSakuraCount = getSakuraCount;
+/** カード1枚を作成 */
+function createCard(id, cardId, region, side) {
+    return {
+        type: 'card',
+        id: id,
+        cardId: cardId,
+        region: region,
+        indexOfRegion: 0,
+        rotated: false,
+        opened: false,
+        side: side
+    };
+}
+exports.createCard = createCard;
 
 
 /***/ }),

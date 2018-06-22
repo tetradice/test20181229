@@ -1,6 +1,9 @@
-import { h } from "hyperapp";
+import { h, app } from "hyperapp";
 import { ActionsType } from "../actions";
 import * as sakuraba from "../../sakuraba";
+import * as utils from "../utils";
+import { Card } from "./Card";
+import * as devtools from 'hyperapp-redux-devtools';
 
 /** コントロールパネル */
 export const ControlPanel = () => (state: state.State, actions: ActionsType) => {
@@ -10,9 +13,19 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         if(state.socket) state.socket.emit('reset_board', {boardId: state.boardId});
     }
 
-    /** メガミ選択処理 */
-    let megamiSelect = () => {
+    /** ポップアップ初期化 */
+    function setPopup(){
+        // ポップアップ初期化
+        $('[data-html],[data-content]').popup({
+            delay: {show: 500, hide: 0},
+            onShow: function(): false | void{
+                //if(draggingFrom !== null) return false;
+            },
+        });
+    }
 
+    /** メガミ選択処理 */
+    let megamiSelect = function(){
         // メガミ選択ダイアログでのボタン表示更新
         function updateMegamiSelectModalView(){
             let megami1 = $('#MEGAMI1-SELECTION').val() as string;
@@ -66,6 +79,135 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             updateMegamiSelectModalView();
         });
     }
+
+    /** デッキ構築処理 */
+    let deckBuild = () => {
+
+        // 選択カード数、ボタン等の表示更新
+        function updateDeckCounts(){
+            let normalCardCount = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').length;
+            let specialCardCount = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').length;
+
+            let normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
+            $('#DECK-NORMAL-CARD-COUNT').text(normalCardCount).css({color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold')});
+            let specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
+            $('#DECK-SPECIAL-CARD-COUNT').text(specialCardCount).css({color: specialColor, fontWeight: (specialColor === 'black' ? 'normal' : 'bold')});
+
+            if(normalCardCount === 7 && specialCardCount === 3){
+                $('#DECK-BUILD-MODAL .positive.button').removeClass('disabled');
+            } else {
+                $('#DECK-BUILD-MODAL .positive.button').addClass('disabled');
+            }
+        }
+
+        // デッキ構築モーダル内のカードをクリック
+        $('body').on('click', '#DECK-BUILD-MODAL .fbs-card', function(e){
+            // 選択切り替え
+            $(this).toggleClass('selected');
+
+            // 選択数の表示を更新
+            updateDeckCounts();
+        });
+
+        // デッキ構築ボタン
+        let cardIds: string[][] = [[], [], []];
+
+        // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート
+        for(let key in sakuraba.CARD_DATA){
+            let data = sakuraba.CARD_DATA[key];
+            if(data.megami === state.board.megamis[state.side][0] && data.baseType === 'normal'){
+                cardIds[0].push(key);
+            }
+            if(data.megami === state.board.megamis[state.side][1] && data.baseType === 'normal'){
+                cardIds[1].push(key);
+            }
+            if(state.board.megamis[state.side].indexOf(data.megami) >= 0 && data.baseType === 'special'){
+                cardIds[2].push(key);
+            }
+        }
+
+        // デッキ構築エリアをセット
+        let view = () => {
+            let cardElements: JSX.Element[] = [];
+            cardIds.forEach((cardIdsInRow, r) => {
+                cardIdsInRow.forEach((cardId, c) => {
+                    
+                    let card = utils.createCard(`deck-${cardId}`, cardId, null);
+                    card.opened = true;
+                    let top = 4 + r * (160 + 8);
+                    let left = 4 + c * (100 + 8);
+                    
+                    cardElements.push(<Card target={card} left={left} top={top}></Card>);
+                });
+            });
+            return(
+                <div>
+                    <div class="content">
+                        <div class="description" style={{marginBottom: '2em'}}>
+                            <p>使用するカードを選択してください。</p>
+                        </div>
+                        <div style={{width: '100%', overflow: 'scroll', maxHeight: '320px', position: 'relative'}}>
+                            <div style={{width: '1400px', height: '310px', position: 'relative'}} id="DECK-BUILD-CARD-AREA">
+                                {cardElements}
+                            </div>
+                        </div>
+                        <div style={{marginTop: '1em', fontSize: 'larger'}}>通常札: <span id="DECK-NORMAL-CARD-COUNT"></span>/7　　切札: <span id="DECK-SPECIAL-CARD-COUNT"></span>/3</div>
+                    </div>
+                    <div class="actions">
+                        <div class="ui positive labeled icon button disabled">
+                            決定 <i class="checkmark icon"></i>
+                        </div>
+                        <div class="ui black deny button">
+                            キャンセル
+                        </div>
+                    </div>
+                </div>
+            );
+        }   
+
+        // すでに選択しているカードは選択済みとする
+        // let selectedIds: string[] = [];
+        // selectedIds = selectedIds.concat(myBoardSide.library.map(c => c.id));
+        // selectedIds = selectedIds.concat(myBoardSide.specials.map(c => c.id));
+        // console.log(selectedIds);
+        // if(selectedIds.length >= 1){
+        //     let selector = selectedIds.map(id => `#DECK-BUILD-CARD-AREA [data-card-id=${id}]`).join(',');
+        //     $(selector).addClass('selected');
+        // }
+
+        let settings: SemanticUI.ModalSettings = {
+            closable: false, autofocus: false,
+            onShow: function () {
+                // 選択数の表示を更新
+                updateDeckCounts();
+
+                // ポップアップの表示をセット
+                devtools(app)({}, {}, view, document.getElementById('DECK-BUILD-AREA'));
+            },
+            onApprove: function () {
+                // 選択したカードを自分の山札、切札にセット
+                //let normalCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
+                //myBoardSide.library = normalCards as sakuraba.Card[];
+                //let specialCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
+                //myBoardSide.specials = specialCards as sakuraba.Card[];
+                //console.log(myBoardSide);
+
+                // カードの初期化、配置、ポップアップ設定などを行う
+                //updatePhaseState(true);
+
+                // socket.ioでイベント送信
+                //state.socket.emit('deck_build', {boardId: params.boardId, side: params.side, library: myBoardSide.library, specials: myBoardSide.specials});
+                
+            },
+            onHide: function () {
+                // カード表示をクリア
+                $('#DECK-BUILD-CARD-AREA').empty();
+            }
+        }
+        $('#DECK-BUILD-MODAL').modal(settings).modal('show');
+
+    }
+
     let board = state.board;
 
     return (
@@ -73,7 +215,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             <button class="ui basic button" onclick={reset}>★ボードリセット</button><br />
 
             <button class={`ui basic button`} onclick={megamiSelect}>メガミ選択</button>
-            <button class={`ui basic button ${state.board.megamis[state.side] !== null ? '' : 'disabled'}`}>デッキ構築</button>
+            <button class={`ui basic button ${state.board.megamis[state.side] !== null ? '' : 'disabled'}`} onclick={deckBuild}>デッキ構築</button>
             <button class={`ui basic button ${'disabled'}`}>最初の手札を引く</button>
 
             <table class="ui definition table" style={{ width: '25em' }}>

@@ -39,3 +39,18 @@ export function getSakuraCount(state: state.State, region: SakuraTokenRegion, si
 
   return ret;
 } 
+
+
+/** カード1枚を作成 */
+export function createCard(id: string, cardId: string, region: CardRegion | null, side?: PlayerSide): state.Card{
+  return {
+      type: 'card'
+    , id: id
+    , cardId: cardId
+    , region: region
+    , indexOfRegion: 0
+    , rotated: false
+    , opened: false
+    , side: side
+  };
+}
