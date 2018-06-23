@@ -131,7 +131,15 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         }
 
         // デッキ構築エリアをセット
-        let view = () => {
+        let initialState = {shown: true};
+        let acts = {
+            hide: () => {
+                return {shown: false};
+            }
+        };
+        let view = (state: typeof initialState, actions: typeof acts) => {
+            if(!state.shown) return null;
+
             let cardElements: JSX.Element[] = [];
             cardIds.forEach((cardIdsInRow, r) => {
                 cardIdsInRow.forEach((cardId, c) => {
@@ -145,29 +153,32 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 });
             });
             return(
-                <div class="ui modal transition visible active" id="MEGAMI-SELECT-MODAL">
-                    <div class="content">
-                        <div class="description" style="margin-bottom: 2em;">
-                            <p>使用するカードを選択してください。</p>
+                <div class={"ui dimmer modals page visible active " + styles.modalTop}>
+                    <div class="ui modal visible active">
+                        <div class="content">
+                            <div class="description" style={{marginBottom: '2em'}}>
+                                <p>使用するカードを選択してください。</p>
+                            </div>
+                            <div class={styles.outer}>
+                                <div class={styles.cardArea} id="DECK-BUILD-CARD-AREA">
+                                    {cardElements}
+                                </div>
+                            </div>
+                            <div class={styles.countCaption}>通常札: <span id="DECK-NORMAL-CARD-COUNT"></span>/7　　切札: <span id="DECK-SPECIAL-CARD-COUNT"></span>/3</div>
                         </div>
-                        <div class={styles.outer}>
-                            <div class={styles.cardArea} id="DECK-BUILD-CARD-AREA">
-                                {cardElements}
+                        <div class="actions">
+                            <div class="ui positive labeled icon button disabled">
+                                決定 <i class="checkmark icon"></i>
+                            </div>
+                            <div class="ui black deny button" onclick={() => {actions.hide()}}>
+                                キャンセル
                             </div>
                         </div>
-                        <div class={styles.countCaption}>通常札: <span id="DECK-NORMAL-CARD-COUNT"></span>/7　　切札: <span id="DECK-SPECIAL-CARD-COUNT"></span>/3</div>
                     </div>
-                    <div class="actions">
-                        <div class="ui positive labeled icon button disabled">
-                            決定 <i class="checkmark icon"></i>
-                        </div>
-                        <div class="ui black deny button">
-                            キャンセル
-                        </div>
-                    </div>
-                    </div>
+                </div>
             );
         }   
+        devtools(app)(initialState, acts, view, document.getElementById('DECK-BUILD-MODAL'));
 
 
         
@@ -181,36 +192,36 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         //     $(selector).addClass('selected');
         // }
 
-        let settings: SemanticUI.ModalSettings = {
-            closable: false, autofocus: false,
-            onShow: function () {
-                // 選択数の表示を更新
-                updateDeckCounts();
+        // let settings: SemanticUI.ModalSettings = {
+        //     closable: false, autofocus: false,
+        //     onShow: function () {
+        //         // 選択数の表示を更新
+        //         updateDeckCounts();
 
-                // ポップアップの表示をセット
-                devtools(app)({}, {}, view, document.getElementById('DECK-BUILD-AREA'));
-            },
-            onApprove: function () {
-                // 選択したカードを自分の山札、切札にセット
-                //let normalCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
-                //myBoardSide.library = normalCards as sakuraba.Card[];
-                //let specialCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
-                //myBoardSide.specials = specialCards as sakuraba.Card[];
-                //console.log(myBoardSide);
+        //         // ポップアップの表示をセット
+        //         devtools(app)({}, {}, view, document.getElementById('DECK-BUILD-AREA'));
+        //     },
+        //     onApprove: function () {
+        //         // 選択したカードを自分の山札、切札にセット
+        //         //let normalCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
+        //         //myBoardSide.library = normalCards as sakuraba.Card[];
+        //         //let specialCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
+        //         //myBoardSide.specials = specialCards as sakuraba.Card[];
+        //         //console.log(myBoardSide);
 
-                // カードの初期化、配置、ポップアップ設定などを行う
-                //updatePhaseState(true);
+        //         // カードの初期化、配置、ポップアップ設定などを行う
+        //         //updatePhaseState(true);
 
-                // socket.ioでイベント送信
-                //state.socket.emit('deck_build', {boardId: params.boardId, side: params.side, library: myBoardSide.library, specials: myBoardSide.specials});
+        //         // socket.ioでイベント送信
+        //         //state.socket.emit('deck_build', {boardId: params.boardId, side: params.side, library: myBoardSide.library, specials: myBoardSide.specials});
                 
-            },
-            onHide: function () {
-                // カード表示をクリア
-                $('#DECK-BUILD-CARD-AREA').empty();
-            }
-        }
-        $('#DECK-BUILD-MODAL').modal(settings).modal('show');
+        //     },
+        //     onHide: function () {
+        //         // カード表示をクリア
+        //         $('#DECK-BUILD-CARD-AREA').empty();
+        //     }
+        // }
+        // $('#DECK-BUILD-MODAL').modal(settings).modal('show');
 
     }
 

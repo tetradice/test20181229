@@ -1,3 +1,7 @@
+.modalTop {
+    display: flex !important;
+}
+
 .outer {
     width: 100%;
     overflow: scroll;

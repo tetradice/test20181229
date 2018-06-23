@@ -98,10 +98,11 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, ".MJLWu3Dz0rVrsgJaQzEtg {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n._3Vmudcw1fxkI6euAwPIjL- {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n._1Y3JaeyIw11UFjWnifng3k {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}", "", {"version":3,"sources":["D:/work/furuyoni_simulator/server/src/sakuraba/components/ControlPanel.css"],"names":[],"mappings":"AAAA;IACI,YAAY;IACZ,iBAAiB;IACjB,kBAAkB;IAClB,mBAAmB;CACtB;;AAED;IACI,cAAc;IACd,cAAc;IACd,mBAAmB;CACtB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;CACrB","file":"ControlPanel.css","sourcesContent":[".outer {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.cardArea {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n.countCaption {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}"],"sourceRoot":""}]);
+exports.push([module.i, "._2_YRRrm_A6GqrWbCfql3AW {\r\n    display: flex !important;\r\n}\r\n\r\n.MJLWu3Dz0rVrsgJaQzEtg {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n._3Vmudcw1fxkI6euAwPIjL- {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n._1Y3JaeyIw11UFjWnifng3k {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}", "", {"version":3,"sources":["D:/work/furuyoni_simulator/server/src/sakuraba/components/ControlPanel.css"],"names":[],"mappings":"AAAA;IACI,yBAAyB;CAC5B;;AAED;IACI,YAAY;IACZ,iBAAiB;IACjB,kBAAkB;IAClB,mBAAmB;CACtB;;AAED;IACI,cAAc;IACd,cAAc;IACd,mBAAmB;CACtB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;CACrB","file":"ControlPanel.css","sourcesContent":[".modalTop {\r\n    display: flex !important;\r\n}\r\n\r\n.outer {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.cardArea {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n.countCaption {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}"],"sourceRoot":""}]);
 
 // exports
 exports.locals = {
+	"modalTop": "_2_YRRrm_A6GqrWbCfql3AW",
 	"outer": "MJLWu3Dz0rVrsgJaQzEtg",
 	"cardArea": "_3Vmudcw1fxkI6euAwPIjL-",
 	"countCaption": "_1Y3JaeyIw11UFjWnifng3k"
@@ -37139,7 +37140,15 @@ exports.ControlPanel = function () { return function (state, actions) {
             }
         }
         // デッキ構築エリアをセット
-        var view = function () {
+        var initialState = { shown: true };
+        var acts = {
+            hide: function () {
+                return { shown: false };
+            }
+        };
+        var view = function (state, actions) {
+            if (!state.shown)
+                return null;
             var cardElements = [];
             cardIds.forEach(function (cardIdsInRow, r) {
                 cardIdsInRow.forEach(function (cardId, c) {
@@ -37150,24 +37159,26 @@ exports.ControlPanel = function () { return function (state, actions) {
                     cardElements.push(hyperapp_1.h(Card_1.Card, { target: card, left: left, top: top }));
                 });
             });
-            return (hyperapp_1.h("div", { class: "ui modal transition visible active", id: "MEGAMI-SELECT-MODAL" },
-                hyperapp_1.h("div", { class: "content" },
-                    hyperapp_1.h("div", { class: "description", style: "margin-bottom: 2em;" },
-                        hyperapp_1.h("p", null, "\u4F7F\u7528\u3059\u308B\u30AB\u30FC\u30C9\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002")),
-                    hyperapp_1.h("div", { class: styles.outer },
-                        hyperapp_1.h("div", { class: styles.cardArea, id: "DECK-BUILD-CARD-AREA" }, cardElements)),
-                    hyperapp_1.h("div", { class: styles.countCaption },
-                        "\u901A\u5E38\u672D: ",
-                        hyperapp_1.h("span", { id: "DECK-NORMAL-CARD-COUNT" }),
-                        "/7\u3000\u3000\u5207\u672D: ",
-                        hyperapp_1.h("span", { id: "DECK-SPECIAL-CARD-COUNT" }),
-                        "/3")),
-                hyperapp_1.h("div", { class: "actions" },
-                    hyperapp_1.h("div", { class: "ui positive labeled icon button disabled" },
-                        "\u6C7A\u5B9A ",
-                        hyperapp_1.h("i", { class: "checkmark icon" })),
-                    hyperapp_1.h("div", { class: "ui black deny button" }, "\u30AD\u30E3\u30F3\u30BB\u30EB"))));
+            return (hyperapp_1.h("div", { class: "ui dimmer modals page visible active " + styles.modalTop },
+                hyperapp_1.h("div", { class: "ui modal visible active" },
+                    hyperapp_1.h("div", { class: "content" },
+                        hyperapp_1.h("div", { class: "description", style: { marginBottom: '2em' } },
+                            hyperapp_1.h("p", null, "\u4F7F\u7528\u3059\u308B\u30AB\u30FC\u30C9\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002")),
+                        hyperapp_1.h("div", { class: styles.outer },
+                            hyperapp_1.h("div", { class: styles.cardArea, id: "DECK-BUILD-CARD-AREA" }, cardElements)),
+                        hyperapp_1.h("div", { class: styles.countCaption },
+                            "\u901A\u5E38\u672D: ",
+                            hyperapp_1.h("span", { id: "DECK-NORMAL-CARD-COUNT" }),
+                            "/7\u3000\u3000\u5207\u672D: ",
+                            hyperapp_1.h("span", { id: "DECK-SPECIAL-CARD-COUNT" }),
+                            "/3")),
+                    hyperapp_1.h("div", { class: "actions" },
+                        hyperapp_1.h("div", { class: "ui positive labeled icon button disabled" },
+                            "\u6C7A\u5B9A ",
+                            hyperapp_1.h("i", { class: "checkmark icon" })),
+                        hyperapp_1.h("div", { class: "ui black deny button", onclick: function () { actions.hide(); } }, "\u30AD\u30E3\u30F3\u30BB\u30EB")))));
         };
+        devtools(hyperapp_1.app)(initialState, acts, view, document.getElementById('DECK-BUILD-MODAL'));
         // すでに選択しているカードは選択済みとする
         // let selectedIds: string[] = [];
         // selectedIds = selectedIds.concat(myBoardSide.library.map(c => c.id));
@@ -37177,32 +37188,32 @@ exports.ControlPanel = function () { return function (state, actions) {
         //     let selector = selectedIds.map(id => `#DECK-BUILD-CARD-AREA [data-card-id=${id}]`).join(',');
         //     $(selector).addClass('selected');
         // }
-        var settings = {
-            closable: false, autofocus: false,
-            onShow: function () {
-                // 選択数の表示を更新
-                updateDeckCounts();
-                // ポップアップの表示をセット
-                devtools(hyperapp_1.app)({}, {}, view, document.getElementById('DECK-BUILD-AREA'));
-            },
-            onApprove: function () {
-                // 選択したカードを自分の山札、切札にセット
-                //let normalCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
-                //myBoardSide.library = normalCards as sakuraba.Card[];
-                //let specialCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
-                //myBoardSide.specials = specialCards as sakuraba.Card[];
-                //console.log(myBoardSide);
-                // カードの初期化、配置、ポップアップ設定などを行う
-                //updatePhaseState(true);
-                // socket.ioでイベント送信
-                //state.socket.emit('deck_build', {boardId: params.boardId, side: params.side, library: myBoardSide.library, specials: myBoardSide.specials});
-            },
-            onHide: function () {
-                // カード表示をクリア
-                $('#DECK-BUILD-CARD-AREA').empty();
-            }
-        };
-        $('#DECK-BUILD-MODAL').modal(settings).modal('show');
+        // let settings: SemanticUI.ModalSettings = {
+        //     closable: false, autofocus: false,
+        //     onShow: function () {
+        //         // 選択数の表示を更新
+        //         updateDeckCounts();
+        //         // ポップアップの表示をセット
+        //         devtools(app)({}, {}, view, document.getElementById('DECK-BUILD-AREA'));
+        //     },
+        //     onApprove: function () {
+        //         // 選択したカードを自分の山札、切札にセット
+        //         //let normalCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
+        //         //myBoardSide.library = normalCards as sakuraba.Card[];
+        //         //let specialCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
+        //         //myBoardSide.specials = specialCards as sakuraba.Card[];
+        //         //console.log(myBoardSide);
+        //         // カードの初期化、配置、ポップアップ設定などを行う
+        //         //updatePhaseState(true);
+        //         // socket.ioでイベント送信
+        //         //state.socket.emit('deck_build', {boardId: params.boardId, side: params.side, library: myBoardSide.library, specials: myBoardSide.specials});
+        //     },
+        //     onHide: function () {
+        //         // カード表示をクリア
+        //         $('#DECK-BUILD-CARD-AREA').empty();
+        //     }
+        // }
+        // $('#DECK-BUILD-MODAL').modal(settings).modal('show');
     };
     var board = state.board;
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
