@@ -143,7 +143,7 @@ io.on('connection', function (socket) {
         // ボード情報を取得
         getStoredBoard(data.boardId, function (board) {
             // メガミをアップデートして保存
-            board.getMySide(data.side).megamis = data.megamis;
+            board.megamis[data.side] = data.megamis;
             saveBoard(data.boardId, board, function () {
                 // メガミが選択されたイベントを他ユーザーに配信
                 socket.broadcast.emit('on_megami_select', board);

@@ -37090,6 +37090,9 @@ exports.ControlPanel = function () { return function (state, actions) {
                 // 選択したメガミを設定
                 var megamis = [$('#MEGAMI1-SELECTION').val(), $('#MEGAMI2-SELECTION').val()];
                 actions.setMegamis({ side: state.side, megami1: megamis[0], megami2: megamis[1] });
+                if (state.socket) {
+                    state.socket.emit('megami_select', { boardId: state.boardId, side: state.side, megamis: megamis });
+                }
                 return undefined;
             } }).modal('show');
         $('#MEGAMI1-SELECTION, #MEGAMI2-SELECTION').on('change', function (e) {

@@ -72,6 +72,9 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             // 選択したメガミを設定
             let megamis = [$('#MEGAMI1-SELECTION').val() as sakuraba.Megami, $('#MEGAMI2-SELECTION').val() as sakuraba.Megami];
             actions.setMegamis({side: state.side, megami1: megamis[0], megami2: megamis[1]});
+            if(state.socket){
+                state.socket.emit('megami_select', {boardId: state.boardId, side: state.side, megamis: megamis});
+            }
 
             return undefined;
         }}).modal('show');
