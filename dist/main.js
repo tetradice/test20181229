@@ -37030,7 +37030,7 @@ var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/sr
 var sakuraba = __webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts");
 var utils = __webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts");
 var Card_1 = __webpack_require__(/*! ./Card */ "./src/sakuraba/components/Card.tsx");
-var styles = __webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/components/ControlPanel.css");
+var css = __webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/components/ControlPanel.css");
 var devtools = __webpack_require__(/*! hyperapp-redux-devtools */ "./node_modules/hyperapp-redux-devtools/index.js");
 /** コントロールパネル */
 exports.ControlPanel = function () { return function (state, actions) {
@@ -37159,14 +37159,14 @@ exports.ControlPanel = function () { return function (state, actions) {
                     cardElements.push(hyperapp_1.h(Card_1.Card, { target: card, left: left, top: top }));
                 });
             });
-            return (hyperapp_1.h("div", { class: "ui dimmer modals page visible active " + styles.modalTop },
+            return (hyperapp_1.h("div", { class: "ui dimmer modals page visible active " + css.modalTop },
                 hyperapp_1.h("div", { class: "ui modal visible active" },
                     hyperapp_1.h("div", { class: "content" },
                         hyperapp_1.h("div", { class: "description", style: { marginBottom: '2em' } },
                             hyperapp_1.h("p", null, "\u4F7F\u7528\u3059\u308B\u30AB\u30FC\u30C9\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002")),
-                        hyperapp_1.h("div", { class: styles.outer },
-                            hyperapp_1.h("div", { class: styles.cardArea, id: "DECK-BUILD-CARD-AREA" }, cardElements)),
-                        hyperapp_1.h("div", { class: styles.countCaption },
+                        hyperapp_1.h("div", { class: css.outer },
+                            hyperapp_1.h("div", { class: css.cardArea, id: "DECK-BUILD-CARD-AREA" }, cardElements)),
+                        hyperapp_1.h("div", { class: css.countCaption },
                             "\u901A\u5E38\u672D: ",
                             hyperapp_1.h("span", { id: "DECK-NORMAL-CARD-COUNT" }),
                             "/7\u3000\u3000\u5207\u672D: ",

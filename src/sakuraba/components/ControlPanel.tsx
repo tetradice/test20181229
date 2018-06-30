@@ -3,7 +3,7 @@ import { ActionsType } from "../actions";
 import * as sakuraba from "../../sakuraba";
 import * as utils from "../utils";
 import { Card } from "./Card";
-import * as styles from "./ControlPanel.css"
+import * as css from "./ControlPanel.css"
 import * as devtools from 'hyperapp-redux-devtools';
 
 /** コントロールパネル */
@@ -153,18 +153,18 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 });
             });
             return(
-                <div class={"ui dimmer modals page visible active " + styles.modalTop}>
+                <div class={"ui dimmer modals page visible active " + css.modalTop}>
                     <div class="ui modal visible active">
                         <div class="content">
                             <div class="description" style={{marginBottom: '2em'}}>
                                 <p>使用するカードを選択してください。</p>
                             </div>
-                            <div class={styles.outer}>
-                                <div class={styles.cardArea} id="DECK-BUILD-CARD-AREA">
+                            <div class={css.outer}>
+                                <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
                                     {cardElements}
                                 </div>
                             </div>
-                            <div class={styles.countCaption}>通常札: <span id="DECK-NORMAL-CARD-COUNT"></span>/7　　切札: <span id="DECK-SPECIAL-CARD-COUNT"></span>/3</div>
+                            <div class={css.countCaption}>通常札: <span id="DECK-NORMAL-CARD-COUNT"></span>/7　　切札: <span id="DECK-SPECIAL-CARD-COUNT"></span>/3</div>
                         </div>
                         <div class="actions">
                             <div class="ui positive labeled icon button disabled">
