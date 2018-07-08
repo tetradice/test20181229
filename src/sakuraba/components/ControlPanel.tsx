@@ -86,33 +86,6 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
     /** デッキ構築処理 */
     let deckBuild = () => {
-
-        // 選択カード数、ボタン等の表示更新
-        function updateDeckCounts(){
-            let normalCardCount = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').length;
-            let specialCardCount = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').length;
-
-            let normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
-            $('#DECK-NORMAL-CARD-COUNT').text(normalCardCount).css({color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold')});
-            let specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
-            $('#DECK-SPECIAL-CARD-COUNT').text(specialCardCount).css({color: specialColor, fontWeight: (specialColor === 'black' ? 'normal' : 'bold')});
-
-            if(normalCardCount === 7 && specialCardCount === 3){
-                $('#DECK-BUILD-MODAL .positive.button').removeClass('disabled');
-            } else {
-                $('#DECK-BUILD-MODAL .positive.button').addClass('disabled');
-            }
-        }
-
-        // デッキ構築モーダル内のカードをクリック
-        $('body').on('click', '#DECK-BUILD-MODAL .fbs-card', function(e){
-            // 選択切り替え
-            $(this).toggleClass('selected');
-
-            // 選択数の表示を更新
-            updateDeckCounts();
-        });
-
         // デッキ構築ボタン
         let cardIds: string[][] = [[], [], []];
 
@@ -131,29 +104,57 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         }
 
         // デッキ構築エリアをセット
-        let initialState = {shown: true};
-        let acts = {
+        let initialState = {
+            shown: true,
+            selectedCardIds: [],
+        };
+        let actDefinitions = {
             hide: () => {
                 return {shown: false};
-            }
+            },
+            selectCard: (cardId: string) => (state: typeof initialState) => {
+                let newSelectedCardIds = state.selectedCardIds.concat([]);
+
+                if(newSelectedCardIds.indexOf(cardId) >= 0){
+                    // 選択OFF
+                    newSelectedCardIds.splice(newSelectedCardIds.indexOf(cardId), 1);
+                } else {
+                    // 選択ON
+                    newSelectedCardIds.push(cardId)
+                }
+
+                return {selectedCardIds: newSelectedCardIds};
+            },
         };
-        let view = (state: typeof initialState, actions: typeof acts) => {
+        let view = (state: typeof initialState, actions: typeof actDefinitions) => {
             if(!state.shown) return null;
 
             let cardElements: JSX.Element[] = [];
             cardIds.forEach((cardIdsInRow, r) => {
                 cardIdsInRow.forEach((cardId, c) => {
-                    
                     let card = utils.createCard(`deck-${cardId}`, cardId, null);
                     card.opened = true;
                     let top = 4 + r * (160 + 8);
                     let left = 4 + c * (100 + 8);
+                    let selected = state.selectedCardIds.indexOf(cardId) >= 0;
                     
-                    cardElements.push(<Card target={card} left={left} top={top}></Card>);
+                    cardElements.push(<Card target={card} left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)}></Card>);
                 });
             });
+
+            let normalCardCount = state.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'normal').length;
+            let specialCardCount = state.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'special').length;
+
+            let normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
+            let normalCardCountStyles: Partial<CSSStyleDeclaration> = {color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold')};
+            let specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
+            let specialCardCountStyles: Partial<CSSStyleDeclaration> = {color: specialColor, fontWeight: (specialColor === 'black' ? 'normal' : 'bold')};
+
+            let okButtonClass = "ui positive labeled icon button";
+            if(normalCardCount !== 7 || specialCardCount !== 3) okButtonClass += " disabled";
+
             return(
-                <div class={"ui dimmer modals page visible active " + css.modalTop}>
+                <div class={"ui dimmer modals page visible active " + css.modalTop} oncreate={() => setPopup()}>
                     <div class="ui modal visible active">
                         <div class="content">
                             <div class="description" style={{marginBottom: '2em'}}>
@@ -164,10 +165,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                                     {cardElements}
                                 </div>
                             </div>
-                            <div class={css.countCaption}>通常札: <span id="DECK-NORMAL-CARD-COUNT"></span>/7　　切札: <span id="DECK-SPECIAL-CARD-COUNT"></span>/3</div>
+                            <div class={css.countCaption}>通常札: <span style={normalCardCountStyles}>{normalCardCount}</span>/7　　切札: <span style={specialCardCountStyles}>{specialCardCount}</span>/3</div>
                         </div>
                         <div class="actions">
-                            <div class="ui positive labeled icon button disabled">
+                            <div class={okButtonClass} onclick={() => {actions.hide()}}>
                                 決定 <i class="checkmark icon"></i>
                             </div>
                             <div class="ui black deny button" onclick={() => {actions.hide()}}>
@@ -178,7 +179,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 </div>
             );
         }   
-        devtools(app)(initialState, acts, view, document.getElementById('DECK-BUILD-MODAL'));
+        devtools(app)(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
 
 
         

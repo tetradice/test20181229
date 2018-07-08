@@ -14,7 +14,7 @@ function getDescriptionHtml(cardId: string): string{
     if(cardData.types.indexOf('action') >= 0) typeCaptions.push("<span style='color: blue; font-weight: bold;'>行動</span>");
     if(cardData.types.indexOf('enhance') >= 0) typeCaptions.push("<span style='color: green; font-weight: bold;'>付与</span>");
     if(cardData.types.indexOf('reaction') >= 0) typeCaptions.push("<span style='color: purple; font-weight: bold;'>対応</span>");
-    if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push("<span style='color: gold; font-weight: bold;'>全力</span>");
+    if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push("<span style='color: #E0C000; font-weight: bold;'>全力</span>");
     html += `${typeCaptions.join('/')}`;
     if(cardData.range !== undefined){
         html += `<span style='margin-left: 1em;'>適正距離${cardData.range}</span>`
@@ -35,7 +35,14 @@ function getDescriptionHtml(cardId: string): string{
 }
 
 /** カード */
-export const Card = (params: {target: state.Card, left: number, top: number}) => (state: state.State, actions) => {
+interface Param {
+    target: state.Card;
+    left: number;
+    top: number;
+    onclick?: Function;
+    selected?: boolean;
+}
+export const Card = (params: Param) => (state: state.State, actions) => {
     let styles: Partial<CSSStyleDeclaration> = {
           left: `${params.left}px`
         , top: `${params.top}px`
@@ -47,6 +54,9 @@ export const Card = (params: {target: state.Card, left: number, top: number}) =>
     } else {
         className += " back-normal";
     }
+    if(params.selected){
+        className += " selected";
+    }
 
     return (
         <div
@@ -54,6 +64,7 @@ export const Card = (params: {target: state.Card, left: number, top: number}) =>
             id={'board-object-' + params.target.id}
             style={styles}
             draggable="true"
+            onclick={params.onclick}
             data-html={getDescriptionHtml(params.target.cardId)}>
             {(params.target.opened ? cardData.name : '')}
         </div>

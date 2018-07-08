@@ -36770,7 +36770,7 @@ exports.CARD_DATA = {
     '03-himika-o-n-1': { megami: 'himika', name: 'シュート', ruby: '', baseType: 'normal', types: ['attack'], range: "4-10", damage: '2/1', text: '' },
     '03-himika-o-n-2': { megami: 'himika', name: 'ラピッドファイア', ruby: '', baseType: 'normal', types: ['attack'], range: "7-8", damage: '2/1', text: '【常時】連火-このカードがこのターンに使用した3枚目以降のカードならば、この《攻撃》は+1/+1となる。' },
     '03-himika-o-n-3': { megami: 'himika', name: 'マグナムカノン', ruby: '', baseType: 'normal', types: ['attack'], range: "5-8", damage: '3/2', text: '【攻撃後】自ライフ→ダスト：1' },
-    '03-himika-o-n-4': { megami: 'himika', name: 'フルバースト', ruby: '', baseType: 'normal', types: ['attack'], range: "5-9", damage: '3/1', text: '【常時】この《攻撃》がダメージを与えるならば、相手は片方を選ぶのではなく両方のダメージを受ける。' },
+    '03-himika-o-n-4': { megami: 'himika', name: 'フルバースト', ruby: '', baseType: 'normal', types: ['attack', 'fullpower'], range: "5-9", damage: '3/1', text: '【常時】この《攻撃》がダメージを与えるならば、相手は片方を選ぶのではなく両方のダメージを受ける。' },
     '03-himika-o-n-5': { megami: 'himika', name: 'バックステップ', ruby: '', baseType: 'normal', types: ['action'], text: 'カードを1枚引く。\nダスト→間合：1' },
     '03-himika-o-n-6': { megami: 'himika', name: 'バックドラフト', ruby: '', baseType: 'normal', types: ['action'], text: '相手を畏縮させる。\n連火-このカードがこのターンに使用した3枚目以降のカードならば、このターンにあなたが次に行う他のメガミによる《攻撃》を+1/+1する。' },
     '03-himika-o-n-7': { megami: 'himika', name: 'スモーク', ruby: '', baseType: 'normal', types: ['enhance'], capacity: '3', text: '【展開中】カードの矢印(→)により間合にある桜花結晶は移動しない。' },
@@ -36947,7 +36947,7 @@ function getDescriptionHtml(cardId) {
     if (cardData.types.indexOf('reaction') >= 0)
         typeCaptions.push("<span style='color: purple; font-weight: bold;'>対応</span>");
     if (cardData.types.indexOf('fullpower') >= 0)
-        typeCaptions.push("<span style='color: gold; font-weight: bold;'>全力</span>");
+        typeCaptions.push("<span style='color: #E0C000; font-weight: bold;'>全力</span>");
     html += "" + typeCaptions.join('/');
     if (cardData.range !== undefined) {
         html += "<span style='margin-left: 1em;'>\u9069\u6B63\u8DDD\u96E2" + cardData.range + "</span>";
@@ -36966,7 +36966,6 @@ function getDescriptionHtml(cardId) {
     html += "</div>";
     return html;
 }
-/** カード */
 exports.Card = function (params) { return function (state, actions) {
     var styles = {
         left: params.left + "px",
@@ -36980,7 +36979,10 @@ exports.Card = function (params) { return function (state, actions) {
     else {
         className += " back-normal";
     }
-    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + params.target.id, style: styles, draggable: "true", "data-html": getDescriptionHtml(params.target.cardId) }, (params.target.opened ? cardData.name : '')));
+    if (params.selected) {
+        className += " selected";
+    }
+    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + params.target.id, style: styles, draggable: "true", onclick: params.onclick, "data-html": getDescriptionHtml(params.target.cardId) }, (params.target.opened ? cardData.name : '')));
 }; };
 
 
@@ -37102,28 +37104,6 @@ exports.ControlPanel = function () { return function (state, actions) {
     };
     /** デッキ構築処理 */
     var deckBuild = function () {
-        // 選択カード数、ボタン等の表示更新
-        function updateDeckCounts() {
-            var normalCardCount = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').length;
-            var specialCardCount = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').length;
-            var normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
-            $('#DECK-NORMAL-CARD-COUNT').text(normalCardCount).css({ color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold') });
-            var specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
-            $('#DECK-SPECIAL-CARD-COUNT').text(specialCardCount).css({ color: specialColor, fontWeight: (specialColor === 'black' ? 'normal' : 'bold') });
-            if (normalCardCount === 7 && specialCardCount === 3) {
-                $('#DECK-BUILD-MODAL .positive.button').removeClass('disabled');
-            }
-            else {
-                $('#DECK-BUILD-MODAL .positive.button').addClass('disabled');
-            }
-        }
-        // デッキ構築モーダル内のカードをクリック
-        $('body').on('click', '#DECK-BUILD-MODAL .fbs-card', function (e) {
-            // 選択切り替え
-            $(this).toggleClass('selected');
-            // 選択数の表示を更新
-            updateDeckCounts();
-        });
         // デッキ構築ボタン
         var cardIds = [[], [], []];
         // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート
@@ -37140,11 +37120,26 @@ exports.ControlPanel = function () { return function (state, actions) {
             }
         }
         // デッキ構築エリアをセット
-        var initialState = { shown: true };
-        var acts = {
+        var initialState = {
+            shown: true,
+            selectedCardIds: [],
+        };
+        var actDefinitions = {
             hide: function () {
                 return { shown: false };
-            }
+            },
+            selectCard: function (cardId) { return function (state) {
+                var newSelectedCardIds = state.selectedCardIds.concat([]);
+                if (newSelectedCardIds.indexOf(cardId) >= 0) {
+                    // 選択OFF
+                    newSelectedCardIds.splice(newSelectedCardIds.indexOf(cardId), 1);
+                }
+                else {
+                    // 選択ON
+                    newSelectedCardIds.push(cardId);
+                }
+                return { selectedCardIds: newSelectedCardIds };
+            }; },
         };
         var view = function (state, actions) {
             if (!state.shown)
@@ -37156,10 +37151,20 @@ exports.ControlPanel = function () { return function (state, actions) {
                     card.opened = true;
                     var top = 4 + r * (160 + 8);
                     var left = 4 + c * (100 + 8);
-                    cardElements.push(hyperapp_1.h(Card_1.Card, { target: card, left: left, top: top }));
+                    var selected = state.selectedCardIds.indexOf(cardId) >= 0;
+                    cardElements.push(hyperapp_1.h(Card_1.Card, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); } }));
                 });
             });
-            return (hyperapp_1.h("div", { class: "ui dimmer modals page visible active " + css.modalTop },
+            var normalCardCount = state.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'normal'; }).length;
+            var specialCardCount = state.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'special'; }).length;
+            var normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
+            var normalCardCountStyles = { color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold') };
+            var specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
+            var specialCardCountStyles = { color: specialColor, fontWeight: (specialColor === 'black' ? 'normal' : 'bold') };
+            var okButtonClass = "ui positive labeled icon button";
+            if (normalCardCount !== 7 || specialCardCount !== 3)
+                okButtonClass += " disabled";
+            return (hyperapp_1.h("div", { class: "ui dimmer modals page visible active " + css.modalTop, oncreate: function () { return setPopup(); } },
                 hyperapp_1.h("div", { class: "ui modal visible active" },
                     hyperapp_1.h("div", { class: "content" },
                         hyperapp_1.h("div", { class: "description", style: { marginBottom: '2em' } },
@@ -37168,17 +37173,17 @@ exports.ControlPanel = function () { return function (state, actions) {
                             hyperapp_1.h("div", { class: css.cardArea, id: "DECK-BUILD-CARD-AREA" }, cardElements)),
                         hyperapp_1.h("div", { class: css.countCaption },
                             "\u901A\u5E38\u672D: ",
-                            hyperapp_1.h("span", { id: "DECK-NORMAL-CARD-COUNT" }),
+                            hyperapp_1.h("span", { style: normalCardCountStyles }, normalCardCount),
                             "/7\u3000\u3000\u5207\u672D: ",
-                            hyperapp_1.h("span", { id: "DECK-SPECIAL-CARD-COUNT" }),
+                            hyperapp_1.h("span", { style: specialCardCountStyles }, specialCardCount),
                             "/3")),
                     hyperapp_1.h("div", { class: "actions" },
-                        hyperapp_1.h("div", { class: "ui positive labeled icon button disabled" },
+                        hyperapp_1.h("div", { class: okButtonClass, onclick: function () { actions.hide(); } },
                             "\u6C7A\u5B9A ",
                             hyperapp_1.h("i", { class: "checkmark icon" })),
                         hyperapp_1.h("div", { class: "ui black deny button", onclick: function () { actions.hide(); } }, "\u30AD\u30E3\u30F3\u30BB\u30EB")))));
         };
-        devtools(hyperapp_1.app)(initialState, acts, view, document.getElementById('DECK-BUILD-MODAL'));
+        devtools(hyperapp_1.app)(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
         // すでに選択しているカードは選択済みとする
         // let selectedIds: string[] = [];
         // selectedIds = selectedIds.concat(myBoardSide.library.map(c => c.id));
