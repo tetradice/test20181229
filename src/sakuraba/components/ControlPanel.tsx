@@ -86,143 +86,112 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
     /** デッキ構築処理 */
     let deckBuild = () => {
-        // デッキ構築ボタン
-        let cardIds: string[][] = [[], [], []];
-
-        // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート
-        for(let key in sakuraba.CARD_DATA){
-            let data = sakuraba.CARD_DATA[key];
-            if(data.megami === state.board.megamis[state.side][0] && data.baseType === 'normal'){
-                cardIds[0].push(key);
-            }
-            if(data.megami === state.board.megamis[state.side][1] && data.baseType === 'normal'){
-                cardIds[1].push(key);
-            }
-            if(state.board.megamis[state.side].indexOf(data.megami) >= 0 && data.baseType === 'special'){
-                cardIds[2].push(key);
-            }
-        }
-
-        // デッキ構築エリアをセット
+        let cards = utils.getCards(state, 'library');
         let initialState = {
             shown: true,
-            selectedCardIds: [],
+            selectedCardIds: cards.filter(c => c.cardId).map(c => c.cardId),
         };
-        let actDefinitions = {
-            hide: () => {
-                return {shown: false};
-            },
-            selectCard: (cardId: string) => (state: typeof initialState) => {
-                let newSelectedCardIds = state.selectedCardIds.concat([]);
 
-                if(newSelectedCardIds.indexOf(cardId) >= 0){
-                    // 選択OFF
-                    newSelectedCardIds.splice(newSelectedCardIds.indexOf(cardId), 1);
-                } else {
-                    // 選択ON
-                    newSelectedCardIds.push(cardId)
+        // モーダル表示処理
+        let promise = new Promise(function(resolve, reject){
+            let cardIds: string[][] = [[], [], []];
+
+            // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート
+            for(let key in sakuraba.CARD_DATA){
+                let data = sakuraba.CARD_DATA[key];
+                if(data.megami === state.board.megamis[state.side][0] && data.baseType === 'normal'){
+                    cardIds[0].push(key);
                 }
+                if(data.megami === state.board.megamis[state.side][1] && data.baseType === 'normal'){
+                    cardIds[1].push(key);
+                }
+                if(state.board.megamis[state.side].indexOf(data.megami) >= 0 && data.baseType === 'special'){
+                    cardIds[2].push(key);
+                }
+            }
 
-                return {selectedCardIds: newSelectedCardIds};
-            },
-        };
-        let view = (state: typeof initialState, actions: typeof actDefinitions) => {
-            if(!state.shown) return null;
+            // デッキ構築エリアをセット
+            let actDefinitions = {
+                hide: () => {
+                    return {shown: false};
+                },
+                selectCard: (cardId: string) => (state: typeof initialState) => {
+                    let newSelectedCardIds = state.selectedCardIds.concat([]);
 
-            let cardElements: JSX.Element[] = [];
-            cardIds.forEach((cardIdsInRow, r) => {
-                cardIdsInRow.forEach((cardId, c) => {
-                    let card = utils.createCard(`deck-${cardId}`, cardId, null);
-                    card.opened = true;
-                    let top = 4 + r * (160 + 8);
-                    let left = 4 + c * (100 + 8);
-                    let selected = state.selectedCardIds.indexOf(cardId) >= 0;
-                    
-                    cardElements.push(<Card target={card} left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)}></Card>);
+                    if(newSelectedCardIds.indexOf(cardId) >= 0){
+                        // 選択OFF
+                        newSelectedCardIds.splice(newSelectedCardIds.indexOf(cardId), 1);
+                    } else {
+                        // 選択ON
+                        newSelectedCardIds.push(cardId)
+                    }
+
+                    return {selectedCardIds: newSelectedCardIds};
+                },
+            };
+            let view = (state: typeof initialState, actions: typeof actDefinitions) => {
+                if(!state.shown) return null;
+
+                let cardElements: JSX.Element[] = [];
+                cardIds.forEach((cardIdsInRow, r) => {
+                    cardIdsInRow.forEach((cardId, c) => {
+                        let card = utils.createCard(`deck-${cardId}`, cardId, null);
+                        card.opened = true;
+                        let top = 4 + r * (160 + 8);
+                        let left = 4 + c * (100 + 8);
+                        let selected = state.selectedCardIds.indexOf(cardId) >= 0;
+                        
+                        cardElements.push(<Card target={card} left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)}></Card>);
+                    });
                 });
-            });
 
-            let normalCardCount = state.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'normal').length;
-            let specialCardCount = state.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'special').length;
+                let normalCardCount = state.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'normal').length;
+                let specialCardCount = state.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'special').length;
 
-            let normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
-            let normalCardCountStyles: Partial<CSSStyleDeclaration> = {color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold')};
-            let specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
-            let specialCardCountStyles: Partial<CSSStyleDeclaration> = {color: specialColor, fontWeight: (specialColor === 'black' ? 'normal' : 'bold')};
+                let normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
+                let normalCardCountStyles: Partial<CSSStyleDeclaration> = {color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold')};
+                let specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
+                let specialCardCountStyles: Partial<CSSStyleDeclaration> = {color: specialColor, fontWeight: (specialColor === 'black' ? 'normal' : 'bold')};
 
-            let okButtonClass = "ui positive labeled icon button";
-            if(normalCardCount !== 7 || specialCardCount !== 3) okButtonClass += " disabled";
+                let okButtonClass = "ui positive labeled icon button";
+                if(normalCardCount !== 7 || specialCardCount !== 3) okButtonClass += " disabled";
 
-            return(
-                <div class={"ui dimmer modals page visible active " + css.modalTop} oncreate={() => setPopup()}>
-                    <div class="ui modal visible active">
-                        <div class="content">
-                            <div class="description" style={{marginBottom: '2em'}}>
-                                <p>使用するカードを選択してください。</p>
-                            </div>
-                            <div class={css.outer}>
-                                <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
-                                    {cardElements}
+                return(
+                    <div class={"ui dimmer modals page visible active " + css.modalTop} oncreate={() => setPopup()}>
+                        <div class="ui modal visible active">
+                            <div class="content">
+                                <div class="description" style={{marginBottom: '2em'}}>
+                                    <p>使用するカードを選択してください。</p>
                                 </div>
+                                <div class={css.outer}>
+                                    <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
+                                        {cardElements}
+                                    </div>
+                                </div>
+                                <div class={css.countCaption}>通常札: <span style={normalCardCountStyles}>{normalCardCount}</span>/7　　切札: <span style={specialCardCountStyles}>{specialCardCount}</span>/3</div>
                             </div>
-                            <div class={css.countCaption}>通常札: <span style={normalCardCountStyles}>{normalCardCount}</span>/7　　切札: <span style={specialCardCountStyles}>{specialCardCount}</span>/3</div>
-                        </div>
-                        <div class="actions">
-                            <div class={okButtonClass} onclick={() => {actions.hide()}}>
-                                決定 <i class="checkmark icon"></i>
-                            </div>
-                            <div class="ui black deny button" onclick={() => {actions.hide()}}>
-                                キャンセル
+                            <div class="actions">
+                                <div class={okButtonClass} onclick={() => {actions.hide(); resolve(state)}}>
+                                    決定 <i class="checkmark icon"></i>
+                                </div>
+                                <div class="ui black deny button" onclick={() => {actions.hide(); reject()}}>
+                                    キャンセル
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            );
-        }   
-        devtools(app)(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
+                );
+            }   
+            devtools(app)(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
+        });
 
-
-        
-        // すでに選択しているカードは選択済みとする
-        // let selectedIds: string[] = [];
-        // selectedIds = selectedIds.concat(myBoardSide.library.map(c => c.id));
-        // selectedIds = selectedIds.concat(myBoardSide.specials.map(c => c.id));
-        // console.log(selectedIds);
-        // if(selectedIds.length >= 1){
-        //     let selector = selectedIds.map(id => `#DECK-BUILD-CARD-AREA [data-card-id=${id}]`).join(',');
-        //     $(selector).addClass('selected');
-        // }
-
-        // let settings: SemanticUI.ModalSettings = {
-        //     closable: false, autofocus: false,
-        //     onShow: function () {
-        //         // 選択数の表示を更新
-        //         updateDeckCounts();
-
-        //         // ポップアップの表示をセット
-        //         devtools(app)({}, {}, view, document.getElementById('DECK-BUILD-AREA'));
-        //     },
-        //     onApprove: function () {
-        //         // 選択したカードを自分の山札、切札にセット
-        //         //let normalCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
-        //         //myBoardSide.library = normalCards as sakuraba.Card[];
-        //         //let specialCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
-        //         //myBoardSide.specials = specialCards as sakuraba.Card[];
-        //         //console.log(myBoardSide);
-
-        //         // カードの初期化、配置、ポップアップ設定などを行う
-        //         //updatePhaseState(true);
-
-        //         // socket.ioでイベント送信
-        //         //state.socket.emit('deck_build', {boardId: params.boardId, side: params.side, library: myBoardSide.library, specials: myBoardSide.specials});
-                
-        //     },
-        //     onHide: function () {
-        //         // カード表示をクリア
-        //         $('#DECK-BUILD-CARD-AREA').empty();
-        //     }
-        // }
-        // $('#DECK-BUILD-MODAL').modal(settings).modal('show');
+        // モーダル終了後の処理
+        promise.then((finalState: typeof initialState) => {
+            // 確定した場合、デッキを保存する
+            actions.setDeckCards({cardIds: finalState.selectedCardIds});
+        }).catch((reason) => {
+            
+        });
 
     }
 

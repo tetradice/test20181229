@@ -36818,6 +36818,12 @@ exports.default = {
         newBoard.megamis[args.side] = [args.megami1, args.megami2];
         return { board: newBoard };
     }; },
+    /** デッキのカードを設定する */
+    setDeckCards: function (args) { return function (state, actions) {
+        args.cardIds.forEach(function (id) {
+            actions.addCard({ region: 'library', cardId: id });
+        });
+    }; },
     /** ボードの状態を取得 */
     getState: function () { return function (state) { return state; }; }
 };
@@ -36838,15 +36844,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 exports.default = {
     /** カードを1枚追加する */
-    addCard: function (region, cardId) { return function (state) {
-        console.log(state);
+    addCard: function (args) { return function (state) {
         // 現在カード数 + 1で新しい連番を振る
-        var cardCount = Object.keys(state.board.objects).filter(function (key) { return state.board.objects[key].type === 'card'; }).length;
+        var cardCount = state.board.objects.filter(function (obj) { return obj.type === 'card'; }).length;
         var objectId = "card-" + (cardCount + 1);
         // カードを1枚追加
-        var newCard = { type: "card", cardId: cardId, id: objectId, region: region, indexOfRegion: 0, side: 'p1', rotated: false, opened: false };
-        var newObjects = {};
-        newObjects[objectId] = newCard;
+        var newCard = { type: "card", cardId: args.cardId, id: objectId, region: args.region, indexOfRegion: 0, side: 'p1', rotated: false, opened: false };
+        var newObjects = state.board.objects.concat([]);
+        newObjects.push(newCard);
+        var newBoard = _.merge({}, state.board, { objects: newObjects });
+        // 新しい盤を返す
+        return { board: newBoard };
+    }; },
+    /** 指定領域のカードをクリアする */
+    clearCards: function (args) { return function (state) {
+        var newObjects = state.board.objects.filter(function (obj) { return (obj.type === 'card' && obj.region === args.region); });
         var newBoard = _.merge({}, state.board, { objects: newObjects });
         // 新しい盤を返す
         return { board: newBoard };
@@ -37104,121 +37116,95 @@ exports.ControlPanel = function () { return function (state, actions) {
     };
     /** デッキ構築処理 */
     var deckBuild = function () {
-        // デッキ構築ボタン
-        var cardIds = [[], [], []];
-        // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート
-        for (var key in sakuraba.CARD_DATA) {
-            var data = sakuraba.CARD_DATA[key];
-            if (data.megami === state.board.megamis[state.side][0] && data.baseType === 'normal') {
-                cardIds[0].push(key);
-            }
-            if (data.megami === state.board.megamis[state.side][1] && data.baseType === 'normal') {
-                cardIds[1].push(key);
-            }
-            if (state.board.megamis[state.side].indexOf(data.megami) >= 0 && data.baseType === 'special') {
-                cardIds[2].push(key);
-            }
-        }
-        // デッキ構築エリアをセット
+        var cards = utils.getCards(state, 'library');
         var initialState = {
             shown: true,
-            selectedCardIds: [],
+            selectedCardIds: cards.filter(function (c) { return c.cardId; }).map(function (c) { return c.cardId; }),
         };
-        var actDefinitions = {
-            hide: function () {
-                return { shown: false };
-            },
-            selectCard: function (cardId) { return function (state) {
-                var newSelectedCardIds = state.selectedCardIds.concat([]);
-                if (newSelectedCardIds.indexOf(cardId) >= 0) {
-                    // 選択OFF
-                    newSelectedCardIds.splice(newSelectedCardIds.indexOf(cardId), 1);
+        // モーダル表示処理
+        var promise = new Promise(function (resolve, reject) {
+            var cardIds = [[], [], []];
+            // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート
+            for (var key in sakuraba.CARD_DATA) {
+                var data = sakuraba.CARD_DATA[key];
+                if (data.megami === state.board.megamis[state.side][0] && data.baseType === 'normal') {
+                    cardIds[0].push(key);
                 }
-                else {
-                    // 選択ON
-                    newSelectedCardIds.push(cardId);
+                if (data.megami === state.board.megamis[state.side][1] && data.baseType === 'normal') {
+                    cardIds[1].push(key);
                 }
-                return { selectedCardIds: newSelectedCardIds };
-            }; },
-        };
-        var view = function (state, actions) {
-            if (!state.shown)
-                return null;
-            var cardElements = [];
-            cardIds.forEach(function (cardIdsInRow, r) {
-                cardIdsInRow.forEach(function (cardId, c) {
-                    var card = utils.createCard("deck-" + cardId, cardId, null);
-                    card.opened = true;
-                    var top = 4 + r * (160 + 8);
-                    var left = 4 + c * (100 + 8);
-                    var selected = state.selectedCardIds.indexOf(cardId) >= 0;
-                    cardElements.push(hyperapp_1.h(Card_1.Card, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); } }));
+                if (state.board.megamis[state.side].indexOf(data.megami) >= 0 && data.baseType === 'special') {
+                    cardIds[2].push(key);
+                }
+            }
+            // デッキ構築エリアをセット
+            var actDefinitions = {
+                hide: function () {
+                    return { shown: false };
+                },
+                selectCard: function (cardId) { return function (state) {
+                    var newSelectedCardIds = state.selectedCardIds.concat([]);
+                    if (newSelectedCardIds.indexOf(cardId) >= 0) {
+                        // 選択OFF
+                        newSelectedCardIds.splice(newSelectedCardIds.indexOf(cardId), 1);
+                    }
+                    else {
+                        // 選択ON
+                        newSelectedCardIds.push(cardId);
+                    }
+                    return { selectedCardIds: newSelectedCardIds };
+                }; },
+            };
+            var view = function (state, actions) {
+                if (!state.shown)
+                    return null;
+                var cardElements = [];
+                cardIds.forEach(function (cardIdsInRow, r) {
+                    cardIdsInRow.forEach(function (cardId, c) {
+                        var card = utils.createCard("deck-" + cardId, cardId, null);
+                        card.opened = true;
+                        var top = 4 + r * (160 + 8);
+                        var left = 4 + c * (100 + 8);
+                        var selected = state.selectedCardIds.indexOf(cardId) >= 0;
+                        cardElements.push(hyperapp_1.h(Card_1.Card, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); } }));
+                    });
                 });
-            });
-            var normalCardCount = state.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'normal'; }).length;
-            var specialCardCount = state.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'special'; }).length;
-            var normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
-            var normalCardCountStyles = { color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold') };
-            var specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
-            var specialCardCountStyles = { color: specialColor, fontWeight: (specialColor === 'black' ? 'normal' : 'bold') };
-            var okButtonClass = "ui positive labeled icon button";
-            if (normalCardCount !== 7 || specialCardCount !== 3)
-                okButtonClass += " disabled";
-            return (hyperapp_1.h("div", { class: "ui dimmer modals page visible active " + css.modalTop, oncreate: function () { return setPopup(); } },
-                hyperapp_1.h("div", { class: "ui modal visible active" },
-                    hyperapp_1.h("div", { class: "content" },
-                        hyperapp_1.h("div", { class: "description", style: { marginBottom: '2em' } },
-                            hyperapp_1.h("p", null, "\u4F7F\u7528\u3059\u308B\u30AB\u30FC\u30C9\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002")),
-                        hyperapp_1.h("div", { class: css.outer },
-                            hyperapp_1.h("div", { class: css.cardArea, id: "DECK-BUILD-CARD-AREA" }, cardElements)),
-                        hyperapp_1.h("div", { class: css.countCaption },
-                            "\u901A\u5E38\u672D: ",
-                            hyperapp_1.h("span", { style: normalCardCountStyles }, normalCardCount),
-                            "/7\u3000\u3000\u5207\u672D: ",
-                            hyperapp_1.h("span", { style: specialCardCountStyles }, specialCardCount),
-                            "/3")),
-                    hyperapp_1.h("div", { class: "actions" },
-                        hyperapp_1.h("div", { class: okButtonClass, onclick: function () { actions.hide(); } },
-                            "\u6C7A\u5B9A ",
-                            hyperapp_1.h("i", { class: "checkmark icon" })),
-                        hyperapp_1.h("div", { class: "ui black deny button", onclick: function () { actions.hide(); } }, "\u30AD\u30E3\u30F3\u30BB\u30EB")))));
-        };
-        devtools(hyperapp_1.app)(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
-        // すでに選択しているカードは選択済みとする
-        // let selectedIds: string[] = [];
-        // selectedIds = selectedIds.concat(myBoardSide.library.map(c => c.id));
-        // selectedIds = selectedIds.concat(myBoardSide.specials.map(c => c.id));
-        // console.log(selectedIds);
-        // if(selectedIds.length >= 1){
-        //     let selector = selectedIds.map(id => `#DECK-BUILD-CARD-AREA [data-card-id=${id}]`).join(',');
-        //     $(selector).addClass('selected');
-        // }
-        // let settings: SemanticUI.ModalSettings = {
-        //     closable: false, autofocus: false,
-        //     onShow: function () {
-        //         // 選択数の表示を更新
-        //         updateDeckCounts();
-        //         // ポップアップの表示をセット
-        //         devtools(app)({}, {}, view, document.getElementById('DECK-BUILD-AREA'));
-        //     },
-        //     onApprove: function () {
-        //         // 選択したカードを自分の山札、切札にセット
-        //         //let normalCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-normal.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
-        //         //myBoardSide.library = normalCards as sakuraba.Card[];
-        //         //let specialCards: any = $('#DECK-BUILD-MODAL .fbs-card.open-special.selected').map((i, elem) => new sakuraba.Card($(elem).attr('data-card-id'))).get();
-        //         //myBoardSide.specials = specialCards as sakuraba.Card[];
-        //         //console.log(myBoardSide);
-        //         // カードの初期化、配置、ポップアップ設定などを行う
-        //         //updatePhaseState(true);
-        //         // socket.ioでイベント送信
-        //         //state.socket.emit('deck_build', {boardId: params.boardId, side: params.side, library: myBoardSide.library, specials: myBoardSide.specials});
-        //     },
-        //     onHide: function () {
-        //         // カード表示をクリア
-        //         $('#DECK-BUILD-CARD-AREA').empty();
-        //     }
-        // }
-        // $('#DECK-BUILD-MODAL').modal(settings).modal('show');
+                var normalCardCount = state.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'normal'; }).length;
+                var specialCardCount = state.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'special'; }).length;
+                var normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
+                var normalCardCountStyles = { color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold') };
+                var specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
+                var specialCardCountStyles = { color: specialColor, fontWeight: (specialColor === 'black' ? 'normal' : 'bold') };
+                var okButtonClass = "ui positive labeled icon button";
+                if (normalCardCount !== 7 || specialCardCount !== 3)
+                    okButtonClass += " disabled";
+                return (hyperapp_1.h("div", { class: "ui dimmer modals page visible active " + css.modalTop, oncreate: function () { return setPopup(); } },
+                    hyperapp_1.h("div", { class: "ui modal visible active" },
+                        hyperapp_1.h("div", { class: "content" },
+                            hyperapp_1.h("div", { class: "description", style: { marginBottom: '2em' } },
+                                hyperapp_1.h("p", null, "\u4F7F\u7528\u3059\u308B\u30AB\u30FC\u30C9\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002")),
+                            hyperapp_1.h("div", { class: css.outer },
+                                hyperapp_1.h("div", { class: css.cardArea, id: "DECK-BUILD-CARD-AREA" }, cardElements)),
+                            hyperapp_1.h("div", { class: css.countCaption },
+                                "\u901A\u5E38\u672D: ",
+                                hyperapp_1.h("span", { style: normalCardCountStyles }, normalCardCount),
+                                "/7\u3000\u3000\u5207\u672D: ",
+                                hyperapp_1.h("span", { style: specialCardCountStyles }, specialCardCount),
+                                "/3")),
+                        hyperapp_1.h("div", { class: "actions" },
+                            hyperapp_1.h("div", { class: okButtonClass, onclick: function () { actions.hide(); resolve(state); } },
+                                "\u6C7A\u5B9A ",
+                                hyperapp_1.h("i", { class: "checkmark icon" })),
+                            hyperapp_1.h("div", { class: "ui black deny button", onclick: function () { actions.hide(); reject(); } }, "\u30AD\u30E3\u30F3\u30BB\u30EB")))));
+            };
+            devtools(hyperapp_1.app)(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
+        });
+        // モーダル終了後の処理
+        promise.then(function (finalState) {
+            // 確定した場合、デッキを保存する
+            actions.setDeckCards({ cardIds: finalState.selectedCardIds });
+        }).catch(function (reason) {
+        });
     };
     var board = state.board;
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
@@ -37350,7 +37336,7 @@ function createInitialState() {
     var st = {
         stateDataVersion: 1,
         board: {
-            objects: {},
+            objects: [],
             playerNames: { p1: null, p2: null },
             megamis: { p1: null, p2: null },
             actionLog: [],
@@ -37364,24 +37350,22 @@ exports.createInitialState = createInitialState;
 /** 指定した条件を満たすカード一覧を取得 */
 function getCards(state, region) {
     var ret = [];
-    for (var key in Object.keys(state.board.objects)) {
-        var obj = state.board.objects[key];
+    state.board.objects.forEach(function (obj) {
         if (obj.type === 'card' && (region === undefined || obj.region === region)) {
             ret.push(obj);
         }
-    }
+    });
     return ret;
 }
 exports.getCards = getCards;
 /** 指定した領域の桜花結晶数を取得 */
 function getSakuraCount(state, region, side) {
     var ret = 0;
-    for (var key in Object.keys(state.board.objects)) {
-        var obj = state.board.objects[key];
+    state.board.objects.forEach(function (obj) {
         if (obj.type === 'sakura-token' && obj.region === region && (side === undefined || obj.side === side)) {
             ret++;
         }
-    }
+    });
     return ret;
 }
 exports.getSakuraCount = getSakuraCount;

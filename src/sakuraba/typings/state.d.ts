@@ -16,7 +16,7 @@ export interface State {
 
 /** 卓情報 */
 export interface Board extends SerializableObject {
-    objects: {[id: string]: BoardObject};
+    objects: BoardObject[];
     playerNames: {p1: string, p2: string};
     megamis: {p1: Megami[], p2: Megami[]};
 

@@ -1,6 +1,7 @@
 import * as  _ from "lodash";
 import * as utils from "../utils";
 import { Megami } from "../../sakuraba";
+import cardActions from './card';
 
 export default {
     /** ボード全体を設定する */
@@ -27,6 +28,13 @@ export default {
         newBoard.megamis[args.side] = [args.megami1, args.megami2];
         
         return {board: newBoard};
+    },
+
+    /** デッキのカードを設定する */
+    setDeckCards: (args: {cardIds: string[]}) => (state: state.State, actions: typeof cardActions) => {
+        args.cardIds.forEach((id) => {
+            actions.addCard({region: 'library', cardId: id});
+        });
     },
 
     /** ボードの状態を取得 */
