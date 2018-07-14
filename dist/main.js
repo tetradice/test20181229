@@ -36799,8 +36799,8 @@ var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 var utils = __webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts");
 exports.default = {
     /** ボード全体を設定する */
-    setBoard: function (p) {
-        return { board: p.newBoard };
+    setBoard: function (newBoard) {
+        return { board: newBoard };
     },
     /** ボード全体を初期化する */
     resetBoard: function () {
@@ -37201,7 +37201,10 @@ exports.ControlPanel = function () { return function (state, actions) {
         // モーダル終了後の処理
         promise.then(function (finalState) {
             // 確定した場合、デッキを保存する
-            actions.setDeckCards({ cardIds: finalState.selectedCardIds });
+            var ret = actions.setDeckCards({ cardIds: finalState.selectedCardIds });
+            var newState = actions.getState();
+            // サーバーに送信
+            state.socket.emit('deck_build', { boardId: newState.boardId, side: newState.side, addObjects: newState.board.objects });
         }).catch(function (reason) {
         });
     };
@@ -37464,6 +37467,7 @@ exports.view = function (state, actions) {
             var top = area.top + ret[2];
             objectNodes.push(hyperapp_1.h(components.Card, { target: card, left: left, top: top }));
         });
+        console.log(area, layoutResults);
     });
     return (hyperapp_1.h("div", null,
         objectNodes,

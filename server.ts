@@ -170,22 +170,28 @@ io.on('connection', (socket) => {
   });
 
   // デッキの構築
-  socket.on('deck_build', (data: {boardId: string, side: sakuraba.Side, library: sakuraba.Card[], specials: sakuraba.Card[]}) => {
+  socket.on('deck_build', (data: {boardId: string, side: sakuraba.Side, addObjects: state.BoardObject[]}) => {
     console.log('on deck_build: ', data);
 
     // ボード情報を取得
     getStoredBoard(data.boardId, (board) => {
-      let myBoardSide = board.getMySide(data.side);
-
-      let serialized = board.serialize();
-      serialized.p1Side.library = data.library;
-      serialized.p1Side.specials = data.specials;
-      board.deserialize(serialized);
-
+      board.objects = board.objects.concat(data.addObjects);
       saveBoard(data.boardId, board, () => {
-        // デッキが構築されたイベントを他ユーザーに配信
-        socket.broadcast.emit('on_deck_build',  board);
+        // メガミが選択されたイベントを他ユーザーに配信
+        socket.broadcast.emit('on_deck_build', board);
       });
+
+      // let myBoardSide = board.getMySide(data.side);
+
+      // let serialized = board.serialize();
+      // serialized.p1Side.library = data.library;
+      // serialized.p1Side.specials = data.specials;
+      // board.deserialize(serialized);
+
+      // saveBoard(data.boardId, board, () => {
+      //   // デッキが構築されたイベントを他ユーザーに配信
+      //   socket.broadcast.emit('on_deck_build',  board);
+      // });
     });
   });
 

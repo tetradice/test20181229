@@ -100,6 +100,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
             let top = area.top + ret[2];
             objectNodes.push(<components.Card target={card} left={left} top={top} />);
         });
+        console.log(area, layoutResults);
     });
 
     return(

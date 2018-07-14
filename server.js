@@ -155,15 +155,20 @@ io.on('connection', function (socket) {
         console.log('on deck_build: ', data);
         // ボード情報を取得
         getStoredBoard(data.boardId, function (board) {
-            var myBoardSide = board.getMySide(data.side);
-            var serialized = board.serialize();
-            serialized.p1Side.library = data.library;
-            serialized.p1Side.specials = data.specials;
-            board.deserialize(serialized);
+            board.objects = board.objects.concat(data.addObjects);
             saveBoard(data.boardId, board, function () {
-                // デッキが構築されたイベントを他ユーザーに配信
+                // メガミが選択されたイベントを他ユーザーに配信
                 socket.broadcast.emit('on_deck_build', board);
             });
+            // let myBoardSide = board.getMySide(data.side);
+            // let serialized = board.serialize();
+            // serialized.p1Side.library = data.library;
+            // serialized.p1Side.specials = data.specials;
+            // board.deserialize(serialized);
+            // saveBoard(data.boardId, board, () => {
+            //   // デッキが構築されたイベントを他ユーザーに配信
+            //   socket.broadcast.emit('on_deck_build',  board);
+            // });
         });
     });
     // 初期手札を引く
