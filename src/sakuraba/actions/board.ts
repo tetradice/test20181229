@@ -5,8 +5,8 @@ import cardActions from './card';
 
 export default {
     /** ボード全体を設定する */
-    setBoard: (newBoard: state.Board) => {
-        return {board: newBoard};
+    setBoard: (p: {newBoard: state.Board}) => {
+        return {board: p.newBoard};
     },
 
     /** ボード全体を初期化する */
@@ -15,24 +15,24 @@ export default {
     },
 
     /** 指定したサイドのプレイヤー名を設定する */
-    setPlayerName: (args: {side: PlayerSide, name: string}) => (state: state.State) => {
+    setPlayerName: (p: {side: PlayerSide, name: string}) => (state: state.State) => {
         let newBoard = _.merge({}, state.board);
-        newBoard.playerNames[args.side] = args.name;
+        newBoard.playerNames[p.side] = p.name;
         
         return {board: newBoard};
     },
 
     /** 指定したサイドのメガミを設定する */
-    setMegamis: (args: {side: PlayerSide, megami1: Megami, megami2: Megami}) => (state: state.State) => {
+    setMegamis: (p: {side: PlayerSide, megami1: Megami, megami2: Megami}) => (state: state.State) => {
         let newBoard = _.merge({}, state.board);
-        newBoard.megamis[args.side] = [args.megami1, args.megami2];
+        newBoard.megamis[p.side] = [p.megami1, p.megami2];
         
         return {board: newBoard};
     },
 
     /** デッキのカードを設定する */
-    setDeckCards: (args: {cardIds: string[]}) => (state: state.State, actions: typeof cardActions) => {
-        args.cardIds.forEach((id) => {
+    setDeckCards: (p: {cardIds: string[]}) => (state: state.State, actions: typeof cardActions) => {
+        p.cardIds.forEach((id) => {
             actions.addCard({region: 'library', cardId: id});
         });
     },

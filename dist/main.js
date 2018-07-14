@@ -36799,28 +36799,28 @@ var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 var utils = __webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts");
 exports.default = {
     /** ボード全体を設定する */
-    setBoard: function (newBoard) {
-        return { board: newBoard };
+    setBoard: function (p) {
+        return { board: p.newBoard };
     },
     /** ボード全体を初期化する */
     resetBoard: function () {
         return { board: utils.createInitialState().board };
     },
     /** 指定したサイドのプレイヤー名を設定する */
-    setPlayerName: function (args) { return function (state) {
+    setPlayerName: function (p) { return function (state) {
         var newBoard = _.merge({}, state.board);
-        newBoard.playerNames[args.side] = args.name;
+        newBoard.playerNames[p.side] = p.name;
         return { board: newBoard };
     }; },
     /** 指定したサイドのメガミを設定する */
-    setMegamis: function (args) { return function (state) {
+    setMegamis: function (p) { return function (state) {
         var newBoard = _.merge({}, state.board);
-        newBoard.megamis[args.side] = [args.megami1, args.megami2];
+        newBoard.megamis[p.side] = [p.megami1, p.megami2];
         return { board: newBoard };
     }; },
     /** デッキのカードを設定する */
-    setDeckCards: function (args) { return function (state, actions) {
-        args.cardIds.forEach(function (id) {
+    setDeckCards: function (p) { return function (state, actions) {
+        p.cardIds.forEach(function (id) {
             actions.addCard({ region: 'library', cardId: id });
         });
     }; },
@@ -36844,12 +36844,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 exports.default = {
     /** カードを1枚追加する */
-    addCard: function (args) { return function (state) {
+    addCard: function (p) { return function (state) {
         // 現在カード数 + 1で新しい連番を振る
         var cardCount = state.board.objects.filter(function (obj) { return obj.type === 'card'; }).length;
         var objectId = "card-" + (cardCount + 1);
         // カードを1枚追加
-        var newCard = { type: "card", cardId: args.cardId, id: objectId, region: args.region, indexOfRegion: 0, side: 'p1', rotated: false, opened: false };
+        var newCard = { type: "card", cardId: p.cardId, id: objectId, region: p.region, indexOfRegion: 0, side: 'p1', rotated: false, opened: false };
         var newObjects = state.board.objects.concat([]);
         newObjects.push(newCard);
         var newBoard = _.merge({}, state.board, { objects: newObjects });
@@ -36857,8 +36857,8 @@ exports.default = {
         return { board: newBoard };
     }; },
     /** 指定領域のカードをクリアする */
-    clearCards: function (args) { return function (state) {
-        var newObjects = state.board.objects.filter(function (obj) { return (obj.type === 'card' && obj.region === args.region); });
+    clearCards: function (p) { return function (state) {
+        var newObjects = state.board.objects.filter(function (obj) { return (obj.type === 'card' && obj.region === p.region); });
         var newBoard = _.merge({}, state.board, { objects: newObjects });
         // 新しい盤を返す
         return { board: newBoard };
@@ -36899,8 +36899,8 @@ exports.actions = Object.assign(move_1.default, log_1.default, card_1.default, b
 Object.defineProperty(exports, "__esModule", { value: true });
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 exports.default = {
-    appendActionLog: function (text) { return function (state) {
-        var append = [{ body: text, time: moment().format() }];
+    appendActionLog: function (p) { return function (state) {
+        var append = [{ body: p.text, time: moment().format() }];
         return { logs: state.board.actionLog.concat(append) };
     }; }
 };
@@ -36919,11 +36919,10 @@ exports.default = {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = {
-    /** 指定したオブジェクトを、別の領域に移動させる
-     * @param objectId - 対象のオブジェクトID
-     * @param toRegion - 移動先の領域
+    /**
+     * 指定したオブジェクトを、別の領域に移動させる
      */
-    moveObject: function (objectId, toRegion) {
+    moveObject: function (p) {
         return {};
     }
 };
