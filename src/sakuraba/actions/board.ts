@@ -5,8 +5,8 @@ import cardActions from './card';
 
 export default {
     /** ボード全体を設定する */
-    setBoard: (p: {newBoard: state.Board}) => {
-        return {board: p.newBoard};
+    setBoard: (newBoard: state.Board) => {
+        return {board: newBoard};
     },
 
     /** ボード全体を初期化する */
