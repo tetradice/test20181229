@@ -97,30 +97,30 @@ io.on('connection', (socket) => {
     console.log('on append_action_log: ', data);
     // ボード情報を取得
     getStoredBoard(data.boardId, (board) => {
-      // ログをアップデートして保存
-      let rec = new sakuraba.LogRecord();
-      Object.assign(rec, data.log);
-      board.actionLog.push(rec);
-      saveBoard(data.boardId, board, () => {
-        // イベントを他ユーザーに配信
-        let param: sakuraba.SocketParam.bcAppendActionLog = {log: rec};
-        socket.broadcast.emit('bc_append_action_log', param);
-      });
+      // // ログをアップデートして保存
+      // let rec = new sakuraba.LogRecord();
+      // Object.assign(rec, data.log);
+      // board.actionLog.push(rec);
+      // saveBoard(data.boardId, board, () => {
+      //   // イベントを他ユーザーに配信
+      //   let param: sakuraba.SocketParam.bcAppendActionLog = {log: rec};
+      //   socket.broadcast.emit('bc_append_action_log', param);
+      // });
     });
   });
   socket.on('append_chat_log', (data: sakuraba.SocketParam.appendChatLog) => {
     console.log('on append_chat_log: ', data);
     // ボード情報を取得
     getStoredBoard(data.boardId, (board) => {
-      // ログをアップデートして保存
-      let rec = new sakuraba.LogRecord();
-      Object.assign(rec, data.log);
-      board.chatLog.push(rec);
-      saveBoard(data.boardId, board, () => {
-        // イベントを他ユーザーに配信
-        let param: sakuraba.SocketParam.bcAppendChatLog = {log: rec};
-        socket.broadcast.emit('bc_append_chat_log', param);
-      });
+      // // ログをアップデートして保存
+      // let rec = new sakuraba.LogRecord();
+      // Object.assign(rec, data.log);
+      // board.chatLog.push(rec);
+      // saveBoard(data.boardId, board, () => {
+      //   // イベントを他ユーザーに配信
+      //   let param: sakuraba.SocketParam.bcAppendChatLog = {log: rec};
+      //   socket.broadcast.emit('bc_append_chat_log', param);
+      // });
     });
   });
 
@@ -196,21 +196,21 @@ io.on('connection', (socket) => {
   });
 
   // 初期手札を引く
-  socket.on('hand_set', (data: {boardId: string, side: sakuraba.Side, library: sakuraba.Card[], hands: sakuraba.Card[]}) => {
+  socket.on('hand_set', (data: {boardId: string, side: sakuraba.Side, library: state.Card[], hands: state.Card[]}) => {
     console.log('on hand_set: ', data);
     // ボード情報を取得
     getStoredBoard(data.boardId, (board) => {
-      let myBoardSide = board.getMySide(data.side);
+      // let myBoardSide = board.getMySide(data.side);
 
-      let serialized = board.serialize();
-      serialized.p1Side.library = data.library;
-      serialized.p1Side.hands = data.hands;
-      board.deserialize(serialized);
+      // let serialized = board.serialize();
+      // serialized.p1Side.library = data.library;
+      // serialized.p1Side.hands = data.hands;
+      // board.deserialize(serialized);
 
-      saveBoard(data.boardId, board, () => {
-        // デッキが構築されたイベントを他ユーザーに配信
-        socket.broadcast.emit('on_hand_set',  board);
-      });
+      // saveBoard(data.boardId, board, () => {
+      //   // デッキが構築されたイベントを他ユーザーに配信
+      //   socket.broadcast.emit('on_hand_set',  board);
+      // });
     });
   });
 });

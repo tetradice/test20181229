@@ -15,7 +15,7 @@ export interface State {
 }
 
 /** 卓情報 */
-export interface Board extends SerializableObject {
+export interface Board {
     objects: BoardObject[];
     playerNames: {p1: string, p2: string};
     megamis: {p1: Megami[], p2: Megami[]};
@@ -29,7 +29,7 @@ export interface Board extends SerializableObject {
  **/
 export type BoardObject = Card | SakuraToken | Vigor;
 
-export interface BoardObjectBase extends SerializableObject {
+export interface BoardObjectBase {
     id: string;
     type: 'card' | 'sakura-token' | 'vigor';
     side: PlayerSide;

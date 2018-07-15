@@ -5,7 +5,6 @@ var socketIO = require("socket.io");
 var path = require("path");
 var redis = require("redis");
 var randomstring = require("randomstring");
-var sakuraba = require("./src/sakuraba");
 var utils_1 = require("./src/sakuraba/utils");
 var browserSync = require("browser-sync");
 var connectBrowserSync = require("connect-browser-sync");
@@ -83,30 +82,30 @@ io.on('connection', function (socket) {
         console.log('on append_action_log: ', data);
         // ボード情報を取得
         getStoredBoard(data.boardId, function (board) {
-            // ログをアップデートして保存
-            var rec = new sakuraba.LogRecord();
-            Object.assign(rec, data.log);
-            board.actionLog.push(rec);
-            saveBoard(data.boardId, board, function () {
-                // イベントを他ユーザーに配信
-                var param = { log: rec };
-                socket.broadcast.emit('bc_append_action_log', param);
-            });
+            // // ログをアップデートして保存
+            // let rec = new sakuraba.LogRecord();
+            // Object.assign(rec, data.log);
+            // board.actionLog.push(rec);
+            // saveBoard(data.boardId, board, () => {
+            //   // イベントを他ユーザーに配信
+            //   let param: sakuraba.SocketParam.bcAppendActionLog = {log: rec};
+            //   socket.broadcast.emit('bc_append_action_log', param);
+            // });
         });
     });
     socket.on('append_chat_log', function (data) {
         console.log('on append_chat_log: ', data);
         // ボード情報を取得
         getStoredBoard(data.boardId, function (board) {
-            // ログをアップデートして保存
-            var rec = new sakuraba.LogRecord();
-            Object.assign(rec, data.log);
-            board.chatLog.push(rec);
-            saveBoard(data.boardId, board, function () {
-                // イベントを他ユーザーに配信
-                var param = { log: rec };
-                socket.broadcast.emit('bc_append_chat_log', param);
-            });
+            // // ログをアップデートして保存
+            // let rec = new sakuraba.LogRecord();
+            // Object.assign(rec, data.log);
+            // board.chatLog.push(rec);
+            // saveBoard(data.boardId, board, () => {
+            //   // イベントを他ユーザーに配信
+            //   let param: sakuraba.SocketParam.bcAppendChatLog = {log: rec};
+            //   socket.broadcast.emit('bc_append_chat_log', param);
+            // });
         });
     });
     // 名前の入力
@@ -176,15 +175,15 @@ io.on('connection', function (socket) {
         console.log('on hand_set: ', data);
         // ボード情報を取得
         getStoredBoard(data.boardId, function (board) {
-            var myBoardSide = board.getMySide(data.side);
-            var serialized = board.serialize();
-            serialized.p1Side.library = data.library;
-            serialized.p1Side.hands = data.hands;
-            board.deserialize(serialized);
-            saveBoard(data.boardId, board, function () {
-                // デッキが構築されたイベントを他ユーザーに配信
-                socket.broadcast.emit('on_hand_set', board);
-            });
+            // let myBoardSide = board.getMySide(data.side);
+            // let serialized = board.serialize();
+            // serialized.p1Side.library = data.library;
+            // serialized.p1Side.hands = data.hands;
+            // board.deserialize(serialized);
+            // saveBoard(data.boardId, board, () => {
+            //   // デッキが構築されたイベントを他ユーザーに配信
+            //   socket.broadcast.emit('on_hand_set',  board);
+            // });
         });
     });
 });

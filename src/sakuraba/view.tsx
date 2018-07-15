@@ -19,7 +19,8 @@ type Params = {
 type LayoutResult = [state.Card, number, number][];
 
 /** カードの配置(座標の決定)を行う */
-function layoutCards(cards: state.Card[], layoutType: LayoutType, areaWidth: number, cardWidth: number, padding: number, spacing: number): LayoutResult {
+function layoutCards(cards: state.Card[], layoutType: LayoutType, areaWidth: number, cardWidth: number): LayoutResult {
+    let padding = 8;
     let ret: LayoutResult = [];
     let cx = padding;
     let cy = padding;
@@ -29,25 +30,26 @@ function layoutCards(cards: state.Card[], layoutType: LayoutType, areaWidth: num
 
     // 横並びで配置する場合
     if(layoutType === 'horizontal'){
+        let spacing = 2;
         let innerWidth = areaWidth - (padding * 2);
         let requiredWidth = cardWidth * cards.length + padding * (cards.length - 1);
         
         if(requiredWidth <= innerWidth){
             // 領域の幅に収まる場合は、spacing分の間隔をあけて配置
             cards.forEach((child, i) => {
-                child.left = cx;
                 cx += cardWidth;
                 cx += spacing;
-                child.top = cy;
+
+                ret.push([child, cx, cy]);
             });
         } else {
             // 領域の幅に収まらない場合は、収まるように均等に詰めて並べる
             let overlapWidth = ((cardWidth * cards.length) - innerWidth) / cards.length;
             cards.forEach((child, i) => {
-                child.left = cx;
                 cx += cardWidth;
                 cx -= overlapWidth;
-                child.top = cy;
+
+                ret.push([child, cx, cy]);
             });        
         }
     }
@@ -55,20 +57,18 @@ function layoutCards(cards: state.Card[], layoutType: LayoutType, areaWidth: num
     // 積み重ねる場合
     if(layoutType === 'stacked'){
         cards.forEach((child, i) => {
-            child.left = cx;
-            child.top = cy;
-            cx += spacing;
-            cy += spacing;
+            ret.push([child, cx, cy]);
+            cx += 4;
+            cy += 1;
         });
     }
 
     return ret;
 }
 
-
 // メインビューの定義
 export const view: View<state.State, ActionsType> = (state, actions) => {
-    // 各領域ごとにカード、桜花結晶の配置を行う
+    // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     let areaData: {
         region: CardRegion
         , cardLayoutType: LayoutType
@@ -77,13 +77,14 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         , width: number
         , height: number
     }[] = [
-        {region: 'used',        cardLayoutType: 'horizontal', left: 0,   top: 80,  width: 450, height: 150}
-      , {region: 'hidden-used', cardLayoutType: 'stacked',    left: 470, top: 80,  width: 170, height: 140}
-      , {region: 'library',     cardLayoutType: 'stacked',    left: 720, top: 80,  width: 160, height: 160}
-      , {region: 'hand',        cardLayoutType: 'horizontal', left: 0,   top: 250, width: 700, height: 150}
-      , {region: 'special',     cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 150}
-    ];
+            { region: 'used', cardLayoutType: 'horizontal', left: 0, top: 80, width: 450, height: 150 }
+            , { region: 'hidden-used', cardLayoutType: 'stacked', left: 470, top: 80, width: 170, height: 140 }
+            , { region: 'library', cardLayoutType: 'stacked', left: 720, top: 80, width: 160, height: 160 }
+            , { region: 'hand', cardLayoutType: 'horizontal', left: 0, top: 250, width: 700, height: 150 }
+            , { region: 'special', cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 150 }
+        ];
 
+    let frameNodes: hyperapp.Children[] = [];
     let objectNodes: hyperapp.Children[] = [];
 
     areaData.forEach((area) => {
@@ -91,7 +92,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         let cards = utils.getCards(state, area.region);
 
         // 指定されたレイアウト情報に応じて、カードをレイアウトし、各カードの座標を決定
-        let layoutResults = layoutCards(cards, area.cardLayoutType, area.width, 100, 2, 8);
+        let layoutResults = layoutCards(cards, area.cardLayoutType, area.width, 100);
 
         // カードを領域の子オブジェクトとして追加
         layoutResults.forEach((ret) => {
@@ -100,14 +101,16 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
             let top = area.top + ret[2];
             objectNodes.push(<components.Card target={card} left={left} top={top} />);
         });
-        console.log(area, layoutResults);
+
+        // フレームを追加
+        frameNodes.push(<components.AreaFrame left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
 
-    return(
-        <div>
+    return (
+        <div style={{ position: 'relative', zIndex: 100 }}>
             {objectNodes}
+            {frameNodes}
             <components.ControlPanel />
         </div>
     );
-  }
-  
+}

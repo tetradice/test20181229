@@ -34,6 +34,19 @@ function getDescriptionHtml(cardId: string): string{
     return html;
 }
 
+
+
+
+function oncreate(element){
+    // SemanticUI ポップアップ初期化
+    element.focus();
+    $(element).popup({
+        delay: {show: 500, hide: 0},
+        onShow: function(): false | void{
+            //if(draggingFrom !== null) return false;
+        },
+    });
+}
 /** カード */
 interface Param {
     target: state.Card;
@@ -65,7 +78,9 @@ export const Card = (params: Param) => (state: state.State, actions) => {
             style={styles}
             draggable="true"
             onclick={params.onclick}
-            data-html={getDescriptionHtml(params.target.cardId)}>
+            data-html={getDescriptionHtml(params.target.cardId)}
+            oncreate={oncreate}
+        >
             {(params.target.opened ? cardData.name : '')}
         </div>
     );

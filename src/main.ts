@@ -1,8 +1,8 @@
-import { app } from "hyperapp";
+import { app, h } from "hyperapp";
 import * as devtools from 'hyperapp-redux-devtools';
 import { actions, ActionsType } from "./sakuraba/actions";
 import * as utils from "./sakuraba/utils";
-import { view } from "./sakuraba/view";
+import { view, testView } from "./sakuraba/view";
 
 
 declare var params: {
@@ -43,8 +43,7 @@ $(function(){
 
     // アプリケーション起動
     let appActions = devtools(app)(st, actions, view, document.getElementById('BOARD2')) as ActionsType;
-    console.log('hyperapp OK.');
-
+    
     // ボード情報をリクエスト
     console.log('request_first_board_to_server');
     socket.emit('request_first_board_to_server', {boardId: params.boardId, side: params.side});

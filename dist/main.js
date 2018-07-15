@@ -36692,7 +36692,6 @@ $(function () {
     st.side = params.side;
     // アプリケーション起動
     var appActions = devtools(hyperapp_1.app)(st, actions_1.actions, view_1.view, document.getElementById('BOARD2'));
-    console.log('hyperapp OK.');
     // ボード情報をリクエスト
     console.log('request_first_board_to_server');
     socket.emit('request_first_board_to_server', { boardId: params.boardId, side: params.side });
@@ -36918,14 +36917,44 @@ exports.default = {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 exports.default = {
     /**
      * 指定したオブジェクトを、別の領域に移動させる
      */
-    moveObject: function (p) {
-        return {};
-    }
+    moveObject: function (p) { return function (state) {
+        var newBoard = _.merge({}, state.board);
+        var index = newBoard.objects.findIndex(function (v) { return v.type === 'card' && v.id === p.objectId; });
+        newBoard.objects[index].region = p.toRegion;
+        // 新しい盤を返す
+        return { board: newBoard };
+    }; }
 };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/components/AreaFrame.tsx":
+/*!***********************************************!*\
+  !*** ./src/sakuraba/components/AreaFrame.tsx ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+exports.AreaFrame = function (params) { return function (state) {
+    var styles = {
+        left: params.left + "px",
+        top: params.top + "px",
+        width: params.width + "px",
+        height: params.height + "px",
+        position: 'relative'
+    };
+    return (hyperapp_1.h("div", { class: "area background ui segment", style: styles }));
+}; };
 
 
 /***/ }),
@@ -36977,6 +37006,16 @@ function getDescriptionHtml(cardId) {
     html += "</div>";
     return html;
 }
+function oncreate(element) {
+    // SemanticUI ポップアップ初期化
+    element.focus();
+    $(element).popup({
+        delay: { show: 500, hide: 0 },
+        onShow: function () {
+            //if(draggingFrom !== null) return false;
+        },
+    });
+}
 exports.Card = function (params) { return function (state, actions) {
     var styles = {
         left: params.left + "px",
@@ -36993,7 +37032,7 @@ exports.Card = function (params) { return function (state, actions) {
     if (params.selected) {
         className += " selected";
     }
-    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + params.target.id, style: styles, draggable: "true", onclick: params.onclick, "data-html": getDescriptionHtml(params.target.cardId) }, (params.target.opened ? cardData.name : '')));
+    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + params.target.id, style: styles, draggable: "true", onclick: params.onclick, "data-html": getDescriptionHtml(params.target.cardId), oncreate: oncreate }, (params.target.opened ? cardData.name : '')));
 }; };
 
 
@@ -37208,13 +37247,27 @@ exports.ControlPanel = function () { return function (state, actions) {
         }).catch(function (reason) {
         });
     };
+    var handSet = function () {
+        utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', function () {
+            actions.moveObject({ objectId: state.board.objects[0].id, toRegion: 'hand' });
+            // moveCard('library', 0, 'hand');
+            // moveCard('library', 0, 'hand');
+            // moveCard('library', 0, 'hand');
+            // refreshCardComponentRegionInfo('library');
+            // refreshCardComponentRegionInfo('hand');
+            // updateComponents();
+            // // socket.ioでイベント送信
+            // socket.emit('hand_set', {boardId: params.boardId, side: params.side, library: myBoardSide.library, hands: myBoardSide.hands});
+        });
+    };
     var board = state.board;
+    var deckBuilded = utils.getCards(state, 'library').length >= 1;
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
         hyperapp_1.h("button", { class: "ui basic button", onclick: reset }, "\u2605\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8"),
         hyperapp_1.h("br", null),
         hyperapp_1.h("button", { class: "ui basic button", onclick: megamiSelect }, "\u30E1\u30AC\u30DF\u9078\u629E"),
         hyperapp_1.h("button", { class: "ui basic button " + (state.board.megamis[state.side] !== null ? '' : 'disabled'), onclick: deckBuild }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
-        hyperapp_1.h("button", { class: "ui basic button " + 'disabled' }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F"),
+        hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? '' : 'disabled'), onclick: handSet }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F"),
         hyperapp_1.h("table", { class: "ui definition table", style: { width: '25em' } },
             hyperapp_1.h("tbody", null,
                 hyperapp_1.h("tr", null,
@@ -37301,6 +37354,7 @@ __export(__webpack_require__(/*! ./Card */ "./src/sakuraba/components/Card.tsx")
 __export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/components/SakuraToken.tsx"));
 __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/components/Vigor.tsx"));
 __export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/components/ControlPanel.tsx"));
+__export(__webpack_require__(/*! ./AreaFrame */ "./src/sakuraba/components/AreaFrame.tsx"));
 
 
 /***/ }),
@@ -37319,6 +37373,28 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(/*! ./state */ "./src/sakuraba/utils/state.ts"));
+__export(__webpack_require__(/*! ./modal */ "./src/sakuraba/utils/modal.ts"));
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/utils/modal.ts":
+/*!*************************************!*\
+  !*** ./src/sakuraba/utils/modal.ts ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function confirmModal(desc, yesCallback) {
+    $('#CONFIRM-MODAL .description').html(desc);
+    $('#CONFIRM-MODAL')
+        .modal({ closable: false, onApprove: yesCallback })
+        .modal('show');
+}
+exports.confirmModal = confirmModal;
 
 
 /***/ }),
@@ -37403,7 +37479,8 @@ var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/sr
 var components = __webpack_require__(/*! ./components */ "./src/sakuraba/components/index.ts");
 var utils = __webpack_require__(/*! ./utils */ "./src/sakuraba/utils/index.ts");
 /** カードの配置(座標の決定)を行う */
-function layoutCards(cards, layoutType, areaWidth, cardWidth, padding, spacing) {
+function layoutCards(cards, layoutType, areaWidth, cardWidth) {
+    var padding = 8;
     var ret = [];
     var cx = padding;
     var cy = padding;
@@ -37411,42 +37488,40 @@ function layoutCards(cards, layoutType, areaWidth, cardWidth, padding, spacing) 
     cards = cards.sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
     // 横並びで配置する場合
     if (layoutType === 'horizontal') {
+        var spacing_1 = 2;
         var innerWidth_1 = areaWidth - (padding * 2);
         var requiredWidth = cardWidth * cards.length + padding * (cards.length - 1);
         if (requiredWidth <= innerWidth_1) {
             // 領域の幅に収まる場合は、spacing分の間隔をあけて配置
             cards.forEach(function (child, i) {
-                child.left = cx;
                 cx += cardWidth;
-                cx += spacing;
-                child.top = cy;
+                cx += spacing_1;
+                ret.push([child, cx, cy]);
             });
         }
         else {
             // 領域の幅に収まらない場合は、収まるように均等に詰めて並べる
             var overlapWidth_1 = ((cardWidth * cards.length) - innerWidth_1) / cards.length;
             cards.forEach(function (child, i) {
-                child.left = cx;
                 cx += cardWidth;
                 cx -= overlapWidth_1;
-                child.top = cy;
+                ret.push([child, cx, cy]);
             });
         }
     }
     // 積み重ねる場合
     if (layoutType === 'stacked') {
         cards.forEach(function (child, i) {
-            child.left = cx;
-            child.top = cy;
-            cx += spacing;
-            cy += spacing;
+            ret.push([child, cx, cy]);
+            cx += 4;
+            cy += 1;
         });
     }
     return ret;
 }
 // メインビューの定義
 exports.view = function (state, actions) {
-    // 各領域ごとにカード、桜花結晶の配置を行う
+    // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     var areaData = [
         { region: 'used', cardLayoutType: 'horizontal', left: 0, top: 80, width: 450, height: 150 },
         { region: 'hidden-used', cardLayoutType: 'stacked', left: 470, top: 80, width: 170, height: 140 },
@@ -37454,12 +37529,13 @@ exports.view = function (state, actions) {
         { region: 'hand', cardLayoutType: 'horizontal', left: 0, top: 250, width: 700, height: 150 },
         { region: 'special', cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 150 }
     ];
+    var frameNodes = [];
     var objectNodes = [];
     areaData.forEach(function (area) {
         // 指定された領域のカードをすべてインデックス順に取得
         var cards = utils.getCards(state, area.region);
         // 指定されたレイアウト情報に応じて、カードをレイアウトし、各カードの座標を決定
-        var layoutResults = layoutCards(cards, area.cardLayoutType, area.width, 100, 2, 8);
+        var layoutResults = layoutCards(cards, area.cardLayoutType, area.width, 100);
         // カードを領域の子オブジェクトとして追加
         layoutResults.forEach(function (ret) {
             var card = ret[0];
@@ -37467,10 +37543,12 @@ exports.view = function (state, actions) {
             var top = area.top + ret[2];
             objectNodes.push(hyperapp_1.h(components.Card, { target: card, left: left, top: top }));
         });
-        console.log(area, layoutResults);
+        // フレームを追加
+        frameNodes.push(hyperapp_1.h(components.AreaFrame, { left: area.left, top: area.top, width: area.width, height: area.height }));
     });
-    return (hyperapp_1.h("div", null,
+    return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
         objectNodes,
+        frameNodes,
         hyperapp_1.h(components.ControlPanel, null)));
 };
 

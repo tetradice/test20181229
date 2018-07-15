@@ -196,10 +196,27 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         }).catch((reason) => {
             
         });
-
     }
 
+    let handSet = () => {
+        utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', () => {
+            actions.moveObject({objectId: state.board.objects[0].id, toRegion: 'hand'});
+            // moveCard('library', 0, 'hand');
+            // moveCard('library', 0, 'hand');
+            // moveCard('library', 0, 'hand');
+
+            // refreshCardComponentRegionInfo('library');
+            // refreshCardComponentRegionInfo('hand');
+            // updateComponents();
+
+            // // socket.ioでイベント送信
+            // socket.emit('hand_set', {boardId: params.boardId, side: params.side, library: myBoardSide.library, hands: myBoardSide.hands});
+
+        });
+    };
+
     let board = state.board;
+    let deckBuilded = utils.getCards(state, 'library').length >= 1;
 
     return (
         <div id="CONTROL-PANEL">
@@ -207,7 +224,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
             <button class={`ui basic button`} onclick={megamiSelect}>メガミ選択</button>
             <button class={`ui basic button ${state.board.megamis[state.side] !== null ? '' : 'disabled'}`} onclick={deckBuild}>デッキ構築</button>
-            <button class={`ui basic button ${'disabled'}`}>最初の手札を引く</button>
+            <button class={`ui basic button ${deckBuilded ? '' : 'disabled'}`} onclick={handSet}>最初の手札を引く</button>
 
             <table class="ui definition table" style={{ width: '25em' }}>
                 <tbody>
