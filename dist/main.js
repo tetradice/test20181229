@@ -36889,11 +36889,16 @@ exports.default = {
         return { board: newBoard };
     }; },
     /** ドラッグ開始 */
-    cardDragStart: function (objectId) {
+    cardDragStart: function (objectId) { return function (state) {
         var ret = {};
+        // ドラッグを開始したオブジェクトIDを設定
         ret.draggingFromObjectId = objectId;
+        // 現在のカードの領域に応じて、選択可能な領域を決定
+        var card = state.board.objects.find(function (o) { return o.type === 'card' && o.id === objectId; });
+        if (card.region === 'hand') {
+        }
         return ret;
-    },
+    }; },
     /** ドラッグ終了 */
     cardDragEnd: function () {
         var ret = {};
@@ -37068,7 +37073,8 @@ exports.Card = function (p) { return function (state, actions) {
             delay: { show: 500, hide: 0 },
             onShow: function () {
                 var currentState = actions.getState();
-                //if(currentState.draggingFromObjectId !== null) return false;
+                if (currentState.draggingFromObjectId !== null)
+                    return false;
             },
         });
     };

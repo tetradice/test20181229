@@ -69,7 +69,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             delay: {show: 500, hide: 0},
             onShow: function(): false | void{
                 let currentState = (actions.getState() as any) as state.State;
-                //if(currentState.draggingFromObjectId !== null) return false;
+                if(currentState.draggingFromObjectId !== null) return false;
             },
         });
     }
