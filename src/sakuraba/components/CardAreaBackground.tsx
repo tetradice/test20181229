@@ -2,7 +2,7 @@ import { h } from "hyperapp";
 
 /** 領域枠 */
 interface Param {
-    key: string;
+    region: CardRegion;
 
     left: number;
     top: number;
@@ -12,7 +12,7 @@ interface Param {
     cardCount?: number;
 }
 
-export const AreaBackground = (p: Param) => (state: state.State) => {
+export const CardAreaBackground = (p: Param) => (state: state.State) => {
     let styles: Partial<CSSStyleDeclaration> = {
           left: `${p.left}px`
         , top: `${p.top}px`
@@ -22,7 +22,7 @@ export const AreaBackground = (p: Param) => (state: state.State) => {
     };
 
     return (
-        <div class="area background ui segment" style={styles} key={p.key}>
+        <div class="area background ui segment" style={styles} key={"CardAreaBackground_" + p.region}>
             <div class="card-count">{p.cardCount}</div>
         </div>
     );

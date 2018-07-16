@@ -12,7 +12,7 @@ export interface State {
     boardId?: string;
     side?: PlayerSide;
 
-    draggingFromObjectId: string;
+    draggingFromCard: Card;
 }
 
 /** 卓情報 */

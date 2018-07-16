@@ -104,8 +104,8 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         });
 
         // フレームを追加
-        frameNodes.push(<components.AreaBackground key={area.region} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
-        //frameNodes.push(<components.AreaDroppable left={area.left} top={area.top} width={area.width} height={area.height} />);
+        frameNodes.push(<components.CardAreaBackground region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
+        frameNodes.push(<components.CardAreaDroppable region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
 
     return (

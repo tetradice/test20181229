@@ -57,16 +57,11 @@ export default {
     },
 
     /** ドラッグ開始 */
-    cardDragStart: (objectId: string) => (state: state.State) => {
+    cardDragStart: (card: state.Card) => (state: state.State) => {
         let ret: Partial<state.State> = {};
 
-        // ドラッグを開始したオブジェクトIDを設定
-        ret.draggingFromObjectId = objectId;
-
-        // 現在のカードの領域に応じて、選択可能な領域を決定
-        let card = state.board.objects.find(o => o.type === 'card' && o.id === objectId) as state.Card;
-        if(card.region === 'hand'){
-        }
+        // ドラッグを開始したカードを設定
+        ret.draggingFromCard = card;
 
         return ret;
     },
@@ -74,7 +69,7 @@ export default {
     /** ドラッグ終了 */
     cardDragEnd: () => {
         let ret: Partial<state.State> = {};
-        ret.draggingFromObjectId = null;
+        ret.draggingFromCard = null;
         return ret;
     },
 }

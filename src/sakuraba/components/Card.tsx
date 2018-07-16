@@ -58,10 +58,9 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     if(p.selected){
         className += " selected";
     }
-    if(p.target.id === state.draggingFromObjectId){
+    if(state.draggingFromCard && p.target.id === state.draggingFromCard.id){
         className += " dragging";
     }
-    console.log('create');
 
     const oncreate = (element) => {
         // SemanticUI ポップアップ初期化
@@ -69,7 +68,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             delay: {show: 500, hide: 0},
             onShow: function(): false | void{
                 let currentState = (actions.getState() as any) as state.State;
-                if(currentState.draggingFromObjectId !== null) return false;
+                if(currentState.draggingFromCard !== null) return false;
             },
         });
     }
@@ -82,7 +81,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             style={styles}
             draggable="true"
             onclick={p.onclick}
-            ondragstart={() => actions.cardDragStart(p.target.id)}
+            ondragstart={(elem) => { $(elem).popup('hide all'); actions.cardDragStart(p.target); }}
             ondragend={() => actions.cardDragEnd()}
             oncreate={oncreate}
             data-html={getDescriptionHtml(p.target.cardId)}            

@@ -36889,20 +36889,16 @@ exports.default = {
         return { board: newBoard };
     }; },
     /** ドラッグ開始 */
-    cardDragStart: function (objectId) { return function (state) {
+    cardDragStart: function (card) { return function (state) {
         var ret = {};
-        // ドラッグを開始したオブジェクトIDを設定
-        ret.draggingFromObjectId = objectId;
-        // 現在のカードの領域に応じて、選択可能な領域を決定
-        var card = state.board.objects.find(function (o) { return o.type === 'card' && o.id === objectId; });
-        if (card.region === 'hand') {
-        }
+        // ドラッグを開始したカードを設定
+        ret.draggingFromCard = card;
         return ret;
     }; },
     /** ドラッグ終了 */
     cardDragEnd: function () {
         var ret = {};
-        ret.draggingFromObjectId = null;
+        ret.draggingFromCard = null;
         return ret;
     },
 };
@@ -36945,57 +36941,6 @@ exports.default = {
         return { logs: state.board.actionLog.concat(append) };
     }; }
 };
-
-
-/***/ }),
-
-/***/ "./src/sakuraba/components/AreaBackground.tsx":
-/*!****************************************************!*\
-  !*** ./src/sakuraba/components/AreaBackground.tsx ***!
-  \****************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-exports.AreaBackground = function (p) { return function (state) {
-    var styles = {
-        left: p.left + "px",
-        top: p.top + "px",
-        width: p.width + "px",
-        height: p.height + "px",
-        position: 'relative'
-    };
-    return (hyperapp_1.h("div", { class: "area background ui segment", style: styles, key: p.key },
-        hyperapp_1.h("div", { class: "card-count" }, p.cardCount)));
-}; };
-
-
-/***/ }),
-
-/***/ "./src/sakuraba/components/AreaDroppable.tsx":
-/*!***************************************************!*\
-  !*** ./src/sakuraba/components/AreaDroppable.tsx ***!
-  \***************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-exports.AreaDroppable = function (p) { return function (state) {
-    var styles = {
-        left: p.left + "px",
-        top: p.top + "px",
-        width: p.width + "px",
-        height: p.height + "px",
-        position: 'relative'
-    };
-    return (hyperapp_1.h("div", { class: "area droppable", style: styles, key: p.key }));
-}; };
 
 
 /***/ }),
@@ -37063,22 +37008,75 @@ exports.Card = function (p) { return function (state, actions) {
     if (p.selected) {
         className += " selected";
     }
-    if (p.target.id === state.draggingFromObjectId) {
+    if (state.draggingFromCard && p.target.id === state.draggingFromCard.id) {
         className += " dragging";
     }
-    console.log('create');
     var oncreate = function (element) {
         // SemanticUI ポップアップ初期化
         $(element).popup({
             delay: { show: 500, hide: 0 },
             onShow: function () {
                 var currentState = actions.getState();
-                if (currentState.draggingFromObjectId !== null)
+                if (currentState.draggingFromCard !== null)
                     return false;
             },
         });
     };
-    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: "true", onclick: p.onclick, ondragstart: function () { return actions.cardDragStart(p.target.id); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
+    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: "true", onclick: p.onclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
+}; };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/components/CardAreaBackground.tsx":
+/*!********************************************************!*\
+  !*** ./src/sakuraba/components/CardAreaBackground.tsx ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+exports.CardAreaBackground = function (p) { return function (state) {
+    var styles = {
+        left: p.left + "px",
+        top: p.top + "px",
+        width: p.width + "px",
+        height: p.height + "px",
+        position: 'relative'
+    };
+    return (hyperapp_1.h("div", { class: "area background ui segment", style: styles, key: "CardAreaBackground_" + p.region },
+        hyperapp_1.h("div", { class: "card-count" }, p.cardCount)));
+}; };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/components/CardAreaDroppable.tsx":
+/*!*******************************************************!*\
+  !*** ./src/sakuraba/components/CardAreaDroppable.tsx ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+exports.CardAreaDroppable = function (p) { return function (state) {
+    var styles = {
+        left: p.left + "px",
+        top: p.top + "px",
+        width: p.width + "px",
+        height: p.height + "px",
+        position: 'relative'
+    };
+    if (state.draggingFromCard !== null && p.region !== state.draggingFromCard.region) {
+        styles.zIndex = '9999';
+    }
+    return (hyperapp_1.h("div", { class: "area droppable", style: styles, key: "CardAreaDroppable_" + p.region }));
 }; };
 
 
@@ -37395,8 +37393,8 @@ __export(__webpack_require__(/*! ./Card */ "./src/sakuraba/components/Card.tsx")
 __export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/components/SakuraToken.tsx"));
 __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/components/Vigor.tsx"));
 __export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/components/ControlPanel.tsx"));
-__export(__webpack_require__(/*! ./AreaBackground */ "./src/sakuraba/components/AreaBackground.tsx"));
-__export(__webpack_require__(/*! ./AreaDroppable */ "./src/sakuraba/components/AreaDroppable.tsx"));
+__export(__webpack_require__(/*! ./CardAreaBackground */ "./src/sakuraba/components/CardAreaBackground.tsx"));
+__export(__webpack_require__(/*! ./CardAreaDroppable */ "./src/sakuraba/components/CardAreaDroppable.tsx"));
 
 
 /***/ }),
@@ -37524,7 +37522,7 @@ function createInitialState() {
             chatLog: []
         },
         zoom: 1,
-        draggingFromObjectId: null
+        draggingFromCard: null
     };
     return st;
 }
@@ -37648,8 +37646,8 @@ exports.view = function (state, actions) {
             objectNodes.push(hyperapp_1.h(components.Card, { target: card, left: left, top: top }));
         });
         // フレームを追加
-        frameNodes.push(hyperapp_1.h(components.AreaBackground, { key: area.region, left: area.left, top: area.top, width: area.width, height: area.height, cardCount: area.cardCountDisplay ? cards.length : null }));
-        //frameNodes.push(<components.AreaDroppable left={area.left} top={area.top} width={area.width} height={area.height} />);
+        frameNodes.push(hyperapp_1.h(components.CardAreaBackground, { region: area.region, left: area.left, top: area.top, width: area.width, height: area.height, cardCount: area.cardCountDisplay ? cards.length : null }));
+        frameNodes.push(hyperapp_1.h(components.CardAreaDroppable, { region: area.region, left: area.left, top: area.top, width: area.width, height: area.height }));
     });
     return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
         objectNodes,
