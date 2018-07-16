@@ -1,6 +1,6 @@
 import * as  _ from "lodash";
 import * as utils from "../utils";
-import { Megami } from "../../sakuraba";
+import { Megami, CARD_DATA } from "../../sakuraba";
 import cardActions from './card';
 
 export default {
@@ -33,7 +33,13 @@ export default {
     /** デッキのカードを設定する */
     setDeckCards: (p: {cardIds: string[]}) => (state: state.State, actions: typeof cardActions) => {
         p.cardIds.forEach((id) => {
-            actions.addCard({region: 'library', cardId: id});
+            const data = CARD_DATA[id];
+            if(data.baseType === 'normal'){
+                actions.addCard({region: 'library', cardId: id});
+            }
+            if(data.baseType === 'special'){
+                actions.addCard({region: 'special', cardId: id});
+            }           
         });
     },
 

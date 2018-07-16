@@ -37,19 +37,19 @@ function layoutCards(cards: state.Card[], layoutType: LayoutType, areaWidth: num
         if(requiredWidth <= innerWidth){
             // 領域の幅に収まる場合は、spacing分の間隔をあけて配置
             cards.forEach((child, i) => {
+                ret.push([child, cx, cy]);
+
                 cx += cardWidth;
                 cx += spacing;
-
-                ret.push([child, cx, cy]);
             });
         } else {
             // 領域の幅に収まらない場合は、収まるように均等に詰めて並べる
             let overlapWidth = ((cardWidth * cards.length) - innerWidth) / cards.length;
             cards.forEach((child, i) => {
+                ret.push([child, cx, cy]);
+
                 cx += cardWidth;
                 cx -= overlapWidth;
-
-                ret.push([child, cx, cy]);
             });        
         }
     }
@@ -58,8 +58,8 @@ function layoutCards(cards: state.Card[], layoutType: LayoutType, areaWidth: num
     if(layoutType === 'stacked'){
         cards.forEach((child, i) => {
             ret.push([child, cx, cy]);
-            cx += 4;
-            cy += 1;
+            cx += 6;
+            cy += 2;
         });
     }
 

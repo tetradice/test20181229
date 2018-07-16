@@ -36796,6 +36796,7 @@ exports.CARD_DATA = {
 Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 var utils = __webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts");
+var sakuraba_1 = __webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts");
 exports.default = {
     /** ボード全体を設定する */
     setBoard: function (newBoard) {
@@ -36820,7 +36821,13 @@ exports.default = {
     /** デッキのカードを設定する */
     setDeckCards: function (p) { return function (state, actions) {
         p.cardIds.forEach(function (id) {
-            actions.addCard({ region: 'library', cardId: id });
+            var data = sakuraba_1.CARD_DATA[id];
+            if (data.baseType === 'normal') {
+                actions.addCard({ region: 'library', cardId: id });
+            }
+            if (data.baseType === 'special') {
+                actions.addCard({ region: 'special', cardId: id });
+            }
         });
     }; },
     /** ボードの状態を取得 */
@@ -37242,7 +37249,8 @@ exports.ControlPanel = function () { return function (state, actions) {
         utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', function () {
             actions.moveCard({ fromRegion: 'library', toRegion: 'hand', moveNumber: 3 });
             // socket.ioでイベント送信
-            state.socket.emit('board_object_set', { boardId: state.boardId, side: state.side, objects: state.board.objects });
+            var newState = actions.getState();
+            state.socket.emit('board_object_set', { boardId: state.boardId, side: state.side, objects: newState.board.objects });
         });
     };
     var board = state.board;
@@ -37540,18 +37548,18 @@ function layoutCards(cards, layoutType, areaWidth, cardWidth) {
         if (requiredWidth <= innerWidth_1) {
             // 領域の幅に収まる場合は、spacing分の間隔をあけて配置
             cards.forEach(function (child, i) {
+                ret.push([child, cx, cy]);
                 cx += cardWidth;
                 cx += spacing_1;
-                ret.push([child, cx, cy]);
             });
         }
         else {
             // 領域の幅に収まらない場合は、収まるように均等に詰めて並べる
             var overlapWidth_1 = ((cardWidth * cards.length) - innerWidth_1) / cards.length;
             cards.forEach(function (child, i) {
+                ret.push([child, cx, cy]);
                 cx += cardWidth;
                 cx -= overlapWidth_1;
-                ret.push([child, cx, cy]);
             });
         }
     }
@@ -37559,8 +37567,8 @@ function layoutCards(cards, layoutType, areaWidth, cardWidth) {
     if (layoutType === 'stacked') {
         cards.forEach(function (child, i) {
             ret.push([child, cx, cy]);
-            cx += 4;
-            cy += 1;
+            cx += 6;
+            cy += 2;
         });
     }
     return ret;
