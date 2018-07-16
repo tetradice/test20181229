@@ -36895,10 +36895,25 @@ exports.default = {
         ret.draggingFromCard = card;
         return ret;
     }; },
+    /** ドラッグ中にカード領域の上に移動 */
+    cardDragEnter: function (region) { return function (state) {
+        var ret = {};
+        // ドラッグを開始したカードを設定
+        ret.draggingHoverCardRegion = region;
+        return ret;
+    }; },
+    /** ドラッグ中にカード領域の上から離れた */
+    cardDragLeave: function () { return function (state) {
+        var ret = {};
+        // ドラッグ中領域の初期化
+        ret.draggingHoverCardRegion = null;
+        return ret;
+    }; },
     /** ドラッグ終了 */
     cardDragEnd: function () {
         var ret = {};
         ret.draggingFromCard = null;
+        ret.draggingHoverCardRegion = null;
         return ret;
     },
 };
@@ -37047,7 +37062,7 @@ exports.CardAreaBackground = function (p) { return function (state) {
         height: p.height + "px",
         position: 'relative'
     };
-    return (hyperapp_1.h("div", { class: "area background ui segment", style: styles, key: "CardAreaBackground_" + p.region },
+    return (hyperapp_1.h("div", { class: "area background ui segment " + (state.draggingHoverCardRegion === p.region ? 'over' : ''), style: styles, key: "CardAreaBackground_" + p.region },
         hyperapp_1.h("div", { class: "card-count" }, p.cardCount)));
 }; };
 
@@ -37065,7 +37080,7 @@ exports.CardAreaBackground = function (p) { return function (state) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-exports.CardAreaDroppable = function (p) { return function (state) {
+exports.CardAreaDroppable = function (p) { return function (state, actions) {
     var styles = {
         left: p.left + "px",
         top: p.top + "px",
@@ -37076,7 +37091,27 @@ exports.CardAreaDroppable = function (p) { return function (state) {
     if (state.draggingFromCard !== null && p.region !== state.draggingFromCard.region) {
         styles.zIndex = '9999';
     }
-    return (hyperapp_1.h("div", { class: "area droppable", style: styles, key: "CardAreaDroppable_" + p.region }));
+    var dragover = function (e) {
+        if (e.preventDefault) {
+            e.preventDefault(); // Necessary. Allows us to drop.
+        }
+        e.dataTransfer.dropEffect = 'move'; // See the section on the DataTransfer object.
+        return false;
+    };
+    var dragenter = function (e) {
+        actions.cardDragEnter(p.region);
+    };
+    var dragleave = function (e) {
+        actions.cardDragLeave();
+    };
+    var drop = function (e) {
+        if (e.stopPropagation) {
+            e.stopPropagation(); // stops the browser from redirecting.
+        }
+        console.log("drop");
+        return false;
+    };
+    return (hyperapp_1.h("div", { class: "area droppable", style: styles, key: "CardAreaDroppable_" + p.region, ondragover: dragover, ondragenter: dragenter, ondragleave: dragleave, ondrop: drop }));
 }; };
 
 
@@ -37522,7 +37557,8 @@ function createInitialState() {
             chatLog: []
         },
         zoom: 1,
-        draggingFromCard: null
+        draggingFromCard: null,
+        draggingHoverCardRegion: null
     };
     return st;
 }

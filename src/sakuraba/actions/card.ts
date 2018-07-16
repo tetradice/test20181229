@@ -66,10 +66,34 @@ export default {
         return ret;
     },
 
+    
+    /** ドラッグ中にカード領域の上に移動 */
+    cardDragEnter: (region: CardRegion) => (state: state.State) => {
+        let ret: Partial<state.State> = {};
+
+        // ドラッグを開始したカードを設定
+        ret.draggingHoverCardRegion = region;
+
+        return ret;
+    },
+    
+    /** ドラッグ中にカード領域の上から離れた */
+    cardDragLeave: () => (state: state.State) => {
+        let ret: Partial<state.State> = {};
+
+        // ドラッグ中領域の初期化
+        ret.draggingHoverCardRegion = null;
+
+        return ret;
+    },
+
     /** ドラッグ終了 */
     cardDragEnd: () => {
         let ret: Partial<state.State> = {};
+
         ret.draggingFromCard = null;
+        ret.draggingHoverCardRegion = null;
+
         return ret;
     },
 }

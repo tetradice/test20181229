@@ -13,6 +13,7 @@ export interface State {
     side?: PlayerSide;
 
     draggingFromCard: Card;
+    draggingHoverCardRegion: CardRegion;
 }
 
 /** 卓情報 */
