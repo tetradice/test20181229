@@ -2,6 +2,8 @@ import { h } from "hyperapp";
 
 /** 領域枠 */
 interface Param {
+    key: string;
+
     left: number;
     top: number;
     width: number;
@@ -20,7 +22,7 @@ export const AreaBackground = (p: Param) => (state: state.State) => {
     };
 
     return (
-        <div class="area background ui segment" style={styles}>
+        <div class="area background ui segment" style={styles} key={p.key}>
             <div class="card-count">{p.cardCount}</div>
         </div>
     );

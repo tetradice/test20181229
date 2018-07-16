@@ -86,7 +86,7 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./node_modules/css-loader/index.js??ref--6-1!./src/sakuraba/components/ControlPanel.css":
+/***/ "./node_modules/css-loader/index.js?!./src/sakuraba/components/ControlPanel.css":
 /*!**************************************************************************************!*\
   !*** ./node_modules/css-loader??ref--6-1!./src/sakuraba/components/ControlPanel.css ***!
   \**************************************************************************************/
@@ -36963,7 +36963,7 @@ exports.AreaBackground = function (p) { return function (state) {
         height: p.height + "px",
         position: 'relative'
     };
-    return (hyperapp_1.h("div", { class: "area background ui segment", style: styles },
+    return (hyperapp_1.h("div", { class: "area background ui segment", style: styles, key: p.key },
         hyperapp_1.h("div", { class: "card-count" }, p.cardCount)));
 }; };
 
@@ -36989,7 +36989,7 @@ exports.AreaDroppable = function (p) { return function (state) {
         height: p.height + "px",
         position: 'relative'
     };
-    return (hyperapp_1.h("div", { class: "area droppable", style: styles }));
+    return (hyperapp_1.h("div", { class: "area droppable", style: styles, key: p.key }));
 }; };
 
 
@@ -37061,17 +37061,18 @@ exports.Card = function (p) { return function (state, actions) {
     if (p.target.id === state.draggingFromObjectId) {
         className += " dragging";
     }
+    console.log('create');
     var oncreate = function (element) {
-        console.log("elem", element);
         // SemanticUI ポップアップ初期化
         $(element).popup({
             delay: { show: 500, hide: 0 },
             onShow: function () {
-                actions.cardDragEnd();
+                var currentState = actions.getState();
+                //if(currentState.draggingFromObjectId !== null) return false;
             },
         });
     };
-    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + p.target.id, style: styles, draggable: "true", onclick: p.onclick, ondragstart: function () { return actions.cardDragStart(p.target.id); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
+    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: "true", onclick: p.onclick, ondragstart: function () { return actions.cardDragStart(p.target.id); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
 }; };
 
 
@@ -37085,7 +37086,7 @@ exports.Card = function (p) { return function (state, actions) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../node_modules/css-loader??ref--6-1!./ControlPanel.css */ "./node_modules/css-loader/index.js??ref--6-1!./src/sakuraba/components/ControlPanel.css");
+var content = __webpack_require__(/*! !../../../node_modules/css-loader??ref--6-1!./ControlPanel.css */ "./node_modules/css-loader/index.js?!./src/sakuraba/components/ControlPanel.css");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -37641,8 +37642,8 @@ exports.view = function (state, actions) {
             objectNodes.push(hyperapp_1.h(components.Card, { target: card, left: left, top: top }));
         });
         // フレームを追加
-        frameNodes.push(hyperapp_1.h(components.AreaBackground, { left: area.left, top: area.top, width: area.width, height: area.height, cardCount: area.cardCountDisplay ? cards.length : null }));
-        frameNodes.push(hyperapp_1.h(components.AreaDroppable, { left: area.left, top: area.top, width: area.width, height: area.height }));
+        frameNodes.push(hyperapp_1.h(components.AreaBackground, { key: area.region, left: area.left, top: area.top, width: area.width, height: area.height, cardCount: area.cardCountDisplay ? cards.length : null }));
+        //frameNodes.push(<components.AreaDroppable left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
     return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
         objectNodes,

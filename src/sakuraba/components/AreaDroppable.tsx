@@ -2,6 +2,8 @@ import { h } from "hyperapp";
 
 /** 領域枠 */
 interface Param {
+    key: string;
+    
     left: number;
     top: number;
     width: number;
@@ -18,7 +20,7 @@ export const AreaDroppable = (p: Param) => (state: state.State) => {
     };
 
     return (
-        <div class="area droppable" style={styles}>
+        <div class="area droppable" style={styles} key={p.key}>
         </div>
     );
 }

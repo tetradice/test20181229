@@ -35,9 +35,6 @@ function getDescriptionHtml(cardId: string): string{
     return html;
 }
 
-
-
-
 /** カード */
 interface Param {
     target: state.Card;
@@ -64,21 +61,22 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     if(p.target.id === state.draggingFromObjectId){
         className += " dragging";
     }
+    console.log('create');
 
     const oncreate = (element) => {
-        console.log("elem", element);
-
         // SemanticUI ポップアップ初期化
         $(element).popup({
             delay: {show: 500, hide: 0},
             onShow: function(): false | void{
-                actions.cardDragEnd();
+                let currentState = (actions.getState() as any) as state.State;
+                //if(currentState.draggingFromObjectId !== null) return false;
             },
         });
     }
 
     return (
         <div
+            key={p.target.id}
             class={className}
             id={'board-object-' + p.target.id}
             style={styles}
