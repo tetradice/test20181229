@@ -200,17 +200,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
     let handSet = () => {
         utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', () => {
-            actions.moveObject({objectId: state.board.objects[0].id, toRegion: 'hand'});
-            // moveCard('library', 0, 'hand');
-            // moveCard('library', 0, 'hand');
-            // moveCard('library', 0, 'hand');
+            actions.moveCard({fromRegion: 'library', toRegion: 'hand', moveNumber: 3});
 
-            // refreshCardComponentRegionInfo('library');
-            // refreshCardComponentRegionInfo('hand');
-            // updateComponents();
-
-            // // socket.ioでイベント送信
-            // socket.emit('hand_set', {boardId: params.boardId, side: params.side, library: myBoardSide.library, hands: myBoardSide.hands});
+            // socket.ioでイベント送信
+            state.socket.emit('board_object_set', {boardId: state.boardId, side: state.side, objects: state.board.objects});
 
         });
     };

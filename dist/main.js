@@ -36841,6 +36841,7 @@ exports.default = {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+var models = __webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts");
 exports.default = {
     /** カードを1枚追加する */
     addCard: function (p) { return function (state) {
@@ -36861,6 +36862,24 @@ exports.default = {
         var newBoard = _.merge({}, state.board, { objects: newObjects });
         // 新しい盤を返す
         return { board: newBoard };
+    }; },
+    /**
+     * カードを指定領域から別の領域に移動させる
+     */
+    moveCard: function (p) { return function (state) {
+        // 元の盤の状態をコピーして新しい盤を生成
+        var newBoard = new models.Board(state.board);
+        // カードを指定枚数移動 (省略時は0枚)
+        var num = (p.moveNumber === undefined ? 1 : p.moveNumber);
+        var fromRegionCards = newBoard.getRegionCards(p.fromRegion);
+        var targetCards = fromRegionCards.slice(0, num);
+        targetCards.forEach(function (c) {
+            c.region = p.toRegion;
+        });
+        // 領域情報の更新
+        newBoard.updateIndexesOfRegion();
+        // 新しい盤を返す
+        return { board: newBoard };
     }; }
 };
 
@@ -36877,11 +36896,10 @@ exports.default = {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var move_1 = __webpack_require__(/*! ./move */ "./src/sakuraba/actions/move.ts");
 var log_1 = __webpack_require__(/*! ./log */ "./src/sakuraba/actions/log.ts");
 var card_1 = __webpack_require__(/*! ./card */ "./src/sakuraba/actions/card.ts");
 var board_1 = __webpack_require__(/*! ./board */ "./src/sakuraba/actions/board.ts");
-exports.actions = Object.assign(move_1.default, log_1.default, card_1.default, board_1.default);
+exports.actions = Object.assign(log_1.default, card_1.default, board_1.default);
 
 
 /***/ }),
@@ -36901,33 +36919,6 @@ exports.default = {
     appendActionLog: function (p) { return function (state) {
         var append = [{ body: p.text, time: moment().format() }];
         return { logs: state.board.actionLog.concat(append) };
-    }; }
-};
-
-
-/***/ }),
-
-/***/ "./src/sakuraba/actions/move.ts":
-/*!**************************************!*\
-  !*** ./src/sakuraba/actions/move.ts ***!
-  \**************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
-exports.default = {
-    /**
-     * 指定したオブジェクトを、別の領域に移動させる
-     */
-    moveObject: function (p) { return function (state) {
-        var newBoard = _.merge({}, state.board);
-        var index = newBoard.objects.findIndex(function (v) { return v.type === 'card' && v.id === p.objectId; });
-        newBoard.objects[index].region = p.toRegion;
-        // 新しい盤を返す
-        return { board: newBoard };
     }; }
 };
 
@@ -37249,15 +37240,9 @@ exports.ControlPanel = function () { return function (state, actions) {
     };
     var handSet = function () {
         utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', function () {
-            actions.moveObject({ objectId: state.board.objects[0].id, toRegion: 'hand' });
-            // moveCard('library', 0, 'hand');
-            // moveCard('library', 0, 'hand');
-            // moveCard('library', 0, 'hand');
-            // refreshCardComponentRegionInfo('library');
-            // refreshCardComponentRegionInfo('hand');
-            // updateComponents();
-            // // socket.ioでイベント送信
-            // socket.emit('hand_set', {boardId: params.boardId, side: params.side, library: myBoardSide.library, hands: myBoardSide.hands});
+            actions.moveCard({ fromRegion: 'library', toRegion: 'hand', moveNumber: 3 });
+            // socket.ioでイベント送信
+            state.socket.emit('board_object_set', { boardId: state.boardId, side: state.side, objects: state.board.objects });
         });
     };
     var board = state.board;
@@ -37355,6 +37340,67 @@ __export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/components/Sak
 __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/components/Vigor.tsx"));
 __export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/components/ControlPanel.tsx"));
 __export(__webpack_require__(/*! ./AreaFrame */ "./src/sakuraba/components/AreaFrame.tsx"));
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/models/Board.ts":
+/*!**************************************!*\
+  !*** ./src/sakuraba/models/Board.ts ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+var Board = /** @class */ (function () {
+    function Board(original) {
+        if (original !== undefined) {
+            _.merge(this, original);
+        }
+    }
+    Board.prototype.getCards = function () {
+        return this.objects.filter(function (v) { return v.type === 'card'; });
+    };
+    Board.prototype.getRegionCards = function (region) {
+        return this.objects.filter(function (v) { return v.type === 'card' && v.region == region; });
+    };
+    Board.prototype.updateIndexesOfRegion = function () {
+        var _this = this;
+        var cards = this.getCards();
+        var regions = _.uniq(cards.map(function (c) { return c.region; }));
+        regions.forEach(function (r) {
+            var regionCards = _this.getRegionCards(r);
+            var index = 0;
+            regionCards.forEach(function (c) {
+                c.indexOfRegion = index;
+                index++;
+            });
+        });
+    };
+    return Board;
+}());
+exports.Board = Board;
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/models/index.ts":
+/*!**************************************!*\
+  !*** ./src/sakuraba/models/index.ts ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(/*! ./Board */ "./src/sakuraba/models/Board.ts"));
 
 
 /***/ }),

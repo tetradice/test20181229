@@ -177,7 +177,7 @@ io.on('connection', (socket) => {
     getStoredBoard(data.boardId, (board) => {
       board.objects = board.objects.concat(data.addObjects);
       saveBoard(data.boardId, board, () => {
-        // メガミが選択されたイベントを他ユーザーに配信
+        // デッキが構築されたイベントを他ユーザーに配信
         socket.broadcast.emit('on_deck_build', board);
       });
 
@@ -195,22 +195,16 @@ io.on('connection', (socket) => {
     });
   });
 
-  // 初期手札を引く
-  socket.on('hand_set', (data: {boardId: string, side: sakuraba.Side, library: state.Card[], hands: state.Card[]}) => {
-    console.log('on hand_set: ', data);
+  // ボードオブジェクトの状態を更新
+  socket.on('board_object_set', (data: {boardId: string, side: sakuraba.Side, objects: state.BoardObject[]}) => {
+    console.log('on board_object_set: ', data);
     // ボード情報を取得
     getStoredBoard(data.boardId, (board) => {
-      // let myBoardSide = board.getMySide(data.side);
-
-      // let serialized = board.serialize();
-      // serialized.p1Side.library = data.library;
-      // serialized.p1Side.hands = data.hands;
-      // board.deserialize(serialized);
-
-      // saveBoard(data.boardId, board, () => {
-      //   // デッキが構築されたイベントを他ユーザーに配信
-      //   socket.broadcast.emit('on_hand_set',  board);
-      // });
+      board.objects = data.objects;
+      saveBoard(data.boardId, board, () => {
+        // ボードオブジェクトの状態が更新されたイベントを他ユーザーに配信
+        socket.broadcast.emit('on_board_object_set', board);
+      });
     });
   });
 });

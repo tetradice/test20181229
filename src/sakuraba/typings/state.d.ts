@@ -1,4 +1,3 @@
-import { SerializableObject } from "./serializable";
 import { Megami } from "../../sakuraba";
 
 export as namespace state
@@ -59,7 +58,7 @@ export interface Vigor extends BoardObjectBase {
 }
 
 /** ログ1行分のデータ */
-export interface LogRecord extends SerializableObject {
+export interface LogRecord {
     body: string;
     time: string; // momentから変換した値を渡す
     playerSide?: PlayerSide;
