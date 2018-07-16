@@ -38,19 +38,6 @@ function getDescriptionHtml(cardId: string): string{
 
 
 
-function oncreate(element){
-    // SemanticUI ポップアップ初期化
-    element.focus();
-    $(element).popup({
-        delay: {show: 500, hide: 0},
-        onShow: function(): false | void{
-            //if(draggingFrom !== null) return false;
-        },
-    });
-}
-
-
-
 /** カード */
 interface Param {
     target: state.Card;
@@ -59,36 +46,50 @@ interface Param {
     onclick?: Function;
     selected?: boolean;
 }
-export const Card = (params: Param) => (state: state.State, actions: ActionsType) => {
+export const Card = (p: Param) => (state: state.State, actions: ActionsType) => {
     let styles: Partial<CSSStyleDeclaration> = {
-          left: `${params.left}px`
-        , top: `${params.top}px`
+          left: `${p.left}px`
+        , top: `${p.top}px`
     };
-    let cardData = sakuraba.CARD_DATA[params.target.cardId];
+    let cardData = sakuraba.CARD_DATA[p.target.cardId];
     let className = "fbs-card";
-    if(params.target.opened){
+    if(p.target.opened){
         className += " open-normal";
     } else {
         className += " back-normal";
     }
-    if(params.selected){
+    if(p.selected){
         className += " selected";
     }
+    if(p.target.id === state.draggingFromObjectId){
+        className += " dragging";
+    }
 
+    const oncreate = (element) => {
+        console.log("elem", element);
+
+        // SemanticUI ポップアップ初期化
+        $(element).popup({
+            delay: {show: 500, hide: 0},
+            onShow: function(): false | void{
+                actions.cardDragEnd();
+            },
+        });
+    }
 
     return (
         <div
             class={className}
-            id={'board-object-' + params.target.id}
+            id={'board-object-' + p.target.id}
             style={styles}
             draggable="true"
-            onclick={params.onclick}
-            ondragstart={() => actions.cardDragStart(params.target.id)}
+            onclick={p.onclick}
+            ondragstart={() => actions.cardDragStart(p.target.id)}
             ondragend={() => actions.cardDragEnd()}
-            data-html={getDescriptionHtml(params.target.cardId)}
             oncreate={oncreate}
+            data-html={getDescriptionHtml(p.target.cardId)}            
         >
-            {(params.target.opened ? cardData.name : '')}
+            {(p.target.opened ? cardData.name : '')}
         </div>
     );
 }

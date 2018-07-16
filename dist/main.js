@@ -36944,10 +36944,10 @@ exports.default = {
 
 /***/ }),
 
-/***/ "./src/sakuraba/components/AreaFrame.tsx":
-/*!***********************************************!*\
-  !*** ./src/sakuraba/components/AreaFrame.tsx ***!
-  \***********************************************/
+/***/ "./src/sakuraba/components/AreaBackground.tsx":
+/*!****************************************************!*\
+  !*** ./src/sakuraba/components/AreaBackground.tsx ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36955,7 +36955,7 @@ exports.default = {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-exports.AreaFrame = function (p) { return function (state) {
+exports.AreaBackground = function (p) { return function (state) {
     var styles = {
         left: p.left + "px",
         top: p.top + "px",
@@ -36965,6 +36965,31 @@ exports.AreaFrame = function (p) { return function (state) {
     };
     return (hyperapp_1.h("div", { class: "area background ui segment", style: styles },
         hyperapp_1.h("div", { class: "card-count" }, p.cardCount)));
+}; };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/components/AreaDroppable.tsx":
+/*!***************************************************!*\
+  !*** ./src/sakuraba/components/AreaDroppable.tsx ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+exports.AreaDroppable = function (p) { return function (state) {
+    var styles = {
+        left: p.left + "px",
+        top: p.top + "px",
+        width: p.width + "px",
+        height: p.height + "px",
+        position: 'relative'
+    };
+    return (hyperapp_1.h("div", { class: "area droppable", style: styles }));
 }; };
 
 
@@ -37017,33 +37042,36 @@ function getDescriptionHtml(cardId) {
     html += "</div>";
     return html;
 }
-function oncreate(element) {
-    // SemanticUI ポップアップ初期化
-    element.focus();
-    $(element).popup({
-        delay: { show: 500, hide: 0 },
-        onShow: function () {
-            //if(draggingFrom !== null) return false;
-        },
-    });
-}
-exports.Card = function (params) { return function (state, actions) {
+exports.Card = function (p) { return function (state, actions) {
     var styles = {
-        left: params.left + "px",
-        top: params.top + "px"
+        left: p.left + "px",
+        top: p.top + "px"
     };
-    var cardData = sakuraba.CARD_DATA[params.target.cardId];
+    var cardData = sakuraba.CARD_DATA[p.target.cardId];
     var className = "fbs-card";
-    if (params.target.opened) {
+    if (p.target.opened) {
         className += " open-normal";
     }
     else {
         className += " back-normal";
     }
-    if (params.selected) {
+    if (p.selected) {
         className += " selected";
     }
-    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + params.target.id, style: styles, draggable: "true", onclick: params.onclick, ondragstart: function () { return actions.cardDragStart(params.target.id); }, ondragend: function () { return actions.cardDragEnd(); }, "data-html": getDescriptionHtml(params.target.cardId), oncreate: oncreate }, (params.target.opened ? cardData.name : '')));
+    if (p.target.id === state.draggingFromObjectId) {
+        className += " dragging";
+    }
+    var oncreate = function (element) {
+        console.log("elem", element);
+        // SemanticUI ポップアップ初期化
+        $(element).popup({
+            delay: { show: 500, hide: 0 },
+            onShow: function () {
+                actions.cardDragEnd();
+            },
+        });
+    };
+    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + p.target.id, style: styles, draggable: "true", onclick: p.onclick, ondragstart: function () { return actions.cardDragStart(p.target.id); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
 }; };
 
 
@@ -37360,7 +37388,8 @@ __export(__webpack_require__(/*! ./Card */ "./src/sakuraba/components/Card.tsx")
 __export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/components/SakuraToken.tsx"));
 __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/components/Vigor.tsx"));
 __export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/components/ControlPanel.tsx"));
-__export(__webpack_require__(/*! ./AreaFrame */ "./src/sakuraba/components/AreaFrame.tsx"));
+__export(__webpack_require__(/*! ./AreaBackground */ "./src/sakuraba/components/AreaBackground.tsx"));
+__export(__webpack_require__(/*! ./AreaDroppable */ "./src/sakuraba/components/AreaDroppable.tsx"));
 
 
 /***/ }),
@@ -37612,7 +37641,8 @@ exports.view = function (state, actions) {
             objectNodes.push(hyperapp_1.h(components.Card, { target: card, left: left, top: top }));
         });
         // フレームを追加
-        frameNodes.push(hyperapp_1.h(components.AreaFrame, { left: area.left, top: area.top, width: area.width, height: area.height, cardCount: area.cardCountDisplay ? cards.length : null }));
+        frameNodes.push(hyperapp_1.h(components.AreaBackground, { left: area.left, top: area.top, width: area.width, height: area.height, cardCount: area.cardCountDisplay ? cards.length : null }));
+        frameNodes.push(hyperapp_1.h(components.AreaDroppable, { left: area.left, top: area.top, width: area.width, height: area.height }));
     });
     return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
         objectNodes,

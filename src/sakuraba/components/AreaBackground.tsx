@@ -1,5 +1,4 @@
 import { h } from "hyperapp";
-import * as sakuraba from '../../sakuraba';
 
 /** 領域枠 */
 interface Param {
@@ -11,7 +10,7 @@ interface Param {
     cardCount?: number;
 }
 
-export const AreaFrame = (p: Param) => (state: state.State) => {
+export const AreaBackground = (p: Param) => (state: state.State) => {
     let styles: Partial<CSSStyleDeclaration> = {
           left: `${p.left}px`
         , top: `${p.top}px`
