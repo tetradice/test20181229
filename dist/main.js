@@ -37043,12 +37043,7 @@ exports.Card = function (params) { return function (state, actions) {
     if (params.selected) {
         className += " selected";
     }
-    var ondragstart = function () {
-        actions.cardDragStart(params.target.id);
-    };
-    var ondragend = function () {
-    };
-    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + params.target.id, style: styles, draggable: "true", onclick: params.onclick, ondragstart: ondragstart, "data-html": getDescriptionHtml(params.target.cardId), oncreate: oncreate }, (params.target.opened ? cardData.name : '')));
+    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + params.target.id, style: styles, draggable: "true", onclick: params.onclick, ondragstart: function () { return actions.cardDragStart(params.target.id); }, ondragend: function () { return actions.cardDragEnd(); }, "data-html": getDescriptionHtml(params.target.cardId), oncreate: oncreate }, (params.target.opened ? cardData.name : '')));
 }; };
 
 

@@ -75,12 +75,6 @@ export const Card = (params: Param) => (state: state.State, actions: ActionsType
         className += " selected";
     }
 
-    const ondragstart = () => {
-        actions.cardDragStart(params.target.id);
-    }
-
-    const ondragend = () => {
-    }
 
     return (
         <div
@@ -89,7 +83,8 @@ export const Card = (params: Param) => (state: state.State, actions: ActionsType
             style={styles}
             draggable="true"
             onclick={params.onclick}
-            ondragstart={ondragstart}
+            ondragstart={() => actions.cardDragStart(params.target.id)}
+            ondragend={() => actions.cardDragEnd()}
             data-html={getDescriptionHtml(params.target.cardId)}
             oncreate={oncreate}
         >
