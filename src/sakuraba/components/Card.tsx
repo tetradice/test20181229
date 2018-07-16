@@ -1,5 +1,6 @@
 import { h } from "hyperapp";
 import * as sakuraba from '../../sakuraba';
+import { ActionsType } from "../actions";
 
 // 説明を取得する関数
 function getDescriptionHtml(cardId: string): string{
@@ -47,6 +48,9 @@ function oncreate(element){
         },
     });
 }
+
+
+
 /** カード */
 interface Param {
     target: state.Card;
@@ -55,7 +59,7 @@ interface Param {
     onclick?: Function;
     selected?: boolean;
 }
-export const Card = (params: Param) => (state: state.State, actions) => {
+export const Card = (params: Param) => (state: state.State, actions: ActionsType) => {
     let styles: Partial<CSSStyleDeclaration> = {
           left: `${params.left}px`
         , top: `${params.top}px`
@@ -71,6 +75,13 @@ export const Card = (params: Param) => (state: state.State, actions) => {
         className += " selected";
     }
 
+    const ondragstart = () => {
+        actions.cardDragStart(params.target.id);
+    }
+
+    const ondragend = () => {
+    }
+
     return (
         <div
             class={className}
@@ -78,6 +89,7 @@ export const Card = (params: Param) => (state: state.State, actions) => {
             style={styles}
             draggable="true"
             onclick={params.onclick}
+            ondragstart={ondragstart}
             data-html={getDescriptionHtml(params.target.cardId)}
             oncreate={oncreate}
         >

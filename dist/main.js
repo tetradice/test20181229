@@ -36887,7 +36887,19 @@ exports.default = {
         newBoard.updateIndexesOfRegion();
         // 新しい盤を返す
         return { board: newBoard };
-    }; }
+    }; },
+    /** ドラッグ開始 */
+    cardDragStart: function (objectId) {
+        var ret = {};
+        ret.draggingFromObjectId = objectId;
+        return ret;
+    },
+    /** ドラッグ終了 */
+    cardDragEnd: function () {
+        var ret = {};
+        ret.draggingFromObjectId = null;
+        return ret;
+    },
 };
 
 
@@ -37031,7 +37043,12 @@ exports.Card = function (params) { return function (state, actions) {
     if (params.selected) {
         className += " selected";
     }
-    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + params.target.id, style: styles, draggable: "true", onclick: params.onclick, "data-html": getDescriptionHtml(params.target.cardId), oncreate: oncreate }, (params.target.opened ? cardData.name : '')));
+    var ondragstart = function () {
+        actions.cardDragStart(params.target.id);
+    };
+    var ondragend = function () {
+    };
+    return (hyperapp_1.h("div", { class: className, id: 'board-object-' + params.target.id, style: styles, draggable: "true", onclick: params.onclick, ondragstart: ondragstart, "data-html": getDescriptionHtml(params.target.cardId), oncreate: oncreate }, (params.target.opened ? cardData.name : '')));
 }; };
 
 
@@ -37475,7 +37492,8 @@ function createInitialState() {
             actionLog: [],
             chatLog: []
         },
-        zoom: 1
+        zoom: 1,
+        draggingFromObjectId: null
     };
     return st;
 }

@@ -54,5 +54,19 @@ export default {
 
         // 新しい盤を返す
         return {board: newBoard};
-    }
+    },
+
+    /** ドラッグ開始 */
+    cardDragStart: (objectId: string) => {
+        let ret: Partial<state.State> = {};
+        ret.draggingFromObjectId = objectId;
+        return ret;
+    },
+
+    /** ドラッグ終了 */
+    cardDragEnd: () => {
+        let ret: Partial<state.State> = {};
+        ret.draggingFromObjectId = null;
+        return ret;
+    },
 }

@@ -11,6 +11,8 @@ export interface State {
     socket?: SocketIOClient.Socket;
     boardId?: string;
     side?: PlayerSide;
+
+    draggingFromObjectId: string;
 }
 
 /** 卓情報 */

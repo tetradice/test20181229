@@ -10,6 +10,7 @@ export function createInitialState(): state.State{
             , chatLog: []
           }
         , zoom: 1
+        , draggingFromObjectId: null
     }
     return st;
 }
