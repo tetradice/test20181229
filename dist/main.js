@@ -36943,15 +36943,16 @@ exports.default = {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-exports.AreaFrame = function (params) { return function (state) {
+exports.AreaFrame = function (p) { return function (state) {
     var styles = {
-        left: params.left + "px",
-        top: params.top + "px",
-        width: params.width + "px",
-        height: params.height + "px",
+        left: p.left + "px",
+        top: p.top + "px",
+        width: p.width + "px",
+        height: p.height + "px",
         position: 'relative'
     };
-    return (hyperapp_1.h("div", { class: "area background ui segment", style: styles }));
+    return (hyperapp_1.h("div", { class: "area background ui segment", style: styles },
+        hyperapp_1.h("div", { class: "card-count" }, p.cardCount)));
 }; };
 
 
@@ -37579,7 +37580,7 @@ exports.view = function (state, actions) {
     var areaData = [
         { region: 'used', cardLayoutType: 'horizontal', left: 0, top: 80, width: 450, height: 150 },
         { region: 'hidden-used', cardLayoutType: 'stacked', left: 470, top: 80, width: 170, height: 140 },
-        { region: 'library', cardLayoutType: 'stacked', left: 720, top: 80, width: 160, height: 160 },
+        { region: 'library', cardLayoutType: 'stacked', left: 720, top: 80, width: 160, height: 160, cardCountDisplay: true },
         { region: 'hand', cardLayoutType: 'horizontal', left: 0, top: 250, width: 700, height: 150 },
         { region: 'special', cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 150 }
     ];
@@ -37598,7 +37599,7 @@ exports.view = function (state, actions) {
             objectNodes.push(hyperapp_1.h(components.Card, { target: card, left: left, top: top }));
         });
         // フレームを追加
-        frameNodes.push(hyperapp_1.h(components.AreaFrame, { left: area.left, top: area.top, width: area.width, height: area.height }));
+        frameNodes.push(hyperapp_1.h(components.AreaFrame, { left: area.left, top: area.top, width: area.width, height: area.height, cardCount: area.cardCountDisplay ? cards.length : null }));
     });
     return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
         objectNodes,

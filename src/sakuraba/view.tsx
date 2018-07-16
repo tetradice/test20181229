@@ -70,18 +70,19 @@ function layoutCards(cards: state.Card[], layoutType: LayoutType, areaWidth: num
 export const view: View<state.State, ActionsType> = (state, actions) => {
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     let areaData: {
-        region: CardRegion
+          region: CardRegion
         , cardLayoutType: LayoutType
         , left: number
         , top: number
         , width: number
         , height: number
+        , cardCountDisplay?: boolean
     }[] = [
-            { region: 'used', cardLayoutType: 'horizontal', left: 0, top: 80, width: 450, height: 150 }
-            , { region: 'hidden-used', cardLayoutType: 'stacked', left: 470, top: 80, width: 170, height: 140 }
-            , { region: 'library', cardLayoutType: 'stacked', left: 720, top: 80, width: 160, height: 160 }
-            , { region: 'hand', cardLayoutType: 'horizontal', left: 0, top: 250, width: 700, height: 150 }
-            , { region: 'special', cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 150 }
+              { region: 'used',        cardLayoutType: 'horizontal', left: 0,   top: 80,  width: 450, height: 150 }
+            , { region: 'hidden-used', cardLayoutType: 'stacked',    left: 470, top: 80,  width: 170, height: 140 }
+            , { region: 'library',     cardLayoutType: 'stacked',    left: 720, top: 80,  width: 160, height: 160, cardCountDisplay: true }
+            , { region: 'hand',        cardLayoutType: 'horizontal', left: 0,   top: 250, width: 700, height: 150 }
+            , { region: 'special',     cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 150 }
         ];
 
     let frameNodes: hyperapp.Children[] = [];
@@ -103,7 +104,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         });
 
         // フレームを追加
-        frameNodes.push(<components.AreaFrame left={area.left} top={area.top} width={area.width} height={area.height} />);
+        frameNodes.push(<components.AreaFrame left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
     });
 
     return (
