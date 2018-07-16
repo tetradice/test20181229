@@ -203,8 +203,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             actions.moveCard({fromRegion: 'library', toRegion: 'hand', moveNumber: 3});
 
             // socket.ioでイベント送信
-            state.socket.emit('board_object_set', {boardId: state.boardId, side: state.side, objects: state.board.objects});
-
+            let newState: state.State = (actions.getState() as any);
+            state.socket.emit('board_object_set', {boardId: state.boardId, side: state.side, objects: newState.board.objects});
         });
     };
 
