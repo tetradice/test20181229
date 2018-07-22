@@ -32,9 +32,11 @@ export default {
      */
     moveCard: (p: {
         /** 移動元の領域 */
-        fromRegion: CardRegion;
+        from: CardRegion;
+        /** 何枚目のカードを移動するか。省略時は先頭 */
+        fromIndex?: number;
         /** 移動先の領域 */
-        toRegion: CardRegion;
+        to: CardRegion;
         /** 移動枚数 */
         moveNumber?: number;
     }) => (state: state.State) => {
@@ -42,15 +44,16 @@ export default {
         let newBoard = new models.Board(state.board);
 
         // カードを指定枚数移動 (省略時は0枚)
+        let fromIndex = (p.fromIndex === undefined ? 0 : p.fromIndex);
         let num = (p.moveNumber === undefined ? 1 : p.moveNumber);
-        let fromRegionCards = newBoard.getRegionCards(p.fromRegion);
-        let targetCards = fromRegionCards.slice(0, num);
+        let fromRegionCards = newBoard.getRegionCards(p.from);
+        let targetCards = fromRegionCards.slice(fromIndex, fromIndex + num);
         targetCards.forEach(c => {
-            c.region = p.toRegion;
+            c.region = p.to;
         });
 
         // 領域情報の更新
-        newBoard.updateIndexesOfRegion();
+        newBoard.updateRegionInfo();
 
         // 新しい盤を返す
         return {board: newBoard};

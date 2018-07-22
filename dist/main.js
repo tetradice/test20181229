@@ -36877,14 +36877,15 @@ exports.default = {
         // 元の盤の状態をコピーして新しい盤を生成
         var newBoard = new models.Board(state.board);
         // カードを指定枚数移動 (省略時は0枚)
+        var fromIndex = (p.fromIndex === undefined ? 0 : p.fromIndex);
         var num = (p.moveNumber === undefined ? 1 : p.moveNumber);
-        var fromRegionCards = newBoard.getRegionCards(p.fromRegion);
-        var targetCards = fromRegionCards.slice(0, num);
+        var fromRegionCards = newBoard.getRegionCards(p.from);
+        var targetCards = fromRegionCards.slice(fromIndex, fromIndex + num);
         targetCards.forEach(function (c) {
-            c.region = p.toRegion;
+            c.region = p.to;
         });
         // 領域情報の更新
-        newBoard.updateIndexesOfRegion();
+        newBoard.updateRegionInfo();
         // 新しい盤を返す
         return { board: newBoard };
     }; },
@@ -37108,7 +37109,8 @@ exports.CardAreaDroppable = function (p) { return function (state, actions) {
         if (e.stopPropagation) {
             e.stopPropagation(); // stops the browser from redirecting.
         }
-        console.log("drop");
+        // カードを移動
+        actions.moveCard({ from: state.draggingFromCard.region, fromIndex: state.draggingFromCard.indexOfRegion, to: state.draggingHoverCardRegion });
         return false;
     };
     return (hyperapp_1.h("div", { class: "area droppable", style: styles, key: "CardAreaDroppable_" + p.region, ondragover: dragover, ondragenter: dragenter, ondragleave: dragleave, ondrop: drop }));
@@ -37328,7 +37330,7 @@ exports.ControlPanel = function () { return function (state, actions) {
     };
     var handSet = function () {
         utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', function () {
-            actions.moveCard({ fromRegion: 'library', toRegion: 'hand', moveNumber: 3 });
+            actions.moveCard({ from: 'library', to: 'hand', moveNumber: 3 });
             // socket.ioでイベント送信
             var newState = actions.getState();
             state.socket.emit('board_object_set', { boardId: state.boardId, side: state.side, objects: newState.board.objects });
@@ -37457,7 +37459,8 @@ var Board = /** @class */ (function () {
     Board.prototype.getRegionCards = function (region) {
         return this.objects.filter(function (v) { return v.type === 'card' && v.region == region; });
     };
-    Board.prototype.updateIndexesOfRegion = function () {
+    /** カード移動時などの領域情報一括更新 */
+    Board.prototype.updateRegionInfo = function () {
         var _this = this;
         var cards = this.getCards();
         var regions = _.uniq(cards.map(function (c) { return c.region; }));
@@ -37465,8 +37468,11 @@ var Board = /** @class */ (function () {
             var regionCards = _this.getRegionCards(r);
             var index = 0;
             regionCards.forEach(function (c) {
+                // インデックス更新
                 c.indexOfRegion = index;
                 index++;
+                // 開閉状態更新
+                c.opened = (r === 'used' || r === 'hand');
             });
         });
     };
@@ -37626,7 +37632,7 @@ function layoutCards(cards, layoutType, areaWidth, cardWidth) {
     cards = cards.sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
     // 横並びで配置する場合
     if (layoutType === 'horizontal') {
-        var spacing_1 = 2;
+        var spacing_1 = 6;
         var innerWidth_1 = areaWidth - (padding * 2);
         var requiredWidth = cardWidth * cards.length + padding * (cards.length - 1);
         if (requiredWidth <= innerWidth_1) {
@@ -37661,11 +37667,11 @@ function layoutCards(cards, layoutType, areaWidth, cardWidth) {
 exports.view = function (state, actions) {
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     var areaData = [
-        { region: 'used', cardLayoutType: 'horizontal', left: 0, top: 80, width: 450, height: 150 },
+        { region: 'used', cardLayoutType: 'horizontal', left: 0, top: 80, width: 450, height: 160 },
         { region: 'hidden-used', cardLayoutType: 'stacked', left: 470, top: 80, width: 170, height: 140 },
         { region: 'library', cardLayoutType: 'stacked', left: 720, top: 80, width: 160, height: 160, cardCountDisplay: true },
-        { region: 'hand', cardLayoutType: 'horizontal', left: 0, top: 250, width: 700, height: 150 },
-        { region: 'special', cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 150 }
+        { region: 'hand', cardLayoutType: 'horizontal', left: 0, top: 250, width: 700, height: 160 },
+        { region: 'special', cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 160 }
     ];
     var frameNodes = [];
     var objectNodes = [];

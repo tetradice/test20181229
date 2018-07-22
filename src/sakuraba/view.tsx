@@ -30,7 +30,7 @@ function layoutCards(cards: state.Card[], layoutType: LayoutType, areaWidth: num
 
     // 横並びで配置する場合
     if(layoutType === 'horizontal'){
-        let spacing = 2;
+        let spacing = 6;
         let innerWidth = areaWidth - (padding * 2);
         let requiredWidth = cardWidth * cards.length + padding * (cards.length - 1);
         
@@ -78,11 +78,11 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         , height: number
         , cardCountDisplay?: boolean
     }[] = [
-              { region: 'used',        cardLayoutType: 'horizontal', left: 0,   top: 80,  width: 450, height: 150 }
+              { region: 'used',        cardLayoutType: 'horizontal', left: 0,   top: 80,  width: 450, height: 160 }
             , { region: 'hidden-used', cardLayoutType: 'stacked',    left: 470, top: 80,  width: 170, height: 140 }
             , { region: 'library',     cardLayoutType: 'stacked',    left: 720, top: 80,  width: 160, height: 160, cardCountDisplay: true }
-            , { region: 'hand',        cardLayoutType: 'horizontal', left: 0,   top: 250, width: 700, height: 150 }
-            , { region: 'special',     cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 150 }
+            , { region: 'hand',        cardLayoutType: 'horizontal', left: 0,   top: 250, width: 700, height: 160 }
+            , { region: 'special',     cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 160 }
         ];
 
     let frameNodes: hyperapp.Children[] = [];

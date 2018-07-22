@@ -40,7 +40,9 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
         if (e.stopPropagation) {
             e.stopPropagation(); // stops the browser from redirecting.
         }
-        console.log("drop");
+        
+        // カードを移動
+        actions.moveCard({from: state.draggingFromCard.region, fromIndex: state.draggingFromCard.indexOfRegion, to: state.draggingHoverCardRegion});
 
         return false;
     };

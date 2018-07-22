@@ -23,15 +23,20 @@ export class Board implements state.Board {
         return this.objects.filter(v => v.type === 'card' && v.region == region) as state.Card[];
     }
 
-    updateIndexesOfRegion(){
+    /** カード移動時などの領域情報一括更新 */
+    updateRegionInfo(){
         let cards = this.getCards();
         let regions = _.uniq(cards.map(c => c.region));
         regions.forEach(r => {
             let regionCards = this.getRegionCards(r);
             let index = 0;
             regionCards.forEach(c => {
+                // インデックス更新
                 c.indexOfRegion = index;
                 index++;
+
+                // 開閉状態更新
+                c.opened = (r === 'used' || r === 'hand');
             });
         });
     }
