@@ -45,8 +45,8 @@ interface Param {
 }
 export const Card = (p: Param) => (state: state.State, actions: ActionsType) => {
     let styles: Partial<CSSStyleDeclaration> = {
-          left: `${(p.target.rotated ? p.left : p.left)}px`
-        , top: `${(p.target.rotated ? p.top - ((138 - 98) / 2) : p.top)}px`
+          left: `${(p.target.rotated ? p.left + ((140 - 100) / 2) : p.left)}px`
+        , top: `${(p.target.rotated ? p.top - ((140 - 100) / 2) : p.top)}px`
     };
     let cardData = sakuraba.CARD_DATA[p.target.cardId];
     let className = "fbs-card";
@@ -60,6 +60,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     if(state.draggingFromCard && p.target.id === state.draggingFromCard.id) className += " dragging";
 
     const oncreate = (element) => {
+        console.log('created');
         // SemanticUI ポップアップ初期化
         $(element).popup({
             delay: {show: 500, hide: 0},
@@ -68,6 +69,20 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
                 if(currentState.draggingFromCard !== null) return false;
             },
         });
+    }
+
+
+    const onupdate = (element) => {
+        console.log('updated');
+        // SemanticUI ポップアップ初期化
+        // $(element).popup({
+        //     delay: {show: 500, hide: 0},
+        //     onShow: function(): false | void{
+        //         let currentState = (actions.getState() as any) as state.State;
+        //         console.log('shown?', currentState.draggingFromCard);
+        //         //if(currentState.draggingFromCard !== null) return false;
+        //     },
+        // });
     }
 
     return (
@@ -81,6 +96,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             ondragstart={(elem) => { $(elem).popup('hide all'); actions.cardDragStart(p.target); }}
             ondragend={() => actions.cardDragEnd()}
             oncreate={oncreate}
+            onupdate={onupdate}
             data-html={getDescriptionHtml(p.target.cardId)}            
         >
             {(p.target.opened ? cardData.name : '')}

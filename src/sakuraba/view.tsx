@@ -79,7 +79,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         , cardCountDisplay?: boolean
     }[] = [
               { region: 'used',        cardLayoutType: 'horizontal', left: 0,   top: 80,  width: 450, height: 160 }
-            , { region: 'hidden-used', cardLayoutType: 'stacked',    left: 470, top: 80,  width: 170, height: 140 }
+            , { region: 'hidden-used', cardLayoutType: 'stacked',    left: 470, top: 80,  width: 170, height: 140, cardCountDisplay: true }
             , { region: 'library',     cardLayoutType: 'stacked',    left: 720, top: 80,  width: 160, height: 160, cardCountDisplay: true }
             , { region: 'hand',        cardLayoutType: 'horizontal', left: 0,   top: 250, width: 700, height: 160 }
             , { region: 'special',     cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 160 }

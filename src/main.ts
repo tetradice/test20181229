@@ -42,7 +42,7 @@ $(function(){
     st.side = params.side;
 
     // アプリケーション起動
-    let appActions = devtools(app)(st, actions, view, document.getElementById('BOARD2')) as ActionsType;
+    let appActions = app(st, actions, view, document.getElementById('BOARD2')) as ActionsType;
 
     // ボード情報をリクエスト
     console.log('request_first_board_to_server');

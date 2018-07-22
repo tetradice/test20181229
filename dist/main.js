@@ -36660,7 +36660,6 @@ module.exports = function(module) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var devtools = __webpack_require__(/*! hyperapp-redux-devtools */ "./node_modules/hyperapp-redux-devtools/index.js");
 var actions_1 = __webpack_require__(/*! ./sakuraba/actions */ "./src/sakuraba/actions/index.ts");
 var utils = __webpack_require__(/*! ./sakuraba/utils */ "./src/sakuraba/utils/index.ts");
 var view_1 = __webpack_require__(/*! ./sakuraba/view */ "./src/sakuraba/view.tsx");
@@ -36691,7 +36690,7 @@ $(function () {
     st.boardId = params.boardId;
     st.side = params.side;
     // アプリケーション起動
-    var appActions = devtools(hyperapp_1.app)(st, actions_1.actions, view_1.view, document.getElementById('BOARD2'));
+    var appActions = hyperapp_1.app(st, actions_1.actions, view_1.view, document.getElementById('BOARD2'));
     // ボード情報をリクエスト
     console.log('request_first_board_to_server');
     socket.emit('request_first_board_to_server', { boardId: params.boardId, side: params.side });
@@ -36849,17 +36848,19 @@ exports.default = {
 Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 var models = __webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts");
+var utils = __webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts");
 exports.default = {
     /** カードを1枚追加する */
     addCard: function (p) { return function (state) {
+        // 元の盤の状態をコピーして新しい盤を生成
+        var newBoard = new models.Board(state.board);
         // 現在カード数 + 1で新しい連番を振る
-        var cardCount = state.board.objects.filter(function (obj) { return obj.type === 'card'; }).length;
+        var cardCount = newBoard.objects.filter(function (obj) { return obj.type === 'card'; }).length;
         var objectId = "card-" + (cardCount + 1);
-        // カードを1枚追加
-        var newCard = { type: "card", cardId: p.cardId, id: objectId, region: p.region, indexOfRegion: 0, side: 'p1', rotated: false, opened: false };
-        var newObjects = state.board.objects.concat([]);
-        newObjects.push(newCard);
-        var newBoard = _.merge({}, state.board, { objects: newObjects });
+        var newCard = utils.createCard(objectId, p.cardId, p.region, 'p1');
+        newBoard.objects.push(newCard);
+        // 領域情報更新
+        newBoard.updateRegionInfo();
         // 新しい盤を返す
         return { board: newBoard };
     }; },
@@ -37010,8 +37011,8 @@ function getDescriptionHtml(cardId) {
 }
 exports.Card = function (p) { return function (state, actions) {
     var styles = {
-        left: (p.target.rotated ? p.left : p.left) + "px",
-        top: (p.target.rotated ? p.top - ((138 - 98) / 2) : p.top) + "px"
+        left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) + "px",
+        top: (p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) + "px"
     };
     var cardData = sakuraba.CARD_DATA[p.target.cardId];
     var className = "fbs-card";
@@ -37028,6 +37029,7 @@ exports.Card = function (p) { return function (state, actions) {
     if (state.draggingFromCard && p.target.id === state.draggingFromCard.id)
         className += " dragging";
     var oncreate = function (element) {
+        console.log('created');
         // SemanticUI ポップアップ初期化
         $(element).popup({
             delay: { show: 500, hide: 0 },
@@ -37038,7 +37040,19 @@ exports.Card = function (p) { return function (state, actions) {
             },
         });
     };
-    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: "true", onclick: p.onclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
+    var onupdate = function (element) {
+        console.log('updated');
+        // SemanticUI ポップアップ初期化
+        // $(element).popup({
+        //     delay: {show: 500, hide: 0},
+        //     onShow: function(): false | void{
+        //         let currentState = (actions.getState() as any) as state.State;
+        //         console.log('shown?', currentState.draggingFromCard);
+        //         //if(currentState.draggingFromCard !== null) return false;
+        //     },
+        // });
+    };
+    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: "true", onclick: p.onclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
 }; };
 
 
@@ -37476,6 +37490,10 @@ var Board = /** @class */ (function () {
                 c.opened = (r === 'used' || r === 'hand');
                 // 回転状態更新
                 c.rotated = (r === 'hidden-used');
+                // known状態 (中身を知っているかどうか) 更新
+                c.known.p1 = true;
+                if (c.region === 'library')
+                    c.known.p1 = false; // 山札の場合は分からない
             });
         });
     };
@@ -37594,7 +37612,7 @@ function getSakuraCount(state, region, side) {
     return ret;
 }
 exports.getSakuraCount = getSakuraCount;
-/** カード1枚を作成 */
+/** カード1枚を作成 (デッキ構築画面用) */
 function createCard(id, cardId, region, side) {
     return {
         type: 'card',
@@ -37604,7 +37622,8 @@ function createCard(id, cardId, region, side) {
         indexOfRegion: 0,
         rotated: false,
         opened: false,
-        side: side
+        side: side,
+        known: { p1: true, p2: true }
     };
 }
 exports.createCard = createCard;
@@ -37671,7 +37690,7 @@ exports.view = function (state, actions) {
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     var areaData = [
         { region: 'used', cardLayoutType: 'horizontal', left: 0, top: 80, width: 450, height: 160 },
-        { region: 'hidden-used', cardLayoutType: 'stacked', left: 470, top: 80, width: 170, height: 140 },
+        { region: 'hidden-used', cardLayoutType: 'stacked', left: 470, top: 80, width: 170, height: 140, cardCountDisplay: true },
         { region: 'library', cardLayoutType: 'stacked', left: 720, top: 80, width: 160, height: 160, cardCountDisplay: true },
         { region: 'hand', cardLayoutType: 'horizontal', left: 0, top: 250, width: 700, height: 160 },
         { region: 'special', cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 160 }

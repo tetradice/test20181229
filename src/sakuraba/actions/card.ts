@@ -1,18 +1,22 @@
 import * as  _ from "lodash";
 import * as models from "../models";
+import * as utils from "../utils";
 
 export default {
     /** カードを1枚追加する */
     addCard: (p: {region: CardRegion, cardId: string}) => (state: state.State) => {
+        // 元の盤の状態をコピーして新しい盤を生成
+        let newBoard = new models.Board(state.board);
+
         // 現在カード数 + 1で新しい連番を振る
-        let cardCount = state.board.objects.filter(obj => obj.type === 'card').length;
+        let cardCount = newBoard.objects.filter(obj => obj.type === 'card').length;
         let objectId = `card-${cardCount + 1}`;
 
-        // カードを1枚追加
-        let newCard: state.Card = {type: "card", cardId: p.cardId, id: objectId, region: p.region, indexOfRegion: 0, side: 'p1', rotated: false, opened: false};
-        let newObjects = state.board.objects.concat([]);
-        newObjects.push(newCard);
-        let newBoard = _.merge({}, state.board, {objects: newObjects});
+        let newCard = utils.createCard(objectId, p.cardId, p.region, 'p1');
+        newBoard.objects.push(newCard);
+
+        // 領域情報更新
+        newBoard.updateRegionInfo();
 
         // 新しい盤を返す
         return {board: newBoard};

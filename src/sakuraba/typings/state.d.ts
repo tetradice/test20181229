@@ -45,6 +45,7 @@ export interface Card extends BoardObjectBase {
     indexOfRegion: number;
     rotated: boolean;
     opened: boolean;
+    known: {p1: boolean, p2: boolean};
 }
 
 export interface SakuraToken extends BoardObjectBase {

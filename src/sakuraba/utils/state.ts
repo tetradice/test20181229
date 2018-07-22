@@ -41,7 +41,7 @@ export function getSakuraCount(state: state.State, region: SakuraTokenRegion, si
 } 
 
 
-/** カード1枚を作成 */
+/** カード1枚を作成 (デッキ構築画面用) */
 export function createCard(id: string, cardId: string, region: CardRegion | null, side?: PlayerSide): state.Card{
   return {
       type: 'card'
@@ -52,5 +52,6 @@ export function createCard(id: string, cardId: string, region: CardRegion | null
     , rotated: false
     , opened: false
     , side: side
+    , known: {p1: true, p2: true}
   };
 }

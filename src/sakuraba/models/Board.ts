@@ -41,6 +41,11 @@ export class Board implements state.Board {
 
                 // 回転状態更新
                 c.rotated = (r === 'hidden-used');
+
+                // known状態 (中身を知っているかどうか) 更新
+                c.known.p1 = true;
+                if(c.region === 'library') c.known.p1 = false; // 山札の場合は分からない
+
             });
         });
     }
