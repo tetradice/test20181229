@@ -36881,9 +36881,15 @@ exports.default = {
         var fromIndex = (p.fromIndex === undefined ? 0 : p.fromIndex);
         var num = (p.moveNumber === undefined ? 1 : p.moveNumber);
         var fromRegionCards = newBoard.getRegionCards(p.from);
+        var toRegionCards = newBoard.getRegionCards(p.to);
+        var indexes = toRegionCards.map(function (c) { return c.indexOfRegion; });
+        var maxIndex = Math.max.apply(Math, indexes);
         var targetCards = fromRegionCards.slice(fromIndex, fromIndex + num);
         targetCards.forEach(function (c) {
             c.region = p.to;
+            // 領域インデックスは最大値+1
+            c.indexOfRegion = maxIndex + 1;
+            maxIndex++;
         });
         // 領域情報の更新
         newBoard.updateRegionInfo();
@@ -37035,16 +37041,17 @@ exports.Card = function (p) { return function (state, actions) {
             onShow: function () {
                 if (!p.target.known.p1)
                     return false;
-                var currentState = actions.getState();
-                if (currentState.draggingFromCard !== null)
-                    return false;
             },
         });
     };
     var oncreate = function (element) {
+        if (state.draggingFromCard !== null)
+            return;
         setPopup(element);
     };
     var onupdate = function (element) {
+        if (state.draggingFromCard !== null)
+            return;
         setPopup(element);
     };
     return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: "true", onclick: p.onclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
@@ -37118,8 +37125,10 @@ exports.CardAreaDroppable = function (p) { return function (state, actions) {
         if (e.stopPropagation) {
             e.stopPropagation(); // stops the browser from redirecting.
         }
-        // カードを移動
-        actions.moveCard({ from: state.draggingFromCard.region, fromIndex: state.draggingFromCard.indexOfRegion, to: state.draggingHoverCardRegion });
+        // カードを移動 (リージョンが空でなければ)
+        if (state.draggingHoverCardRegion) {
+            actions.moveCard({ from: state.draggingFromCard.region, fromIndex: state.draggingFromCard.indexOfRegion, to: state.draggingHoverCardRegion });
+        }
         return false;
     };
     return (hyperapp_1.h("div", { class: "area droppable", style: styles, key: "CardAreaDroppable_" + p.region, ondragover: dragover, ondragenter: dragenter, ondragleave: dragleave, ondrop: drop }));
@@ -37475,7 +37484,7 @@ var Board = /** @class */ (function () {
         var cards = this.getCards();
         var regions = _.uniq(cards.map(function (c) { return c.region; }));
         regions.forEach(function (r) {
-            var regionCards = _this.getRegionCards(r);
+            var regionCards = _this.getRegionCards(r).sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
             var index = 0;
             regionCards.forEach(function (c) {
                 // インデックス更新

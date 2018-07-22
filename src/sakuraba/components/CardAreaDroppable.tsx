@@ -41,8 +41,10 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
             e.stopPropagation(); // stops the browser from redirecting.
         }
         
-        // カードを移動
-        actions.moveCard({from: state.draggingFromCard.region, fromIndex: state.draggingFromCard.indexOfRegion, to: state.draggingHoverCardRegion});
+        // カードを移動 (リージョンが空でなければ)
+        if(state.draggingHoverCardRegion){
+            actions.moveCard({from: state.draggingFromCard.region, fromIndex: state.draggingFromCard.indexOfRegion, to: state.draggingHoverCardRegion});
+        }
 
         return false;
     };

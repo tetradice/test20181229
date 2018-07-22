@@ -29,7 +29,7 @@ export class Board implements state.Board {
         let cards = this.getCards();
         let regions = _.uniq(cards.map(c => c.region));
         regions.forEach(r => {
-            let regionCards = this.getRegionCards(r);
+            let regionCards = this.getRegionCards(r).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
             let index = 0;
             regionCards.forEach(c => {
                 // インデックス更新

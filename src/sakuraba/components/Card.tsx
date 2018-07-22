@@ -65,17 +65,16 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             delay: {show: 500, hide: 0},
             onShow: function(): false | void{
                 if(!p.target.known.p1) return false;
-
-                let currentState = (actions.getState() as any) as state.State;
-                if(currentState.draggingFromCard !== null) return false;
             },
         });
     }
 
     const oncreate = (element) => {
+        if(state.draggingFromCard !== null) return;
         setPopup(element);
     }
     const onupdate = (element) => {
+        if(state.draggingFromCard !== null) return;
         setPopup(element);
     }
 

@@ -51,9 +51,16 @@ export default {
         let fromIndex = (p.fromIndex === undefined ? 0 : p.fromIndex);
         let num = (p.moveNumber === undefined ? 1 : p.moveNumber);
         let fromRegionCards = newBoard.getRegionCards(p.from);
+        let toRegionCards = newBoard.getRegionCards(p.to);
+        let indexes = toRegionCards.map(c => c.indexOfRegion);
+        let maxIndex = Math.max(...indexes);
+
         let targetCards = fromRegionCards.slice(fromIndex, fromIndex + num);
         targetCards.forEach(c => {
             c.region = p.to;
+            // 領域インデックスは最大値+1
+            c.indexOfRegion = maxIndex + 1;
+            maxIndex++;
         });
 
         // 領域情報の更新
