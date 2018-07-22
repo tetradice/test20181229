@@ -37010,8 +37010,8 @@ function getDescriptionHtml(cardId) {
 }
 exports.Card = function (p) { return function (state, actions) {
     var styles = {
-        left: p.left + "px",
-        top: p.top + "px"
+        left: (p.target.rotated ? p.left : p.left) + "px",
+        top: (p.target.rotated ? p.top - ((138 - 98) / 2) : p.top) + "px"
     };
     var cardData = sakuraba.CARD_DATA[p.target.cardId];
     var className = "fbs-card";
@@ -37021,12 +37021,12 @@ exports.Card = function (p) { return function (state, actions) {
     else {
         className += " back-normal";
     }
-    if (p.selected) {
+    if (p.target.rotated)
+        className += " rotated";
+    if (p.selected)
         className += " selected";
-    }
-    if (state.draggingFromCard && p.target.id === state.draggingFromCard.id) {
+    if (state.draggingFromCard && p.target.id === state.draggingFromCard.id)
         className += " dragging";
-    }
     var oncreate = function (element) {
         // SemanticUI ポップアップ初期化
         $(element).popup({
@@ -37456,6 +37456,7 @@ var Board = /** @class */ (function () {
     Board.prototype.getCards = function () {
         return this.objects.filter(function (v) { return v.type === 'card'; });
     };
+    /** 指定した領域にあるカードを一括取得 */
     Board.prototype.getRegionCards = function (region) {
         return this.objects.filter(function (v) { return v.type === 'card' && v.region == region; });
     };
@@ -37473,6 +37474,8 @@ var Board = /** @class */ (function () {
                 index++;
                 // 開閉状態更新
                 c.opened = (r === 'used' || r === 'hand');
+                // 回転状態更新
+                c.rotated = (r === 'hidden-used');
             });
         });
     };

@@ -19,6 +19,7 @@ export class Board implements state.Board {
         return this.objects.filter(v => v.type === 'card') as state.Card[];
     } 
 
+    /** 指定した領域にあるカードを一括取得 */
     getRegionCards(region: CardRegion): state.Card[] {
         return this.objects.filter(v => v.type === 'card' && v.region == region) as state.Card[];
     }
@@ -37,6 +38,9 @@ export class Board implements state.Board {
 
                 // 開閉状態更新
                 c.opened = (r === 'used' || r === 'hand');
+
+                // 回転状態更新
+                c.rotated = (r === 'hidden-used');
             });
         });
     }

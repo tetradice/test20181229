@@ -45,8 +45,8 @@ interface Param {
 }
 export const Card = (p: Param) => (state: state.State, actions: ActionsType) => {
     let styles: Partial<CSSStyleDeclaration> = {
-          left: `${p.left}px`
-        , top: `${p.top}px`
+          left: `${(p.target.rotated ? p.left : p.left)}px`
+        , top: `${(p.target.rotated ? p.top - ((138 - 98) / 2) : p.top)}px`
     };
     let cardData = sakuraba.CARD_DATA[p.target.cardId];
     let className = "fbs-card";
@@ -55,12 +55,9 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     } else {
         className += " back-normal";
     }
-    if(p.selected){
-        className += " selected";
-    }
-    if(state.draggingFromCard && p.target.id === state.draggingFromCard.id){
-        className += " dragging";
-    }
+    if(p.target.rotated) className += " rotated";
+    if(p.selected) className += " selected";
+    if(state.draggingFromCard && p.target.id === state.draggingFromCard.id) className += " dragging";
 
     const oncreate = (element) => {
         // SemanticUI ポップアップ初期化
