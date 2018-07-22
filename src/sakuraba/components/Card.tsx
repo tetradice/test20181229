@@ -59,30 +59,24 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     if(p.selected) className += " selected";
     if(state.draggingFromCard && p.target.id === state.draggingFromCard.id) className += " dragging";
 
-    const oncreate = (element) => {
-        console.log('created');
+    const setPopup = (element) => {
         // SemanticUI ポップアップ初期化
         $(element).popup({
             delay: {show: 500, hide: 0},
             onShow: function(): false | void{
+                if(!p.target.known.p1) return false;
+
                 let currentState = (actions.getState() as any) as state.State;
                 if(currentState.draggingFromCard !== null) return false;
             },
         });
     }
 
-
+    const oncreate = (element) => {
+        setPopup(element);
+    }
     const onupdate = (element) => {
-        console.log('updated');
-        // SemanticUI ポップアップ初期化
-        // $(element).popup({
-        //     delay: {show: 500, hide: 0},
-        //     onShow: function(): false | void{
-        //         let currentState = (actions.getState() as any) as state.State;
-        //         console.log('shown?', currentState.draggingFromCard);
-        //         //if(currentState.draggingFromCard !== null) return false;
-        //     },
-        // });
+        setPopup(element);
     }
 
     return (

@@ -37028,29 +37028,24 @@ exports.Card = function (p) { return function (state, actions) {
         className += " selected";
     if (state.draggingFromCard && p.target.id === state.draggingFromCard.id)
         className += " dragging";
-    var oncreate = function (element) {
-        console.log('created');
+    var setPopup = function (element) {
         // SemanticUI ポップアップ初期化
         $(element).popup({
             delay: { show: 500, hide: 0 },
             onShow: function () {
+                if (!p.target.known.p1)
+                    return false;
                 var currentState = actions.getState();
                 if (currentState.draggingFromCard !== null)
                     return false;
             },
         });
     };
+    var oncreate = function (element) {
+        setPopup(element);
+    };
     var onupdate = function (element) {
-        console.log('updated');
-        // SemanticUI ポップアップ初期化
-        // $(element).popup({
-        //     delay: {show: 500, hide: 0},
-        //     onShow: function(): false | void{
-        //         let currentState = (actions.getState() as any) as state.State;
-        //         console.log('shown?', currentState.draggingFromCard);
-        //         //if(currentState.draggingFromCard !== null) return false;
-        //     },
-        // });
+        setPopup(element);
     };
     return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: "true", onclick: p.onclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
 }; };
