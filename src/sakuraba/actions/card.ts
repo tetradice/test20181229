@@ -1,6 +1,7 @@
 import * as  _ from "lodash";
 import * as models from "../models";
 import * as utils from "../utils";
+import { ActionsType } from ".";
 
 export default {
     /** カードを1枚追加する */
@@ -50,8 +51,8 @@ export default {
         // カードを指定枚数移動 (省略時は0枚)
         let fromIndex = (p.fromIndex === undefined ? 0 : p.fromIndex);
         let num = (p.moveNumber === undefined ? 1 : p.moveNumber);
-        let fromRegionCards = newBoard.getRegionCards(p.from);
-        let toRegionCards = newBoard.getRegionCards(p.to);
+        let fromRegionCards = newBoard.getRegionCards(p.from).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+        let toRegionCards = newBoard.getRegionCards(p.to).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
         let indexes = toRegionCards.map(c => c.indexOfRegion);
         let maxIndex = Math.max(...indexes);
 
@@ -68,6 +69,37 @@ export default {
 
         // 新しい盤を返す
         return {board: newBoard};
+    },
+
+    shuffle: () => (state: state.State) => {
+        let ret: Partial<state.State> = {};
+
+        let newBoard = new models.Board(state.board);
+        // 山札のカードをすべて取得
+        let cards = newBoard.getRegionCards('library');
+        // ランダムに整列し、その順番をインデックスに再設定
+        let shuffledCards = _.shuffle(cards);
+        shuffledCards.forEach((c, i) => {
+            c.indexOfRegion = i;
+        });
+
+        // 新しいボードを返す
+        return {board: newBoard};
+    },
+
+    /** 再構成 */
+    reshuffle: (p: {lifeDecrease?: boolean}) => (state: state.State, actions: ActionsType) => {
+        // 使用済、伏せ札をすべて山札へ移動
+        let newBoard = new models.Board(state.board);
+        let usedCards = newBoard.getRegionCards('used');
+        actions.moveCard({from: 'used', to: 'library', moveNumber: usedCards.length});
+        
+        newBoard = new models.Board(actions.getState().board);
+        let hiddenUsedCards = newBoard.getRegionCards('hidden-used');
+        actions.moveCard({from: 'hidden-used', to: 'library', moveNumber: hiddenUsedCards.length});
+
+        // 山札を混ぜる
+        actions.shuffle();
     },
 
     /** ドラッグ開始 */

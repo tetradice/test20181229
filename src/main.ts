@@ -1,9 +1,8 @@
 import { app, h } from "hyperapp";
-import * as devtools from 'hyperapp-redux-devtools';
 import { actions, ActionsType } from "./sakuraba/actions";
 import * as utils from "./sakuraba/utils";
 import { view } from "./sakuraba/view";
-
+import { withLogger } from "@hyperapp/logger"
 
 declare var params: {
     boardId: string;
@@ -42,7 +41,26 @@ $(function(){
     st.side = params.side;
 
     // アプリケーション起動
-    let appActions = app(st, actions, view, document.getElementById('BOARD2')) as ActionsType;
+    let appActions: ActionsType = withLogger(app)(st, actions, view, document.getElementById('BOARD2'));
+
+    // 山札ドラッグメニュー
+    // 山札右クリックメニュー
+    $.contextMenu({
+        selector: '#BOARD2 .fbs-card[data-region=library]',
+        callback: function(key: string) {
+            if(key === 'reshuffle'){
+                appActions.reshuffle({});
+            }
+
+            return;
+        },
+        items: {
+            'draw': {name: '1枚引く'},
+            'sep1': '---------',
+            'reshuffle': {name: '再構成する', disabled: () => { appActions.getState() }},
+            'reshuffleWithoutDamage': {name: '再構成する (ライフ減少なし)'},
+        }
+    });
 
     // ボード情報をリクエスト
     console.log('request_first_board_to_server');

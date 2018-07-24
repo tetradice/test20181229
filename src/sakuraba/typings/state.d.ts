@@ -14,6 +14,9 @@ export interface State {
 
     draggingFromCard: Card;
     draggingHoverCardRegion: CardRegion;
+
+    draggingFromSakuraToken: SakuraToken;
+    draggingHoverSakuraTokenRegion: SakuraTokenRegion;
 }
 
 /** 卓情報 */

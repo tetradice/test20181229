@@ -44,5 +44,5 @@ export default {
     },
 
     /** ボードの状態を取得 */
-    getState: () => state => state
+    getState: () => (state: state.State) => state
 }

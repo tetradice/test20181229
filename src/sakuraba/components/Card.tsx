@@ -77,6 +77,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
         if(state.draggingFromCard !== null) return;
         setPopup(element);
     }
+    let draggable = p.target.region !== 'library' || p.target.indexOfRegion === (state.board.objects.filter(o => o.type === 'card' && o.region === p.target.region).length - 1);
 
     return (
         <div
@@ -84,7 +85,8 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             class={className}
             id={'board-object-' + p.target.id}
             style={styles}
-            draggable="true"
+            draggable={draggable}
+            data-region={p.target.region}
             onclick={p.onclick}
             ondragstart={(elem) => { $(elem).popup('hide all'); actions.cardDragStart(p.target); }}
             ondragend={() => actions.cardDragEnd()}

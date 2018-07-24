@@ -86,6 +86,89 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/@hyperapp/logger/src/defaultLog.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/@hyperapp/logger/src/defaultLog.js ***!
+  \*********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (function(prevState, action, nextState) {
+  console.group("%c action", "color: gray; font-weight: lighter;", action.name)
+  console.log("%c prev state", "color: #9E9E9E; font-weight: bold;", prevState)
+  console.log("%c data", "color: #03A9F4; font-weight: bold;", action.data)
+  console.log("%c next state", "color: #4CAF50; font-weight: bold;", nextState)
+  console.groupEnd()
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/@hyperapp/logger/src/index.js":
+/*!****************************************************!*\
+  !*** ./node_modules/@hyperapp/logger/src/index.js ***!
+  \****************************************************/
+/*! exports provided: withLogger */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "withLogger", function() { return withLogger; });
+/* harmony import */ var _defaultLog__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./defaultLog */ "./node_modules/@hyperapp/logger/src/defaultLog.js");
+
+
+var isFn = function(value) {
+  return typeof value === "function"
+}
+
+function makeLoggerApp(log, nextApp) {
+  return function(initialState, actionsTemplate, view, container) {
+    function enhanceActions(actions, prefix) {
+      var namespace = prefix ? prefix + "." : ""
+      return Object.keys(actions || {}).reduce(function(otherActions, name) {
+        var namedspacedName = namespace + name
+        var action = actions[name]
+        otherActions[name] =
+          typeof action === "function"
+            ? function(data) {
+                return function(state, actions) {
+                  var result = action(data)
+                  result =
+                    typeof result === "function"
+                      ? result(state, actions)
+                      : result
+                  log(state, { name: namedspacedName, data: data }, result)
+                  return result
+                }
+              }
+            : enhanceActions(action, namedspacedName)
+        return otherActions
+      }, {})
+    }
+
+    var enhancedActions = enhanceActions(actionsTemplate)
+
+    var appActions = nextApp(initialState, enhancedActions, view, container)
+    return appActions
+  }
+}
+
+function withLogger(optionsOrApp) {
+  if (isFn(optionsOrApp)) {
+    return makeLoggerApp(_defaultLog__WEBPACK_IMPORTED_MODULE_0__["default"], optionsOrApp)
+  } else {
+    var log = isFn(optionsOrApp.log) ? optionsOrApp.log : _defaultLog__WEBPACK_IMPORTED_MODULE_0__["default"]
+    return function(nextApp) {
+      return makeLoggerApp(log, nextApp)
+    }
+  }
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/css-loader/index.js?!./src/sakuraba/components/ControlPanel.css":
 /*!**************************************************************************************!*\
   !*** ./node_modules/css-loader??ref--6-1!./src/sakuraba/components/ControlPanel.css ***!
@@ -36663,6 +36746,7 @@ var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/sr
 var actions_1 = __webpack_require__(/*! ./sakuraba/actions */ "./src/sakuraba/actions/index.ts");
 var utils = __webpack_require__(/*! ./sakuraba/utils */ "./src/sakuraba/utils/index.ts");
 var view_1 = __webpack_require__(/*! ./sakuraba/view */ "./src/sakuraba/view.tsx");
+var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
 function messageModal(desc) {
     $('#MESSAGE-MODAL .description').html(desc);
     $('#MESSAGE-MODAL')
@@ -36690,7 +36774,24 @@ $(function () {
     st.boardId = params.boardId;
     st.side = params.side;
     // アプリケーション起動
-    var appActions = hyperapp_1.app(st, actions_1.actions, view_1.view, document.getElementById('BOARD2'));
+    var appActions = logger_1.withLogger(hyperapp_1.app)(st, actions_1.actions, view_1.view, document.getElementById('BOARD2'));
+    // 山札ドラッグメニュー
+    // 山札右クリックメニュー
+    $.contextMenu({
+        selector: '#BOARD2 .fbs-card[data-region=library]',
+        callback: function (key) {
+            if (key === 'reshuffle') {
+                appActions.reshuffle({});
+            }
+            return;
+        },
+        items: {
+            'draw': { name: '1枚引く' },
+            'sep1': '---------',
+            'reshuffle': { name: '再構成する', disabled: function () { appActions.getState(); } },
+            'reshuffleWithoutDamage': { name: '再構成する (ライフ減少なし)' },
+        }
+    });
     // ボード情報をリクエスト
     console.log('request_first_board_to_server');
     socket.emit('request_first_board_to_server', { boardId: params.boardId, side: params.side });
@@ -36880,8 +36981,8 @@ exports.default = {
         // カードを指定枚数移動 (省略時は0枚)
         var fromIndex = (p.fromIndex === undefined ? 0 : p.fromIndex);
         var num = (p.moveNumber === undefined ? 1 : p.moveNumber);
-        var fromRegionCards = newBoard.getRegionCards(p.from);
-        var toRegionCards = newBoard.getRegionCards(p.to);
+        var fromRegionCards = newBoard.getRegionCards(p.from).sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
+        var toRegionCards = newBoard.getRegionCards(p.to).sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
         var indexes = toRegionCards.map(function (c) { return c.indexOfRegion; });
         var maxIndex = Math.max.apply(Math, indexes);
         var targetCards = fromRegionCards.slice(fromIndex, fromIndex + num);
@@ -36895,6 +36996,31 @@ exports.default = {
         newBoard.updateRegionInfo();
         // 新しい盤を返す
         return { board: newBoard };
+    }; },
+    shuffle: function () { return function (state) {
+        var ret = {};
+        var newBoard = new models.Board(state.board);
+        // 山札のカードをすべて取得
+        var cards = newBoard.getRegionCards('library');
+        // ランダムに整列し、その順番をインデックスに再設定
+        var shuffledCards = _.shuffle(cards);
+        shuffledCards.forEach(function (c, i) {
+            c.indexOfRegion = i;
+        });
+        // 新しいボードを返す
+        return { board: newBoard };
+    }; },
+    /** 再構成 */
+    reshuffle: function (p) { return function (state, actions) {
+        // 使用済、伏せ札をすべて山札へ移動
+        var newBoard = new models.Board(state.board);
+        var usedCards = newBoard.getRegionCards('used');
+        actions.moveCard({ from: 'used', to: 'library', moveNumber: usedCards.length });
+        newBoard = new models.Board(actions.getState().board);
+        var hiddenUsedCards = newBoard.getRegionCards('hidden-used');
+        actions.moveCard({ from: 'hidden-used', to: 'library', moveNumber: hiddenUsedCards.length });
+        // 山札を混ぜる
+        actions.shuffle();
     }; },
     /** ドラッグ開始 */
     cardDragStart: function (card) { return function (state) {
@@ -36958,10 +37084,14 @@ exports.actions = Object.assign(log_1.default, card_1.default, board_1.default);
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+var models = __webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts");
 exports.default = {
     appendActionLog: function (p) { return function (state) {
-        var append = [{ body: p.text, time: moment().format() }];
-        return { logs: state.board.actionLog.concat(append) };
+        // 元の盤の状態をコピーして新しい盤を生成
+        var newBoard = new models.Board(state.board);
+        var append = { body: p.text, time: moment().format() };
+        newBoard.actionLog.push(append);
+        return { board: newBoard };
     }; }
 };
 
@@ -37054,7 +37184,8 @@ exports.Card = function (p) { return function (state, actions) {
             return;
         setPopup(element);
     };
-    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: "true", onclick: p.onclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
+    var draggable = p.target.region !== 'library' || p.target.indexOfRegion === (state.board.objects.filter(function (o) { return o.type === 'card' && o.region === p.target.region; }).length - 1);
+    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: draggable, "data-region": p.target.region, onclick: p.onclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
 }; };
 
 
