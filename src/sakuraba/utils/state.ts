@@ -12,6 +12,8 @@ export function createInitialState(): state.State{
         , zoom: 1
         , draggingFromCard: null
         , draggingHoverCardRegion: null
+        , draggingFromSakuraToken: null
+        , draggingHoverSakuraTokenRegion: null
     }
     return st;
 }

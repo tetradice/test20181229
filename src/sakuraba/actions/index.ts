@@ -1,7 +1,9 @@
 import logActions from './log';
 import cardActions from './card';
 import boardActions from './board';
-import * as acts from '../typings/actions'
+import { WiredActions } from '@tetradice/hyperapp-types';
 
 export const actions = Object.assign(logActions, cardActions, boardActions);
-export type ActionsType = acts.WiredActions<state.State, typeof actions>;
+export type ActionsType = WiredActions<state.State, typeof actions>;
+
+let a: WiredActions<any, any>;

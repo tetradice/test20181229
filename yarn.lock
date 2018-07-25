@@ -6,6 +6,12 @@
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/@hyperapp/logger/-/logger-0.5.0.tgz#627404507c45d38fb5190343f84b4da377e103b8"
 
+"@tetradice/hyperapp-types@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tetradice/hyperapp-types/-/hyperapp-types-0.1.0.tgz#624ca0c17fa5d17d25a099d7a7bdb194a8ecd837"
+  dependencies:
+    hyperapp "^1.2"
+
 "@types/body-parser@*":
   version "1.17.0"
   resolved "https://registry.yarnpkg.com/@types/body-parser/-/body-parser-1.17.0.tgz#9f5c9d9bd04bb54be32d5eb9fc0d8c974e6cf58c"
@@ -2066,6 +2072,10 @@ hyperapp-redux-devtools@^1.1.6:
 hyperapp@^1.1.2, hyperapp@^1.2.5, hyperapp@^1.2.6:
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/hyperapp/-/hyperapp-1.2.6.tgz#fa3b42dad88e50f962b9d9f922dfa7bef3c8ebc8"
+
+hyperapp@^1.2:
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/hyperapp/-/hyperapp-1.2.8.tgz#48a3b02d6948b8faf3b72f42d70577470d0d4124"
 
 iconv-lite@0.4.19:
   version "0.4.19"

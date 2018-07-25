@@ -37069,6 +37069,7 @@ var log_1 = __webpack_require__(/*! ./log */ "./src/sakuraba/actions/log.ts");
 var card_1 = __webpack_require__(/*! ./card */ "./src/sakuraba/actions/card.ts");
 var board_1 = __webpack_require__(/*! ./board */ "./src/sakuraba/actions/board.ts");
 exports.actions = Object.assign(log_1.default, card_1.default, board_1.default);
+var a;
 
 
 /***/ }),
@@ -37720,7 +37721,9 @@ function createInitialState() {
         },
         zoom: 1,
         draggingFromCard: null,
-        draggingHoverCardRegion: null
+        draggingHoverCardRegion: null,
+        draggingFromSakuraToken: null,
+        draggingHoverSakuraTokenRegion: null
     };
     return st;
 }
