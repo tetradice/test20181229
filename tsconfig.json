@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "experimentalDecorators": true,
     "noImplicitReturns": true,
     "lib": ["es6", "dom"],
     "module": "commonjs",
@@ -15,8 +14,5 @@
     , "./src/sakuraba/typings"
     ]
   },
-  "compileOnSave": true,
-  "exclude": [
-    "node_modules"
-  ],
+  "compileOnSave": true
 }
