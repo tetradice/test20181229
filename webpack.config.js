@@ -22,8 +22,8 @@ module.exports = {
       {
         // 拡張子 .ts の場合
         test: /\.ts$|\.tsx$/,
-        // shebangを取り除いて、TypeScriptでビルド
-        use: ['shebang-loader', 'ts-loader']
+        // TypeScriptでビルド
+        use: ['ts-loader']
       },
       {
         // 拡張子 .js の場合
