@@ -19,6 +19,22 @@
     "@types/connect" "*"
     "@types/node" "*"
 
+"@types/browser-sync@^0.0.41":
+  version "0.0.41"
+  resolved "https://registry.yarnpkg.com/@types/browser-sync/-/browser-sync-0.0.41.tgz#b3e7c3555a3ab8ad1a207d44dec42a71638c34d8"
+  dependencies:
+    "@types/chokidar" "*"
+    "@types/micromatch" "^2"
+    "@types/node" "*"
+    "@types/serve-static" "*"
+
+"@types/chokidar@*":
+  version "1.7.5"
+  resolved "https://registry.yarnpkg.com/@types/chokidar/-/chokidar-1.7.5.tgz#1fa78c8803e035bed6d98e6949e514b133b0c9b6"
+  dependencies:
+    "@types/events" "*"
+    "@types/node" "*"
+
 "@types/connect@*":
   version "3.4.32"
   resolved "https://registry.yarnpkg.com/@types/connect/-/connect-3.4.32.tgz#aa0e9616b9435ccad02bc52b5b454ffc2c70ba28"
@@ -53,6 +69,12 @@
   version "4.14.112"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.112.tgz#4a8d8e5716b97a1ac01fe1931ad1e4cba719de5a"
 
+"@types/micromatch@^2":
+  version "2.3.30"
+  resolved "https://registry.yarnpkg.com/@types/micromatch/-/micromatch-2.3.30.tgz#c2a143675f200fbcebe57fb0dab0cbf58093d4b0"
+  dependencies:
+    "@types/parse-glob" "*"
+
 "@types/mime@*":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-2.0.0.tgz#5a7306e367c539b9f6543499de8dd519fac37a8b"
@@ -60,6 +82,10 @@
 "@types/node@*", "@types/node@^10.3.2":
   version "10.5.2"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.5.2.tgz#f19f05314d5421fe37e74153254201a7bf00a707"
+
+"@types/parse-glob@*":
+  version "3.0.29"
+  resolved "https://registry.yarnpkg.com/@types/parse-glob/-/parse-glob-3.0.29.tgz#6a40ec7ebd2418ee69ee397e48e42169268a10bf"
 
 "@types/randomstring@^1.1.6":
   version "1.1.6"

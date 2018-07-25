@@ -36741,10 +36741,17 @@ module.exports = function(module) {
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var actions_1 = __webpack_require__(/*! ./sakuraba/actions */ "./src/sakuraba/actions/index.ts");
-var utils = __webpack_require__(/*! ./sakuraba/utils */ "./src/sakuraba/utils/index.ts");
+var utils = __importStar(__webpack_require__(/*! ./sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var view_1 = __webpack_require__(/*! ./sakuraba/view */ "./src/sakuraba/view.tsx");
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
 function messageModal(desc) {
@@ -36893,9 +36900,16 @@ exports.CARD_DATA = {
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
-var utils = __webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts");
+var _ = __importStar(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
+var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
 var sakuraba_1 = __webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts");
 exports.default = {
     /** ボード全体を設定する */
@@ -36946,10 +36960,17 @@ exports.default = {
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
-var models = __webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts");
-var utils = __webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts");
+var _ = __importStar(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
+var models = __importStar(__webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts"));
+var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
 exports.default = {
     /** カードを1枚追加する */
     addCard: function (p) { return function (state) {
@@ -37064,10 +37085,13 @@ exports.default = {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var log_1 = __webpack_require__(/*! ./log */ "./src/sakuraba/actions/log.ts");
-var card_1 = __webpack_require__(/*! ./card */ "./src/sakuraba/actions/card.ts");
-var board_1 = __webpack_require__(/*! ./board */ "./src/sakuraba/actions/board.ts");
+var log_1 = __importDefault(__webpack_require__(/*! ./log */ "./src/sakuraba/actions/log.ts"));
+var card_1 = __importDefault(__webpack_require__(/*! ./card */ "./src/sakuraba/actions/card.ts"));
+var board_1 = __importDefault(__webpack_require__(/*! ./board */ "./src/sakuraba/actions/board.ts"));
 exports.actions = Object.assign(log_1.default, card_1.default, board_1.default);
 var a;
 
@@ -37083,9 +37107,16 @@ var a;
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
-var models = __webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts");
+var models = __importStar(__webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts"));
 exports.default = {
     appendActionLog: function (p) { return function (state) {
         // 元の盤の状態をコピーして新しい盤を生成
@@ -37108,9 +37139,16 @@ exports.default = {
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var sakuraba = __webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts");
+var sakuraba = __importStar(__webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts"));
 // 説明を取得する関数
 function getDescriptionHtml(cardId) {
     var cardData = sakuraba.CARD_DATA[cardId];
@@ -37308,13 +37346,20 @@ if(false) {}
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var sakuraba = __webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts");
-var utils = __webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts");
+var sakuraba = __importStar(__webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts"));
+var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
 var Card_1 = __webpack_require__(/*! ./Card */ "./src/sakuraba/components/Card.tsx");
-var css = __webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/components/ControlPanel.css");
-var devtools = __webpack_require__(/*! hyperapp-redux-devtools */ "./node_modules/hyperapp-redux-devtools/index.js");
+var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/components/ControlPanel.css"));
+var devtools = __importStar(__webpack_require__(/*! hyperapp-redux-devtools */ "./node_modules/hyperapp-redux-devtools/index.js"));
 /** コントロールパネル */
 exports.ControlPanel = function () { return function (state, actions) {
     var reset = function () {
@@ -37595,8 +37640,15 @@ __export(__webpack_require__(/*! ./CardAreaDroppable */ "./src/sakuraba/componen
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+var _ = __importStar(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
 var Board = /** @class */ (function () {
     function Board(original) {
         if (original !== undefined) {
@@ -37778,10 +37830,17 @@ exports.createCard = createCard;
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var components = __webpack_require__(/*! ./components */ "./src/sakuraba/components/index.ts");
-var utils = __webpack_require__(/*! ./utils */ "./src/sakuraba/utils/index.ts");
+var components = __importStar(__webpack_require__(/*! ./components */ "./src/sakuraba/components/index.ts"));
+var utils = __importStar(__webpack_require__(/*! ./utils */ "./src/sakuraba/utils/index.ts"));
 /** カードの配置(座標の決定)を行う */
 function layoutCards(cards, layoutType, areaWidth, cardWidth) {
     var padding = 8;

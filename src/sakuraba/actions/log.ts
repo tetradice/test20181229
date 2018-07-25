@@ -1,4 +1,4 @@
-import * as moment from "moment";
+import moment = require('moment');
 import * as models from "../models";
 
 export default {
@@ -7,6 +7,7 @@ export default {
         let newBoard = new models.Board(state.board);
         let append: state.LogRecord = {body: p.text, time: moment().format()};
         newBoard.actionLog.push(append);
+        
         return {board: newBoard};
     }
 }

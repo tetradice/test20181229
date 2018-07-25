@@ -1,15 +1,15 @@
 'use strict';
 
-import * as express from 'express';
-import * as socketIO from 'socket.io';
+import express = require('express');
+import socketIO = require('socket.io');
 import * as path from 'path';
 import * as redis from 'redis';
-import * as moment from 'moment';
+import moment = require('moment');
 import * as randomstring from 'randomstring';
 import * as sakuraba from './src/sakuraba';
 import { createInitialState } from './src/sakuraba/utils';
-import * as browserSync from 'browser-sync';
-import * as connectBrowserSync from 'connect-browser-sync';
+import browserSync = require('browser-sync');
+import connectBrowserSync = require('connect-browser-sync');
 import { app, h } from 'hyperapp';
 import { actions, ActionsType } from './src/sakuraba/actions';
 
