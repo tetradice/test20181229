@@ -38,12 +38,13 @@ export interface Board {
 /**
  * 卓上に配置するオブジェクト (カード、桜花結晶など)
  **/
-export type BoardObject = Card | SakuraToken | Vigor;
+export type BoardObject = Card | SakuraToken;
 
 export interface BoardObjectBase {
     id: string;
-    type: 'card' | 'sakura-token' | 'vigor';
+    type: 'card' | 'sakura-token';
     side: PlayerSide;
+    indexOfRegion: number;
 }
 
 export interface Card extends BoardObjectBase {
@@ -51,7 +52,6 @@ export interface Card extends BoardObjectBase {
 
     cardId: string;
     region: CardRegion;
-    indexOfRegion: number;
     rotated: boolean;
     opened: boolean;
     known: {p1: boolean, p2: boolean};
@@ -63,11 +63,6 @@ export interface SakuraToken extends BoardObjectBase {
     region: SakuraTokenRegion;
     indexOfRegion: number;
     onCardId: string;
-}
-
-export interface Vigor extends BoardObjectBase {
-    type: 'vigor'
-    value: number;
 }
 
 /** ログ1行分のデータ */

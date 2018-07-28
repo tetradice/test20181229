@@ -25,10 +25,12 @@ export class Board implements state.Board {
         return new Board(original, true);
     }
 
+    /** すべてのカードを取得 */
     getCards(): state.Card[] {
         return this.objects.filter(v => v.type === 'card') as state.Card[];
     } 
 
+    /** 指定したIDのカードを取得 */
     getCard(objectId: string): state.Card {
         return this.objects.find(v => v.type === 'card' && v.id === objectId) as state.Card;
     }
@@ -36,6 +38,21 @@ export class Board implements state.Board {
     /** 指定した領域にあるカードを一括取得 */
     getRegionCards(region: CardRegion): state.Card[] {
         return this.objects.filter(v => v.type === 'card' && v.region == region) as state.Card[];
+    }
+
+    /** すべての桜花結晶を取得 */
+    getSakuraTokens(): state.SakuraToken[] {
+        return this.objects.filter(v => v.type === 'sakura-token') as state.SakuraToken[];
+    } 
+
+    /** 指定したIDの桜花結晶を取得 */
+    getSakuraToken(objectId: string): state.SakuraToken {
+        return this.objects.find(v => v.type === 'sakura-token' && v.id === objectId) as state.SakuraToken;
+    }
+
+    /** 指定した領域にある桜花結晶を一括取得 */
+    getRegionSakuraTokens(region: SakuraTokenRegion): state.SakuraToken[] {
+        return this.objects.filter(v => v.type === 'sakura-token' && v.region == region) as state.SakuraToken[];
     }
 
     /** カード移動時などの領域情報一括更新 */

@@ -35592,6 +35592,10 @@ $(function () {
                 }
                 socket.emit('player_name_input', { boardId: params.boardId, side: params.side, name: playerName });
                 appActions.setPlayerName({ side: params.side, name: playerName });
+                // 最初の名前決定時に、桜花結晶を作る
+                appActions.addSakuraToken({ region: 'aura', number: 3 });
+                appActions.addSakuraToken({ region: 'life', number: 10 });
+                appActions.addSakuraToken({ region: 'distance', number: 10 });
                 messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u308B\u6E96\u5099\u304C\u3067\u304D\u305F\u3089\u3001\u307E\u305A\u306F\u300C\u30E1\u30AC\u30DF\u9078\u629E\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
             });
         }
@@ -35888,7 +35892,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var log_1 = __importDefault(__webpack_require__(/*! ./log */ "./src/sakuraba/actions/log.ts"));
 var card_1 = __importDefault(__webpack_require__(/*! ./card */ "./src/sakuraba/actions/card.ts"));
 var board_1 = __importDefault(__webpack_require__(/*! ./board */ "./src/sakuraba/actions/board.ts"));
-exports.actions = Object.assign(log_1.default, card_1.default, board_1.default);
+var sakuraToken_1 = __importDefault(__webpack_require__(/*! ./sakuraToken */ "./src/sakuraba/actions/sakuraToken.ts"));
+exports.actions = Object.assign(log_1.default, card_1.default, board_1.default, sakuraToken_1.default);
 
 
 /***/ }),
@@ -35920,6 +35925,101 @@ exports.default = {
         newBoard.actionLog.push(append);
         return { board: newBoard };
     }; }
+};
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/actions/sakuraToken.ts":
+/*!*********************************************!*\
+  !*** ./src/sakuraba/actions/sakuraToken.ts ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var _ = __importStar(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
+var models = __importStar(__webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts"));
+var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
+exports.default = {
+    /** 桜花結晶を指定数追加する */
+    addSakuraToken: function (p) { return function (state) {
+        // 元の盤の状態をコピーして新しい盤を生成
+        var newBoard = models.Board.clone(state.board);
+        // 指定数分繰り返す
+        _.times(p.number, function () {
+            // 現在桜花結晶数 + 1で新しい連番を振る
+            var tokenCount = newBoard.objects.filter(function (obj) { return obj.type === 'sakura-token'; }).length;
+            var objectId = "sakuraToken-" + (tokenCount + 1);
+            var newToken = utils.createSakuraToken(objectId, p.region, 'p1');
+            newBoard.objects.push(newToken);
+        });
+        // 領域情報更新
+        newBoard.updateRegionInfo();
+        // 新しい盤を返す
+        return { board: newBoard };
+    }; },
+    /**
+     * カードを指定領域から別の領域に移動させる
+     */
+    moveSakuraToken: function (p) { return function (state) {
+        // 元の盤の状態をコピーして新しい盤を生成
+        var newBoard = models.Board.clone(state.board);
+        // 桜花結晶数を指定枚数移動 (省略時は0枚)
+        var num = (p.moveNumber === undefined ? 1 : p.moveNumber);
+        var fromRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.from).sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
+        var toRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.to).sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
+        var indexes = toRegionSakuraTokens.map(function (c) { return c.indexOfRegion; });
+        var maxIndex = Math.max.apply(Math, indexes);
+        var targetSakuraTokens = fromRegionSakuraTokens.slice(0, num);
+        targetSakuraTokens.forEach(function (c) {
+            c.region = p.to;
+            // 領域インデックスは最大値+1
+            c.indexOfRegion = maxIndex + 1;
+            maxIndex++;
+        });
+        // 領域情報の更新
+        newBoard.updateRegionInfo();
+        // 新しい盤を返す
+        return { board: newBoard };
+    }; },
+    /** ドラッグ開始 */
+    sakuraTokenDragStart: function (sakuraToken) { return function (state) {
+        var ret = {};
+        // ドラッグを開始したカードを設定
+        ret.draggingFromSakuraToken = sakuraToken;
+        return ret;
+    }; },
+    /** ドラッグ中にカード領域の上に移動 */
+    sakuraTokenDragEnter: function (region) { return function (state) {
+        var ret = {};
+        // ドラッグを開始したカードを設定
+        ret.draggingHoverSakuraTokenRegion = region;
+        return ret;
+    }; },
+    /** ドラッグ中にカード領域の上から離れた */
+    sakuraTokenDragLeave: function () { return function (state) {
+        var ret = {};
+        // ドラッグ中領域の初期化
+        ret.draggingHoverSakuraTokenRegion = null;
+        return ret;
+    }; },
+    /** ドラッグ終了 */
+    sakuraTokenDragEnd: function () {
+        var ret = {};
+        ret.draggingFromSakuraToken = null;
+        ret.draggingHoverSakuraTokenRegion = null;
+        return ret;
+    },
 };
 
 
@@ -36321,8 +36421,8 @@ exports.ControlPanel = function () { return function (state, actions) {
         });
         // モーダル終了後の処理
         promise.then(function (finalState) {
-            // 確定した場合、デッキを保存する
-            var ret = actions.setDeckCards({ cardIds: finalState.selectedCardIds });
+            // 確定した場合、デッキを保存し、桜花結晶を追加
+            actions.setDeckCards({ cardIds: finalState.selectedCardIds });
             var newState = actions.getState();
             // サーバーに送信
             state.socket.emit('deck_build', { boardId: newState.boardId, side: newState.side, addObjects: newState.board.objects });
@@ -36376,12 +36476,93 @@ exports.ControlPanel = function () { return function (state, actions) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 /** 桜花結晶 */
-exports.SakuraToken = function (params) { return function (state, actions) {
+exports.SakuraToken = function (p) { return function (state, actions) {
     var styles = {
-        left: 40 + "px",
-        top: 20 + "px"
+        left: p.left + "px",
+        top: p.top + "px"
     };
-    return hyperapp_1.h("div", { class: "sakura-token", draggable: "true", id: 'board-object-' + params.target.id, styles: styles });
+    var draggable = true;
+    return hyperapp_1.h("div", { class: "sakura-token", draggable: draggable, "data-object-id": p.target.id, "data-region": p.target.region, ondragstart: function (elem) { $(elem).popup('hide all'); actions.sakuraTokenDragStart(p.target); }, ondragend: function () { return actions.sakuraTokenDragEnd(); }, id: 'board-object-' + p.target.id, key: 'sakura-token-' + p.target.id, style: styles });
+}; };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/components/SakuraTokenAreaBackground.tsx":
+/*!***************************************************************!*\
+  !*** ./src/sakuraba/components/SakuraTokenAreaBackground.tsx ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+exports.SakuraTokenAreaBackground = function (p) { return function (state) {
+    var styles = {
+        left: p.left + "px",
+        top: p.top + "px",
+        width: p.width + "px",
+        height: p.height + "px",
+        position: 'relative'
+    };
+    return (hyperapp_1.h("div", { class: "area background sakura-token-region ui segment " + (state.draggingHoverSakuraTokenRegion === p.region ? 'over' : ''), style: styles, key: "SakuraTokenAreaBackground_" + p.region },
+        hyperapp_1.h("div", { class: "area-title" }, p.title)));
+}; };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/components/SakuraTokenAreaDroppable.tsx":
+/*!**************************************************************!*\
+  !*** ./src/sakuraba/components/SakuraTokenAreaDroppable.tsx ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+exports.SakuraTokenAreaDroppable = function (p) { return function (state, actions) {
+    var styles = {
+        left: p.left + "px",
+        top: p.top + "px",
+        width: p.width + "px",
+        height: p.height + "px",
+        position: 'relative'
+    };
+    if (state.draggingFromSakuraToken !== null && p.region !== state.draggingFromSakuraToken.region) {
+        styles.zIndex = '9999';
+    }
+    var dragover = function (e) {
+        if (e.preventDefault) {
+            e.preventDefault(); // Necessary. Allows us to drop.
+        }
+        e.dataTransfer.dropEffect = 'move'; // See the section on the DataTransfer object.
+        return false;
+    };
+    var dragenter = function (e) {
+        actions.sakuraTokenDragEnter(p.region);
+    };
+    var dragleave = function (e) {
+        actions.sakuraTokenDragLeave();
+    };
+    var drop = function (e) {
+        if (e.stopPropagation) {
+            e.stopPropagation(); // stops the browser from redirecting.
+        }
+        // 桜花結晶を移動 (リージョンが空でなければ)
+        if (state.draggingHoverSakuraTokenRegion) {
+            actions.moveSakuraToken({
+                from: state.draggingFromSakuraToken.region,
+                to: state.draggingHoverSakuraTokenRegion
+            });
+        }
+        return false;
+    };
+    return (hyperapp_1.h("div", { class: "area droppable", style: styles, key: "SakuraTokenAreaDroppable_" + p.region, ondragover: dragover, ondragenter: dragenter, ondragleave: dragleave, ondrop: drop }));
 }; };
 
 
@@ -36439,6 +36620,8 @@ __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/components/Vigor.tsx
 __export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/components/ControlPanel.tsx"));
 __export(__webpack_require__(/*! ./CardAreaBackground */ "./src/sakuraba/components/CardAreaBackground.tsx"));
 __export(__webpack_require__(/*! ./CardAreaDroppable */ "./src/sakuraba/components/CardAreaDroppable.tsx"));
+__export(__webpack_require__(/*! ./SakuraTokenAreaBackground */ "./src/sakuraba/components/SakuraTokenAreaBackground.tsx"));
+__export(__webpack_require__(/*! ./SakuraTokenAreaDroppable */ "./src/sakuraba/components/SakuraTokenAreaDroppable.tsx"));
 
 
 /***/ }),
@@ -36475,15 +36658,29 @@ var Board = /** @class */ (function () {
     Board.clone = function (original) {
         return new Board(original, true);
     };
+    /** すべてのカードを取得 */
     Board.prototype.getCards = function () {
         return this.objects.filter(function (v) { return v.type === 'card'; });
     };
+    /** 指定したIDのカードを取得 */
     Board.prototype.getCard = function (objectId) {
         return this.objects.find(function (v) { return v.type === 'card' && v.id === objectId; });
     };
     /** 指定した領域にあるカードを一括取得 */
     Board.prototype.getRegionCards = function (region) {
         return this.objects.filter(function (v) { return v.type === 'card' && v.region == region; });
+    };
+    /** すべての桜花結晶を取得 */
+    Board.prototype.getSakuraTokens = function () {
+        return this.objects.filter(function (v) { return v.type === 'sakura-token'; });
+    };
+    /** 指定したIDの桜花結晶を取得 */
+    Board.prototype.getSakuraToken = function (objectId) {
+        return this.objects.find(function (v) { return v.type === 'sakura-token' && v.id === objectId; });
+    };
+    /** 指定した領域にある桜花結晶を一括取得 */
+    Board.prototype.getRegionSakuraTokens = function (region) {
+        return this.objects.filter(function (v) { return v.type === 'sakura-token' && v.region == region; });
     };
     /** カード移動時などの領域情報一括更新 */
     Board.prototype.updateRegionInfo = function () {
@@ -36616,18 +36813,7 @@ function getCards(state, region) {
     return ret;
 }
 exports.getCards = getCards;
-/** 指定した領域の桜花結晶数を取得 */
-function getSakuraCount(state, region, side) {
-    var ret = 0;
-    state.board.objects.forEach(function (obj) {
-        if (obj.type === 'sakura-token' && obj.region === region && (side === undefined || obj.side === side)) {
-            ret++;
-        }
-    });
-    return ret;
-}
-exports.getSakuraCount = getSakuraCount;
-/** カード1枚を作成 (デッキ構築画面用) */
+/** カード1枚を作成 */
 function createCard(id, cardId, region, side) {
     return {
         type: 'card',
@@ -36642,6 +36828,18 @@ function createCard(id, cardId, region, side) {
     };
 }
 exports.createCard = createCard;
+/** 桜花結晶1つを作成 */
+function createSakuraToken(id, region, side) {
+    return {
+        type: 'sakura-token',
+        id: id,
+        region: region,
+        indexOfRegion: 0,
+        side: side,
+        onCardId: null
+    };
+}
+exports.createSakuraToken = createSakuraToken;
 
 
 /***/ }),
@@ -36666,40 +36864,39 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var components = __importStar(__webpack_require__(/*! ./components */ "./src/sakuraba/components/index.ts"));
 var utils = __importStar(__webpack_require__(/*! ./utils */ "./src/sakuraba/utils/index.ts"));
-/** カードの配置(座標の決定)を行う */
-function layoutCards(cards, layoutType, areaWidth, cardWidth) {
-    var padding = 8;
+var models = __importStar(__webpack_require__(/*! ./models */ "./src/sakuraba/models/index.ts"));
+/** オブジェクトの配置(座標の決定)を行う */
+function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spacing) {
     var ret = [];
     var cx = padding;
     var cy = padding;
     // カードを領域インデックス順に並べる
-    cards = cards.sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
+    objects = objects.sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
     // 横並びで配置する場合
     if (layoutType === 'horizontal') {
-        var spacing_1 = 6;
         var innerWidth_1 = areaWidth - (padding * 2);
-        var requiredWidth = cardWidth * cards.length + padding * (cards.length - 1);
+        var requiredWidth = objectWidth * objects.length + padding * (objects.length - 1);
         if (requiredWidth <= innerWidth_1) {
             // 領域の幅に収まる場合は、spacing分の間隔をあけて配置
-            cards.forEach(function (child, i) {
+            objects.forEach(function (child, i) {
                 ret.push([child, cx, cy]);
-                cx += cardWidth;
-                cx += spacing_1;
+                cx += objectWidth;
+                cx += spacing;
             });
         }
         else {
             // 領域の幅に収まらない場合は、収まるように均等に詰めて並べる
-            var overlapWidth_1 = ((cardWidth * cards.length) - innerWidth_1) / cards.length;
-            cards.forEach(function (child, i) {
+            var overlapWidth_1 = ((objectWidth * objects.length) - innerWidth_1) / objects.length;
+            objects.forEach(function (child, i) {
                 ret.push([child, cx, cy]);
-                cx += cardWidth;
+                cx += objectWidth;
                 cx -= overlapWidth_1;
             });
         }
     }
     // 積み重ねる場合
     if (layoutType === 'stacked') {
-        cards.forEach(function (child, i) {
+        objects.forEach(function (child, i) {
             ret.push([child, cx, cy]);
             cx += 6;
             cy += 2;
@@ -36709,21 +36906,27 @@ function layoutCards(cards, layoutType, areaWidth, cardWidth) {
 }
 // メインビューの定義
 exports.view = function (state, actions) {
+    var boardModel = new models.Board(state.board);
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
-    var areaData = [
+    var cardAreaData = [
         { region: 'used', title: "使用済み", cardLayoutType: 'horizontal', left: 0, top: 80, width: 450, height: 160 },
         { region: 'hidden-used', title: "伏せ札", cardLayoutType: 'stacked', left: 470, top: 80, width: 170, height: 140, cardCountDisplay: true },
         { region: 'library', title: "山札", cardLayoutType: 'stacked', left: 720, top: 80, width: 160, height: 160, cardCountDisplay: true },
         { region: 'hand', title: "手札", cardLayoutType: 'horizontal', left: 0, top: 250, width: 700, height: 160 },
         { region: 'special', title: "切札", cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 160 }
     ];
+    var sakuraTokenAreaData = [
+        { region: 'aura', title: "オーラ", layoutType: 'horizontal', left: 10, top: 400, width: 400, height: 30 },
+        { region: 'life', title: "ライフ", layoutType: 'horizontal', left: 10, top: 440, width: 400, height: 30 },
+        { region: 'flair', title: "フレア", layoutType: 'horizontal', left: 10, top: 480, width: 400, height: 30 }
+    ];
     var frameNodes = [];
     var objectNodes = [];
-    areaData.forEach(function (area) {
+    cardAreaData.forEach(function (area) {
         // 指定された領域のカードをすべてインデックス順に取得
         var cards = utils.getCards(state, area.region);
         // 指定されたレイアウト情報に応じて、カードをレイアウトし、各カードの座標を決定
-        var layoutResults = layoutCards(cards, area.cardLayoutType, area.width, 100);
+        var layoutResults = layoutObjects(cards, area.cardLayoutType, area.width, 100, 8, 6);
         // カードを領域の子オブジェクトとして追加
         layoutResults.forEach(function (ret) {
             var card = ret[0];
@@ -36734,6 +36937,22 @@ exports.view = function (state, actions) {
         // フレームを追加
         frameNodes.push(hyperapp_1.h(components.CardAreaBackground, { region: area.region, title: area.title, left: area.left, top: area.top, width: area.width, height: area.height, cardCount: area.cardCountDisplay ? cards.length : null }));
         frameNodes.push(hyperapp_1.h(components.CardAreaDroppable, { region: area.region, left: area.left, top: area.top, width: area.width, height: area.height }));
+    });
+    sakuraTokenAreaData.forEach(function (area) {
+        // 指定された領域の桜花結晶をすべてインデックス順に取得
+        var tokens = boardModel.getRegionSakuraTokens(area.region);
+        // 指定されたレイアウト情報に応じて、桜花結晶をレイアウトし、各桜花結晶の座標を決定
+        var layoutResults = layoutObjects(tokens, area.layoutType, area.width, 20, 2, 10);
+        // 桜花結晶を領域の子オブジェクトとして追加
+        layoutResults.forEach(function (ret) {
+            var token = ret[0];
+            var left = area.left + ret[1];
+            var top = area.top + ret[2];
+            objectNodes.push(hyperapp_1.h(components.SakuraToken, { target: token, left: left, top: top }));
+        });
+        // フレームを追加
+        frameNodes.push(hyperapp_1.h(components.SakuraTokenAreaBackground, { region: area.region, title: area.title, left: area.left, top: area.top, width: area.width, height: area.height, tokenCount: tokens.length }));
+        frameNodes.push(hyperapp_1.h(components.SakuraTokenAreaDroppable, { region: area.region, left: area.left, top: area.top, width: area.width, height: area.height }));
     });
     return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
         objectNodes,

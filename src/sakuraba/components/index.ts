@@ -4,3 +4,5 @@ export * from './Vigor';
 export * from './ControlPanel';
 export * from './CardAreaBackground';
 export * from './CardAreaDroppable';
+export * from './SakuraTokenAreaBackground';
+export * from './SakuraTokenAreaDroppable';

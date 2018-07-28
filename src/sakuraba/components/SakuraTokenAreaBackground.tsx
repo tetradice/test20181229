@@ -3,13 +3,14 @@ import { h } from "hyperapp";
 /** 領域枠 */
 interface Param {
     region: SakuraTokenRegion;
+    title: string;
 
     left: number;
     top: number;
     width: number;
     height: number;
 
-    cardCount?: number;
+    tokenCount?: number;
 }
 
 export const SakuraTokenAreaBackground = (p: Param) => (state: state.State) => {
@@ -27,7 +28,7 @@ export const SakuraTokenAreaBackground = (p: Param) => (state: state.State) => {
             style={styles}
             key={"SakuraTokenAreaBackground_" + p.region}
         >
-            <div class="card-count">{p.cardCount}</div>
+            <div class="area-title">{p.title}</div>
         </div>
     );
 }

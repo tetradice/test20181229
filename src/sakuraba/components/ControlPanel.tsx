@@ -187,9 +187,9 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
         // モーダル終了後の処理
         promise.then((finalState: typeof initialState) => {
-            // 確定した場合、デッキを保存する
-            let ret = actions.setDeckCards({cardIds: finalState.selectedCardIds});
-            let newState: state.State = (actions.getState() as any);
+            // 確定した場合、デッキを保存し、桜花結晶を追加
+            actions.setDeckCards({cardIds: finalState.selectedCardIds});
+            let newState: state.State = actions.getState();
 
             // サーバーに送信
             state.socket.emit('deck_build', {boardId: newState.boardId, side: newState.side, addObjects: newState.board.objects});

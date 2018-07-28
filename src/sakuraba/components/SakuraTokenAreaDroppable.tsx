@@ -19,7 +19,7 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
         , height: `${p.height}px`
         , position: 'relative'
     };
-    if(state.draggingFromCard !== null && p.region !== state.draggingFromSakuraToken.region){
+    if(state.draggingFromSakuraToken !== null && p.region !== state.draggingFromSakuraToken.region){
         styles.zIndex = '9999';
     }
     const dragover = (e: DragEvent) => {
@@ -31,10 +31,10 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
         return false;
     };
     const dragenter = (e: DragEvent) => {
-        //actions.sakuraTokenDragEnter(p.region);
+        actions.sakuraTokenDragEnter(p.region);
     };
     const dragleave = (e: DragEvent) => {
-        //actions.sakuraTokenDragLeave();
+        actions.sakuraTokenDragLeave();
     };
     const drop = (e: DragEvent) => {
         if (e.stopPropagation) {
@@ -43,7 +43,10 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
         
         // 桜花結晶を移動 (リージョンが空でなければ)
         if(state.draggingHoverSakuraTokenRegion){
-            //actions.moveCard({from: state.draggingFromSakuraToken.region, fromIndex: state.draggingFromSakuraToken.indexOfRegion, to: state.draggingHoverSakuraTokenRegion});
+            actions.moveSakuraToken({
+                  from: state.draggingFromSakuraToken.region
+                , to: state.draggingHoverSakuraTokenRegion
+            });
         }
 
         return false;

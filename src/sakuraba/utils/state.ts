@@ -32,20 +32,7 @@ export function getCards(state: state.State, region?: CardRegion): state.Card[]{
   return ret;
 }
 
-/** 指定した領域の桜花結晶数を取得 */
-export function getSakuraCount(state: state.State, region: SakuraTokenRegion, side?: PlayerSide){
-  let ret = 0;
-  state.board.objects.forEach(obj => {
-    if(obj.type === 'sakura-token' && obj.region === region && (side === undefined || obj.side === side)){
-      ret++;
-    }
-  });
-
-  return ret;
-} 
-
-
-/** カード1枚を作成 (デッキ構築画面用) */
+/** カード1枚を作成 */
 export function createCard(id: string, cardId: string, region: CardRegion | null, side?: PlayerSide): state.Card{
   return {
       type: 'card'
@@ -57,5 +44,18 @@ export function createCard(id: string, cardId: string, region: CardRegion | null
     , opened: false
     , side: side
     , known: {p1: true, p2: true}
+  };
+}
+
+
+/** 桜花結晶1つを作成 */
+export function createSakuraToken(id: string, region: SakuraTokenRegion | null, side?: PlayerSide): state.SakuraToken{
+  return {
+      type: 'sakura-token'
+    , id: id
+    , region: region
+    , indexOfRegion: 0
+    , side: side
+    , onCardId: null
   };
 }
