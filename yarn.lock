@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@hyperapp/logger/-/logger-0.5.0.tgz#627404507c45d38fb5190343f84b4da377e103b8"
 
 "@tetradice/hyperapp-types@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tetradice/hyperapp-types/-/hyperapp-types-0.1.0.tgz#624ca0c17fa5d17d25a099d7a7bdb194a8ecd837"
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tetradice/hyperapp-types/-/hyperapp-types-0.1.2.tgz#1b92bdbbbb7b80564b295f791783e1a68b402b21"
   dependencies:
-    hyperapp "^1.2"
+    hyperapp "^1.2.8"
 
 "@types/body-parser@*":
   version "1.17.0"
@@ -2099,7 +2099,7 @@ hyperapp@^1.1.2, hyperapp@^1.2.5, hyperapp@^1.2.6:
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/hyperapp/-/hyperapp-1.2.6.tgz#fa3b42dad88e50f962b9d9f922dfa7bef3c8ebc8"
 
-hyperapp@^1.2:
+hyperapp@^1.2.8:
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/hyperapp/-/hyperapp-1.2.8.tgz#48a3b02d6948b8faf3b72f42d70577470d0d4124"
 
@@ -4139,10 +4139,6 @@ shebang-command@^1.2.0:
   resolved "https://registry.yarnpkg.com/shebang-command/-/shebang-command-1.2.0.tgz#44aac65b695b03398968c39f363fee5deafdf1ea"
   dependencies:
     shebang-regex "^1.0.0"
-
-shebang-loader@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/shebang-loader/-/shebang-loader-0.0.1.tgz#a4000495d44cceefbec63435e7b1698569fa52ec"
 
 shebang-regex@^1.0.0:
   version "1.0.0"

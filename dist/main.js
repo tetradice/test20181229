@@ -171,7 +171,7 @@ function withLogger(optionsOrApp) {
 
 /***/ "./node_modules/css-loader/index.js?!./src/sakuraba/components/ControlPanel.css":
 /*!**************************************************************************************!*\
-  !*** ./node_modules/css-loader??ref--6-1!./src/sakuraba/components/ControlPanel.css ***!
+  !*** ./node_modules/css-loader??ref--5-1!./src/sakuraba/components/ControlPanel.css ***!
   \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -36750,6 +36750,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var models = __importStar(__webpack_require__(/*! ./sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var actions_1 = __webpack_require__(/*! ./sakuraba/actions */ "./src/sakuraba/actions/index.ts");
 var utils = __importStar(__webpack_require__(/*! ./sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var view_1 = __webpack_require__(/*! ./sakuraba/view */ "./src/sakuraba/view.tsx");
@@ -36783,9 +36784,26 @@ $(function () {
     // アプリケーション起動
     var appActions = logger_1.withLogger(hyperapp_1.app)(st, actions_1.actions, view_1.view, document.getElementById('BOARD2'));
     // 山札ドラッグメニュー
-    // 山札右クリックメニュー
+    // 切札右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD2 .fbs-card[data-region=library]',
+        selector: '#BOARD2 .fbs-card[data-region=special]',
+        build: function ($elem, event) {
+            var id = $elem.attr('data-object-id');
+            var currentState = appActions.getState();
+            var board = new models.Board(currentState.board);
+            var card = board.getCard(id);
+            var items = {};
+            items['flip'] = { name: (card.opened ? '裏向きにする' : '表向きにする') };
+            return {
+                callback: function (key) {
+                },
+                items: items,
+            };
+        }
+    });
+    // 山札エリア右クリックメニュー
+    $.contextMenu({
+        selector: '#BOARD2 .area.background[data-region=library]',
         callback: function (key) {
             if (key === 'reshuffle') {
                 appActions.reshuffle({});
@@ -36793,7 +36811,7 @@ $(function () {
             return;
         },
         items: {
-            'draw': { name: '1枚引く' },
+            'draw': { name: '1枚引く', disabled: function () { appActions.getState().board; } },
             'sep1': '---------',
             'reshuffle': { name: '再構成する', disabled: function () { appActions.getState(); } },
             'reshuffleWithoutDamage': { name: '再構成する (ライフ減少なし)' },
@@ -37018,6 +37036,16 @@ exports.default = {
         // 新しい盤を返す
         return { board: newBoard };
     }; },
+    flipCard: function (objectId) { return function (state) {
+        var ret = {};
+        var newBoard = new models.Board(state.board);
+        var card = newBoard.getCard(objectId);
+        if (card.type !== null) {
+            card.opened = !card.opened;
+        }
+        ret.board = newBoard;
+        return ret;
+    }; },
     shuffle: function () { return function (state) {
         var ret = {};
         var newBoard = new models.Board(state.board);
@@ -37053,6 +37081,10 @@ exports.default = {
     /** ドラッグ中にカード領域の上に移動 */
     cardDragEnter: function (region) { return function (state) {
         var ret = {};
+        // 切札エリアからのドラッグや、切札エリアへのドラッグは禁止
+        if (state.draggingFromCard.region === 'special' || region === 'special') {
+            return null;
+        }
         // ドラッグを開始したカードを設定
         ret.draggingHoverCardRegion = region;
         return ret;
@@ -37093,7 +37125,6 @@ var log_1 = __importDefault(__webpack_require__(/*! ./log */ "./src/sakuraba/act
 var card_1 = __importDefault(__webpack_require__(/*! ./card */ "./src/sakuraba/actions/card.ts"));
 var board_1 = __importDefault(__webpack_require__(/*! ./board */ "./src/sakuraba/actions/board.ts"));
 exports.actions = Object.assign(log_1.default, card_1.default, board_1.default);
-var a;
 
 
 /***/ }),
@@ -37210,6 +37241,9 @@ exports.Card = function (p) { return function (state, actions) {
             onShow: function () {
                 if (!p.target.known.p1)
                     return false;
+                var st = actions.getState();
+                if (st.draggingFromCard !== null)
+                    return false;
             },
         });
     };
@@ -37223,8 +37257,15 @@ exports.Card = function (p) { return function (state, actions) {
             return;
         setPopup(element);
     };
+    var ondblclick = function (element) {
+        var data = sakuraba.CARD_DATA[p.target.cardId];
+        // 切札なら裏返す
+        if (data.baseType === 'special') {
+            actions.flipCard(p.target.id);
+        }
+    };
     var draggable = p.target.region !== 'library' || p.target.indexOfRegion === (state.board.objects.filter(function (o) { return o.type === 'card' && o.region === p.target.region; }).length - 1);
-    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: draggable, "data-region": p.target.region, onclick: p.onclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
+    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: draggable, "data-object-id": p.target.id, "data-region": p.target.region, ondblclick: ondblclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
 }; };
 
 
@@ -37249,7 +37290,7 @@ exports.CardAreaBackground = function (p) { return function (state) {
         height: p.height + "px",
         position: 'relative'
     };
-    return (hyperapp_1.h("div", { class: "area background ui segment " + (state.draggingHoverCardRegion === p.region ? 'over' : ''), style: styles, key: "CardAreaBackground_" + p.region },
+    return (hyperapp_1.h("div", { class: "area background ui segment " + (state.draggingHoverCardRegion === p.region ? 'over' : ''), style: styles, key: "CardAreaBackground_" + p.region, "data-region": p.region },
         hyperapp_1.h("div", { class: "card-count" }, p.cardCount)));
 }; };
 
@@ -37315,7 +37356,7 @@ exports.CardAreaDroppable = function (p) { return function (state, actions) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../node_modules/css-loader??ref--6-1!./ControlPanel.css */ "./node_modules/css-loader/index.js?!./src/sakuraba/components/ControlPanel.css");
+var content = __webpack_require__(/*! !../../../node_modules/css-loader??ref--5-1!./ControlPanel.css */ "./node_modules/css-loader/index.js?!./src/sakuraba/components/ControlPanel.css");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -37657,6 +37698,9 @@ var Board = /** @class */ (function () {
     }
     Board.prototype.getCards = function () {
         return this.objects.filter(function (v) { return v.type === 'card'; });
+    };
+    Board.prototype.getCard = function (objectId) {
+        return this.objects.find(function (v) { return v.type === 'card' && v.id === objectId; });
     };
     /** 指定した領域にあるカードを一括取得 */
     Board.prototype.getRegionCards = function (region) {

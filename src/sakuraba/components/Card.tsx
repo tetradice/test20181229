@@ -40,7 +40,6 @@ interface Param {
     target: state.Card;
     left: number;
     top: number;
-    onclick?: Function;
     selected?: boolean;
 }
 export const Card = (p: Param) => (state: state.State, actions: ActionsType) => {
@@ -65,6 +64,9 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             delay: {show: 500, hide: 0},
             onShow: function(): false | void{
                 if(!p.target.known.p1) return false;
+
+                let st = actions.getState();
+                if(st.draggingFromCard !== null) return false;
             },
         });
     }
@@ -77,6 +79,14 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
         if(state.draggingFromCard !== null) return;
         setPopup(element);
     }
+    const ondblclick = (element) => {
+        const data = sakuraba.CARD_DATA[p.target.cardId];
+
+        // 切札なら裏返す
+        if(data.baseType === 'special'){
+            actions.flipCard(p.target.id);
+        }
+    }
     let draggable = p.target.region !== 'library' || p.target.indexOfRegion === (state.board.objects.filter(o => o.type === 'card' && o.region === p.target.region).length - 1);
 
     return (
@@ -86,8 +96,9 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             id={'board-object-' + p.target.id}
             style={styles}
             draggable={draggable}
+            data-object-id={p.target.id}
             data-region={p.target.region}
-            onclick={p.onclick}
+            ondblclick={ondblclick}
             ondragstart={(elem) => { $(elem).popup('hide all'); actions.cardDragStart(p.target); }}
             ondragend={() => actions.cardDragEnd()}
             oncreate={oncreate}

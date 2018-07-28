@@ -22,7 +22,12 @@ export const CardAreaBackground = (p: Param) => (state: state.State) => {
     };
 
     return (
-        <div class={"area background ui segment " + (state.draggingHoverCardRegion === p.region ? 'over' : '')} style={styles} key={"CardAreaBackground_" + p.region}>
+        <div
+            class={"area background ui segment " + (state.draggingHoverCardRegion === p.region ? 'over' : '')}
+            style={styles}
+            key={"CardAreaBackground_" + p.region}
+            data-region={p.region}    
+        >
             <div class="card-count">{p.cardCount}</div>
         </div>
     );

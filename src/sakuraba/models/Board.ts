@@ -19,6 +19,10 @@ export class Board implements state.Board {
         return this.objects.filter(v => v.type === 'card') as state.Card[];
     } 
 
+    getCard(objectId: string): state.Card {
+        return this.objects.find(v => v.type === 'card' && v.id === objectId) as state.Card;
+    }
+
     /** 指定した領域にあるカードを一括取得 */
     getRegionCards(region: CardRegion): state.Card[] {
         return this.objects.filter(v => v.type === 'card' && v.region == region) as state.Card[];

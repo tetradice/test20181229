@@ -1,4 +1,5 @@
 import { app, h } from "hyperapp";
+import * as models from "./sakuraba/models";
 import { actions, ActionsType } from "./sakuraba/actions";
 import * as utils from "./sakuraba/utils";
 import { view } from "./sakuraba/view";
@@ -44,9 +45,30 @@ $(function(){
     let appActions: ActionsType = withLogger(app)(st, actions, view, document.getElementById('BOARD2'));
 
     // 山札ドラッグメニュー
-    // 山札右クリックメニュー
+
+    // 切札右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD2 .fbs-card[data-region=library]',
+        selector: '#BOARD2 .fbs-card[data-region=special]',
+
+        build: function($elem: JQuery, event: JQueryEventObject){
+            let id = $elem.attr('data-object-id');
+            let currentState = appActions.getState();
+            let board = new models.Board(currentState.board);
+            let card = board.getCard(id);
+
+            let items = {};
+            items['flip'] =  {name: (card.opened ? '裏向きにする' : '表向きにする')}
+            return {
+                callback: function(key: string) {
+                },
+                items: items,
+            }
+        }
+    });
+
+    // 山札エリア右クリックメニュー
+    $.contextMenu({
+        selector: '#BOARD2 .area.background[data-region=library]',
         callback: function(key: string) {
             if(key === 'reshuffle'){
                 appActions.reshuffle({});
@@ -55,7 +77,7 @@ $(function(){
             return;
         },
         items: {
-            'draw': {name: '1枚引く'},
+            'draw': {name: '1枚引く', disabled: () => { appActions.getState().board; }},
             'sep1': '---------',
             'reshuffle': {name: '再構成する', disabled: () => { appActions.getState() }},
             'reshuffleWithoutDamage': {name: '再構成する (ライフ減少なし)'},

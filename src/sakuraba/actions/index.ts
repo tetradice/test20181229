@@ -5,5 +5,3 @@ import { WiredActions } from '@tetradice/hyperapp-types';
 
 export const actions = Object.assign(logActions, cardActions, boardActions);
 export type ActionsType = WiredActions<state.State, typeof actions>;
-
-let a: WiredActions<any, any>;

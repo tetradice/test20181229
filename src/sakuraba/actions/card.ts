@@ -71,6 +71,19 @@ export default {
         return {board: newBoard};
     },
 
+    flipCard: (objectId: string) => (state: state.State) => {
+        let ret: Partial<state.State> = {};
+        let newBoard = new models.Board(state.board);
+
+        let card = newBoard.getCard(objectId);
+        if(card.type !== null){
+            card.opened = !card.opened;
+        }
+        ret.board = newBoard;
+
+        return ret;
+    },
+
     shuffle: () => (state: state.State) => {
         let ret: Partial<state.State> = {};
 
@@ -116,6 +129,11 @@ export default {
     /** ドラッグ中にカード領域の上に移動 */
     cardDragEnter: (region: CardRegion) => (state: state.State) => {
         let ret: Partial<state.State> = {};
+
+        // 切札エリアからのドラッグや、切札エリアへのドラッグは禁止
+        if(state.draggingFromCard.region === 'special' || region === 'special'){
+            return null;
+        }
 
         // ドラッグを開始したカードを設定
         ret.draggingHoverCardRegion = region;
