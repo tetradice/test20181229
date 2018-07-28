@@ -71,6 +71,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     let areaData: {
           region: CardRegion
+        , title: string
         , cardLayoutType: LayoutType
         , left: number
         , top: number
@@ -78,11 +79,11 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         , height: number
         , cardCountDisplay?: boolean
     }[] = [
-              { region: 'used',        cardLayoutType: 'horizontal', left: 0,   top: 80,  width: 450, height: 160 }
-            , { region: 'hidden-used', cardLayoutType: 'stacked',    left: 470, top: 80,  width: 170, height: 140, cardCountDisplay: true }
-            , { region: 'library',     cardLayoutType: 'stacked',    left: 720, top: 80,  width: 160, height: 160, cardCountDisplay: true }
-            , { region: 'hand',        cardLayoutType: 'horizontal', left: 0,   top: 250, width: 700, height: 160 }
-            , { region: 'special',     cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 160 }
+              { region: 'used',        title: "使用済み", cardLayoutType: 'horizontal', left: 0,   top: 80,  width: 450, height: 160 }
+            , { region: 'hidden-used', title: "伏せ札", cardLayoutType: 'stacked',    left: 470, top: 80,  width: 170, height: 140, cardCountDisplay: true }
+            , { region: 'library',     title: "山札", cardLayoutType: 'stacked',    left: 720, top: 80,  width: 160, height: 160, cardCountDisplay: true }
+            , { region: 'hand',        title: "手札", cardLayoutType: 'horizontal', left: 0,   top: 250, width: 700, height: 160 }
+            , { region: 'special',     title: "切札", cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 160 }
         ];
 
     let frameNodes: hyperapp.Children[] = [];
@@ -104,7 +105,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         });
 
         // フレームを追加
-        frameNodes.push(<components.CardAreaBackground region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
+        frameNodes.push(<components.CardAreaBackground region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
         frameNodes.push(<components.CardAreaDroppable region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
 

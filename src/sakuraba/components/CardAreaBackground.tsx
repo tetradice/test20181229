@@ -3,6 +3,7 @@ import { h } from "hyperapp";
 /** 領域枠 */
 interface Param {
     region: CardRegion;
+    title: string;
 
     left: number;
     top: number;
@@ -28,6 +29,7 @@ export const CardAreaBackground = (p: Param) => (state: state.State) => {
             key={"CardAreaBackground_" + p.region}
             data-region={p.region}    
         >
+            <div class="area-title">{p.title}</div>
             <div class="card-count">{p.cardCount}</div>
         </div>
     );

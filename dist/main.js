@@ -36055,6 +36055,7 @@ exports.CardAreaBackground = function (p) { return function (state) {
         position: 'relative'
     };
     return (hyperapp_1.h("div", { class: "area background ui segment " + (state.draggingHoverCardRegion === p.region ? 'over' : ''), style: styles, key: "CardAreaBackground_" + p.region, "data-region": p.region },
+        hyperapp_1.h("div", { class: "area-title" }, p.title),
         hyperapp_1.h("div", { class: "card-count" }, p.cardCount)));
 }; };
 
@@ -36710,11 +36711,11 @@ function layoutCards(cards, layoutType, areaWidth, cardWidth) {
 exports.view = function (state, actions) {
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     var areaData = [
-        { region: 'used', cardLayoutType: 'horizontal', left: 0, top: 80, width: 450, height: 160 },
-        { region: 'hidden-used', cardLayoutType: 'stacked', left: 470, top: 80, width: 170, height: 140, cardCountDisplay: true },
-        { region: 'library', cardLayoutType: 'stacked', left: 720, top: 80, width: 160, height: 160, cardCountDisplay: true },
-        { region: 'hand', cardLayoutType: 'horizontal', left: 0, top: 250, width: 700, height: 160 },
-        { region: 'special', cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 160 }
+        { region: 'used', title: "使用済み", cardLayoutType: 'horizontal', left: 0, top: 80, width: 450, height: 160 },
+        { region: 'hidden-used', title: "伏せ札", cardLayoutType: 'stacked', left: 470, top: 80, width: 170, height: 140, cardCountDisplay: true },
+        { region: 'library', title: "山札", cardLayoutType: 'stacked', left: 720, top: 80, width: 160, height: 160, cardCountDisplay: true },
+        { region: 'hand', title: "手札", cardLayoutType: 'horizontal', left: 0, top: 250, width: 700, height: 160 },
+        { region: 'special', title: "切札", cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 160 }
     ];
     var frameNodes = [];
     var objectNodes = [];
@@ -36731,7 +36732,7 @@ exports.view = function (state, actions) {
             objectNodes.push(hyperapp_1.h(components.Card, { target: card, left: left, top: top }));
         });
         // フレームを追加
-        frameNodes.push(hyperapp_1.h(components.CardAreaBackground, { region: area.region, left: area.left, top: area.top, width: area.width, height: area.height, cardCount: area.cardCountDisplay ? cards.length : null }));
+        frameNodes.push(hyperapp_1.h(components.CardAreaBackground, { region: area.region, title: area.title, left: area.left, top: area.top, width: area.width, height: area.height, cardCount: area.cardCountDisplay ? cards.length : null }));
         frameNodes.push(hyperapp_1.h(components.CardAreaDroppable, { region: area.region, left: area.left, top: area.top, width: area.width, height: area.height }));
     });
     return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
