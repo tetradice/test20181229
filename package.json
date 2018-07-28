@@ -29,7 +29,6 @@
     "moment": "^2.22.2",
     "randomstring": "^1.1.5",
     "redis": "^2.8.0",
-    "shebang-loader": "^0.0.1",
     "socket.io": "2.1.1",
     "style-loader": "^0.21.0"
   },

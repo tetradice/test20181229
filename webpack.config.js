@@ -26,12 +26,6 @@ module.exports = {
         use: ['ts-loader']
       },
       {
-        // 拡張子 .js の場合
-        test: /\.js$/,
-        // shebangを取り除いてビルド (browser-syncなどでshebangを使用しているため)
-        use: ['shebang-loader']
-      },
-      {
         // 拡張子 .css の場合
         test: /\.css$/,
         // css-loaderを使用
