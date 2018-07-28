@@ -68,8 +68,12 @@ $(function(){
 
     // 山札エリア右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD2 .area.background[data-region=library]',
+        selector: '#BOARD2 .area.background[data-region=library], #BOARD2 .fbs-card[data-region=library]',
         callback: function(key: string) {
+            if(key === 'draw'){
+                appActions.moveCard({from: 'library', to: 'hand'});
+            }
+
             if(key === 'reshuffle'){
                 appActions.reshuffle({});
             }
@@ -77,9 +81,14 @@ $(function(){
             return;
         },
         items: {
-            'draw': {name: '1枚引く', disabled: () => { appActions.getState().board; }},
+            'draw': {name: '1枚引く', disabled: () => {
+                let board = new models.Board(appActions.getState().board);
+
+                let cards = board.getRegionCards('library');
+                return cards.length === 0;
+            }},
             'sep1': '---------',
-            'reshuffle': {name: '再構成する', disabled: () => { appActions.getState() }},
+            'reshuffle': {name: '再構成する'},
             'reshuffleWithoutDamage': {name: '再構成する (ライフ減少なし)'},
         }
     });

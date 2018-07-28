@@ -36803,17 +36803,24 @@ $(function () {
     });
     // 山札エリア右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD2 .area.background[data-region=library]',
+        selector: '#BOARD2 .area.background[data-region=library], #BOARD2 .fbs-card[data-region=library]',
         callback: function (key) {
+            if (key === 'draw') {
+                appActions.moveCard({ from: 'library', to: 'hand' });
+            }
             if (key === 'reshuffle') {
                 appActions.reshuffle({});
             }
             return;
         },
         items: {
-            'draw': { name: '1枚引く', disabled: function () { appActions.getState().board; } },
+            'draw': { name: '1枚引く', disabled: function () {
+                    var board = new models.Board(appActions.getState().board);
+                    var cards = board.getRegionCards('library');
+                    return cards.length === 0;
+                } },
             'sep1': '---------',
-            'reshuffle': { name: '再構成する', disabled: function () { appActions.getState(); } },
+            'reshuffle': { name: '再構成する' },
             'reshuffleWithoutDamage': { name: '再構成する (ライフ減少なし)' },
         }
     });
