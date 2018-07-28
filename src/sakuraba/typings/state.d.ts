@@ -25,6 +25,12 @@ export interface Board {
     playerNames: {p1: string, p2: string};
     megamis: {p1: Megami[], p2: Megami[]};
 
+    /** 集中力 */
+    vigors: {p1: VigorValue, p2: VigorValue};
+
+    /** 萎縮 */
+    witherFlags: {p1: boolean, p2: boolean};
+
     actionLog: LogRecord[];
     chatLog: LogRecord[];
 }

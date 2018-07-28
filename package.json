@@ -23,7 +23,6 @@
     "hyperapp": "^1.2.6",
     "hyperapp-debug": "^0.0.1-beta.10",
     "hyperapp-devtools": "^0.3.0",
-    "hyperapp-redux-devtools": "^1.1.6",
     "jquery-contextmenu": "^2.6.4",
     "lodash": "^4.17.10",
     "moment": "^2.22.2",

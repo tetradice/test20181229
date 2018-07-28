@@ -41,6 +41,7 @@ interface Param {
     left: number;
     top: number;
     selected?: boolean;
+    onclick?: Function;
 }
 export const Card = (p: Param) => (state: state.State, actions: ActionsType) => {
     let styles: Partial<CSSStyleDeclaration> = {
@@ -98,6 +99,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             draggable={draggable}
             data-object-id={p.target.id}
             data-region={p.target.region}
+            onclick={p.onclick}
             ondblclick={ondblclick}
             ondragstart={(elem) => { $(elem).popup('hide all'); actions.cardDragStart(p.target); }}
             ondragend={() => actions.cardDragEnd()}

@@ -4,7 +4,7 @@ import * as sakuraba from "../../sakuraba";
 import * as utils from "../utils";
 import { Card } from "./Card";
 import * as css from "./ControlPanel.css"
-import * as devtools from 'hyperapp-redux-devtools';
+import { withLogger } from "@hyperapp/logger"
 
 /** コントロールパネル */
 export const ControlPanel = () => (state: state.State, actions: ActionsType) => {
@@ -182,7 +182,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     </div>
                 );
             }   
-            devtools(app)(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
+            withLogger(app)(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
         });
 
         // モーダル終了後の処理

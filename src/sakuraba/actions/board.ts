@@ -1,4 +1,5 @@
 import * as  _ from "lodash";
+import * as models from "../models";
 import * as utils from "../utils";
 import { Megami, CARD_DATA } from "../../sakuraba";
 import cardActions from './card';
@@ -27,6 +28,19 @@ export default {
         let newBoard = _.merge({}, state.board);
         newBoard.megamis[p.side] = [p.megami1, p.megami2];
         
+        return {board: newBoard};
+    },
+
+    /** 集中力の値を変更 */
+    setVigor: (p: {
+        /** どちら側の集中力か */
+        side: PlayerSide;
+        /** 新しい集中力の値 */
+        value: VigorValue;
+    }) => (state: state.State) => {
+        let newBoard = models.Board.clone(state.board);
+        newBoard.vigors[p.side] = p.value;
+
         return {board: newBoard};
     },
 

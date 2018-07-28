@@ -5,6 +5,8 @@ export class Board implements state.Board {
     objects: state.BoardObject[];
     playerNames: {p1: string, p2: string};
     megamis: {p1: Megami[], p2: Megami[]};
+    vigors: {p1: VigorValue, p2: VigorValue};
+    witherFlags: {p1: boolean, p2: boolean};
 
     actionLog: state.LogRecord[];
     chatLog: state.LogRecord[];

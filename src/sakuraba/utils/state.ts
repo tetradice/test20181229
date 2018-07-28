@@ -1,11 +1,13 @@
 /** 初期ステートを生成 */
 export function createInitialState(): state.State{
-    let st = {
+    let st: state.State = {
           stateDataVersion: 1
         , board: {
               objects: []
             , playerNames: {p1: null, p2: null}
             , megamis: {p1: null, p2: null}
+            , vigors: {p1: 0, p2: 0}
+            , witherFlags: {p1: false, p2: false}
             , actionLog: []
             , chatLog: []
           }

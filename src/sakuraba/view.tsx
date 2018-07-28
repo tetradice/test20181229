@@ -112,6 +112,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         <div style={{ position: 'relative', zIndex: 100 }}>
             {objectNodes}
             {frameNodes}
+            <components.Vigor left={720} top={280} />
             <components.ControlPanel />
         </div>
     );
