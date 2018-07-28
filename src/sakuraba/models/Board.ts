@@ -9,10 +9,18 @@ export class Board implements state.Board {
     actionLog: state.LogRecord[];
     chatLog: state.LogRecord[];
 
-    constructor(original?: state.Board){
+    constructor(original?: state.Board, deepCloning?: boolean){
         if(original !== undefined){
-            _.merge(this, original);
+            if(deepCloning === true){
+                _.merge(this, original);
+            } else {
+                _.extend(this, original);
+            }
         }
+    }
+
+    static clone(original: state.Board): Board{
+        return new Board(original, true);
     }
 
     getCards(): state.Card[] {

@@ -7,7 +7,7 @@ export default {
     /** カードを1枚追加する */
     addCard: (p: {region: CardRegion, cardId: string}) => (state: state.State) => {
         // 元の盤の状態をコピーして新しい盤を生成
-        let newBoard = new models.Board(state.board);
+        let newBoard = models.Board.clone(state.board);
 
         // 現在カード数 + 1で新しい連番を振る
         let cardCount = newBoard.objects.filter(obj => obj.type === 'card').length;
@@ -46,7 +46,7 @@ export default {
         moveNumber?: number;
     }) => (state: state.State) => {
         // 元の盤の状態をコピーして新しい盤を生成
-        let newBoard = new models.Board(state.board);
+        let newBoard = models.Board.clone(state.board);
 
         // カードを指定枚数移動 (省略時は0枚)
         let fromIndex = (p.fromIndex === undefined ? 0 : p.fromIndex);
@@ -73,7 +73,7 @@ export default {
 
     flipCard: (objectId: string) => (state: state.State) => {
         let ret: Partial<state.State> = {};
-        let newBoard = new models.Board(state.board);
+        let newBoard = models.Board.clone(state.board);
 
         let card = newBoard.getCard(objectId);
         if(card.type !== null){
@@ -87,7 +87,7 @@ export default {
     shuffle: () => (state: state.State) => {
         let ret: Partial<state.State> = {};
 
-        let newBoard = new models.Board(state.board);
+        let newBoard = models.Board.clone(state.board);
         // 山札のカードをすべて取得
         let cards = newBoard.getRegionCards('library');
         // ランダムに整列し、その順番をインデックスに再設定
@@ -103,11 +103,11 @@ export default {
     /** 再構成 */
     reshuffle: (p: {lifeDecrease?: boolean}) => (state: state.State, actions: ActionsType) => {
         // 使用済、伏せ札をすべて山札へ移動
-        let newBoard = new models.Board(state.board);
+        let newBoard = models.Board.clone(state.board);
         let usedCards = newBoard.getRegionCards('used');
         actions.moveCard({from: 'used', to: 'library', moveNumber: usedCards.length});
         
-        newBoard = new models.Board(actions.getState().board);
+        newBoard = models.Board.clone(actions.getState().board);
         let hiddenUsedCards = newBoard.getRegionCards('hidden-used');
         actions.moveCard({from: 'hidden-used', to: 'library', moveNumber: hiddenUsedCards.length});
 

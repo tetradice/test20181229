@@ -37000,7 +37000,7 @@ exports.default = {
     /** カードを1枚追加する */
     addCard: function (p) { return function (state) {
         // 元の盤の状態をコピーして新しい盤を生成
-        var newBoard = new models.Board(state.board);
+        var newBoard = models.Board.clone(state.board);
         // 現在カード数 + 1で新しい連番を振る
         var cardCount = newBoard.objects.filter(function (obj) { return obj.type === 'card'; }).length;
         var objectId = "card-" + (cardCount + 1);
@@ -37023,7 +37023,7 @@ exports.default = {
      */
     moveCard: function (p) { return function (state) {
         // 元の盤の状態をコピーして新しい盤を生成
-        var newBoard = new models.Board(state.board);
+        var newBoard = models.Board.clone(state.board);
         // カードを指定枚数移動 (省略時は0枚)
         var fromIndex = (p.fromIndex === undefined ? 0 : p.fromIndex);
         var num = (p.moveNumber === undefined ? 1 : p.moveNumber);
@@ -37045,7 +37045,7 @@ exports.default = {
     }; },
     flipCard: function (objectId) { return function (state) {
         var ret = {};
-        var newBoard = new models.Board(state.board);
+        var newBoard = models.Board.clone(state.board);
         var card = newBoard.getCard(objectId);
         if (card.type !== null) {
             card.opened = !card.opened;
@@ -37055,7 +37055,7 @@ exports.default = {
     }; },
     shuffle: function () { return function (state) {
         var ret = {};
-        var newBoard = new models.Board(state.board);
+        var newBoard = models.Board.clone(state.board);
         // 山札のカードをすべて取得
         var cards = newBoard.getRegionCards('library');
         // ランダムに整列し、その順番をインデックスに再設定
@@ -37069,10 +37069,10 @@ exports.default = {
     /** 再構成 */
     reshuffle: function (p) { return function (state, actions) {
         // 使用済、伏せ札をすべて山札へ移動
-        var newBoard = new models.Board(state.board);
+        var newBoard = models.Board.clone(state.board);
         var usedCards = newBoard.getRegionCards('used');
         actions.moveCard({ from: 'used', to: 'library', moveNumber: usedCards.length });
-        newBoard = new models.Board(actions.getState().board);
+        newBoard = models.Board.clone(actions.getState().board);
         var hiddenUsedCards = newBoard.getRegionCards('hidden-used');
         actions.moveCard({ from: 'hidden-used', to: 'library', moveNumber: hiddenUsedCards.length });
         // 山札を混ぜる
@@ -37158,7 +37158,7 @@ var models = __importStar(__webpack_require__(/*! ../models */ "./src/sakuraba/m
 exports.default = {
     appendActionLog: function (p) { return function (state) {
         // 元の盤の状態をコピーして新しい盤を生成
-        var newBoard = new models.Board(state.board);
+        var newBoard = models.Board.clone(state.board);
         var append = { body: p.text, time: moment().format() };
         newBoard.actionLog.push(append);
         return { board: newBoard };
@@ -37698,11 +37698,19 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __importStar(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
 var Board = /** @class */ (function () {
-    function Board(original) {
+    function Board(original, deepCloning) {
         if (original !== undefined) {
-            _.merge(this, original);
+            if (deepCloning === true) {
+                _.merge(this, original);
+            }
+            else {
+                _.extend(this, original);
+            }
         }
     }
+    Board.clone = function (original) {
+        return new Board(original, true);
+    };
     Board.prototype.getCards = function () {
         return this.objects.filter(function (v) { return v.type === 'card'; });
     };
