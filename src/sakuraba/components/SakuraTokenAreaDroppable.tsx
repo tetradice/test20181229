@@ -1,9 +1,11 @@
 import { h } from "hyperapp";
 import { ActionsType } from "../actions";
+import * as utils from "../utils";
 
 /** 領域枠 */
 interface Param {
     region: SakuraTokenRegion;
+    side?: PlayerSide;
     
     left: number;
     top: number;
@@ -40,14 +42,17 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
         if (e.stopPropagation) {
             e.stopPropagation(); // stops the browser from redirecting.
         }
+        let currentState = actions.getState();
         
         // 桜花結晶を移動 (リージョンが空でなければ)
         if(state.draggingHoverSakuraTokenRegion){
             actions.moveSakuraToken({
-                  from: state.draggingFromSakuraToken.region
-                , to: state.draggingHoverSakuraTokenRegion
-            });
-        }
+                fromSide: currentState.side
+              , from: currentState.draggingFromSakuraToken.region
+              , toSide: utils.flipSide(currentState.side)
+              , to: currentState.draggingHoverSakuraTokenRegion
+          });
+      }
 
         return false;
     };
@@ -56,7 +61,7 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
         <div
          class="area droppable"
          style={styles}
-         key={"SakuraTokenAreaDroppable_" + p.region}
+         key={`SakuraTokenAreaDroppable_${p.side}_${p.region}`}
          ondragover={dragover}
          ondragenter={dragenter}
          ondragleave={dragleave}

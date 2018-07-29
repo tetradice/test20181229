@@ -36,10 +36,14 @@ export default {
      * カードを指定領域から別の領域に移動させる
      */
     moveCard: (p: {
+        /** 移動元のサイド */
+        fromSide: PlayerSide;
         /** 移動元の領域 */
         from: CardRegion;
         /** 何枚目のカードを移動するか。省略時は先頭 */
         fromIndex?: number;
+        /** 移動先のサイド */
+        toSide: PlayerSide;
         /** 移動先の領域 */
         to: CardRegion;
         /** 移動枚数 */
@@ -51,8 +55,8 @@ export default {
         // カードを指定枚数移動 (省略時は0枚)
         let fromIndex = (p.fromIndex === undefined ? 0 : p.fromIndex);
         let num = (p.moveNumber === undefined ? 1 : p.moveNumber);
-        let fromRegionCards = newBoard.getRegionCards(p.from).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
-        let toRegionCards = newBoard.getRegionCards(p.to).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+        let fromRegionCards = newBoard.getRegionCards(p.fromSide, p.from).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+        let toRegionCards = newBoard.getRegionCards(p.toSide, p.to).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
         let indexes = toRegionCards.map(c => c.indexOfRegion);
         let maxIndex = Math.max(...indexes);
 
@@ -84,12 +88,12 @@ export default {
         return ret;
     },
 
-    shuffle: () => (state: state.State) => {
+    shuffle: (p: {side: PlayerSide}) => (state: state.State) => {
         let ret: Partial<state.State> = {};
 
         let newBoard = models.Board.clone(state.board);
         // 山札のカードをすべて取得
-        let cards = newBoard.getRegionCards('library');
+        let cards = newBoard.getRegionCards(p.side, 'library');
         // ランダムに整列し、その順番をインデックスに再設定
         let shuffledCards = _.shuffle(cards);
         shuffledCards.forEach((c, i) => {
@@ -101,18 +105,18 @@ export default {
     },
 
     /** 再構成 */
-    reshuffle: (p: {lifeDecrease?: boolean}) => (state: state.State, actions: ActionsType) => {
+    reshuffle: (p: {side: PlayerSide, lifeDecrease?: boolean}) => (state: state.State, actions: ActionsType) => {
         // 使用済、伏せ札をすべて山札へ移動
         let newBoard = models.Board.clone(state.board);
-        let usedCards = newBoard.getRegionCards('used');
-        actions.moveCard({from: 'used', to: 'library', moveNumber: usedCards.length});
+        let usedCards = newBoard.getRegionCards(p.side, 'used');
+        actions.moveCard({from: 'used', fromSide: p.side, to: 'library', toSide: p.side, moveNumber: usedCards.length});
         
         newBoard = models.Board.clone(actions.getState().board);
-        let hiddenUsedCards = newBoard.getRegionCards('hidden-used');
-        actions.moveCard({from: 'hidden-used', to: 'library', moveNumber: hiddenUsedCards.length});
+        let hiddenUsedCards = newBoard.getRegionCards(p.side, 'hidden-used');
+        actions.moveCard({from: 'hidden-used', fromSide: p.side, to: 'library', toSide: p.side, moveNumber: hiddenUsedCards.length});
 
         // 山札を混ぜる
-        actions.shuffle();
+        actions.shuffle({side: p.side});
     },
 
     /** ドラッグ開始 */

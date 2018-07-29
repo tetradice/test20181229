@@ -76,9 +76,13 @@ function layoutObjects(
 export const view: View<state.State, ActionsType> = (state, actions) => {
     let boardModel = new models.Board(state.board);
 
+    let selfSide = state.side;
+    let opponentSide: PlayerSide = (state.side === 'p1' ? 'p2' : 'p1');
+
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     let cardAreaData: {
           region: CardRegion
+        , side: PlayerSide
         , title: string
         , cardLayoutType: LayoutType
         , left: number
@@ -87,15 +91,24 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         , height: number
         , cardCountDisplay?: boolean
     }[] = [
-              { region: 'used',        title: "使用済み", cardLayoutType: 'horizontal', left: 10,   top: 80,  width: 450, height: 160 }
-            , { region: 'hidden-used', title: "伏せ札",   cardLayoutType: 'stacked',    left: 480,  top: 80,  width: 170, height: 160, cardCountDisplay: true }
-            , { region: 'library',     title: "山札",     cardLayoutType: 'stacked',    left: 670,  top: 80,  width: 160, height: 160, cardCountDisplay: true }
-            , { region: 'hand',        title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 250, width: 640, height: 160 }
-            , { region: 'special',     title: "切札",     cardLayoutType: 'horizontal', left: 850,  top: 250, width: 330, height: 160 }
+            // 対戦相手
+              { region: 'used',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 10,   top: 180,  width: 450, height: 160 }
+            , { region: 'hidden-used', side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 480,  top: 180,  width: 170, height: 160, cardCountDisplay: true }
+            , { region: 'library',     side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 670,  top: 180,  width: 160, height: 160, cardCountDisplay: true }
+            , { region: 'hand',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 10,   top: 10, width: 640, height: 160 }
+            , { region: 'special',     side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 850,  top: 10, width: 330, height: 160 }
+
+            // 自分
+            , { region: 'used',        side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10,   top: 410,  width: 450, height: 160 }
+            , { region: 'hidden-used', side: selfSide, title: "伏せ札",   cardLayoutType: 'stacked',    left: 480,  top: 410,  width: 170, height: 160, cardCountDisplay: true }
+            , { region: 'library',     side: selfSide, title: "山札",     cardLayoutType: 'stacked',    left: 670,  top: 410,  width: 160, height: 160, cardCountDisplay: true }
+            , { region: 'hand',        side: selfSide, title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 580, width: 640, height: 160 }
+            , { region: 'special',     side: selfSide, title: "切札",     cardLayoutType: 'horizontal', left: 850,  top: 580, width: 330, height: 160 }
     ];
 
     let sakuraTokenAreaData: {
         region: SakuraTokenRegion
+      , side: PlayerSide
       , title: string
       , layoutType: LayoutType
       , left: number
@@ -104,11 +117,17 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
       , tokenWidth: number
       , height: number
   }[] = [
-            { region: 'aura',     title: "オーラ", layoutType: 'horizontal', left: 850,   top: 80,   width: 350, tokenWidth: 280, height: 30 }
-          , { region: 'life',     title: "ライフ", layoutType: 'horizontal', left: 850,   top: 120,  width: 350, tokenWidth: 280, height: 30 }
-          , { region: 'flair',    title: "フレア", layoutType: 'horizontal', left: 850,   top: 160,  width: 350, tokenWidth: 280, height: 30 }
-          , { region: 'distance', title: "間合",   layoutType: 'horizontal', left: 10,   top: 10,   width: 350, tokenWidth: 280, height: 30 }
-          , { region: 'dust',     title: "ダスト", layoutType: 'horizontal', left: 380,   top: 10,  width: 350, tokenWidth: 280, height: 30 }
+            { region: 'aura',     side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 850,   top: 180,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'life',     side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 850,   top: 220,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'flair',    side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 850,   top: 260,  width: 350, tokenWidth: 280, height: 30 }
+
+          , { region: 'distance', side: null, title: "間合",   layoutType: 'horizontal', left: 10,    top: 360,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'dust',     side: null, title: "ダスト", layoutType: 'horizontal', left: 380,   top: 360,  width: 350, tokenWidth: 280, height: 30 }
+
+          , { region: 'aura',     side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850,   top: 410,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'life',     side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850,   top: 450,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'flair',    side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850,   top: 490,  width: 350, tokenWidth: 280, height: 30 }
+          
       ];
 
 
@@ -117,7 +136,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
 
     cardAreaData.forEach((area) => {
         // 指定された領域のカードをすべてインデックス順に取得
-        let cards = utils.getCards(state, area.region);
+        let cards = boardModel.getRegionCards(area.side, area.region);
 
         // 指定されたレイアウト情報に応じて、カードをレイアウトし、各カードの座標を決定
         let layoutResults = layoutObjects(cards, area.cardLayoutType, area.width, 100, 8, 6);
@@ -131,13 +150,13 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         });
 
         // フレームを追加
-        frameNodes.push(<components.CardAreaBackground region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
-        frameNodes.push(<components.CardAreaDroppable region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
+        frameNodes.push(<components.CardAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
+        frameNodes.push(<components.CardAreaDroppable side={area.side} region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
 
     sakuraTokenAreaData.forEach((area) => {
         // 指定された領域の桜花結晶をすべてインデックス順に取得
-        let tokens = boardModel.getRegionSakuraTokens(area.region);
+        let tokens = boardModel.getRegionSakuraTokens(area.side, area.region);
 
         // 指定されたレイアウト情報に応じて、桜花結晶をレイアウトし、各桜花結晶の座標を決定
         let layoutResults = layoutObjects(tokens, area.layoutType, area.tokenWidth, 20, 2, 8);
@@ -151,8 +170,8 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         });
 
         // フレームを追加
-        frameNodes.push(<components.SakuraTokenAreaBackground region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} tokenCount={tokens.length} />);
-        frameNodes.push(<components.SakuraTokenAreaDroppable region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
+        frameNodes.push(<components.SakuraTokenAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} tokenCount={tokens.length} />);
+        frameNodes.push(<components.SakuraTokenAreaDroppable side={area.side} region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
 
 
@@ -160,7 +179,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         <div style={{ position: 'relative', zIndex: 100 }}>
             {objectNodes}
             {frameNodes}
-            <components.Vigor left={680} top={280} />
+            <components.Vigor left={680} top={610} />
             <components.ControlPanel />
         </div>
     );

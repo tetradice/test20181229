@@ -200,7 +200,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
     let handSet = () => {
         utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', () => {
-            actions.moveCard({from: 'library', to: 'hand', moveNumber: 3});
+            actions.moveCard({from: 'library', fromSide: state.side, to: 'hand', toSide: state.side, moveNumber: 3});
 
             // socket.ioでイベント送信
             let newState: state.State = (actions.getState() as any);

@@ -70,12 +70,13 @@ $(function(){
     $.contextMenu({
         selector: '#BOARD2 .area.background[data-region=library], #BOARD2 .fbs-card[data-region=library]',
         callback: function(key: string) {
+            let state = appActions.getState();
             if(key === 'draw'){
-                appActions.moveCard({from: 'library', to: 'hand'});
+                appActions.moveCard({from: 'library', fromSide: state.side, to: 'hand', toSide: state.side});
             }
 
             if(key === 'reshuffle'){
-                appActions.reshuffle({});
+                appActions.reshuffle({side: state.side});
             }
 
             return;
@@ -84,7 +85,7 @@ $(function(){
             'draw': {name: '1枚引く', disabled: () => {
                 let board = new models.Board(appActions.getState().board);
 
-                let cards = board.getRegionCards('library');
+                let cards = board.getRegionCards(appActions.getState().side, 'library');
                 return cards.length === 0;
             }},
             'sep1': '---------',

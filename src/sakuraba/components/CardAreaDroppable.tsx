@@ -4,6 +4,7 @@ import { ActionsType } from "../actions";
 /** 領域枠 */
 interface Param {
     region: CardRegion;
+    side: PlayerSide;
     
     left: number;
     top: number;
@@ -40,10 +41,17 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
         if (e.stopPropagation) {
             e.stopPropagation(); // stops the browser from redirecting.
         }
+        let currentState = actions.getState();
         
         // カードを移動 (リージョンが空でなければ)
-        if(state.draggingHoverCardRegion){
-            actions.moveCard({from: state.draggingFromCard.region, fromIndex: state.draggingFromCard.indexOfRegion, to: state.draggingHoverCardRegion});
+        if(currentState.draggingHoverCardRegion){
+            actions.moveCard({
+                  fromSide: currentState.side
+                , from: currentState.draggingFromCard.region
+                , fromIndex: currentState.draggingFromCard.indexOfRegion
+                , toSide: (currentState.side === 'p1' ? 'p2' : 'p1')
+                , to: currentState.draggingHoverCardRegion
+            });
         }
 
         return false;
@@ -53,7 +61,7 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
         <div
          class="area droppable"
          style={styles}
-         key={"CardAreaDroppable_" + p.region}
+         key={`CardAreaDroppable_${p.side}_${p.region}`}
          ondragover={dragover}
          ondragenter={dragenter}
          ondragleave={dragleave}

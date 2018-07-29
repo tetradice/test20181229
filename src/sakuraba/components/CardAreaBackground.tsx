@@ -3,6 +3,7 @@ import { h } from "hyperapp";
 /** 領域枠 */
 interface Param {
     region: CardRegion;
+    side: PlayerSide;
     title: string;
 
     left: number;
@@ -26,8 +27,9 @@ export const CardAreaBackground = (p: Param) => (state: state.State) => {
         <div
             class={"area background ui segment " + (state.draggingHoverCardRegion === p.region ? 'over' : '')}
             style={styles}
-            key={"CardAreaBackground_" + p.region}
-            data-region={p.region}    
+            key={`CardAreaBackground_${p.side}_${p.region}`}
+            data-region={p.region}
+            data-side={p.side}
         >
             <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`}}>{p.title}</div>
             <div class="card-count">{p.cardCount}</div>

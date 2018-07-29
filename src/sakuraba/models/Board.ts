@@ -36,8 +36,8 @@ export class Board implements state.Board {
     }
 
     /** 指定した領域にあるカードを一括取得 */
-    getRegionCards(region: CardRegion): state.Card[] {
-        return this.objects.filter(v => v.type === 'card' && v.region == region) as state.Card[];
+    getRegionCards(side: PlayerSide, region: CardRegion): state.Card[] {
+        return this.objects.filter(v => v.type === 'card' && v.side === side && v.region === region) as state.Card[];
     }
 
     /** すべての桜花結晶を取得 */
@@ -51,16 +51,18 @@ export class Board implements state.Board {
     }
 
     /** 指定した領域にある桜花結晶を一括取得 */
-    getRegionSakuraTokens(region: SakuraTokenRegion): state.SakuraToken[] {
-        return this.objects.filter(v => v.type === 'sakura-token' && v.region == region) as state.SakuraToken[];
+    getRegionSakuraTokens(side: PlayerSide, region: SakuraTokenRegion): state.SakuraToken[] {
+        return this.objects.filter(v => v.type === 'sakura-token' && v.side === side && v.region == region) as state.SakuraToken[];
     }
 
     /** カード移動時などの領域情報一括更新 */
     updateRegionInfo(){
         let cards = this.getCards();
-        let regions = _.uniq(cards.map(c => c.region));
-        regions.forEach(r => {
-            let regionCards = this.getRegionCards(r).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+        let sideAndRegions = _.uniq(cards.map(c => [c.side, c.region])) as [PlayerSide, CardRegion][];
+        sideAndRegions.forEach(r => {
+            let [side, region] = r;
+
+            let regionCards = this.getRegionCards(side, region).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
             let index = 0;
             regionCards.forEach(c => {
                 // インデックス更新
@@ -68,10 +70,10 @@ export class Board implements state.Board {
                 index++;
 
                 // 開閉状態更新
-                c.opened = (r === 'used' || r === 'hand');
+                c.opened = (region === 'used' || region === 'hand');
 
                 // 回転状態更新
-                c.rotated = (r === 'hidden-used');
+                c.rotated = (region === 'hidden-used');
 
                 // known状態 (中身を知っているかどうか) 更新
                 c.known.p1 = true;
