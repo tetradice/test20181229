@@ -15,10 +15,10 @@ interface Param {
 
 export const CardAreaBackground = (p: Param) => (state: state.State) => {
     let styles: Partial<CSSStyleDeclaration> = {
-          left: `${p.left}px`
-        , top: `${p.top}px`
-        , width: `${p.width}px`
-        , height: `${p.height}px`
+          left: `${p.left * state.zoom}px`
+        , top: `${p.top * state.zoom}px`
+        , width: `${p.width * state.zoom}px`
+        , height: `${p.height * state.zoom}px`
         , position: 'relative'
     };
 
@@ -29,7 +29,7 @@ export const CardAreaBackground = (p: Param) => (state: state.State) => {
             key={"CardAreaBackground_" + p.region}
             data-region={p.region}    
         >
-            <div class="area-title">{p.title}</div>
+            <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`}}>{p.title}</div>
             <div class="card-count">{p.cardCount}</div>
         </div>
     );

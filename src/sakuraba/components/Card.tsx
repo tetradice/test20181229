@@ -45,8 +45,10 @@ interface Param {
 }
 export const Card = (p: Param) => (state: state.State, actions: ActionsType) => {
     let styles: Partial<CSSStyleDeclaration> = {
-          left: `${(p.target.rotated ? p.left + ((140 - 100) / 2) : p.left)}px`
-        , top: `${(p.target.rotated ? p.top - ((140 - 100) / 2) : p.top)}px`
+          left: `${(p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * state.zoom}px`
+        , top: `${(p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) * state.zoom}px`
+        , width: `${100 * state.zoom}px`
+        , height: `${140 * state.zoom}px`
     };
     let cardData = sakuraba.CARD_DATA[p.target.cardId];
     let className = "fbs-card";

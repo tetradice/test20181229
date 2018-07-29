@@ -38,7 +38,7 @@ function layoutObjects(
     // 横並びで配置する場合
     if(layoutType === 'horizontal'){
         let innerWidth = areaWidth - (padding * 2);
-        let requiredWidth = objectWidth * objects.length + padding * (objects.length - 1);
+        let requiredWidth = objectWidth * objects.length + spacing * (objects.length - 1);
         
         if(requiredWidth <= innerWidth){
             // 領域の幅に収まる場合は、spacing分の間隔をあけて配置
@@ -87,11 +87,11 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         , height: number
         , cardCountDisplay?: boolean
     }[] = [
-              { region: 'used',        title: "使用済み", cardLayoutType: 'horizontal', left: 0,   top: 80,  width: 450, height: 160 }
-            , { region: 'hidden-used', title: "伏せ札",   cardLayoutType: 'stacked',    left: 470, top: 80,  width: 170, height: 140, cardCountDisplay: true }
-            , { region: 'library',     title: "山札",     cardLayoutType: 'stacked',    left: 720, top: 80,  width: 160, height: 160, cardCountDisplay: true }
-            , { region: 'hand',        title: "手札",     cardLayoutType: 'horizontal', left: 0,   top: 250, width: 700, height: 160 }
-            , { region: 'special',     title: "切札",     cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 160 }
+              { region: 'used',        title: "使用済み", cardLayoutType: 'horizontal', left: 10,   top: 80,  width: 450, height: 160 }
+            , { region: 'hidden-used', title: "伏せ札",   cardLayoutType: 'stacked',    left: 480,  top: 80,  width: 170, height: 160, cardCountDisplay: true }
+            , { region: 'library',     title: "山札",     cardLayoutType: 'stacked',    left: 670,  top: 80,  width: 160, height: 160, cardCountDisplay: true }
+            , { region: 'hand',        title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 250, width: 640, height: 160 }
+            , { region: 'special',     title: "切札",     cardLayoutType: 'horizontal', left: 850,  top: 250, width: 330, height: 160 }
     ];
 
     let sakuraTokenAreaData: {
@@ -101,11 +101,14 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
       , left: number
       , top: number
       , width: number
+      , tokenWidth: number
       , height: number
   }[] = [
-            { region: 'aura',     title: "オーラ", layoutType: 'horizontal', left: 10,   top: 400,  width: 400, height: 30 }
-          , { region: 'life',     title: "ライフ", layoutType: 'horizontal', left: 10,   top: 440,  width: 400, height: 30 }
-          , { region: 'flair',    title: "フレア", layoutType: 'horizontal', left: 10,   top: 480,  width: 400, height: 30 }
+            { region: 'aura',     title: "オーラ", layoutType: 'horizontal', left: 850,   top: 80,   width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'life',     title: "ライフ", layoutType: 'horizontal', left: 850,   top: 120,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'flair',    title: "フレア", layoutType: 'horizontal', left: 850,   top: 160,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'distance', title: "間合",   layoutType: 'horizontal', left: 10,   top: 10,   width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'dust',     title: "ダスト", layoutType: 'horizontal', left: 380,   top: 10,  width: 350, tokenWidth: 280, height: 30 }
       ];
 
 
@@ -137,7 +140,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         let tokens = boardModel.getRegionSakuraTokens(area.region);
 
         // 指定されたレイアウト情報に応じて、桜花結晶をレイアウトし、各桜花結晶の座標を決定
-        let layoutResults = layoutObjects(tokens, area.layoutType, area.width, 20, 2, 10);
+        let layoutResults = layoutObjects(tokens, area.layoutType, area.tokenWidth, 20, 2, 8);
 
         // 桜花結晶を領域の子オブジェクトとして追加
         layoutResults.forEach((ret) => {
@@ -157,7 +160,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         <div style={{ position: 'relative', zIndex: 100 }}>
             {objectNodes}
             {frameNodes}
-            <components.Vigor left={720} top={280} />
+            <components.Vigor left={680} top={280} />
             <components.ControlPanel />
         </div>
     );

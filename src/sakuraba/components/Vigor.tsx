@@ -5,8 +5,10 @@ import { ActionsType } from "../actions";
 export const Vigor = (p: {left: number, top: number}) => (state: state.State, actions: ActionsType) => {
     // DOMを返す
     let styles: Partial<CSSStyleDeclaration> = {
-          left: `${p.left}px`
-        , top: `${p.top}px`
+          left: `${p.left * state.zoom}px`
+        , top: `${p.top * state.zoom}px`
+        , width: `${140 * state.zoom}px`
+        , height: `${100 * state.zoom}px`
     };
     let vigor = state.board.vigors[state.side];
     let className = "fbs-vigor-card";

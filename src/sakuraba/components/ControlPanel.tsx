@@ -235,6 +235,22 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     </tr>
                 </tbody>
             </table>
+
+<div class="ui sub header">ボードサイズ</div>
+<div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', '100')}>
+
+  <input type="hidden" name="boardSize" onchange={(e) => {return actions.setZoom(Number($(e.target).val()) * 0.01)}} />
+  <i class="dropdown icon"></i>
+  <div class="default text"></div>
+  <div class="menu">
+  <div class="item" data-value="80">80%</div>
+    <div class="item" data-value="90">90%</div>
+    <div class="item" data-value="100">100%</div>
+    <div class="item" data-value="110">110%</div>
+    <div class="item" data-value="120">120%</div>
+  </div>
+</div>
+
         </div>
     );
 }

@@ -13,10 +13,10 @@ interface Param {
 
 export const CardAreaDroppable = (p: Param) => (state: state.State, actions: ActionsType) => {
     let styles: Partial<CSSStyleDeclaration> = {
-          left: `${p.left}px`
-        , top: `${p.top}px`
-        , width: `${p.width}px`
-        , height: `${p.height}px`
+          left: `${p.left * state.zoom}px`
+        , top: `${p.top * state.zoom}px`
+        , width: `${p.width * state.zoom}px`
+        , height: `${p.height * state.zoom}px`
         , position: 'relative'
     };
     if(state.draggingFromCard !== null && p.region !== state.draggingFromCard.region){

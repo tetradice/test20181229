@@ -3,8 +3,10 @@ import { h } from "hyperapp";
 /** 桜花結晶 */
 export const SakuraToken = (p: {target: state.SakuraToken, left: number, top: number}) => (state: state.State, actions) => {
     let styles: Partial<CSSStyleDeclaration> = {
-          left: `${p.left}px`
-        , top: `${p.top}px`
+          left: `${p.left * state.zoom}px`
+        , top: `${p.top * state.zoom}px`
+        , width: `${26 * state.zoom}px`
+        , height: `${26 * state.zoom}px`
     };
 
     let draggable = true;

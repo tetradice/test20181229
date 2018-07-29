@@ -35893,7 +35893,10 @@ var log_1 = __importDefault(__webpack_require__(/*! ./log */ "./src/sakuraba/act
 var card_1 = __importDefault(__webpack_require__(/*! ./card */ "./src/sakuraba/actions/card.ts"));
 var board_1 = __importDefault(__webpack_require__(/*! ./board */ "./src/sakuraba/actions/board.ts"));
 var sakuraToken_1 = __importDefault(__webpack_require__(/*! ./sakuraToken */ "./src/sakuraba/actions/sakuraToken.ts"));
-exports.actions = Object.assign(log_1.default, card_1.default, board_1.default, sakuraToken_1.default);
+var misc_1 = __importDefault(__webpack_require__(/*! ./misc */ "./src/sakuraba/actions/misc.ts"));
+var actionsTemp = Object.assign(log_1.default, card_1.default, board_1.default, sakuraToken_1.default);
+var actionsTemp2 = Object.assign(actionsTemp, misc_1.default);
+exports.actions = actionsTemp2;
 
 
 /***/ }),
@@ -35925,6 +35928,26 @@ exports.default = {
         newBoard.actionLog.push(append);
         return { board: newBoard };
     }; }
+};
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/actions/misc.ts":
+/*!**************************************!*\
+  !*** ./src/sakuraba/actions/misc.ts ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = {
+    /** ズーム倍率を変更する */
+    setZoom: function (p) {
+        return { zoom: p };
+    },
 };
 
 
@@ -36081,8 +36104,10 @@ function getDescriptionHtml(cardId) {
 }
 exports.Card = function (p) { return function (state, actions) {
     var styles = {
-        left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) + "px",
-        top: (p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) + "px"
+        left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * state.zoom + "px",
+        top: (p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) * state.zoom + "px",
+        width: 100 * state.zoom + "px",
+        height: 140 * state.zoom + "px"
     };
     var cardData = sakuraba.CARD_DATA[p.target.cardId];
     var className = "fbs-card";
@@ -36148,14 +36173,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 exports.CardAreaBackground = function (p) { return function (state) {
     var styles = {
-        left: p.left + "px",
-        top: p.top + "px",
-        width: p.width + "px",
-        height: p.height + "px",
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: p.width * state.zoom + "px",
+        height: p.height * state.zoom + "px",
         position: 'relative'
     };
     return (hyperapp_1.h("div", { class: "area background ui segment " + (state.draggingHoverCardRegion === p.region ? 'over' : ''), style: styles, key: "CardAreaBackground_" + p.region, "data-region": p.region },
-        hyperapp_1.h("div", { class: "area-title" }, p.title),
+        hyperapp_1.h("div", { class: "area-title", style: { fontSize: (15 * state.zoom) + "px" } }, p.title),
         hyperapp_1.h("div", { class: "card-count" }, p.cardCount)));
 }; };
 
@@ -36175,10 +36200,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 exports.CardAreaDroppable = function (p) { return function (state, actions) {
     var styles = {
-        left: p.left + "px",
-        top: p.top + "px",
-        width: p.width + "px",
-        height: p.height + "px",
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: p.width * state.zoom + "px",
+        height: p.height * state.zoom + "px",
         position: 'relative'
     };
     if (state.draggingFromCard !== null && p.region !== state.draggingFromCard.region) {
@@ -36458,7 +36483,18 @@ exports.ControlPanel = function () { return function (state, actions) {
                     hyperapp_1.h("td", null, board.playerNames.p2)),
                 hyperapp_1.h("tr", null,
                     hyperapp_1.h("td", null, "\u89B3\u6226\u8005"),
-                    hyperapp_1.h("td", null))))));
+                    hyperapp_1.h("td", null)))),
+        hyperapp_1.h("div", { class: "ui sub header" }, "\u30DC\u30FC\u30C9\u30B5\u30A4\u30BA"),
+        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', '100'); } },
+            hyperapp_1.h("input", { type: "hidden", name: "boardSize", onchange: function (e) { return actions.setZoom(Number($(e.target).val()) * 0.01); } }),
+            hyperapp_1.h("i", { class: "dropdown icon" }),
+            hyperapp_1.h("div", { class: "default text" }),
+            hyperapp_1.h("div", { class: "menu" },
+                hyperapp_1.h("div", { class: "item", "data-value": "80" }, "80%"),
+                hyperapp_1.h("div", { class: "item", "data-value": "90" }, "90%"),
+                hyperapp_1.h("div", { class: "item", "data-value": "100" }, "100%"),
+                hyperapp_1.h("div", { class: "item", "data-value": "110" }, "110%"),
+                hyperapp_1.h("div", { class: "item", "data-value": "120" }, "120%")))));
 }; };
 
 
@@ -36478,8 +36514,10 @@ var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/sr
 /** 桜花結晶 */
 exports.SakuraToken = function (p) { return function (state, actions) {
     var styles = {
-        left: p.left + "px",
-        top: p.top + "px"
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: 26 * state.zoom + "px",
+        height: 26 * state.zoom + "px"
     };
     var draggable = true;
     return hyperapp_1.h("div", { class: "sakura-token", draggable: draggable, "data-object-id": p.target.id, "data-region": p.target.region, ondragstart: function (elem) { $(elem).popup('hide all'); actions.sakuraTokenDragStart(p.target); }, ondragend: function () { return actions.sakuraTokenDragEnd(); }, id: 'board-object-' + p.target.id, key: 'sakura-token-' + p.target.id, style: styles });
@@ -36501,14 +36539,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 exports.SakuraTokenAreaBackground = function (p) { return function (state) {
     var styles = {
-        left: p.left + "px",
-        top: p.top + "px",
-        width: p.width + "px",
-        height: p.height + "px",
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: p.width * state.zoom + "px",
+        height: p.height * state.zoom + "px",
         position: 'relative'
     };
     return (hyperapp_1.h("div", { class: "area background sakura-token-region ui segment " + (state.draggingHoverSakuraTokenRegion === p.region ? 'over' : ''), style: styles, key: "SakuraTokenAreaBackground_" + p.region },
-        hyperapp_1.h("div", { class: "area-title" }, p.title)));
+        hyperapp_1.h("div", { class: "area-title", style: { fontSize: (15 * state.zoom) + "px" } }, p.title)));
 }; };
 
 
@@ -36527,10 +36565,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 exports.SakuraTokenAreaDroppable = function (p) { return function (state, actions) {
     var styles = {
-        left: p.left + "px",
-        top: p.top + "px",
-        width: p.width + "px",
-        height: p.height + "px",
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: p.width * state.zoom + "px",
+        height: p.height * state.zoom + "px",
         position: 'relative'
     };
     if (state.draggingFromSakuraToken !== null && p.region !== state.draggingFromSakuraToken.region) {
@@ -36583,8 +36621,10 @@ var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/sr
 exports.Vigor = function (p) { return function (state, actions) {
     // DOMを返す
     var styles = {
-        left: p.left + "px",
-        top: p.top + "px"
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: 140 * state.zoom + "px",
+        height: 100 * state.zoom + "px"
     };
     var vigor = state.board.vigors[state.side];
     var className = "fbs-vigor-card";
@@ -36875,7 +36915,7 @@ function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spa
     // 横並びで配置する場合
     if (layoutType === 'horizontal') {
         var innerWidth_1 = areaWidth - (padding * 2);
-        var requiredWidth = objectWidth * objects.length + padding * (objects.length - 1);
+        var requiredWidth = objectWidth * objects.length + spacing * (objects.length - 1);
         if (requiredWidth <= innerWidth_1) {
             // 領域の幅に収まる場合は、spacing分の間隔をあけて配置
             objects.forEach(function (child, i) {
@@ -36909,16 +36949,18 @@ exports.view = function (state, actions) {
     var boardModel = new models.Board(state.board);
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     var cardAreaData = [
-        { region: 'used', title: "使用済み", cardLayoutType: 'horizontal', left: 0, top: 80, width: 450, height: 160 },
-        { region: 'hidden-used', title: "伏せ札", cardLayoutType: 'stacked', left: 470, top: 80, width: 170, height: 140, cardCountDisplay: true },
-        { region: 'library', title: "山札", cardLayoutType: 'stacked', left: 720, top: 80, width: 160, height: 160, cardCountDisplay: true },
-        { region: 'hand', title: "手札", cardLayoutType: 'horizontal', left: 0, top: 250, width: 700, height: 160 },
-        { region: 'special', title: "切札", cardLayoutType: 'horizontal', left: 250, top: 720, width: 330, height: 160 }
+        { region: 'used', title: "使用済み", cardLayoutType: 'horizontal', left: 10, top: 80, width: 450, height: 160 },
+        { region: 'hidden-used', title: "伏せ札", cardLayoutType: 'stacked', left: 480, top: 80, width: 170, height: 160, cardCountDisplay: true },
+        { region: 'library', title: "山札", cardLayoutType: 'stacked', left: 670, top: 80, width: 160, height: 160, cardCountDisplay: true },
+        { region: 'hand', title: "手札", cardLayoutType: 'horizontal', left: 10, top: 250, width: 640, height: 160 },
+        { region: 'special', title: "切札", cardLayoutType: 'horizontal', left: 850, top: 250, width: 330, height: 160 }
     ];
     var sakuraTokenAreaData = [
-        { region: 'aura', title: "オーラ", layoutType: 'horizontal', left: 10, top: 400, width: 400, height: 30 },
-        { region: 'life', title: "ライフ", layoutType: 'horizontal', left: 10, top: 440, width: 400, height: 30 },
-        { region: 'flair', title: "フレア", layoutType: 'horizontal', left: 10, top: 480, width: 400, height: 30 }
+        { region: 'aura', title: "オーラ", layoutType: 'horizontal', left: 850, top: 80, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'life', title: "ライフ", layoutType: 'horizontal', left: 850, top: 120, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'flair', title: "フレア", layoutType: 'horizontal', left: 850, top: 160, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'distance', title: "間合", layoutType: 'horizontal', left: 10, top: 10, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'dust', title: "ダスト", layoutType: 'horizontal', left: 380, top: 10, width: 350, tokenWidth: 280, height: 30 }
     ];
     var frameNodes = [];
     var objectNodes = [];
@@ -36942,7 +36984,7 @@ exports.view = function (state, actions) {
         // 指定された領域の桜花結晶をすべてインデックス順に取得
         var tokens = boardModel.getRegionSakuraTokens(area.region);
         // 指定されたレイアウト情報に応じて、桜花結晶をレイアウトし、各桜花結晶の座標を決定
-        var layoutResults = layoutObjects(tokens, area.layoutType, area.width, 20, 2, 10);
+        var layoutResults = layoutObjects(tokens, area.layoutType, area.tokenWidth, 20, 2, 8);
         // 桜花結晶を領域の子オブジェクトとして追加
         layoutResults.forEach(function (ret) {
             var token = ret[0];
@@ -36957,7 +36999,7 @@ exports.view = function (state, actions) {
     return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
         objectNodes,
         frameNodes,
-        hyperapp_1.h(components.Vigor, { left: 720, top: 280 }),
+        hyperapp_1.h(components.Vigor, { left: 680, top: 280 }),
         hyperapp_1.h(components.ControlPanel, null)));
 };
 
