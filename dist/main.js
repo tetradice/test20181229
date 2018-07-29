@@ -35594,9 +35594,9 @@ $(function () {
                 socket.emit('player_name_input', { boardId: params.boardId, side: params.side, name: playerName });
                 appActions.setPlayerName({ side: params.side, name: playerName });
                 // 最初の名前決定時に、桜花結晶を作る
-                appActions.addSakuraToken({ region: 'aura', number: 3 });
-                appActions.addSakuraToken({ region: 'life', number: 10 });
-                appActions.addSakuraToken({ region: 'distance', number: 10 });
+                appActions.addSakuraToken({ side: params.side, region: 'aura', number: 3 });
+                appActions.addSakuraToken({ side: params.side, region: 'life', number: 10 });
+                appActions.addSakuraToken({ side: null, region: 'distance', number: 10 });
                 messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u308B\u6E96\u5099\u304C\u3067\u304D\u305F\u3089\u3001\u307E\u305A\u306F\u300C\u30E1\u30AC\u30DF\u9078\u629E\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
             });
         }
@@ -35984,7 +35984,7 @@ exports.default = {
             // 現在桜花結晶数 + 1で新しい連番を振る
             var tokenCount = newBoard.objects.filter(function (obj) { return obj.type === 'sakura-token'; }).length;
             var objectId = "sakuraToken-" + (tokenCount + 1);
-            var newToken = utils.createSakuraToken(objectId, p.region, 'p1');
+            var newToken = utils.createSakuraToken(objectId, p.region, p.side);
             newBoard.objects.push(newToken);
         });
         // 領域情報更新
@@ -36067,6 +36067,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
 var sakuraba = __importStar(__webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts"));
 // 説明を取得する関数
 function getDescriptionHtml(cardId) {
@@ -36122,6 +36123,8 @@ exports.Card = function (p) { return function (state, actions) {
         className += " rotated";
     if (p.selected)
         className += " selected";
+    if (p.target.side === utils.flipSide(state.side))
+        className += " opponent-side";
     if (state.draggingFromCard && p.target.id === state.draggingFromCard.id)
         className += " dragging";
     var setPopup = function (element) {
@@ -36634,8 +36637,16 @@ exports.SakuraTokenAreaDroppable = function (p) { return function (state, action
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
 /** 集中力 */
 exports.Vigor = function (p) { return function (state, actions) {
     // DOMを返す
@@ -36645,16 +36656,18 @@ exports.Vigor = function (p) { return function (state, actions) {
         width: 140 * state.zoom + "px",
         height: 100 * state.zoom + "px"
     };
-    var vigor = state.board.vigors[state.side];
+    var vigor = state.board.vigors[p.side];
     var className = "fbs-vigor-card";
     if (vigor === 0)
         className += " rotated";
     if (vigor === 2)
         className += " reverse-rotated";
+    if (p.side === utils.flipSide(state.side))
+        className += " opponent-side";
     return hyperapp_1.h("div", { class: className, style: styles },
-        hyperapp_1.h("div", { class: "vigor0" + (vigor !== 0 ? " clickable" : ""), onclick: function () { return actions.setVigor({ value: 0, side: state.side }); } }),
-        hyperapp_1.h("div", { class: "vigor1" + (vigor !== 1 ? " clickable" : ""), onclick: function () { return actions.setVigor({ value: 1, side: state.side }); } }),
-        hyperapp_1.h("div", { class: "vigor2" + (vigor !== 2 ? " clickable" : ""), onclick: function () { return actions.setVigor({ value: 2, side: state.side }); } }));
+        hyperapp_1.h("div", { class: "vigor0" + (vigor !== 0 ? " clickable" : ""), onclick: function () { return actions.setVigor({ value: 0, side: p.side }); } }),
+        hyperapp_1.h("div", { class: "vigor1" + (vigor !== 1 ? " clickable" : ""), onclick: function () { return actions.setVigor({ value: 1, side: p.side }); } }),
+        hyperapp_1.h("div", { class: "vigor2" + (vigor !== 2 ? " clickable" : ""), onclick: function () { return actions.setVigor({ value: 2, side: p.side }); } }));
 }; };
 
 
@@ -36995,11 +37008,11 @@ exports.view = function (state, actions) {
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     var cardAreaData = [
         // 対戦相手
-        { region: 'used', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 10, top: 180, width: 450, height: 160 },
-        { region: 'hidden-used', side: opponentSide, title: null, cardLayoutType: 'stacked', left: 480, top: 180, width: 170, height: 160, cardCountDisplay: true },
-        { region: 'library', side: opponentSide, title: null, cardLayoutType: 'stacked', left: 670, top: 180, width: 160, height: 160, cardCountDisplay: true },
-        { region: 'hand', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 10, top: 10, width: 640, height: 160 },
-        { region: 'special', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 850, top: 10, width: 330, height: 160 }
+        { region: 'used', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 750, top: 180, width: 450, height: 160 },
+        { region: 'hidden-used', side: opponentSide, title: null, cardLayoutType: 'stacked', left: 560, top: 180, width: 170, height: 160, cardCountDisplay: true },
+        { region: 'library', side: opponentSide, title: null, cardLayoutType: 'stacked', left: 380, top: 180, width: 160, height: 160, cardCountDisplay: true },
+        { region: 'hand', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 560, top: 10, width: 640, height: 160 },
+        { region: 'special', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 10, top: 10, width: 330, height: 160 }
         // 自分
         ,
         { region: 'used', side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10, top: 410, width: 450, height: 160 },
@@ -37009,9 +37022,9 @@ exports.view = function (state, actions) {
         { region: 'special', side: selfSide, title: "切札", cardLayoutType: 'horizontal', left: 850, top: 580, width: 330, height: 160 }
     ];
     var sakuraTokenAreaData = [
-        { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 180, width: 350, tokenWidth: 280, height: 30 },
-        { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 220, width: 350, tokenWidth: 280, height: 30 },
-        { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 260, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 180, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 220, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10, top: 260, width: 350, tokenWidth: 280, height: 30 },
         { region: 'distance', side: null, title: "間合", layoutType: 'horizontal', left: 10, top: 360, width: 350, tokenWidth: 280, height: 30 },
         { region: 'dust', side: null, title: "ダスト", layoutType: 'horizontal', left: 380, top: 360, width: 350, tokenWidth: 280, height: 30 },
         { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 410, width: 350, tokenWidth: 280, height: 30 },
@@ -37055,7 +37068,8 @@ exports.view = function (state, actions) {
     return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
         objectNodes,
         frameNodes,
-        hyperapp_1.h(components.Vigor, { left: 680, top: 610 }),
+        hyperapp_1.h(components.Vigor, { side: opponentSide, left: 390, top: 40 }),
+        hyperapp_1.h(components.Vigor, { side: selfSide, left: 680, top: 610 }),
         hyperapp_1.h(components.ControlPanel, null)));
 };
 

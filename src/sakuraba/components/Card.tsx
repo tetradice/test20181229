@@ -1,4 +1,5 @@
 import { h } from "hyperapp";
+import * as utils from "../utils";
 import * as sakuraba from '../../sakuraba';
 import { ActionsType } from "../actions";
 
@@ -59,6 +60,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     }
     if(p.target.rotated) className += " rotated";
     if(p.selected) className += " selected";
+    if(p.target.side === utils.flipSide(state.side)) className += " opponent-side"; 
     if(state.draggingFromCard && p.target.id === state.draggingFromCard.id) className += " dragging";
 
     const setPopup = (element) => {

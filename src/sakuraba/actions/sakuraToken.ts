@@ -5,7 +5,7 @@ import { ActionsType } from ".";
 
 export default {
     /** 桜花結晶を指定数追加する */
-    addSakuraToken: (p: {region: SakuraTokenRegion, number: number}) => (state: state.State) => {
+    addSakuraToken: (p: {side: PlayerSide, region: SakuraTokenRegion, number: number}) => (state: state.State) => {
         // 元の盤の状態をコピーして新しい盤を生成
         let newBoard = models.Board.clone(state.board);
 
@@ -15,7 +15,7 @@ export default {
             let tokenCount = newBoard.objects.filter(obj => obj.type === 'sakura-token').length;
             let objectId = `sakuraToken-${tokenCount + 1}`;
 
-            let newToken = utils.createSakuraToken(objectId, p.region, 'p1');
+            let newToken = utils.createSakuraToken(objectId, p.region, p.side);
             newBoard.objects.push(newToken);
         });
 

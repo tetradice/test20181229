@@ -116,9 +116,9 @@ $(function(){
                 appActions.setPlayerName({side: params.side, name: playerName});
 
                 // 最初の名前決定時に、桜花結晶を作る
-                appActions.addSakuraToken({region: 'aura', number: 3});
-                appActions.addSakuraToken({region: 'life', number: 10});
-                appActions.addSakuraToken({region: 'distance', number: 10});
+                appActions.addSakuraToken({side: params.side, region: 'aura', number: 3});
+                appActions.addSakuraToken({side: params.side, region: 'life', number: 10});
+                appActions.addSakuraToken({side: null, region: 'distance', number: 10});
 
                 messageModal(`<p>ゲームを始める準備ができたら、まずは「メガミ選択」ボタンをクリックしてください。</p>`);
             });

@@ -92,11 +92,11 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         , cardCountDisplay?: boolean
     }[] = [
             // 対戦相手
-              { region: 'used',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 10,   top: 180,  width: 450, height: 160 }
-            , { region: 'hidden-used', side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 480,  top: 180,  width: 170, height: 160, cardCountDisplay: true }
-            , { region: 'library',     side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 670,  top: 180,  width: 160, height: 160, cardCountDisplay: true }
-            , { region: 'hand',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 10,   top: 10, width: 640, height: 160 }
-            , { region: 'special',     side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 850,  top: 10, width: 330, height: 160 }
+              { region: 'used',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 750,   top: 180,  width: 450, height: 160 }
+            , { region: 'hidden-used', side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 560,  top: 180,  width: 170, height: 160, cardCountDisplay: true }
+            , { region: 'library',     side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 380,  top: 180,  width: 160, height: 160, cardCountDisplay: true }
+            , { region: 'hand',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 560,   top: 10, width: 640, height: 160 }
+            , { region: 'special',     side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 10,  top: 10, width: 330, height: 160 }
 
             // 自分
             , { region: 'used',        side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10,   top: 410,  width: 450, height: 160 }
@@ -117,9 +117,9 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
       , tokenWidth: number
       , height: number
   }[] = [
-            { region: 'aura',     side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 850,   top: 180,  width: 350, tokenWidth: 280, height: 30 }
-          , { region: 'life',     side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 850,   top: 220,  width: 350, tokenWidth: 280, height: 30 }
-          , { region: 'flair',    side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 850,   top: 260,  width: 350, tokenWidth: 280, height: 30 }
+            { region: 'aura',     side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10,   top: 180,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'life',     side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10,   top: 220,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'flair',    side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10,   top: 260,  width: 350, tokenWidth: 280, height: 30 }
 
           , { region: 'distance', side: null, title: "間合",   layoutType: 'horizontal', left: 10,    top: 360,  width: 350, tokenWidth: 280, height: 30 }
           , { region: 'dust',     side: null, title: "ダスト", layoutType: 'horizontal', left: 380,   top: 360,  width: 350, tokenWidth: 280, height: 30 }
@@ -179,7 +179,8 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         <div style={{ position: 'relative', zIndex: 100 }}>
             {objectNodes}
             {frameNodes}
-            <components.Vigor left={680} top={610} />
+            <components.Vigor side={opponentSide} left={390} top={40} />
+            <components.Vigor side={selfSide} left={680} top={610} />
             <components.ControlPanel />
         </div>
     );
