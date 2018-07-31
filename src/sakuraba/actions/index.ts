@@ -3,7 +3,7 @@ import cardActions from './card';
 import boardActions from './board';
 import sakuraTokenActions from './sakuraToken';
 import miscActions from './misc';
-import { WiredActions } from '@tetradice/hyperapp-types';
+import { WiredActions } from 'hyperapp-types';
 
 let actionsTemp = Object.assign(logActions, cardActions, boardActions, sakuraTokenActions);
 let actionsTemp2 = Object.assign(actionsTemp, miscActions);
