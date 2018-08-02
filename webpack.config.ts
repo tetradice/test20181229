@@ -1,13 +1,22 @@
-var path = require('path');
-const { TsConfigPathsPlugin } = require('awesome-typescript-loader');
+import * as webpack from 'webpack'
+// var nodeExternals = require('webpack-node-externals');
+import { TsConfigPathsPlugin } from 'awesome-typescript-loader';
 
-module.exports = {
+const config: webpack.Configuration = {
   mode: 'development',
 
   // メインとなるJavaScriptファイル（エントリーポイント）
   entry: {
-    "main": "./src/main.ts"
+    "main": "./src/main.ts",
+    // "server": "./server.ts"
   },
+  // // エンジン
+  // target: 'node',
+  // node: {
+  //   // dirnameを正常に取得できるようにするための指定
+  //   __dirname: false
+  // },
+
   // ファイルの出力設定
   output: {
     //  出力ファイルのディレクトリ名
@@ -50,5 +59,10 @@ module.exports = {
     plugins: [
       new TsConfigPathsPlugin()
     ]
-  }
+  },
+
+  // from https://saku.io/build-for-node-runtime-using-webpack/
+  // externals: [nodeExternals()]
 };
+
+export = config;
