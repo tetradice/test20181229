@@ -36886,10 +36886,10 @@ function createInitialState() {
             playerNames: { p1: null, p2: null },
             megamis: { p1: null, p2: null },
             vigors: { p1: 0, p2: 0 },
-            witherFlags: { p1: false, p2: false },
-            actionLog: [],
-            chatLog: []
+            witherFlags: { p1: false, p2: false }
         },
+        actionLog: [],
+        messageLog: [],
         zoom: 1,
         draggingFromCard: null,
         draggingHoverCardRegion: null,

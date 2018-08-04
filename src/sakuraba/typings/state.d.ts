@@ -12,6 +12,9 @@ export interface State {
     boardId?: string;
     side?: PlayerSide;
 
+    actionLog: LogRecord[];
+    messageLog: LogRecord[];
+
     draggingFromCard: Card;
     draggingHoverCardRegion: CardRegion;
 
@@ -31,8 +34,6 @@ export interface Board {
     /** 萎縮 */
     witherFlags: {p1: boolean, p2: boolean};
 
-    actionLog: LogRecord[];
-    chatLog: LogRecord[];
 }
 
 /**
