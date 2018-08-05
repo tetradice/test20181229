@@ -213,6 +213,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
     return (
         <div id="CONTROL-PANEL">
+<div class="ui icon basic buttons">
+  <button class="ui button"><i class="undo alternate icon"></i></button>
+  <button class="ui button"><i class="redo alternate icon"></i></button>
+</div>
             <button class="ui basic button" onclick={reset}>★ボードリセット</button><br />
 
             <button class={`ui basic button`} onclick={megamiSelect}>メガミ選択</button>

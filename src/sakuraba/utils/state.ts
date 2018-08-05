@@ -9,6 +9,9 @@ export function createInitialState(): state.State{
             , vigors: {p1: 0, p2: 0}
             , witherFlags: {p1: false, p2: false}
           }
+        , boardHistoryPast: []
+        , boardHistoryFuture: []
+
         , actionLog: []
         , messageLog: []
         , zoom: 1

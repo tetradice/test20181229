@@ -7,6 +7,9 @@ export interface State {
     stateDataVersion: number;
 
     board: Board;
+    boardHistoryPast: Board[];
+    boardHistoryFuture: Board[];
+
     zoom: number;
     socket?: SocketIOClient.Socket;
     boardId?: string;

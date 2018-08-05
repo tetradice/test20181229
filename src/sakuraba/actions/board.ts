@@ -15,6 +15,31 @@ export default {
         return {board: utils.createInitialState().board};
     },
 
+    /** ボードの状態をUndo用に記憶 */
+    memorizeBoard: () => (state: state.State) => {
+        return {boardHistoryPast: state.boardHistoryPast.concat([state.board])};
+    },
+
+    /** Undo */
+    UndoBoard: () => (state: state.State) => {
+        let newPast = state.boardHistoryPast.concat(); // clone array
+        let newFuture = state.boardHistoryFuture.concat(); // clone array
+
+        let newBoard = newPast.pop();
+        newFuture.push(newBoard);
+        return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard};
+    },
+
+    /** Redo */
+    RedoBoard: () => (state: state.State) => {
+        let newPast = state.boardHistoryPast.concat(); // clone array
+        let newFuture = state.boardHistoryFuture.concat(); // clone array
+
+        let newBoard = newFuture.pop();
+        newPast.push(newBoard);
+        return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard};
+    },
+
     /** 指定したサイドのプレイヤー名を設定する */
     setPlayerName: (p: {side: PlayerSide, name: string}) => (state: state.State) => {
         let newBoard = _.merge({}, state.board);
