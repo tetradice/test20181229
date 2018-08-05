@@ -5,6 +5,7 @@ import * as utils from "../utils";
 import { Card } from "./Card";
 import * as css from "./ControlPanel.css"
 import { withLogger } from "@hyperapp/logger"
+import { DeckBuildCard } from ".";
 
 /** コントロールパネル */
 export const ControlPanel = () => (state: state.State, actions: ActionsType) => {
@@ -129,24 +130,24 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     return {selectedCardIds: newSelectedCardIds};
                 },
             };
-            let view = (state: typeof initialState, actions: typeof actDefinitions) => {
-                if(!state.shown) return null;
+            let view = (deckBuildState: typeof initialState, actions: typeof actDefinitions) => {
+                if(!deckBuildState.shown) return null;
 
                 let cardElements: JSX.Element[] = [];
                 cardIds.forEach((cardIdsInRow, r) => {
                     cardIdsInRow.forEach((cardId, c) => {
-                        let card = utils.createCard(`deck-${cardId}`, cardId, null);
+                        let card = utils.createCard(`deck-${cardId}`, cardId, null, state.side);
                         card.opened = true;
                         let top = 4 + r * (160 + 8);
                         let left = 4 + c * (100 + 8);
-                        let selected = state.selectedCardIds.indexOf(cardId) >= 0;
+                        let selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
                         
-                        cardElements.push(<Card target={card} left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)}></Card>);
+                        cardElements.push(<DeckBuildCard target={card} left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={state.zoom}></DeckBuildCard>);
                     });
                 });
 
-                let normalCardCount = state.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'normal').length;
-                let specialCardCount = state.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'special').length;
+                let normalCardCount = deckBuildState.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'normal').length;
+                let specialCardCount = deckBuildState.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'special').length;
 
                 let normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
                 let normalCardCountStyles: Partial<CSSStyleDeclaration> = {color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold')};
@@ -171,7 +172,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                                 <div class={css.countCaption}>通常札: <span style={normalCardCountStyles}>{normalCardCount}</span>/7　　切札: <span style={specialCardCountStyles}>{specialCardCount}</span>/3</div>
                             </div>
                             <div class="actions">
-                                <div class={okButtonClass} onclick={() => {actions.hide(); resolve(state)}}>
+                                <div class={okButtonClass} onclick={() => {actions.hide(); resolve(deckBuildState)}}>
                                     決定 <i class="checkmark icon"></i>
                                 </div>
                                 <div class="ui black deny button" onclick={() => {actions.hide(); reject()}}>
@@ -213,10 +214,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
     return (
         <div id="CONTROL-PANEL">
-<div class="ui icon basic buttons">
-  <button class="ui button"><i class="undo alternate icon"></i></button>
-  <button class="ui button"><i class="redo alternate icon"></i></button>
-</div>
+            <div class="ui icon basic buttons">
+                <button class="ui button" onclick={() => actions.UndoBoard()}><i class="undo alternate icon"></i></button>
+                <button class="ui button" onclick={() => actions.RedoBoard()}><i class="redo alternate icon"></i></button>
+            </div>
             <button class="ui basic button" onclick={reset}>★ボードリセット</button><br />
 
             <button class={`ui basic button`} onclick={megamiSelect}>メガミ選択</button>

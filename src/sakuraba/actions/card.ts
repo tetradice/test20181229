@@ -48,7 +48,9 @@ export default {
         to: CardRegion;
         /** 移動枚数 */
         moveNumber?: number;
-    }) => (state: state.State) => {
+    }) => (state: state.State, actions: ActionsType) => {
+        actions.memorizeBoard();
+
         // 元の盤の状態をコピーして新しい盤を生成
         let newBoard = models.Board.clone(state.board);
 

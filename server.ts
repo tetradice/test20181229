@@ -18,7 +18,6 @@ const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'index.html');
 const MAIN_JS = path.join(__dirname, 'dist/main.js');
 const MAIN_JS_MAP = path.join(__dirname, 'dist/main.js.map');
-
 const browserSyncConfigurations = { "files": "dist/*.js" };
 const server = express()
   .use(connectBrowserSync(browserSync(browserSyncConfigurations)))

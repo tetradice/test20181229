@@ -25,8 +25,8 @@ export default {
         let newPast = state.boardHistoryPast.concat(); // clone array
         let newFuture = state.boardHistoryFuture.concat(); // clone array
 
+        newFuture.push(state.board);
         let newBoard = newPast.pop();
-        newFuture.push(newBoard);
         return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard};
     },
 
@@ -35,8 +35,8 @@ export default {
         let newPast = state.boardHistoryPast.concat(); // clone array
         let newFuture = state.boardHistoryFuture.concat(); // clone array
 
+        newPast.push(state.board);
         let newBoard = newFuture.pop();
-        newPast.push(newBoard);
         return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard};
     },
 

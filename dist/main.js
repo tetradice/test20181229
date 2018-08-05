@@ -35701,6 +35701,26 @@ exports.default = {
     resetBoard: function () {
         return { board: utils.createInitialState().board };
     },
+    /** ボードの状態をUndo用に記憶 */
+    memorizeBoard: function () { return function (state) {
+        return { boardHistoryPast: state.boardHistoryPast.concat([state.board]) };
+    }; },
+    /** Undo */
+    UndoBoard: function () { return function (state) {
+        var newPast = state.boardHistoryPast.concat(); // clone array
+        var newFuture = state.boardHistoryFuture.concat(); // clone array
+        newFuture.push(state.board);
+        var newBoard = newPast.pop();
+        return { boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard };
+    }; },
+    /** Redo */
+    RedoBoard: function () { return function (state) {
+        var newPast = state.boardHistoryPast.concat(); // clone array
+        var newFuture = state.boardHistoryFuture.concat(); // clone array
+        newPast.push(state.board);
+        var newBoard = newFuture.pop();
+        return { boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard };
+    }; },
     /** 指定したサイドのプレイヤー名を設定する */
     setPlayerName: function (p) { return function (state) {
         var newBoard = _.merge({}, state.board);
@@ -35783,7 +35803,8 @@ exports.default = {
     /**
      * カードを指定領域から別の領域に移動させる
      */
-    moveCard: function (p) { return function (state) {
+    moveCard: function (p) { return function (state, actions) {
+        actions.memorizeBoard();
         // 元の盤の状態をコピーして新しい盤を生成
         var newBoard = models.Board.clone(state.board);
         // カードを指定枚数移動 (省略時は0枚)
@@ -36069,41 +36090,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
 var sakuraba = __importStar(__webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts"));
-// 説明を取得する関数
-function getDescriptionHtml(cardId) {
-    var cardData = sakuraba.CARD_DATA[cardId];
-    var cardTitleHtml = "<ruby><rb>" + cardData.name + "</rb><rp>(</rp><rt>" + cardData.ruby + "</rt><rp>)</rp></ruby>";
-    var html = "<div class='ui header' style='margin-right: 2em;'>" + cardTitleHtml;
-    html += "</div><div class='ui content'>";
-    var typeCaptions = [];
-    if (cardData.types.indexOf('attack') >= 0)
-        typeCaptions.push("<span style='color: red; font-weight: bold;'>攻撃</span>");
-    if (cardData.types.indexOf('action') >= 0)
-        typeCaptions.push("<span style='color: blue; font-weight: bold;'>行動</span>");
-    if (cardData.types.indexOf('enhance') >= 0)
-        typeCaptions.push("<span style='color: green; font-weight: bold;'>付与</span>");
-    if (cardData.types.indexOf('reaction') >= 0)
-        typeCaptions.push("<span style='color: purple; font-weight: bold;'>対応</span>");
-    if (cardData.types.indexOf('fullpower') >= 0)
-        typeCaptions.push("<span style='color: #E0C000; font-weight: bold;'>全力</span>");
-    html += "" + typeCaptions.join('/');
-    if (cardData.range !== undefined) {
-        html += "<span style='margin-left: 1em;'>\u9069\u6B63\u8DDD\u96E2" + cardData.range + "</span>";
-    }
-    html += "<br>";
-    if (cardData.baseType === 'special') {
-        html += "<div class='ui top right attached label'>\u6D88\u8CBB: " + cardData.cost + "</div>";
-    }
-    if (cardData.types.indexOf('enhance') >= 0) {
-        html += "\u7D0D: " + cardData.capacity + "<br>";
-    }
-    if (cardData.damage !== undefined) {
-        html += cardData.damage + "<br>";
-    }
-    html += "" + cardData.text.replace('\n', '<br>');
-    html += "</div>";
-    return html;
-}
 exports.Card = function (p) { return function (state, actions) {
     var styles = {
         left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * state.zoom + "px",
@@ -36121,8 +36107,6 @@ exports.Card = function (p) { return function (state, actions) {
     }
     if (p.target.rotated)
         className += " rotated";
-    if (p.selected)
-        className += " selected";
     if (p.target.side === utils.flipSide(state.side))
         className += " opponent-side";
     if (state.draggingFromCard && p.target.id === state.draggingFromCard.id)
@@ -36158,7 +36142,7 @@ exports.Card = function (p) { return function (state, actions) {
         }
     };
     var draggable = p.target.region !== 'library' || p.target.indexOfRegion === (state.board.objects.filter(function (o) { return o.type === 'card' && o.region === p.target.region; }).length - 1);
-    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: draggable, "data-object-id": p.target.id, "data-region": p.target.region, onclick: p.onclick, ondblclick: ondblclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
+    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: draggable, "data-object-id": p.target.id, "data-region": p.target.region, ondblclick: ondblclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
 }; };
 
 
@@ -36299,9 +36283,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var sakuraba = __importStar(__webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts"));
 var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
-var Card_1 = __webpack_require__(/*! ./Card */ "./src/sakuraba/components/Card.tsx");
 var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/components/ControlPanel.css"));
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
+var _1 = __webpack_require__(/*! . */ "./src/sakuraba/components/index.ts");
 /** コントロールパネル */
 exports.ControlPanel = function () { return function (state, actions) {
     var reset = function () {
@@ -36411,22 +36395,22 @@ exports.ControlPanel = function () { return function (state, actions) {
                     return { selectedCardIds: newSelectedCardIds };
                 }; },
             };
-            var view = function (state, actions) {
-                if (!state.shown)
+            var view = function (deckBuildState, actions) {
+                if (!deckBuildState.shown)
                     return null;
                 var cardElements = [];
                 cardIds.forEach(function (cardIdsInRow, r) {
                     cardIdsInRow.forEach(function (cardId, c) {
-                        var card = utils.createCard("deck-" + cardId, cardId, null);
+                        var card = utils.createCard("deck-" + cardId, cardId, null, state.side);
                         card.opened = true;
                         var top = 4 + r * (160 + 8);
                         var left = 4 + c * (100 + 8);
-                        var selected = state.selectedCardIds.indexOf(cardId) >= 0;
-                        cardElements.push(hyperapp_1.h(Card_1.Card, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); } }));
+                        var selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
+                        cardElements.push(hyperapp_1.h(_1.DeckBuildCard, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); }, zoom: state.zoom }));
                     });
                 });
-                var normalCardCount = state.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'normal'; }).length;
-                var specialCardCount = state.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'special'; }).length;
+                var normalCardCount = deckBuildState.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'normal'; }).length;
+                var specialCardCount = deckBuildState.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'special'; }).length;
                 var normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
                 var normalCardCountStyles = { color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold') };
                 var specialColor = (specialCardCount > 3 ? 'red' : (specialCardCount < 3 ? 'blue' : 'black'));
@@ -36448,7 +36432,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                                 hyperapp_1.h("span", { style: specialCardCountStyles }, specialCardCount),
                                 "/3")),
                         hyperapp_1.h("div", { class: "actions" },
-                            hyperapp_1.h("div", { class: okButtonClass, onclick: function () { actions.hide(); resolve(state); } },
+                            hyperapp_1.h("div", { class: okButtonClass, onclick: function () { actions.hide(); resolve(deckBuildState); } },
                                 "\u6C7A\u5B9A ",
                                 hyperapp_1.h("i", { class: "checkmark icon" })),
                             hyperapp_1.h("div", { class: "ui black deny button", onclick: function () { actions.hide(); reject(); } }, "\u30AD\u30E3\u30F3\u30BB\u30EB")))));
@@ -36476,6 +36460,11 @@ exports.ControlPanel = function () { return function (state, actions) {
     var board = state.board;
     var deckBuilded = utils.getCards(state, 'library').length >= 1;
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
+        hyperapp_1.h("div", { class: "ui icon basic buttons" },
+            hyperapp_1.h("button", { class: "ui button", onclick: function () { return actions.UndoBoard(); } },
+                hyperapp_1.h("i", { class: "undo alternate icon" })),
+            hyperapp_1.h("button", { class: "ui button", onclick: function () { return actions.RedoBoard(); } },
+                hyperapp_1.h("i", { class: "redo alternate icon" }))),
         hyperapp_1.h("button", { class: "ui basic button", onclick: reset }, "\u2605\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8"),
         hyperapp_1.h("br", null),
         hyperapp_1.h("button", { class: "ui basic button", onclick: megamiSelect }, "\u30E1\u30AC\u30DF\u9078\u629E"),
@@ -36507,6 +36496,55 @@ exports.ControlPanel = function () { return function (state, actions) {
                 hyperapp_1.h("div", { class: "item", "data-value": "110" }, "110%"),
                 hyperapp_1.h("div", { class: "item", "data-value": "120" }, "120%")))));
 }; };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/components/DeckBuildCard.tsx":
+/*!***************************************************!*\
+  !*** ./src/sakuraba/components/DeckBuildCard.tsx ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
+var sakuraba = __importStar(__webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts"));
+exports.DeckBuildCard = function (p) {
+    var styles = {
+        left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * p.zoom + "px",
+        top: (p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) * p.zoom + "px",
+        width: 100 * p.zoom + "px",
+        height: 140 * p.zoom + "px"
+    };
+    var cardData = sakuraba.CARD_DATA[p.target.cardId];
+    var className = "fbs-card open-normal clickable";
+    if (p.selected)
+        className += " selected";
+    var setPopup = function (element) {
+        // SemanticUI ポップアップ初期化
+        $(element).popup({
+            delay: { show: 500, hide: 0 },
+        });
+    };
+    var oncreate = function (element) {
+        setPopup(element);
+    };
+    var onupdate = function (element) {
+        setPopup(element);
+    };
+    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, "data-object-id": p.target.id, "data-region": p.target.region, onclick: p.onclick, ondblclick: ondblclick, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
+};
 
 
 /***/ }),
@@ -36687,6 +36725,7 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(/*! ./Card */ "./src/sakuraba/components/Card.tsx"));
+__export(__webpack_require__(/*! ./DeckBuildCard */ "./src/sakuraba/components/DeckBuildCard.tsx"));
 __export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/components/SakuraToken.tsx"));
 __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/components/Vigor.tsx"));
 __export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/components/ControlPanel.tsx"));
@@ -36832,7 +36871,15 @@ __export(__webpack_require__(/*! ./misc */ "./src/sakuraba/utils/misc.ts"));
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var sakuraba = __importStar(__webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts"));
 /** プレイヤーサイドを逆にする */
 function flipSide(side) {
     if (side === 'p1')
@@ -36842,6 +36889,42 @@ function flipSide(side) {
     return side;
 }
 exports.flipSide = flipSide;
+/** カードの説明用ポップアップHTMLを取得する */
+function getDescriptionHtml(cardId) {
+    var cardData = sakuraba.CARD_DATA[cardId];
+    var cardTitleHtml = "<ruby><rb>" + cardData.name + "</rb><rp>(</rp><rt>" + cardData.ruby + "</rt><rp>)</rp></ruby>";
+    var html = "<div class='ui header' style='margin-right: 2em;'>" + cardTitleHtml;
+    html += "</div><div class='ui content'>";
+    var typeCaptions = [];
+    if (cardData.types.indexOf('attack') >= 0)
+        typeCaptions.push("<span style='color: red; font-weight: bold;'>攻撃</span>");
+    if (cardData.types.indexOf('action') >= 0)
+        typeCaptions.push("<span style='color: blue; font-weight: bold;'>行動</span>");
+    if (cardData.types.indexOf('enhance') >= 0)
+        typeCaptions.push("<span style='color: green; font-weight: bold;'>付与</span>");
+    if (cardData.types.indexOf('reaction') >= 0)
+        typeCaptions.push("<span style='color: purple; font-weight: bold;'>対応</span>");
+    if (cardData.types.indexOf('fullpower') >= 0)
+        typeCaptions.push("<span style='color: #E0C000; font-weight: bold;'>全力</span>");
+    html += "" + typeCaptions.join('/');
+    if (cardData.range !== undefined) {
+        html += "<span style='margin-left: 1em;'>\u9069\u6B63\u8DDD\u96E2" + cardData.range + "</span>";
+    }
+    html += "<br>";
+    if (cardData.baseType === 'special') {
+        html += "<div class='ui top right attached label'>\u6D88\u8CBB: " + cardData.cost + "</div>";
+    }
+    if (cardData.types.indexOf('enhance') >= 0) {
+        html += "\u7D0D: " + cardData.capacity + "<br>";
+    }
+    if (cardData.damage !== undefined) {
+        html += cardData.damage + "<br>";
+    }
+    html += "" + cardData.text.replace('\n', '<br>');
+    html += "</div>";
+    return html;
+}
+exports.getDescriptionHtml = getDescriptionHtml;
 
 
 /***/ }),
@@ -36888,6 +36971,8 @@ function createInitialState() {
             vigors: { p1: 0, p2: 0 },
             witherFlags: { p1: false, p2: false }
         },
+        boardHistoryPast: [],
+        boardHistoryFuture: [],
         actionLog: [],
         messageLog: [],
         zoom: 1,
