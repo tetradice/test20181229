@@ -1,4 +1,5 @@
 import { Megami } from "../../sakuraba";
+import { ClientSocket } from "../socket";
 
 export as namespace state
 
@@ -11,7 +12,7 @@ export interface State {
     boardHistoryFuture: Board[];
 
     zoom: number;
-    socket?: SocketIOClient.Socket;
+    socket?: ClientSocket;
     boardId?: string;
     side?: PlayerSide;
 

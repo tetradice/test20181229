@@ -12,10 +12,14 @@ export const Vigor = (p: {side: PlayerSide, left: number, top: number}) => (stat
         , height: `${100 * state.zoom}px`
     };
     let vigor = state.board.vigors[p.side];
+    if(vigor === null) return null; // 集中力の値がnullなら何も表示しない
+
+
     let className = "fbs-vigor-card";
     if(vigor === 0) className += " rotated";
     if(vigor === 2) className += " reverse-rotated";
     if(p.side === utils.flipSide(state.side)) className += " opponent-side"; 
+
 
     return <div class={className} style={styles}>
         <div class={"vigor0" + (vigor !== 0 ? " clickable" : "")} onclick={() => actions.setVigor({value: 0, side: p.side})}></div>

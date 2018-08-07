@@ -57,7 +57,9 @@ export default {
     },
 
     /** 指定したサイドのメガミを設定する */
-    setMegamis: (p: {side: PlayerSide, megami1: Megami, megami2: Megami}) => (state: state.State) => {
+    setMegamis: (p: {side: PlayerSide, megami1: Megami, megami2: Megami}) => (state: state.State, actions: ActionsType) => {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+
         let newBoard = _.merge({}, state.board);
         newBoard.megamis[p.side] = [p.megami1, p.megami2];
         
@@ -96,7 +98,13 @@ export default {
 
 
     /** デッキのカードを設定する */
-    setDeckCards: (p: {cardIds: string[]}) => (state: state.State, actions: typeof cardActions) => {
+    setDeckCards: (p: {cardIds: string[]}) => (state: state.State, actions: ActionsType) => {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+
+        // 自分の側のカードをすべて削除
+        actions.clearDeckCards();
+
+        // 選択されたカードを追加
         p.cardIds.forEach((id) => {
             const data = CARD_DATA[id];
             if(data.baseType === 'normal'){
@@ -106,6 +114,14 @@ export default {
                 actions.addCard({region: 'special', cardId: id});
             }           
         });
+    },
+
+    clearDeckCards: () => (state: state.State, actions: ActionsType) => {
+        let board = models.Board.clone(state.board);
+        _.remove(board.objects, o => (o.type === 'card' && o.side === state.side));
+        board.updateRegionInfo();
+
+        return {board: board};
     },
 
     /** ボードの状態を取得 */

@@ -6,13 +6,17 @@ import { Card } from "./Card";
 import * as css from "./ControlPanel.css"
 import { withLogger } from "@hyperapp/logger"
 import { DeckBuildCard } from ".";
+import * as models from "../models";
 
 /** コントロールパネル */
 export const ControlPanel = () => (state: state.State, actions: ActionsType) => {
     let reset = () => {
         console.log('clicked');
         actions.resetBoard();
-        if(state.socket) state.socket.emit('reset_board', {boardId: state.boardId});
+        // サーバーに送信
+        if(state.socket){
+            state.socket.emit('updateBoard', {boardId: state.boardId, side: state.side, board: actions.getState().board});
+        }
     }
 
     /** ポップアップ初期化 */
@@ -72,9 +76,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             
             // 選択したメガミを設定
             let megamis = [$('#MEGAMI1-SELECTION').val() as sakuraba.Megami, $('#MEGAMI2-SELECTION').val() as sakuraba.Megami];
+
             actions.setMegamis({side: state.side, megami1: megamis[0], megami2: megamis[1]});
             if(state.socket){
-                state.socket.emit('megami_select', {boardId: state.boardId, side: state.side, megamis: megamis});
+                state.socket.emit('updateBoard', {boardId: state.boardId, side: state.side, board: actions.getState().board});
             }
 
             return undefined;
@@ -86,11 +91,11 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     }
 
     /** デッキ構築処理 */
+    let boardModel = new models.Board(state.board);
     let deckBuild = () => {
-        let cards = utils.getCards(state, 'library');
         let initialState = {
             shown: true,
-            selectedCardIds: cards.filter(c => c.cardId).map(c => c.cardId),
+            selectedCardIds: boardModel.getSideCards(state.side).filter(c => c.cardId).map(c => c.cardId),
         };
 
         // モーダル表示処理
@@ -190,27 +195,29 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         promise.then((finalState: typeof initialState) => {
             // 確定した場合、デッキを保存し、桜花結晶を追加
             actions.setDeckCards({cardIds: finalState.selectedCardIds});
-            let newState: state.State = actions.getState();
 
             // サーバーに送信
-            state.socket.emit('deck_build', {boardId: newState.boardId, side: newState.side, addObjects: newState.board.objects});
+            if(state.socket){
+                state.socket.emit('updateBoard', {boardId: state.boardId, side: state.side, board: actions.getState().board});
+            }
         }).catch((reason) => {
             
         });
     }
 
-    let handSet = () => {
+    let duelStart = () => {
         utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', () => {
             actions.moveCard({from: 'library', fromSide: state.side, to: 'hand', toSide: state.side, moveNumber: 3});
 
-            // socket.ioでイベント送信
-            let newState: state.State = (actions.getState() as any);
-            state.socket.emit('board_object_set', {boardId: state.boardId, side: state.side, objects: newState.board.objects});
+            // サーバーに送信
+            if(state.socket){
+                state.socket.emit('updateBoard', {boardId: state.boardId, side: state.side, board: actions.getState().board});
+            }
         });
     };
 
     let board = state.board;
-    let deckBuilded = utils.getCards(state, 'library').length >= 1;
+    let deckBuilded = boardModel.getSideCards(state.side).length >= 1;
 
     return (
         <div id="CONTROL-PANEL">
@@ -222,17 +229,17 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
             <button class={`ui basic button`} onclick={megamiSelect}>メガミ選択</button>
             <button class={`ui basic button ${state.board.megamis[state.side] !== null ? '' : 'disabled'}`} onclick={deckBuild}>デッキ構築</button>
-            <button class={`ui basic button ${deckBuilded ? '' : 'disabled'}`} onclick={handSet}>最初の手札を引く</button>
+            <button class={`ui basic button ${deckBuilded ? '' : 'disabled'}`} onclick={duelStart}>決闘開始</button>
 
             <table class="ui definition table" style={{ width: '25em' }}>
                 <tbody>
                     <tr>
                         <td class="collapsing">プレイヤー1</td>
-                        <td>{board.playerNames.p1} {(board.megamis.p1 !== null ? `(選択メガミ: ${sakuraba.MEGAMI_DATA[board.megamis.p1[0]].name}、${sakuraba.MEGAMI_DATA[board.megamis.p1[1]].name})` : '')}</td>
+                        <td>{board.playerNames.p1} {(board.megamis.p1 !== null ? `(${sakuraba.MEGAMI_DATA[board.megamis.p1[0]].name}、${sakuraba.MEGAMI_DATA[board.megamis.p1[1]].name})` : '')}</td>
                     </tr>
                     <tr>
                         <td>プレイヤー2</td>
-                        <td>{board.playerNames.p2}</td>
+                        <td>{board.playerNames.p2} {(board.megamis.p2 !== null ? `(${sakuraba.MEGAMI_DATA[board.megamis.p2[0]].name}、${sakuraba.MEGAMI_DATA[board.megamis.p2[1]].name})` : '')}</td>
                     </tr>
                     <tr>
                         <td>観戦者</td>

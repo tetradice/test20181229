@@ -35,6 +35,11 @@ export class Board implements state.Board {
         return this.objects.find(v => v.type === 'card' && v.id === objectId) as state.Card;
     }
 
+    /** 指定したサイドのカードを一括取得 */
+    getSideCards(side: PlayerSide): state.Card[] {
+        return this.objects.filter(v => v.type === 'card' && v.side === side) as state.Card[];
+    }
+
     /** 指定した領域にあるカードを一括取得 */
     getRegionCards(side: PlayerSide, region: CardRegion): state.Card[] {
         return this.objects.filter(v => v.type === 'card' && v.side === side && v.region === region) as state.Card[];

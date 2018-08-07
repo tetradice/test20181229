@@ -6,7 +6,7 @@ export function createInitialState(): state.State{
               objects: []
             , playerNames: {p1: null, p2: null}
             , megamis: {p1: null, p2: null}
-            , vigors: {p1: 0, p2: 0}
+            , vigors: {p1: null, p2: null}
             , witherFlags: {p1: false, p2: false}
           }
         , boardHistoryPast: []
@@ -22,18 +22,6 @@ export function createInitialState(): state.State{
         , draggingHoverSakuraTokenRegion: null
     }
     return st;
-}
-
-/** 指定した条件を満たすカード一覧を取得 */
-export function getCards(state: state.State, region?: CardRegion): state.Card[]{
-  let ret: state.Card[] = [];
-  state.board.objects.forEach(obj => {
-    if(obj.type === 'card' && (region === undefined || obj.region === region)){
-      ret.push(obj);
-    }
-  });
-
-  return ret;
 }
 
 /** カード1枚を作成 */

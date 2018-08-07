@@ -35505,6 +35505,7 @@ var actions_1 = __webpack_require__(/*! ./sakuraba/actions */ "./src/sakuraba/ac
 var utils = __importStar(__webpack_require__(/*! ./sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var view_1 = __webpack_require__(/*! ./sakuraba/view */ "./src/sakuraba/view.tsx");
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
+var socket_1 = __webpack_require__(/*! ./sakuraba/socket */ "./src/sakuraba/socket.ts");
 function messageModal(desc) {
     $('#MESSAGE-MODAL .description').html(desc);
     $('#MESSAGE-MODAL')
@@ -35524,8 +35525,9 @@ function userInputModal(desc, decideCallback) {
         .modal('show');
 }
 $(function () {
-    // socket.ioに接続
-    var socket = io();
+    // socket.ioに接続し、ラッパーを作成
+    var ioSocket = io();
+    var socket = new socket_1.ClientSocket(ioSocket);
     // 初期ステートを生成
     var st = utils.createInitialState();
     st.socket = socket;
@@ -35597,14 +35599,12 @@ $(function () {
         }
     });
     // ボード情報をリクエスト
-    console.log('request_first_board_to_server');
-    socket.emit('request_first_board_to_server', { boardId: params.boardId, side: params.side });
-    //socket.emit('send_board_to_server', {boardId: params.boardId, side: params.side, board: board});
+    socket.emit('requestFirstBoard', { boardId: params.boardId });
     // ボード情報を受信した場合、メイン処理をスタート
-    socket.on('send_first_board_to_client', function (receivingBoardData) {
-        appActions.setBoard(receivingBoardData);
+    socket.on('onFirstBoardReceived', function (p) {
+        appActions.setBoard(p.board);
         // まだ名前が決定していなければ、名前の決定処理
-        if (receivingBoardData.playerNames[params.side] === null) {
+        if (p.board.playerNames[params.side] === null) {
             var playerCommonName_1 = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
             var opponentPlayerCommonName = (params.side === 'p1' ? 'プレイヤー2' : 'プレイヤー1');
             userInputModal("<p>\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u3078\u3088\u3046\u3053\u305D\u3002<br>\u3042\u306A\u305F\u306F" + playerCommonName_1 + "\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3059\u3002</p><p>\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\uFF1A</p>", function ($elem) {
@@ -35612,15 +35612,19 @@ $(function () {
                 if (playerName === '') {
                     playerName = playerCommonName_1;
                 }
-                socket.emit('player_name_input', { boardId: params.boardId, side: params.side, name: playerName });
                 appActions.setPlayerName({ side: params.side, name: playerName });
-                // 最初の名前決定時に、桜花結晶を作る
+                // 最初の名前決定時に、桜花結晶を作り、同時に集中力をセット
                 appActions.addSakuraToken({ side: params.side, region: 'aura', number: 3 });
                 appActions.addSakuraToken({ side: params.side, region: 'life', number: 10 });
-                appActions.addSakuraToken({ side: null, region: 'distance', number: 10 });
+                appActions.setVigor({ side: params.side, value: 0 });
+                socket.emit('updateBoard', { boardId: params.boardId, side: params.side, board: appActions.getState().board });
                 messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u308B\u6E96\u5099\u304C\u3067\u304D\u305F\u3089\u3001\u307E\u305A\u306F\u300C\u30E1\u30AC\u30DF\u9078\u629E\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
             });
         }
+    });
+    // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
+    socket.on('onBoardReceived', function (p) {
+        appActions.setBoard(p.board);
     });
 });
 
@@ -35754,7 +35758,8 @@ exports.default = {
         return { board: newBoard };
     }; },
     /** 指定したサイドのメガミを設定する */
-    setMegamis: function (p) { return function (state) {
+    setMegamis: function (p) { return function (state, actions) {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
         var newBoard = _.merge({}, state.board);
         newBoard.megamis[p.side] = [p.megami1, p.megami2];
         return { board: newBoard };
@@ -35775,6 +35780,10 @@ exports.default = {
     }; },
     /** デッキのカードを設定する */
     setDeckCards: function (p) { return function (state, actions) {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+        // 自分の側のカードをすべて削除
+        actions.clearDeckCards();
+        // 選択されたカードを追加
         p.cardIds.forEach(function (id) {
             var data = sakuraba_1.CARD_DATA[id];
             if (data.baseType === 'normal') {
@@ -35784,6 +35793,12 @@ exports.default = {
                 actions.addCard({ region: 'special', cardId: id });
             }
         });
+    }; },
+    clearDeckCards: function () { return function (state, actions) {
+        var board = models.Board.clone(state.board);
+        _.remove(board.objects, function (o) { return (o.type === 'card' && o.side === state.side); });
+        board.updateRegionInfo();
+        return { board: board };
     }; },
     /** ボードの状態を取得 */
     getState: function () { return function (state) { return state; }; }
@@ -36331,13 +36346,16 @@ var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/uti
 var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/components/ControlPanel.css"));
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
 var _1 = __webpack_require__(/*! . */ "./src/sakuraba/components/index.ts");
+var models = __importStar(__webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts"));
 /** コントロールパネル */
 exports.ControlPanel = function () { return function (state, actions) {
     var reset = function () {
         console.log('clicked');
         actions.resetBoard();
-        if (state.socket)
-            state.socket.emit('reset_board', { boardId: state.boardId });
+        // サーバーに送信
+        if (state.socket) {
+            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: actions.getState().board });
+        }
     };
     /** ポップアップ初期化 */
     function setPopup() {
@@ -36391,7 +36409,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                 var megamis = [$('#MEGAMI1-SELECTION').val(), $('#MEGAMI2-SELECTION').val()];
                 actions.setMegamis({ side: state.side, megami1: megamis[0], megami2: megamis[1] });
                 if (state.socket) {
-                    state.socket.emit('megami_select', { boardId: state.boardId, side: state.side, megamis: megamis });
+                    state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: actions.getState().board });
                 }
                 return undefined;
             } }).modal('show');
@@ -36400,11 +36418,11 @@ exports.ControlPanel = function () { return function (state, actions) {
         });
     };
     /** デッキ構築処理 */
+    var boardModel = new models.Board(state.board);
     var deckBuild = function () {
-        var cards = utils.getCards(state, 'library');
         var initialState = {
             shown: true,
-            selectedCardIds: cards.filter(function (c) { return c.cardId; }).map(function (c) { return c.cardId; }),
+            selectedCardIds: boardModel.getSideCards(state.side).filter(function (c) { return c.cardId; }).map(function (c) { return c.cardId; }),
         };
         // モーダル表示処理
         var promise = new Promise(function (resolve, reject) {
@@ -36488,22 +36506,24 @@ exports.ControlPanel = function () { return function (state, actions) {
         promise.then(function (finalState) {
             // 確定した場合、デッキを保存し、桜花結晶を追加
             actions.setDeckCards({ cardIds: finalState.selectedCardIds });
-            var newState = actions.getState();
             // サーバーに送信
-            state.socket.emit('deck_build', { boardId: newState.boardId, side: newState.side, addObjects: newState.board.objects });
+            if (state.socket) {
+                state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: actions.getState().board });
+            }
         }).catch(function (reason) {
         });
     };
-    var handSet = function () {
+    var duelStart = function () {
         utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', function () {
             actions.moveCard({ from: 'library', fromSide: state.side, to: 'hand', toSide: state.side, moveNumber: 3 });
-            // socket.ioでイベント送信
-            var newState = actions.getState();
-            state.socket.emit('board_object_set', { boardId: state.boardId, side: state.side, objects: newState.board.objects });
+            // サーバーに送信
+            if (state.socket) {
+                state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: actions.getState().board });
+            }
         });
     };
     var board = state.board;
-    var deckBuilded = utils.getCards(state, 'library').length >= 1;
+    var deckBuilded = boardModel.getSideCards(state.side).length >= 1;
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
         hyperapp_1.h("div", { class: "ui icon basic buttons" },
             hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.UndoBoard(); } },
@@ -36514,7 +36534,7 @@ exports.ControlPanel = function () { return function (state, actions) {
         hyperapp_1.h("br", null),
         hyperapp_1.h("button", { class: "ui basic button", onclick: megamiSelect }, "\u30E1\u30AC\u30DF\u9078\u629E"),
         hyperapp_1.h("button", { class: "ui basic button " + (state.board.megamis[state.side] !== null ? '' : 'disabled'), onclick: deckBuild }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
-        hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? '' : 'disabled'), onclick: handSet }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F"),
+        hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? '' : 'disabled'), onclick: duelStart }, "\u6C7A\u95D8\u958B\u59CB"),
         hyperapp_1.h("table", { class: "ui definition table", style: { width: '25em' } },
             hyperapp_1.h("tbody", null,
                 hyperapp_1.h("tr", null,
@@ -36522,10 +36542,13 @@ exports.ControlPanel = function () { return function (state, actions) {
                     hyperapp_1.h("td", null,
                         board.playerNames.p1,
                         " ",
-                        (board.megamis.p1 !== null ? "(\u9078\u629E\u30E1\u30AC\u30DF: " + sakuraba.MEGAMI_DATA[board.megamis.p1[0]].name + "\u3001" + sakuraba.MEGAMI_DATA[board.megamis.p1[1]].name + ")" : ''))),
+                        (board.megamis.p1 !== null ? "(" + sakuraba.MEGAMI_DATA[board.megamis.p1[0]].name + "\u3001" + sakuraba.MEGAMI_DATA[board.megamis.p1[1]].name + ")" : ''))),
                 hyperapp_1.h("tr", null,
                     hyperapp_1.h("td", null, "\u30D7\u30EC\u30A4\u30E4\u30FC2"),
-                    hyperapp_1.h("td", null, board.playerNames.p2)),
+                    hyperapp_1.h("td", null,
+                        board.playerNames.p2,
+                        " ",
+                        (board.megamis.p2 !== null ? "(" + sakuraba.MEGAMI_DATA[board.megamis.p2[0]].name + "\u3001" + sakuraba.MEGAMI_DATA[board.megamis.p2[1]].name + ")" : ''))),
                 hyperapp_1.h("tr", null,
                     hyperapp_1.h("td", null, "\u89B3\u6226\u8005"),
                     hyperapp_1.h("td", null)))),
@@ -36740,6 +36763,8 @@ exports.Vigor = function (p) { return function (state, actions) {
         height: 100 * state.zoom + "px"
     };
     var vigor = state.board.vigors[p.side];
+    if (vigor === null)
+        return null; // 集中力の値がnullなら何も表示しない
     var className = "fbs-vigor-card";
     if (vigor === 0)
         className += " rotated";
@@ -36865,6 +36890,10 @@ var Board = /** @class */ (function () {
     Board.prototype.getCard = function (objectId) {
         return this.objects.find(function (v) { return v.type === 'card' && v.id === objectId; });
     };
+    /** 指定したサイドのカードを一括取得 */
+    Board.prototype.getSideCards = function (side) {
+        return this.objects.filter(function (v) { return v.type === 'card' && v.side === side; });
+    };
     /** 指定した領域にあるカードを一括取得 */
     Board.prototype.getRegionCards = function (side, region) {
         return this.objects.filter(function (v) { return v.type === 'card' && v.side === side && v.region === region; });
@@ -36926,6 +36955,56 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(/*! ./Board */ "./src/sakuraba/models/Board.ts"));
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/socket.ts":
+/*!********************************!*\
+  !*** ./src/sakuraba/socket.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var ServerSocket = /** @class */ (function () {
+    function ServerSocket(ioSocket) {
+        this.ioSocket = ioSocket;
+    }
+    ServerSocket.prototype.emit = function (event, props) {
+        this.ioSocket.emit(event, props);
+    };
+    ServerSocket.prototype.broadcastEmit = function (event, props) {
+        this.ioSocket.broadcast.emit(event, props);
+    };
+    ServerSocket.prototype.on = function (event, fn) {
+        this.ioSocket.on(event, function (props) {
+            console.log("[socket] on " + event + " server <- client", props);
+            fn(props);
+        });
+    };
+    return ServerSocket;
+}());
+exports.ServerSocket = ServerSocket;
+var ClientSocket = /** @class */ (function () {
+    function ClientSocket(ioSocket) {
+        this.ioSocket = ioSocket;
+    }
+    ClientSocket.prototype.emit = function (event, props) {
+        console.log("[socket] emit " + event + " client -> server", props);
+        this.ioSocket.emit(event, props);
+    };
+    ClientSocket.prototype.on = function (event, fn) {
+        this.ioSocket.on(event, function (props) {
+            console.log("[socket] on " + event + " client <- server", props);
+            fn(props);
+        });
+    };
+    return ClientSocket;
+}());
+exports.ClientSocket = ClientSocket;
 
 
 /***/ }),
@@ -37056,7 +37135,7 @@ function createInitialState() {
             objects: [],
             playerNames: { p1: null, p2: null },
             megamis: { p1: null, p2: null },
-            vigors: { p1: 0, p2: 0 },
+            vigors: { p1: null, p2: null },
             witherFlags: { p1: false, p2: false }
         },
         boardHistoryPast: [],
@@ -37073,17 +37152,6 @@ function createInitialState() {
     return st;
 }
 exports.createInitialState = createInitialState;
-/** 指定した条件を満たすカード一覧を取得 */
-function getCards(state, region) {
-    var ret = [];
-    state.board.objects.forEach(function (obj) {
-        if (obj.type === 'card' && (region === undefined || obj.region === region)) {
-            ret.push(obj);
-        }
-    });
-    return ret;
-}
-exports.getCards = getCards;
 /** カード1枚を作成 */
 function createCard(id, cardId, region, side) {
     return {

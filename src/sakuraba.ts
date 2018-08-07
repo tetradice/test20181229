@@ -7,7 +7,7 @@ export type CardArea = "library" | "hand" | "used" | "hidden-used" | "special";
 export type RegionName = SakuraTokenArea | CardArea | "vigor";
 export type CardType = "attack" | "reaction" | "action" | "fullpower" | "enhance";
 export type CardBaseType = 'normal' | 'special';
-export type Side = 'p1' | 'p2' | 'watch';
+// export type Side = 'p1' | 'p2' | 'watch';
 
 // メガミ情報
 interface MegamiDataItem {
