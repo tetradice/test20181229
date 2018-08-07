@@ -49,8 +49,6 @@ export default {
         /** 移動枚数 */
         moveNumber?: number;
     }) => (state: state.State, actions: ActionsType) => {
-        actions.memorizeBoard();
-
         // 元の盤の状態をコピーして新しい盤を生成
         let newBoard = models.Board.clone(state.board);
 
@@ -77,7 +75,9 @@ export default {
         return {board: newBoard};
     },
 
-    flipCard: (objectId: string) => (state: state.State) => {
+    flipCard: (objectId: string) => (state: state.State, actions: ActionsType) => {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+
         let ret: Partial<state.State> = {};
         let newBoard = models.Board.clone(state.board);
 
@@ -90,7 +90,9 @@ export default {
         return ret;
     },
 
-    shuffle: (p: {side: PlayerSide}) => (state: state.State) => {
+    shuffle: (p: {side: PlayerSide}) => (state: state.State, actions: ActionsType) => {
+        actions.forgetBoardHistory(); // Undo履歴をクリア
+
         let ret: Partial<state.State> = {};
 
         let newBoard = models.Board.clone(state.board);
@@ -108,6 +110,8 @@ export default {
 
     /** 再構成 */
     reshuffle: (p: {side: PlayerSide, lifeDecrease?: boolean}) => (state: state.State, actions: ActionsType) => {
+        actions.forgetBoardHistory(); // Undo履歴をクリア
+
         // 使用済、伏せ札をすべて山札へ移動
         let newBoard = models.Board.clone(state.board);
         let usedCards = newBoard.getRegionCards(p.side, 'used');
@@ -125,7 +129,7 @@ export default {
     cardDragStart: (card: state.Card) => (state: state.State) => {
         let ret: Partial<state.State> = {};
 
-        // ドラッグを開始したカードを設定
+        // ドラッグを開始したカードと、開始サイドを設定
         ret.draggingFromCard = card;
 
         return ret;
@@ -133,16 +137,17 @@ export default {
 
     
     /** ドラッグ中にカード領域の上に移動 */
-    cardDragEnter: (region: CardRegion) => (state: state.State) => {
+    cardDragEnter: (p: {side: PlayerSide, region: CardRegion}) => (state: state.State) => {
         let ret: Partial<state.State> = {};
 
         // 切札エリアからのドラッグや、切札エリアへのドラッグは禁止
-        if(state.draggingFromCard.region === 'special' || region === 'special'){
+        if(state.draggingFromCard.region === 'special' || p.region === 'special'){
             return null;
         }
 
-        // ドラッグを開始したカードを設定
-        ret.draggingHoverCardRegion = region;
+        // ドラッグを開始した領域を設定
+        ret.draggingHoverSide = p.side;
+        ret.draggingHoverCardRegion = p.region;
 
         return ret;
     },
@@ -152,6 +157,7 @@ export default {
         let ret: Partial<state.State> = {};
 
         // ドラッグ中領域の初期化
+        ret.draggingHoverSide = null;
         ret.draggingHoverCardRegion = null;
 
         return ret;
@@ -162,6 +168,7 @@ export default {
         let ret: Partial<state.State> = {};
 
         ret.draggingFromCard = null;
+        ret.draggingHoverSide = null;
         ret.draggingHoverCardRegion = null;
 
         return ret;

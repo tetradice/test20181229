@@ -35551,15 +35551,36 @@ $(function () {
             };
         }
     });
+    // 集中力右クリックメニュー
+    $.contextMenu({
+        selector: '#BOARD2 .fbs-vigor-card',
+        build: function ($elem, event) {
+            var st = appActions.getState();
+            var board = new models.Board(st.board);
+            var items = {};
+            items['wither'] = { name: (board.witherFlags[st.side] ? '萎縮を解除' : '萎縮') };
+            return {
+                callback: function (key) {
+                    if (key === 'wither') {
+                        appActions.setWitherFlag({ side: st.side, value: !board.witherFlags[st.side] });
+                    }
+                },
+                items: items,
+            };
+        }
+    });
     // 山札エリア右クリックメニュー
     $.contextMenu({
         selector: '#BOARD2 .area.background[data-region=library], #BOARD2 .fbs-card[data-region=library]',
         callback: function (key) {
             var state = appActions.getState();
             if (key === 'draw') {
+                // 1枚引く
+                appActions.memorizeBoardHistory(); // Undoのために履歴を記憶
                 appActions.moveCard({ from: 'library', fromSide: state.side, to: 'hand', toSide: state.side });
             }
             if (key === 'reshuffle') {
+                // 再構成
                 appActions.reshuffle({ side: state.side });
             }
             return;
@@ -35698,12 +35719,13 @@ exports.default = {
         return { board: newBoard };
     },
     /** ボード全体を初期化する */
-    resetBoard: function () {
+    resetBoard: function () { return function (state, actions) {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
         return { board: utils.createInitialState().board };
-    },
+    }; },
     /** ボードの状態をUndo用に記憶 */
-    memorizeBoard: function () { return function (state) {
-        return { boardHistoryPast: state.boardHistoryPast.concat([state.board]) };
+    memorizeBoardHistory: function () { return function (state) {
+        return { boardHistoryPast: state.boardHistoryPast.concat([state.board]), boardHistoryFuture: [] };
     }; },
     /** Undo */
     UndoBoard: function () { return function (state) {
@@ -35721,6 +35743,10 @@ exports.default = {
         var newBoard = newFuture.pop();
         return { boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard };
     }; },
+    /** ボード履歴を削除して、Undo/Redoを禁止する */
+    forgetBoardHistory: function () {
+        return { boardHistoryPast: [], boardHistoryFuture: [] };
+    },
     /** 指定したサイドのプレイヤー名を設定する */
     setPlayerName: function (p) { return function (state) {
         var newBoard = _.merge({}, state.board);
@@ -35734,9 +35760,17 @@ exports.default = {
         return { board: newBoard };
     }; },
     /** 集中力の値を変更 */
-    setVigor: function (p) { return function (state) {
+    setVigor: function (p) { return function (state, actions) {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
         var newBoard = models.Board.clone(state.board);
         newBoard.vigors[p.side] = p.value;
+        return { board: newBoard };
+    }; },
+    /** 萎縮フラグを変更 */
+    setWitherFlag: function (p) { return function (state, actions) {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+        var newBoard = models.Board.clone(state.board);
+        newBoard.witherFlags[p.side] = p.value;
         return { board: newBoard };
     }; },
     /** デッキのカードを設定する */
@@ -35804,7 +35838,6 @@ exports.default = {
      * カードを指定領域から別の領域に移動させる
      */
     moveCard: function (p) { return function (state, actions) {
-        actions.memorizeBoard();
         // 元の盤の状態をコピーして新しい盤を生成
         var newBoard = models.Board.clone(state.board);
         // カードを指定枚数移動 (省略時は0枚)
@@ -35826,7 +35859,8 @@ exports.default = {
         // 新しい盤を返す
         return { board: newBoard };
     }; },
-    flipCard: function (objectId) { return function (state) {
+    flipCard: function (objectId) { return function (state, actions) {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
         var ret = {};
         var newBoard = models.Board.clone(state.board);
         var card = newBoard.getCard(objectId);
@@ -35836,7 +35870,8 @@ exports.default = {
         ret.board = newBoard;
         return ret;
     }; },
-    shuffle: function (p) { return function (state) {
+    shuffle: function (p) { return function (state, actions) {
+        actions.forgetBoardHistory(); // Undo履歴をクリア
         var ret = {};
         var newBoard = models.Board.clone(state.board);
         // 山札のカードをすべて取得
@@ -35851,6 +35886,7 @@ exports.default = {
     }; },
     /** 再構成 */
     reshuffle: function (p) { return function (state, actions) {
+        actions.forgetBoardHistory(); // Undo履歴をクリア
         // 使用済、伏せ札をすべて山札へ移動
         var newBoard = models.Board.clone(state.board);
         var usedCards = newBoard.getRegionCards(p.side, 'used');
@@ -35864,25 +35900,27 @@ exports.default = {
     /** ドラッグ開始 */
     cardDragStart: function (card) { return function (state) {
         var ret = {};
-        // ドラッグを開始したカードを設定
+        // ドラッグを開始したカードと、開始サイドを設定
         ret.draggingFromCard = card;
         return ret;
     }; },
     /** ドラッグ中にカード領域の上に移動 */
-    cardDragEnter: function (region) { return function (state) {
+    cardDragEnter: function (p) { return function (state) {
         var ret = {};
         // 切札エリアからのドラッグや、切札エリアへのドラッグは禁止
-        if (state.draggingFromCard.region === 'special' || region === 'special') {
+        if (state.draggingFromCard.region === 'special' || p.region === 'special') {
             return null;
         }
-        // ドラッグを開始したカードを設定
-        ret.draggingHoverCardRegion = region;
+        // ドラッグを開始した領域を設定
+        ret.draggingHoverSide = p.side;
+        ret.draggingHoverCardRegion = p.region;
         return ret;
     }; },
     /** ドラッグ中にカード領域の上から離れた */
     cardDragLeave: function () { return function (state) {
         var ret = {};
         // ドラッグ中領域の初期化
+        ret.draggingHoverSide = null;
         ret.draggingHoverCardRegion = null;
         return ret;
     }; },
@@ -35890,6 +35928,7 @@ exports.default = {
     cardDragEnd: function () {
         var ret = {};
         ret.draggingFromCard = null;
+        ret.draggingHoverSide = null;
         ret.draggingHoverCardRegion = null;
         return ret;
     },
@@ -36140,6 +36179,11 @@ exports.Card = function (p) { return function (state, actions) {
         if (data.baseType === 'special') {
             actions.flipCard(p.target.id);
         }
+        // 山札なら1枚引く
+        if (data.baseType === 'normal' && p.target.region === 'library') {
+            actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+            actions.moveCard({ from: 'library', fromSide: state.side, to: 'hand', toSide: state.side });
+        }
     };
     var draggable = p.target.region !== 'library' || p.target.indexOfRegion === (state.board.objects.filter(function (o) { return o.type === 'card' && o.region === p.target.region; }).length - 1);
     return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: draggable, "data-object-id": p.target.id, "data-region": p.target.region, ondblclick: ondblclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
@@ -36167,7 +36211,7 @@ exports.CardAreaBackground = function (p) { return function (state) {
         height: p.height * state.zoom + "px",
         position: 'relative'
     };
-    return (hyperapp_1.h("div", { class: "area background ui segment " + (state.draggingHoverCardRegion === p.region ? 'over' : ''), style: styles, key: "CardAreaBackground_" + p.side + "_" + p.region, "data-region": p.region, "data-side": p.side },
+    return (hyperapp_1.h("div", { class: "area background ui segment " + (state.draggingHoverSide === p.side && state.draggingHoverCardRegion === p.region ? 'over' : ''), style: styles, key: "CardAreaBackground_" + p.side + "_" + p.region, "data-region": p.region, "data-side": p.side },
         hyperapp_1.h("div", { class: "area-title", style: { fontSize: (15 * state.zoom) + "px" } }, p.title),
         hyperapp_1.h("div", { class: "card-count" }, p.cardCount)));
 }; };
@@ -36205,7 +36249,7 @@ exports.CardAreaDroppable = function (p) { return function (state, actions) {
         return false;
     };
     var dragenter = function (e) {
-        actions.cardDragEnter(p.region);
+        actions.cardDragEnter({ side: p.side, region: p.region });
     };
     var dragleave = function (e) {
         actions.cardDragLeave();
@@ -36217,6 +36261,7 @@ exports.CardAreaDroppable = function (p) { return function (state, actions) {
         var currentState = actions.getState();
         // カードを移動 (リージョンが空でなければ)
         if (currentState.draggingHoverCardRegion) {
+            actions.memorizeBoardHistory(); // Undoのために履歴を記憶
             actions.moveCard({
                 fromSide: currentState.side,
                 from: currentState.draggingFromCard.region,
@@ -36461,9 +36506,9 @@ exports.ControlPanel = function () { return function (state, actions) {
     var deckBuilded = utils.getCards(state, 'library').length >= 1;
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
         hyperapp_1.h("div", { class: "ui icon basic buttons" },
-            hyperapp_1.h("button", { class: "ui button", onclick: function () { return actions.UndoBoard(); } },
+            hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.UndoBoard(); } },
                 hyperapp_1.h("i", { class: "undo alternate icon" })),
-            hyperapp_1.h("button", { class: "ui button", onclick: function () { return actions.RedoBoard(); } },
+            hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryFuture.length === 0 ? 'disabled' : ''), onclick: function () { return actions.RedoBoard(); } },
                 hyperapp_1.h("i", { class: "redo alternate icon" }))),
         hyperapp_1.h("button", { class: "ui basic button", onclick: reset }, "\u2605\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8"),
         hyperapp_1.h("br", null),
@@ -36711,6 +36756,48 @@ exports.Vigor = function (p) { return function (state, actions) {
 
 /***/ }),
 
+/***/ "./src/sakuraba/components/WitheredToken.tsx":
+/*!***************************************************!*\
+  !*** ./src/sakuraba/components/WitheredToken.tsx ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
+/** 集中力 */
+exports.WitheredToken = function (p) { return function (state, actions) {
+    // DOMを返す
+    var styles = {
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: 80 * state.zoom + "px",
+        height: 89 * state.zoom + "px"
+    };
+    var className = "withered-token clickable";
+    if (p.side === utils.flipSide(state.side))
+        className += " opponent-side";
+    if (state.board.witherFlags[p.side]) {
+        return hyperapp_1.h("div", { class: className, onclick: function () { return actions.setWitherFlag({ side: p.side, value: false }); }, style: styles });
+    }
+    else {
+        return null;
+    }
+}; };
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/components/index.ts":
 /*!******************************************!*\
   !*** ./src/sakuraba/components/index.ts ***!
@@ -36728,6 +36815,7 @@ __export(__webpack_require__(/*! ./Card */ "./src/sakuraba/components/Card.tsx")
 __export(__webpack_require__(/*! ./DeckBuildCard */ "./src/sakuraba/components/DeckBuildCard.tsx"));
 __export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/components/SakuraToken.tsx"));
 __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/components/Vigor.tsx"));
+__export(__webpack_require__(/*! ./WitheredToken */ "./src/sakuraba/components/WitheredToken.tsx"));
 __export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/components/ControlPanel.tsx"));
 __export(__webpack_require__(/*! ./CardAreaBackground */ "./src/sakuraba/components/CardAreaBackground.tsx"));
 __export(__webpack_require__(/*! ./CardAreaDroppable */ "./src/sakuraba/components/CardAreaDroppable.tsx"));
@@ -36977,6 +37065,7 @@ function createInitialState() {
         messageLog: [],
         zoom: 1,
         draggingFromCard: null,
+        draggingHoverSide: null,
         draggingHoverCardRegion: null,
         draggingFromSakuraToken: null,
         draggingHoverSakuraTokenRegion: null
@@ -37155,6 +37244,8 @@ exports.view = function (state, actions) {
         frameNodes,
         hyperapp_1.h(components.Vigor, { side: opponentSide, left: 390, top: 40 }),
         hyperapp_1.h(components.Vigor, { side: selfSide, left: 680, top: 610 }),
+        hyperapp_1.h(components.WitheredToken, { side: opponentSide, left: 390, top: 40 }),
+        hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680, top: 610 }),
         hyperapp_1.h(components.ControlPanel, null)));
 };
 

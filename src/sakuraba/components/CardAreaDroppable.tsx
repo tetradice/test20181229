@@ -32,7 +32,7 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
         return false;
     };
     const dragenter = (e: DragEvent) => {
-        actions.cardDragEnter(p.region);
+        actions.cardDragEnter({side: p.side, region: p.region});
     };
     const dragleave = (e: DragEvent) => {
         actions.cardDragLeave();
@@ -45,6 +45,7 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
         
         // カードを移動 (リージョンが空でなければ)
         if(currentState.draggingHoverCardRegion){
+            actions.memorizeBoardHistory(); // Undoのために履歴を記憶
             actions.moveCard({
                   fromSide: currentState.side
                 , from: currentState.draggingFromCard.region

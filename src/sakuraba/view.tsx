@@ -181,6 +181,8 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
             {frameNodes}
             <components.Vigor side={opponentSide} left={390} top={40} />
             <components.Vigor side={selfSide} left={680} top={610} />
+            <components.WitheredToken side={opponentSide} left={390} top={40} />
+            <components.WitheredToken side={selfSide} left={680} top={610} />
             <components.ControlPanel />
         </div>
     );

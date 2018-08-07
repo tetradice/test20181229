@@ -55,6 +55,12 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
         if(data.baseType === 'special'){
             actions.flipCard(p.target.id);
         }
+
+        // 山札なら1枚引く
+        if(data.baseType === 'normal' && p.target.region === 'library'){
+            actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+            actions.moveCard({from: 'library', fromSide: state.side, to: 'hand', toSide: state.side});
+        }
     }
     let draggable = p.target.region !== 'library' || p.target.indexOfRegion === (state.board.objects.filter(o => o.type === 'card' && o.region === p.target.region).length - 1);
 

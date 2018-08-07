@@ -215,8 +215,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     return (
         <div id="CONTROL-PANEL">
             <div class="ui icon basic buttons">
-                <button class="ui button" onclick={() => actions.UndoBoard()}><i class="undo alternate icon"></i></button>
-                <button class="ui button" onclick={() => actions.RedoBoard()}><i class="redo alternate icon"></i></button>
+                <button class={`ui button ${state.boardHistoryPast.length === 0 ? 'disabled' : ''}`} onclick={() => actions.UndoBoard()}><i class="undo alternate icon"></i></button>
+                <button class={`ui button ${state.boardHistoryFuture.length === 0 ? 'disabled' : ''}`}  onclick={() => actions.RedoBoard()}><i class="redo alternate icon"></i></button>
             </div>
             <button class="ui basic button" onclick={reset}>★ボードリセット</button><br />
 

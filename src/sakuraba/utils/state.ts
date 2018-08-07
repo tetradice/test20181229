@@ -16,6 +16,7 @@ export function createInitialState(): state.State{
         , messageLog: []
         , zoom: 1
         , draggingFromCard: null
+        , draggingHoverSide: null
         , draggingHoverCardRegion: null
         , draggingFromSakuraToken: null
         , draggingHoverSakuraTokenRegion: null

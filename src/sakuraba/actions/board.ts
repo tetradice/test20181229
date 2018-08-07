@@ -3,6 +3,7 @@ import * as models from "../models";
 import * as utils from "../utils";
 import { Megami, CARD_DATA } from "../../sakuraba";
 import cardActions from './card';
+import { ActionsType } from ".";
 
 export default {
     /** ボード全体を設定する */
@@ -11,13 +12,15 @@ export default {
     },
 
     /** ボード全体を初期化する */
-    resetBoard: () => {
+    resetBoard: () => (state: state.State, actions: ActionsType) => {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+
         return {board: utils.createInitialState().board};
     },
 
     /** ボードの状態をUndo用に記憶 */
-    memorizeBoard: () => (state: state.State) => {
-        return {boardHistoryPast: state.boardHistoryPast.concat([state.board])};
+    memorizeBoardHistory: () => (state: state.State) => {
+        return {boardHistoryPast: state.boardHistoryPast.concat([state.board]), boardHistoryFuture: []};
     },
 
     /** Undo */
@@ -38,6 +41,11 @@ export default {
         newPast.push(state.board);
         let newBoard = newFuture.pop();
         return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard};
+    },
+
+    /** ボード履歴を削除して、Undo/Redoを禁止する */
+    forgetBoardHistory: () => {
+        return {boardHistoryPast: [], boardHistoryFuture: []};
     },
 
     /** 指定したサイドのプレイヤー名を設定する */
@@ -62,12 +70,30 @@ export default {
         side: PlayerSide;
         /** 新しい集中力の値 */
         value: VigorValue;
-    }) => (state: state.State) => {
+    }) => (state: state.State, actions: ActionsType) => {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+
         let newBoard = models.Board.clone(state.board);
         newBoard.vigors[p.side] = p.value;
 
         return {board: newBoard};
     },
+
+    /** 萎縮フラグを変更 */
+    setWitherFlag: (p: {
+        /** どちら側の萎縮フラグか */
+        side: PlayerSide;
+        /** 新しい萎縮フラグの値 */
+        value: boolean;
+    }) => (state: state.State, actions: ActionsType) => {
+        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+
+        let newBoard = models.Board.clone(state.board);
+        newBoard.witherFlags[p.side] = p.value;
+
+        return {board: newBoard};
+    },
+
 
     /** デッキのカードを設定する */
     setDeckCards: (p: {cardIds: string[]}) => (state: state.State, actions: typeof cardActions) => {

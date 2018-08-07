@@ -66,16 +66,41 @@ $(function(){
         }
     });
 
+    // 集中力右クリックメニュー
+    $.contextMenu({
+        selector: '#BOARD2 .fbs-vigor-card',
+        build: function($elem: JQuery, event: JQueryEventObject){
+            let st = appActions.getState();
+            let board = new models.Board(st.board);
+
+            let items = {};
+            items['wither'] =  {name: (board.witherFlags[st.side] ? '萎縮を解除' : '萎縮')}
+            return {
+                callback: function(key: string) {
+                    if(key === 'wither'){
+                        appActions.setWitherFlag({side: st.side, value: !board.witherFlags[st.side]});
+                    }
+                },
+                items: items,
+            }
+        }
+
+    });
+
+
     // 山札エリア右クリックメニュー
     $.contextMenu({
         selector: '#BOARD2 .area.background[data-region=library], #BOARD2 .fbs-card[data-region=library]',
         callback: function(key: string) {
             let state = appActions.getState();
             if(key === 'draw'){
+                // 1枚引く
+                appActions.memorizeBoardHistory(); // Undoのために履歴を記憶
                 appActions.moveCard({from: 'library', fromSide: state.side, to: 'hand', toSide: state.side});
             }
 
             if(key === 'reshuffle'){
+                // 再構成
                 appActions.reshuffle({side: state.side});
             }
 
@@ -93,6 +118,7 @@ $(function(){
             'reshuffleWithoutDamage': {name: '再構成する (ライフ減少なし)'},
         }
     });
+
 
     // ボード情報をリクエスト
     console.log('request_first_board_to_server');

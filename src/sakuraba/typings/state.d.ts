@@ -18,6 +18,8 @@ export interface State {
     actionLog: LogRecord[];
     messageLog: LogRecord[];
 
+    draggingHoverSide?: PlayerSide;
+
     draggingFromCard: Card;
     draggingHoverCardRegion: CardRegion;
 
