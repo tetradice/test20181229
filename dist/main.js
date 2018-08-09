@@ -36347,6 +36347,12 @@ var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/saku
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
 var _1 = __webpack_require__(/*! . */ "./src/sakuraba/components/index.ts");
 var models = __importStar(__webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts"));
+// ルール編集メモ
+// 第二幕、新幕の選択
+// アンドゥ制約（山札を引いた後のUndoは可能か？）
+// ライフ無制限
+// 原初札あり
+// デッキ枚数無制限
 /** コントロールパネル */
 exports.ControlPanel = function () { return function (state, actions) {
     var reset = function () {
@@ -36513,13 +36519,14 @@ exports.ControlPanel = function () { return function (state, actions) {
         }).catch(function (reason) {
         });
     };
-    var duelStart = function () {
+    var firstHandSet = function () {
         utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', function () {
             actions.moveCard({ from: 'library', fromSide: state.side, to: 'hand', toSide: state.side, moveNumber: 3 });
             // サーバーに送信
             if (state.socket) {
                 state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: actions.getState().board });
             }
+            utils.messageModal('最初の手札を引きました。<br>一部の手札を山札に戻し、引き直しを行いたい場合は、手札エリア左下の「手札の引き直し」ボタンをクリックしてください。');
         });
     };
     var board = state.board;
@@ -36534,7 +36541,7 @@ exports.ControlPanel = function () { return function (state, actions) {
         hyperapp_1.h("br", null),
         hyperapp_1.h("button", { class: "ui basic button", onclick: megamiSelect }, "\u30E1\u30AC\u30DF\u9078\u629E"),
         hyperapp_1.h("button", { class: "ui basic button " + (state.board.megamis[state.side] !== null ? '' : 'disabled'), onclick: deckBuild }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
-        hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? '' : 'disabled'), onclick: duelStart }, "\u6C7A\u95D8\u958B\u59CB"),
+        hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? '' : 'disabled'), onclick: firstHandSet }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F"),
         hyperapp_1.h("table", { class: "ui definition table", style: { width: '25em' } },
             hyperapp_1.h("tbody", null,
                 hyperapp_1.h("tr", null,
@@ -36613,6 +36620,33 @@ exports.DeckBuildCard = function (p) {
     };
     return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, "data-object-id": p.target.id, "data-region": p.target.region, onclick: p.onclick, ondblclick: ondblclick, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
 };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/components/MariganButton.tsx":
+/*!***************************************************!*\
+  !*** ./src/sakuraba/components/MariganButton.tsx ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+/** 集中力 */
+exports.MariganButton = function (p) { return function (state, actions) {
+    // DOMを返す
+    var styles = {
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        position: 'absolute'
+    };
+    var onClick = function () {
+    };
+    return hyperapp_1.h("button", { style: styles, class: "ui basic button", onclick: onClick }, "\u624B\u672D\u3092\u5F15\u304D\u76F4\u3059");
+}; };
 
 
 /***/ }),
@@ -36846,6 +36880,7 @@ __export(__webpack_require__(/*! ./CardAreaBackground */ "./src/sakuraba/compone
 __export(__webpack_require__(/*! ./CardAreaDroppable */ "./src/sakuraba/components/CardAreaDroppable.tsx"));
 __export(__webpack_require__(/*! ./SakuraTokenAreaBackground */ "./src/sakuraba/components/SakuraTokenAreaBackground.tsx"));
 __export(__webpack_require__(/*! ./SakuraTokenAreaDroppable */ "./src/sakuraba/components/SakuraTokenAreaDroppable.tsx"));
+__export(__webpack_require__(/*! ./MariganButton */ "./src/sakuraba/components/MariganButton.tsx"));
 
 
 /***/ }),
@@ -37113,6 +37148,13 @@ function confirmModal(desc, yesCallback) {
         .modal('show');
 }
 exports.confirmModal = confirmModal;
+function messageModal(desc) {
+    $('#MESSAGE-MODAL .description').html(desc);
+    $('#MESSAGE-MODAL')
+        .modal({ closable: false })
+        .modal('show');
+}
+exports.messageModal = messageModal;
 
 
 /***/ }),
@@ -37314,7 +37356,8 @@ exports.view = function (state, actions) {
         hyperapp_1.h(components.Vigor, { side: selfSide, left: 680, top: 610 }),
         hyperapp_1.h(components.WitheredToken, { side: opponentSide, left: 390, top: 40 }),
         hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680, top: 610 }),
-        hyperapp_1.h(components.ControlPanel, null)));
+        hyperapp_1.h(components.ControlPanel, null),
+        hyperapp_1.h(components.MariganButton, { left: 10, top: 750 })));
 };
 
 

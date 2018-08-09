@@ -4,3 +4,10 @@ export function confirmModal(desc: string, yesCallback: (this: JQuery, $element:
         .modal({closable: false, onApprove:yesCallback})
         .modal('show');
 }
+
+export function messageModal(desc: string){
+    $('#MESSAGE-MODAL .description').html(desc);
+    $('#MESSAGE-MODAL')
+        .modal({closable: false})
+        .modal('show');
+}

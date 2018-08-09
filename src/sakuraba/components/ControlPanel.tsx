@@ -8,6 +8,16 @@ import { withLogger } from "@hyperapp/logger"
 import { DeckBuildCard } from ".";
 import * as models from "../models";
 
+
+// ルール編集メモ
+
+// 第二幕、新幕の選択
+// アンドゥ制約（山札を引いた後のUndoは可能か？）
+// ライフ無制限
+// 原初札あり
+// デッキ枚数無制限
+
+
 /** コントロールパネル */
 export const ControlPanel = () => (state: state.State, actions: ActionsType) => {
     let reset = () => {
@@ -205,7 +215,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         });
     }
 
-    let duelStart = () => {
+    let firstHandSet = () => {
         utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', () => {
             actions.moveCard({from: 'library', fromSide: state.side, to: 'hand', toSide: state.side, moveNumber: 3});
 
@@ -213,6 +223,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             if(state.socket){
                 state.socket.emit('updateBoard', {boardId: state.boardId, side: state.side, board: actions.getState().board});
             }
+
+            utils.messageModal('最初の手札を引きました。<br>一部の手札を山札に戻し、引き直しを行いたい場合は、手札エリア左下の「手札の引き直し」ボタンをクリックしてください。');
         });
     };
 
@@ -229,7 +241,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
             <button class={`ui basic button`} onclick={megamiSelect}>メガミ選択</button>
             <button class={`ui basic button ${state.board.megamis[state.side] !== null ? '' : 'disabled'}`} onclick={deckBuild}>デッキ構築</button>
-            <button class={`ui basic button ${deckBuilded ? '' : 'disabled'}`} onclick={duelStart}>決闘開始</button>
+            <button class={`ui basic button ${deckBuilded ? '' : 'disabled'}`} onclick={firstHandSet}>最初の手札を引く</button>
 
             <table class="ui definition table" style={{ width: '25em' }}>
                 <tbody>

@@ -184,6 +184,7 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
             <components.WitheredToken side={opponentSide} left={390} top={40} />
             <components.WitheredToken side={selfSide} left={680} top={610} />
             <components.ControlPanel />
+            <components.MariganButton left={10} top={750} />
         </div>
     );
 }
