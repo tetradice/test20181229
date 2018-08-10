@@ -7,6 +7,8 @@ export class Board implements state.Board {
     megamis: {p1: Megami[], p2: Megami[]};
     vigors: {p1: VigorValue, p2: VigorValue};
     witherFlags: {p1: boolean, p2: boolean};
+    firstDrawFlags: {p1: boolean, p2: boolean};
+    mariganFlags: {p1: boolean, p2: boolean};
 
     actionLog: state.LogRecord[];
     chatLog: state.LogRecord[];

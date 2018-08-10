@@ -96,7 +96,6 @@ export default {
         return {board: newBoard};
     },
 
-
     /** デッキのカードを設定する */
     setDeckCards: (p: {cardIds: string[]}) => (state: state.State, actions: ActionsType) => {
         actions.memorizeBoardHistory(); // Undoのために履歴を記憶

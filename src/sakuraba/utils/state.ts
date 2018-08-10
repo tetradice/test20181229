@@ -8,6 +8,8 @@ export function createInitialState(): state.State{
             , megamis: {p1: null, p2: null}
             , vigors: {p1: null, p2: null}
             , witherFlags: {p1: false, p2: false}
+            , firstDrawFlags: {p1: false, p2: false}
+            , mariganFlags: {p1: false, p2: false}
           }
         , boardHistoryPast: []
         , boardHistoryFuture: []

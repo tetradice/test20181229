@@ -2,8 +2,13 @@ import { h } from "hyperapp";
 import { ActionsType } from "sakuraba/actions";
 import * as utils from "sakuraba/utils";
 
-/** 集中力 */
+/** 手札の引き直しボタン */
 export const MariganButton = (p: {left: number, top: number}) => (state: state.State, actions: ActionsType) => {
+    // まだ最初の手札を引いてない場合か、すでに引き直し済みの場合は表示しない
+    if(!state.board.firstDrawFlags[state.side] || state.board.mariganFlags[state.side]){
+        return null;
+    }
+
     // DOMを返す
     let styles: Partial<CSSStyleDeclaration> = {
           left: `${p.left * state.zoom}px`
@@ -14,5 +19,5 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
     let onClick = () => {
     }
 
-    return <button style={styles} class={`ui basic button`} onclick={onClick}>手札を引き直す</button>;
+    return <button style={styles} class={`ui basic button`} onclick={onClick}><span style={{color: 'blue'}}>手札を引き直す</span></button>;
 }

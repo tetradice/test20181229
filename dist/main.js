@@ -35885,6 +35885,18 @@ exports.default = {
         ret.board = newBoard;
         return ret;
     }; },
+    /** 最初の手札を引く */
+    firstDraw: function (p) { return function (state, actions) {
+        actions.forgetBoardHistory(); // Undo履歴の削除
+        // 山札をシャッフル
+        actions.shuffle({ side: p.side });
+        // 手札を3枚引く
+        actions.moveCard({ from: 'library', fromSide: p.side, to: 'hand', toSide: p.side, moveNumber: 3 });
+        // フラグON
+        var newBoard = models.Board.clone(actions.getState().board);
+        newBoard.firstDrawFlags[p.side] = true;
+        return { board: newBoard };
+    }; },
     shuffle: function (p) { return function (state, actions) {
         actions.forgetBoardHistory(); // Undo履歴をクリア
         var ret = {};
@@ -36521,16 +36533,24 @@ exports.ControlPanel = function () { return function (state, actions) {
     };
     var firstHandSet = function () {
         utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', function () {
-            actions.moveCard({ from: 'library', fromSide: state.side, to: 'hand', toSide: state.side, moveNumber: 3 });
+            actions.firstDraw({ side: state.side });
             // サーバーに送信
             if (state.socket) {
                 state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: actions.getState().board });
             }
-            utils.messageModal('最初の手札を引きました。<br>一部の手札を山札に戻し、引き直しを行いたい場合は、手札エリア左下の「手札の引き直し」ボタンをクリックしてください。');
         });
     };
     var board = state.board;
     var deckBuilded = boardModel.getSideCards(state.side).length >= 1;
+    // 最初の手札を引いていれば、準備系のボタンは表示しない
+    var styles = null;
+    if (state.board.firstDrawFlags[state.side]) {
+        styles = { display: 'none' };
+    }
+    var commandButtons = (hyperapp_1.h("div", { style: styles },
+        hyperapp_1.h("button", { class: "ui basic button", onclick: megamiSelect }, "\u30E1\u30AC\u30DF\u9078\u629E"),
+        hyperapp_1.h("button", { class: "ui basic button " + (state.board.megamis[state.side] !== null ? '' : 'disabled'), onclick: deckBuild }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
+        hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? '' : 'disabled'), onclick: firstHandSet }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F")));
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
         hyperapp_1.h("div", { class: "ui icon basic buttons" },
             hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.UndoBoard(); } },
@@ -36539,9 +36559,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                 hyperapp_1.h("i", { class: "redo alternate icon" }))),
         hyperapp_1.h("button", { class: "ui basic button", onclick: reset }, "\u2605\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8"),
         hyperapp_1.h("br", null),
-        hyperapp_1.h("button", { class: "ui basic button", onclick: megamiSelect }, "\u30E1\u30AC\u30DF\u9078\u629E"),
-        hyperapp_1.h("button", { class: "ui basic button " + (state.board.megamis[state.side] !== null ? '' : 'disabled'), onclick: deckBuild }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
-        hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? '' : 'disabled'), onclick: firstHandSet }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F"),
+        commandButtons,
         hyperapp_1.h("table", { class: "ui definition table", style: { width: '25em' } },
             hyperapp_1.h("tbody", null,
                 hyperapp_1.h("tr", null,
@@ -36635,8 +36653,12 @@ exports.DeckBuildCard = function (p) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-/** 集中力 */
+/** 手札の引き直しボタン */
 exports.MariganButton = function (p) { return function (state, actions) {
+    // まだ最初の手札を引いてない場合か、すでに引き直し済みの場合は表示しない
+    if (!state.board.firstDrawFlags[state.side] || state.board.mariganFlags[state.side]) {
+        return null;
+    }
     // DOMを返す
     var styles = {
         left: p.left * state.zoom + "px",
@@ -36645,7 +36667,8 @@ exports.MariganButton = function (p) { return function (state, actions) {
     };
     var onClick = function () {
     };
-    return hyperapp_1.h("button", { style: styles, class: "ui basic button", onclick: onClick }, "\u624B\u672D\u3092\u5F15\u304D\u76F4\u3059");
+    return hyperapp_1.h("button", { style: styles, class: "ui basic button", onclick: onClick },
+        hyperapp_1.h("span", { style: { color: 'blue' } }, "\u624B\u672D\u3092\u5F15\u304D\u76F4\u3059"));
 }; };
 
 
@@ -37178,7 +37201,9 @@ function createInitialState() {
             playerNames: { p1: null, p2: null },
             megamis: { p1: null, p2: null },
             vigors: { p1: null, p2: null },
-            witherFlags: { p1: false, p2: false }
+            witherFlags: { p1: false, p2: false },
+            firstDrawFlags: { p1: false, p2: false },
+            mariganFlags: { p1: false, p2: false }
         },
         boardHistoryPast: [],
         boardHistoryFuture: [],

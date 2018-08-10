@@ -217,31 +217,40 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
     let firstHandSet = () => {
         utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', () => {
-            actions.moveCard({from: 'library', fromSide: state.side, to: 'hand', toSide: state.side, moveNumber: 3});
+            actions.firstDraw({side: state.side});
 
             // サーバーに送信
             if(state.socket){
                 state.socket.emit('updateBoard', {boardId: state.boardId, side: state.side, board: actions.getState().board});
             }
-
-            utils.messageModal('最初の手札を引きました。<br>一部の手札を山札に戻し、引き直しを行いたい場合は、手札エリア左下の「手札の引き直し」ボタンをクリックしてください。');
         });
     };
 
     let board = state.board;
     let deckBuilded = boardModel.getSideCards(state.side).length >= 1;
 
+    // 最初の手札を引いていれば、準備系のボタンは表示しない
+    let styles = null;
+    if(state.board.firstDrawFlags[state.side]){
+        styles = {display: 'none'};
+    }
+    let commandButtons = (
+        <div style={styles}>
+        <button class={`ui basic button`} onclick={megamiSelect}>メガミ選択</button>
+        <button class={`ui basic button ${state.board.megamis[state.side] !== null ? '' : 'disabled'}`} onclick={deckBuild}>デッキ構築</button>
+        <button class={`ui basic button ${deckBuilded ? '' : 'disabled'}`} onclick={firstHandSet}>最初の手札を引く</button>
+        </div>
+    );
+
     return (
-        <div id="CONTROL-PANEL">
+        <div id="CONTROL-PANEL">    
             <div class="ui icon basic buttons">
                 <button class={`ui button ${state.boardHistoryPast.length === 0 ? 'disabled' : ''}`} onclick={() => actions.UndoBoard()}><i class="undo alternate icon"></i></button>
                 <button class={`ui button ${state.boardHistoryFuture.length === 0 ? 'disabled' : ''}`}  onclick={() => actions.RedoBoard()}><i class="redo alternate icon"></i></button>
             </div>
             <button class="ui basic button" onclick={reset}>★ボードリセット</button><br />
 
-            <button class={`ui basic button`} onclick={megamiSelect}>メガミ選択</button>
-            <button class={`ui basic button ${state.board.megamis[state.side] !== null ? '' : 'disabled'}`} onclick={deckBuild}>デッキ構築</button>
-            <button class={`ui basic button ${deckBuilded ? '' : 'disabled'}`} onclick={firstHandSet}>最初の手札を引く</button>
+            {commandButtons}
 
             <table class="ui definition table" style={{ width: '25em' }}>
                 <tbody>

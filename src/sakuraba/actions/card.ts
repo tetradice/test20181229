@@ -90,6 +90,28 @@ export default {
         return ret;
     },
 
+
+
+    /** 最初の手札を引く */
+    firstDraw: (p: {
+        /** どちら側の手札を引くか */
+        side: PlayerSide;
+    }) => (state: state.State, actions: ActionsType) => {
+        actions.forgetBoardHistory(); // Undo履歴の削除
+
+        // 山札をシャッフル
+        actions.shuffle({side: p.side});
+
+        // 手札を3枚引く
+        actions.moveCard({from: 'library', fromSide: p.side, to: 'hand', toSide: p.side, moveNumber: 3});
+
+        // フラグON
+        let newBoard = models.Board.clone(actions.getState().board);
+        newBoard.firstDrawFlags[p.side] = true;
+
+        return {board: newBoard};
+    },
+
     shuffle: (p: {side: PlayerSide}) => (state: state.State, actions: ActionsType) => {
         actions.forgetBoardHistory(); // Undo履歴をクリア
 
