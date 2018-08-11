@@ -1,6 +1,6 @@
 import * as models from "sakuraba/models";
 import * as utils from "sakuraba/utils";
-import * as apps from "sakuraba/apps";
+import * as mainApp from "sakuraba/apps/main";
 import { ClientSocket } from "sakuraba/socket";
 
 declare var params: {
@@ -41,7 +41,7 @@ $(function(){
     st.side = params.side;
 
     // アプリケーション起動
-    let appActions = apps.main.run(st, document.getElementById('BOARD2'));
+    let appActions = mainApp.run(st, document.getElementById('BOARD2'));
 
     // 山札ドラッグメニュー
 

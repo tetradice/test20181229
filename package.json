@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register server.ts",
-    "start:dev": "ts-node-dev -r tsconfig-paths/register server.ts",
+    "start": "node dist/server.js",
+    "start:dev": "node-dev dist/server.js",
     "watch:main": "webpack --watch",
     "watch:server": "tsc --watch",
     "build": "npm run build:main && npm run build:server",

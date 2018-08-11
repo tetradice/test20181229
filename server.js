@@ -12,20 +12,19 @@ var socketIO = require("socket.io");
 var path = __importStar(require("path"));
 var redis = __importStar(require("redis"));
 var randomstring = __importStar(require("randomstring"));
-var utils_1 = require("sakuraba/utils");
 var browserSync = require("browser-sync");
 var connectBrowserSync = require("connect-browser-sync");
-var apps = __importStar(require("sakuraba/apps"));
 var socket_1 = require("sakuraba/socket");
+var utils = __importStar(require("sakuraba/utils"));
 var RedisClient = redis.createClient(process.env.REDIS_URL);
 var PORT = process.env.PORT || 3000;
-var INDEX = path.join(__dirname, 'index.html');
-var MAIN_JS = path.join(__dirname, 'dist/main.js');
-var MAIN_JS_MAP = path.join(__dirname, 'dist/main.js.map');
+var INDEX = path.join(__dirname, '../index.html');
+var MAIN_JS = path.join(__dirname, 'main.js');
+var MAIN_JS_MAP = path.join(__dirname, 'main.js.map');
 var browserSyncConfigurations = { "files": "dist/*.js" };
 var server = express()
     .use(connectBrowserSync(browserSync(browserSyncConfigurations)))
-    .set('views', __dirname + '/')
+    .set('views', __dirname + '/../')
     .set('view engine', 'ejs')
     .use(express.static('public'))
     .use(express.static('node_modules'))
@@ -40,7 +39,7 @@ var server = express()
         readable: true
     });
     // 卓を追加
-    var state = utils_1.createInitialState();
+    var state = utils.createInitialState();
     RedisClient.HSET('boards', boardId, JSON.stringify(state.board));
     // 卓にアクセスするためのURLを生成
     var urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
@@ -70,7 +69,6 @@ function saveBoard(boardId, board, callback) {
         callback.call(undefined);
     });
 }
-var appActions = apps.main.run(utils_1.createInitialState(), null);
 io.on('connection', function (ioSocket) {
     var socket = new socket_1.ServerSocket(ioSocket);
     console.log("Client connected - " + ioSocket.id);
@@ -142,13 +140,10 @@ io.on('connection', function (ioSocket) {
         // ボード情報を取得
         getStoredBoard(data.boardId, function (board) {
             // 盤を初期状態に戻す
-            appActions.setBoard(board);
-            appActions.resetBoard();
-            appActions.getState();
-            var st = appActions.getState();
-            saveBoard(data.boardId, st.board, function () {
-                // プレイヤー名が入力されたイベントを他ユーザーに配信
-                ioSocket.broadcast.emit('on_player_name_input', board);
+            var newBoard = utils.createInitialState().board;
+            saveBoard(data.boardId, newBoard, function () {
+                // ボードが更新されたイベントを他ユーザーに配信
+                socket.broadcastEmit('onBoardReceived', { board: newBoard });
             });
         });
     });
