@@ -12,12 +12,12 @@ var socketIO = require("socket.io");
 var path = __importStar(require("path"));
 var redis = __importStar(require("redis"));
 var randomstring = __importStar(require("randomstring"));
-var utils_1 = require("./src/sakuraba/utils");
+var utils_1 = require("sakuraba/utils");
 var browserSync = require("browser-sync");
 var connectBrowserSync = require("connect-browser-sync");
 var hyperapp_1 = require("hyperapp");
-var actions_1 = require("./src/sakuraba/actions");
-var socket_1 = require("./src/sakuraba/socket");
+var mainApp = __importStar(require("sakuraba/app/main"));
+var socket_1 = require("sakuraba/socket");
 var RedisClient = redis.createClient(process.env.REDIS_URL);
 var PORT = process.env.PORT || 3000;
 var INDEX = path.join(__dirname, 'index.html');
@@ -72,7 +72,7 @@ function saveBoard(boardId, board, callback) {
     });
 }
 var view = function () { return hyperapp_1.h('div'); };
-var appActions = hyperapp_1.app(utils_1.createInitialState(), actions_1.actions, view, null);
+var appActions = mainApp.launch(utils_1.createInitialState(), null);
 io.on('connection', function (ioSocket) {
     var socket = new socket_1.ServerSocket(ioSocket);
     console.log("Client connected - " + ioSocket.id);

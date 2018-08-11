@@ -1,5 +1,5 @@
 import { h, app } from "hyperapp";
-import { ActionsType } from "sakuraba/actions";
+import { ActionsType } from "../actions";
 import * as sakuraba from "sakuraba";
 import * as utils from "sakuraba/utils";
 import { Card } from "./Card";

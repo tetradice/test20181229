@@ -1,10 +1,7 @@
-import { app, h } from "hyperapp";
-import * as models from "./sakuraba/models";
-import { actions, ActionsType } from "./sakuraba/actions";
-import * as utils from "./sakuraba/utils";
-import { view } from "./sakuraba/view";
-import { withLogger } from "@hyperapp/logger"
-import { ClientSocket } from "./sakuraba/socket";
+import * as models from "sakuraba/models";
+import * as utils from "sakuraba/utils";
+import * as mainApp from "sakuraba/app/main";
+import { ClientSocket } from "sakuraba/socket";
 
 declare var params: {
     boardId: string;
@@ -44,7 +41,7 @@ $(function(){
     st.side = params.side;
 
     // アプリケーション起動
-    let appActions: ActionsType = withLogger(app)(st, actions, view, document.getElementById('BOARD2'));
+    let appActions = mainApp.launch(st, document.getElementById('BOARD2'));
 
     // 山札ドラッグメニュー
 

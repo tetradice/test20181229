@@ -6,13 +6,13 @@ import * as path from 'path';
 import * as redis from 'redis';
 import moment = require('moment');
 import * as randomstring from 'randomstring';
-import * as sakuraba from './src/sakuraba';
-import { createInitialState } from './src/sakuraba/utils';
+import * as sakuraba from 'sakuraba';
+import { createInitialState } from 'sakuraba/utils';
 import browserSync = require('browser-sync');
 import connectBrowserSync = require('connect-browser-sync');
 import { app, h } from 'hyperapp';
-import { actions, ActionsType } from './src/sakuraba/actions';
-import { ServerSocket } from './src/sakuraba/socket';
+import * as mainApp from 'sakuraba/app/main';
+import { ServerSocket } from 'sakuraba/socket';
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
@@ -76,7 +76,7 @@ function saveBoard(boardId: string, board: state.Board, callback: () => void){
 }
 
 let view = () => h('div');
-let appActions = app(createInitialState(), actions, view, null) as ActionsType;
+let appActions = mainApp.launch(createInitialState(), null);
 
 io.on('connection', (ioSocket) => {
   const socket = new ServerSocket(ioSocket);

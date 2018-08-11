@@ -1,8 +1,8 @@
 import { h, app, View } from "hyperapp";
 import * as components from "./components";
 import { actions, ActionsType } from "./actions";
-import * as utils from "./utils";
-import * as models from "./models";
+import * as utils from "sakuraba/utils";
+import * as models from "sakuraba/models";
 
 /** レイアウト種別 */
 type LayoutType = 'horizontal' | 'stacked';
@@ -73,7 +73,7 @@ function layoutObjects(
 }
 
 // メインビューの定義
-export const view: View<state.State, ActionsType> = (state, actions) => {
+const view: View<state.State, ActionsType> = (state, actions) => {
     let boardModel = new models.Board(state.board);
 
     let selfSide = state.side;
@@ -188,3 +188,5 @@ export const view: View<state.State, ActionsType> = (state, actions) => {
         </div>
     );
 }
+
+export default view;

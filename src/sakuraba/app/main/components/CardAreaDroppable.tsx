@@ -1,11 +1,10 @@
 import { h } from "hyperapp";
-import { ActionsType } from "sakuraba/actions";
-import * as utils from "sakuraba/utils";
+import { ActionsType } from "../actions";
 
 /** 領域枠 */
 interface Param {
-    region: SakuraTokenRegion;
-    side?: PlayerSide;
+    region: CardRegion;
+    side: PlayerSide;
     
     left: number;
     top: number;
@@ -13,7 +12,7 @@ interface Param {
     height: number;
 }
 
-export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actions: ActionsType) => {
+export const CardAreaDroppable = (p: Param) => (state: state.State, actions: ActionsType) => {
     let styles: Partial<CSSStyleDeclaration> = {
           left: `${p.left * state.zoom}px`
         , top: `${p.top * state.zoom}px`
@@ -21,7 +20,7 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
         , height: `${p.height * state.zoom}px`
         , position: 'relative'
     };
-    if(state.draggingFromSakuraToken !== null && p.region !== state.draggingFromSakuraToken.region){
+    if(state.draggingFromCard !== null && p.region !== state.draggingFromCard.region){
         styles.zIndex = '9999';
     }
     const dragover = (e: DragEvent) => {
@@ -33,10 +32,10 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
         return false;
     };
     const dragenter = (e: DragEvent) => {
-        actions.sakuraTokenDragEnter(p.region);
+        actions.cardDragEnter({side: p.side, region: p.region});
     };
     const dragleave = (e: DragEvent) => {
-        actions.sakuraTokenDragLeave();
+        actions.cardDragLeave();
     };
     const drop = (e: DragEvent) => {
         if (e.stopPropagation) {
@@ -44,15 +43,17 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
         }
         let currentState = actions.getState();
         
-        // 桜花結晶を移動 (リージョンが空でなければ)
-        if(state.draggingHoverSakuraTokenRegion){
-            actions.moveSakuraToken({
-                fromSide: currentState.side
-              , from: currentState.draggingFromSakuraToken.region
-              , toSide: utils.flipSide(currentState.side)
-              , to: currentState.draggingHoverSakuraTokenRegion
-          });
-      }
+        // カードを移動 (リージョンが空でなければ)
+        if(currentState.draggingHoverCardRegion){
+            actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+            actions.moveCard({
+                  fromSide: currentState.side
+                , from: currentState.draggingFromCard.region
+                , fromIndex: currentState.draggingFromCard.indexOfRegion
+                , toSide: (currentState.side === 'p1' ? 'p2' : 'p1')
+                , to: currentState.draggingHoverCardRegion
+            });
+        }
 
         return false;
     };
@@ -61,7 +62,7 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
         <div
          class="area droppable"
          style={styles}
-         key={`SakuraTokenAreaDroppable_${p.side}_${p.region}`}
+         key={`CardAreaDroppable_${p.side}_${p.region}`}
          ondragover={dragover}
          ondragenter={dragenter}
          ondragleave={dragleave}

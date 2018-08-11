@@ -1,5 +1,5 @@
 import { h } from "hyperapp";
-import { ActionsType } from "sakuraba/actions";
+import { ActionsType } from "../actions";
 import * as utils from "sakuraba/utils";
 
 /** 手札の引き直しボタン */
