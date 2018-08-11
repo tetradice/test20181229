@@ -7,11 +7,11 @@ import * as redis from 'redis';
 import moment = require('moment');
 import * as randomstring from 'randomstring';
 import * as sakuraba from 'sakuraba';
-import { createInitialState } from 'sakuraba/utils';
 import browserSync = require('browser-sync');
 import connectBrowserSync = require('connect-browser-sync');
-import * as apps from 'sakuraba/apps';
 import { ServerSocket } from 'sakuraba/socket';
+import * as state from 'sakuraba/typings/state';
+import * as utils from 'sakuraba/utils';
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
@@ -37,7 +37,7 @@ const server = express()
     });
 
     // 卓を追加
-    let state = createInitialState();
+    let state = utils.createInitialState();
     RedisClient.HSET('boards', boardId, JSON.stringify(state.board));
 
     // 卓にアクセスするためのURLを生成
@@ -73,8 +73,6 @@ function saveBoard(boardId: string, board: state.Board, callback: () => void){
     callback.call(undefined);
   });
 }
-
-let appActions = apps.main.run(createInitialState(), null);
 
 io.on('connection', (ioSocket) => {
   const socket = new ServerSocket(ioSocket);
@@ -154,14 +152,11 @@ io.on('connection', (ioSocket) => {
     // ボード情報を取得
     getStoredBoard(data.boardId, (board) => {
       // 盤を初期状態に戻す
-      appActions.setBoard(board);
-      appActions.resetBoard();
-      appActions.getState();
-      let st = (appActions.getState() as any) as state.State;
+      let newBoard = utils.createInitialState().board;
 
-      saveBoard(data.boardId, st.board, () => {
-        // プレイヤー名が入力されたイベントを他ユーザーに配信
-        ioSocket.broadcast.emit('on_player_name_input', board);
+      saveBoard(data.boardId, newBoard, () => {
+        // ボードが更新されたイベントを他ユーザーに配信
+        socket.broadcastEmit('onBoardReceived', {board: newBoard});
       });
     });
   });
