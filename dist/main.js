@@ -169,10 +169,10 @@ function withLogger(optionsOrApp) {
 
 /***/ }),
 
-/***/ "./node_modules/css-loader/index.js?!./src/sakuraba/app/main/components/ControlPanel.css":
-/*!***********************************************************************************************!*\
-  !*** ./node_modules/css-loader??ref--5-1!./src/sakuraba/app/main/components/ControlPanel.css ***!
-  \***********************************************************************************************/
+/***/ "./node_modules/css-loader/index.js?!./src/sakuraba/apps/main/components/ControlPanel.css":
+/*!************************************************************************************************!*\
+  !*** ./node_modules/css-loader??ref--5-1!./src/sakuraba/apps/main/components/ControlPanel.css ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -181,14 +181,14 @@ exports = module.exports = __webpack_require__(/*! ../../../../../node_modules/c
 
 
 // module
-exports.push([module.i, "._3bN3R5IWOmROUNxl5xrB2P {\r\n    display: flex !important;\r\n}\r\n\r\n._2dxsP0StuTqprz5OLN18h0 {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n._3g3h-yR4WRpV8zYqtp7NQx {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n.QkFJs4C2Z1TTQfEnWTMkp {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}", "", {"version":3,"sources":["D:/work/furuyoni_simulator/server/src/sakuraba/app/main/components/ControlPanel.css"],"names":[],"mappings":"AAAA;IACI,yBAAyB;CAC5B;;AAED;IACI,YAAY;IACZ,iBAAiB;IACjB,kBAAkB;IAClB,mBAAmB;CACtB;;AAED;IACI,cAAc;IACd,cAAc;IACd,mBAAmB;CACtB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;CACrB","file":"ControlPanel.css","sourcesContent":[".modalTop {\r\n    display: flex !important;\r\n}\r\n\r\n.outer {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.cardArea {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n.countCaption {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}"],"sourceRoot":""}]);
+exports.push([module.i, ".Zqq_xZe4NsbcOf8knpWVB {\r\n    display: flex !important;\r\n}\r\n\r\n._2snAdIMQX8BRTPul7_eSaO {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.mybh7Mf1H5J4DxPRxUQd {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n._2IBrx_Md0JU9vkk-dFyT8y {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}", "", {"version":3,"sources":["D:/work/furuyoni_simulator/server/src/sakuraba/apps/main/components/ControlPanel.css"],"names":[],"mappings":"AAAA;IACI,yBAAyB;CAC5B;;AAED;IACI,YAAY;IACZ,iBAAiB;IACjB,kBAAkB;IAClB,mBAAmB;CACtB;;AAED;IACI,cAAc;IACd,cAAc;IACd,mBAAmB;CACtB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;CACrB","file":"ControlPanel.css","sourcesContent":[".modalTop {\r\n    display: flex !important;\r\n}\r\n\r\n.outer {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.cardArea {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n.countCaption {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}"],"sourceRoot":""}]);
 
 // exports
 exports.locals = {
-	"modalTop": "_3bN3R5IWOmROUNxl5xrB2P",
-	"outer": "_2dxsP0StuTqprz5OLN18h0",
-	"cardArea": "_3g3h-yR4WRpV8zYqtp7NQx",
-	"countCaption": "QkFJs4C2Z1TTQfEnWTMkp"
+	"modalTop": "Zqq_xZe4NsbcOf8knpWVB",
+	"outer": "_2snAdIMQX8BRTPul7_eSaO",
+	"cardArea": "mybh7Mf1H5J4DxPRxUQd",
+	"countCaption": "_2IBrx_Md0JU9vkk-dFyT8y"
 };
 
 /***/ }),
@@ -35501,7 +35501,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
-var app = __importStar(__webpack_require__(/*! sakuraba/app */ "./src/sakuraba/app/index.ts"));
+var apps = __importStar(__webpack_require__(/*! sakuraba/apps */ "./src/sakuraba/apps/index.ts"));
 var socket_1 = __webpack_require__(/*! sakuraba/socket */ "./src/sakuraba/socket.ts");
 function messageModal(desc) {
     $('#MESSAGE-MODAL .description').html(desc);
@@ -35531,7 +35531,7 @@ $(function () {
     st.boardId = params.boardId;
     st.side = params.side;
     // アプリケーション起動
-    var appActions = app.main.launch(st, document.getElementById('BOARD2'));
+    var appActions = apps.main.run(st, document.getElementById('BOARD2'));
     // 山札ドラッグメニュー
     // 切札右クリックメニュー
     $.contextMenu({
@@ -35693,26 +35693,26 @@ exports.CARD_DATA = {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/index.ts":
-/*!***********************************!*\
-  !*** ./src/sakuraba/app/index.ts ***!
-  \***********************************/
+/***/ "./src/sakuraba/apps/index.ts":
+/*!************************************!*\
+  !*** ./src/sakuraba/apps/index.ts ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var main_1 = __webpack_require__(/*! ./main */ "./src/sakuraba/app/main/index.ts");
+var main_1 = __webpack_require__(/*! ./main */ "./src/sakuraba/apps/main/index.ts");
 exports.main = main_1.default;
 
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/actions/board.ts":
-/*!************************************************!*\
-  !*** ./src/sakuraba/app/main/actions/board.ts ***!
-  \************************************************/
+/***/ "./src/sakuraba/apps/main/actions/board.ts":
+/*!*************************************************!*\
+  !*** ./src/sakuraba/apps/main/actions/board.ts ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35820,10 +35820,10 @@ exports.default = {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/actions/card.ts":
-/*!***********************************************!*\
-  !*** ./src/sakuraba/app/main/actions/card.ts ***!
-  \***********************************************/
+/***/ "./src/sakuraba/apps/main/actions/card.ts":
+/*!************************************************!*\
+  !*** ./src/sakuraba/apps/main/actions/card.ts ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35977,10 +35977,10 @@ exports.default = {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/actions/index.ts":
-/*!************************************************!*\
-  !*** ./src/sakuraba/app/main/actions/index.ts ***!
-  \************************************************/
+/***/ "./src/sakuraba/apps/main/actions/index.ts":
+/*!*************************************************!*\
+  !*** ./src/sakuraba/apps/main/actions/index.ts ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35990,11 +35990,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var log_1 = __importDefault(__webpack_require__(/*! ./log */ "./src/sakuraba/app/main/actions/log.ts"));
-var card_1 = __importDefault(__webpack_require__(/*! ./card */ "./src/sakuraba/app/main/actions/card.ts"));
-var board_1 = __importDefault(__webpack_require__(/*! ./board */ "./src/sakuraba/app/main/actions/board.ts"));
-var sakuraToken_1 = __importDefault(__webpack_require__(/*! ./sakuraToken */ "./src/sakuraba/app/main/actions/sakuraToken.ts"));
-var misc_1 = __importDefault(__webpack_require__(/*! ./misc */ "./src/sakuraba/app/main/actions/misc.ts"));
+var log_1 = __importDefault(__webpack_require__(/*! ./log */ "./src/sakuraba/apps/main/actions/log.ts"));
+var card_1 = __importDefault(__webpack_require__(/*! ./card */ "./src/sakuraba/apps/main/actions/card.ts"));
+var board_1 = __importDefault(__webpack_require__(/*! ./board */ "./src/sakuraba/apps/main/actions/board.ts"));
+var sakuraToken_1 = __importDefault(__webpack_require__(/*! ./sakuraToken */ "./src/sakuraba/apps/main/actions/sakuraToken.ts"));
+var misc_1 = __importDefault(__webpack_require__(/*! ./misc */ "./src/sakuraba/apps/main/actions/misc.ts"));
 var actionsTemp = Object.assign(log_1.default, card_1.default, board_1.default, sakuraToken_1.default);
 var actionsTemp2 = Object.assign(actionsTemp, misc_1.default);
 exports.actions = actionsTemp2;
@@ -36002,10 +36002,10 @@ exports.actions = actionsTemp2;
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/actions/log.ts":
-/*!**********************************************!*\
-  !*** ./src/sakuraba/app/main/actions/log.ts ***!
-  \**********************************************/
+/***/ "./src/sakuraba/apps/main/actions/log.ts":
+/*!***********************************************!*\
+  !*** ./src/sakuraba/apps/main/actions/log.ts ***!
+  \***********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36034,10 +36034,10 @@ exports.default = {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/actions/misc.ts":
-/*!***********************************************!*\
-  !*** ./src/sakuraba/app/main/actions/misc.ts ***!
-  \***********************************************/
+/***/ "./src/sakuraba/apps/main/actions/misc.ts":
+/*!************************************************!*\
+  !*** ./src/sakuraba/apps/main/actions/misc.ts ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36054,10 +36054,10 @@ exports.default = {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/actions/sakuraToken.ts":
-/*!******************************************************!*\
-  !*** ./src/sakuraba/app/main/actions/sakuraToken.ts ***!
-  \******************************************************/
+/***/ "./src/sakuraba/apps/main/actions/sakuraToken.ts":
+/*!*******************************************************!*\
+  !*** ./src/sakuraba/apps/main/actions/sakuraToken.ts ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36149,10 +36149,10 @@ exports.default = {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/Card.tsx":
-/*!***************************************************!*\
-  !*** ./src/sakuraba/app/main/components/Card.tsx ***!
-  \***************************************************/
+/***/ "./src/sakuraba/apps/main/components/Card.tsx":
+/*!****************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/Card.tsx ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36232,10 +36232,10 @@ exports.Card = function (p) { return function (state, actions) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/CardAreaBackground.tsx":
-/*!*****************************************************************!*\
-  !*** ./src/sakuraba/app/main/components/CardAreaBackground.tsx ***!
-  \*****************************************************************/
+/***/ "./src/sakuraba/apps/main/components/CardAreaBackground.tsx":
+/*!******************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/CardAreaBackground.tsx ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36259,10 +36259,10 @@ exports.CardAreaBackground = function (p) { return function (state) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/CardAreaDroppable.tsx":
-/*!****************************************************************!*\
-  !*** ./src/sakuraba/app/main/components/CardAreaDroppable.tsx ***!
-  \****************************************************************/
+/***/ "./src/sakuraba/apps/main/components/CardAreaDroppable.tsx":
+/*!*****************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/CardAreaDroppable.tsx ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36318,15 +36318,15 @@ exports.CardAreaDroppable = function (p) { return function (state, actions) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/ControlPanel.css":
-/*!***********************************************************!*\
-  !*** ./src/sakuraba/app/main/components/ControlPanel.css ***!
-  \***********************************************************/
+/***/ "./src/sakuraba/apps/main/components/ControlPanel.css":
+/*!************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/ControlPanel.css ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../../../node_modules/css-loader??ref--5-1!./ControlPanel.css */ "./node_modules/css-loader/index.js?!./src/sakuraba/app/main/components/ControlPanel.css");
+var content = __webpack_require__(/*! !../../../../../node_modules/css-loader??ref--5-1!./ControlPanel.css */ "./node_modules/css-loader/index.js?!./src/sakuraba/apps/main/components/ControlPanel.css");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -36348,10 +36348,10 @@ if(false) {}
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/ControlPanel.tsx":
-/*!***********************************************************!*\
-  !*** ./src/sakuraba/app/main/components/ControlPanel.tsx ***!
-  \***********************************************************/
+/***/ "./src/sakuraba/apps/main/components/ControlPanel.tsx":
+/*!************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/ControlPanel.tsx ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36368,9 +36368,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
-var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/app/main/components/ControlPanel.css"));
+var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/apps/main/components/ControlPanel.css"));
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
-var DeckBuildCard_1 = __webpack_require__(/*! ./DeckBuildCard */ "./src/sakuraba/app/main/components/DeckBuildCard.tsx");
+var DeckBuildCard_1 = __webpack_require__(/*! ./DeckBuildCard */ "./src/sakuraba/apps/main/components/DeckBuildCard.tsx");
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 // ルール編集メモ
 // 第二幕、新幕の選択
@@ -36606,10 +36606,10 @@ exports.ControlPanel = function () { return function (state, actions) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/DeckBuildCard.tsx":
-/*!************************************************************!*\
-  !*** ./src/sakuraba/app/main/components/DeckBuildCard.tsx ***!
-  \************************************************************/
+/***/ "./src/sakuraba/apps/main/components/DeckBuildCard.tsx":
+/*!*************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/DeckBuildCard.tsx ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36655,10 +36655,10 @@ exports.DeckBuildCard = function (p) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/MariganButton.tsx":
-/*!************************************************************!*\
-  !*** ./src/sakuraba/app/main/components/MariganButton.tsx ***!
-  \************************************************************/
+/***/ "./src/sakuraba/apps/main/components/MariganButton.tsx":
+/*!*************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/MariganButton.tsx ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36687,10 +36687,10 @@ exports.MariganButton = function (p) { return function (state, actions) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/SakuraToken.tsx":
-/*!**********************************************************!*\
-  !*** ./src/sakuraba/app/main/components/SakuraToken.tsx ***!
-  \**********************************************************/
+/***/ "./src/sakuraba/apps/main/components/SakuraToken.tsx":
+/*!***********************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/SakuraToken.tsx ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36713,10 +36713,10 @@ exports.SakuraToken = function (p) { return function (state, actions) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/SakuraTokenAreaBackground.tsx":
-/*!************************************************************************!*\
-  !*** ./src/sakuraba/app/main/components/SakuraTokenAreaBackground.tsx ***!
-  \************************************************************************/
+/***/ "./src/sakuraba/apps/main/components/SakuraTokenAreaBackground.tsx":
+/*!*************************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/SakuraTokenAreaBackground.tsx ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36739,10 +36739,10 @@ exports.SakuraTokenAreaBackground = function (p) { return function (state) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/SakuraTokenAreaDroppable.tsx":
-/*!***********************************************************************!*\
-  !*** ./src/sakuraba/app/main/components/SakuraTokenAreaDroppable.tsx ***!
-  \***********************************************************************/
+/***/ "./src/sakuraba/apps/main/components/SakuraTokenAreaDroppable.tsx":
+/*!************************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/SakuraTokenAreaDroppable.tsx ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36804,10 +36804,10 @@ exports.SakuraTokenAreaDroppable = function (p) { return function (state, action
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/Vigor.tsx":
-/*!****************************************************!*\
-  !*** ./src/sakuraba/app/main/components/Vigor.tsx ***!
-  \****************************************************/
+/***/ "./src/sakuraba/apps/main/components/Vigor.tsx":
+/*!*****************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/Vigor.tsx ***!
+  \*****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36851,10 +36851,10 @@ exports.Vigor = function (p) { return function (state, actions) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/WitheredToken.tsx":
-/*!************************************************************!*\
-  !*** ./src/sakuraba/app/main/components/WitheredToken.tsx ***!
-  \************************************************************/
+/***/ "./src/sakuraba/apps/main/components/WitheredToken.tsx":
+/*!*************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/WitheredToken.tsx ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36893,10 +36893,10 @@ exports.WitheredToken = function (p) { return function (state, actions) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/components/index.ts":
-/*!***************************************************!*\
-  !*** ./src/sakuraba/app/main/components/index.ts ***!
-  \***************************************************/
+/***/ "./src/sakuraba/apps/main/components/index.ts":
+/*!****************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/index.ts ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36906,25 +36906,25 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./Card */ "./src/sakuraba/app/main/components/Card.tsx"));
-__export(__webpack_require__(/*! ./DeckBuildCard */ "./src/sakuraba/app/main/components/DeckBuildCard.tsx"));
-__export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/app/main/components/SakuraToken.tsx"));
-__export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/app/main/components/Vigor.tsx"));
-__export(__webpack_require__(/*! ./WitheredToken */ "./src/sakuraba/app/main/components/WitheredToken.tsx"));
-__export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/app/main/components/ControlPanel.tsx"));
-__export(__webpack_require__(/*! ./CardAreaBackground */ "./src/sakuraba/app/main/components/CardAreaBackground.tsx"));
-__export(__webpack_require__(/*! ./CardAreaDroppable */ "./src/sakuraba/app/main/components/CardAreaDroppable.tsx"));
-__export(__webpack_require__(/*! ./SakuraTokenAreaBackground */ "./src/sakuraba/app/main/components/SakuraTokenAreaBackground.tsx"));
-__export(__webpack_require__(/*! ./SakuraTokenAreaDroppable */ "./src/sakuraba/app/main/components/SakuraTokenAreaDroppable.tsx"));
-__export(__webpack_require__(/*! ./MariganButton */ "./src/sakuraba/app/main/components/MariganButton.tsx"));
+__export(__webpack_require__(/*! ./Card */ "./src/sakuraba/apps/main/components/Card.tsx"));
+__export(__webpack_require__(/*! ./DeckBuildCard */ "./src/sakuraba/apps/main/components/DeckBuildCard.tsx"));
+__export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/apps/main/components/SakuraToken.tsx"));
+__export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/apps/main/components/Vigor.tsx"));
+__export(__webpack_require__(/*! ./WitheredToken */ "./src/sakuraba/apps/main/components/WitheredToken.tsx"));
+__export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/apps/main/components/ControlPanel.tsx"));
+__export(__webpack_require__(/*! ./CardAreaBackground */ "./src/sakuraba/apps/main/components/CardAreaBackground.tsx"));
+__export(__webpack_require__(/*! ./CardAreaDroppable */ "./src/sakuraba/apps/main/components/CardAreaDroppable.tsx"));
+__export(__webpack_require__(/*! ./SakuraTokenAreaBackground */ "./src/sakuraba/apps/main/components/SakuraTokenAreaBackground.tsx"));
+__export(__webpack_require__(/*! ./SakuraTokenAreaDroppable */ "./src/sakuraba/apps/main/components/SakuraTokenAreaDroppable.tsx"));
+__export(__webpack_require__(/*! ./MariganButton */ "./src/sakuraba/apps/main/components/MariganButton.tsx"));
 
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/index.ts":
-/*!****************************************!*\
-  !*** ./src/sakuraba/app/main/index.ts ***!
-  \****************************************/
+/***/ "./src/sakuraba/apps/main/index.ts":
+/*!*****************************************!*\
+  !*** ./src/sakuraba/apps/main/index.ts ***!
+  \*****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36936,24 +36936,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
-var view_1 = __importDefault(__webpack_require__(/*! ./view */ "./src/sakuraba/app/main/view.tsx"));
-var actions_1 = __webpack_require__(/*! ./actions */ "./src/sakuraba/app/main/actions/index.ts");
+var view_1 = __importDefault(__webpack_require__(/*! ./view */ "./src/sakuraba/apps/main/view.tsx"));
+var actions_1 = __webpack_require__(/*! ./actions */ "./src/sakuraba/apps/main/actions/index.ts");
 function createInitialState() {
     return {};
 }
 exports.createInitialState = createInitialState;
-function launch(state, container) {
+function run(state, container) {
     return logger_1.withLogger(hyperapp_1.app)(state, actions_1.actions, view_1.default, container);
 }
-exports.launch = launch;
+exports.run = run;
 
 
 /***/ }),
 
-/***/ "./src/sakuraba/app/main/view.tsx":
-/*!****************************************!*\
-  !*** ./src/sakuraba/app/main/view.tsx ***!
-  \****************************************/
+/***/ "./src/sakuraba/apps/main/view.tsx":
+/*!*****************************************!*\
+  !*** ./src/sakuraba/apps/main/view.tsx ***!
+  \*****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36968,7 +36968,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var components = __importStar(__webpack_require__(/*! ./components */ "./src/sakuraba/app/main/components/index.ts"));
+var components = __importStar(__webpack_require__(/*! ./components */ "./src/sakuraba/apps/main/components/index.ts"));
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 /** オブジェクトの配置(座標の決定)を行う */
 function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spacing) {

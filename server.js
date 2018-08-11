@@ -15,8 +15,7 @@ var randomstring = __importStar(require("randomstring"));
 var utils_1 = require("sakuraba/utils");
 var browserSync = require("browser-sync");
 var connectBrowserSync = require("connect-browser-sync");
-var hyperapp_1 = require("hyperapp");
-var mainApp = __importStar(require("sakuraba/app/main"));
+var apps = __importStar(require("sakuraba/apps"));
 var socket_1 = require("sakuraba/socket");
 var RedisClient = redis.createClient(process.env.REDIS_URL);
 var PORT = process.env.PORT || 3000;
@@ -71,8 +70,7 @@ function saveBoard(boardId, board, callback) {
         callback.call(undefined);
     });
 }
-var view = function () { return hyperapp_1.h('div'); };
-var appActions = mainApp.launch(utils_1.createInitialState(), null);
+var appActions = apps.main.run(utils_1.createInitialState(), null);
 io.on('connection', function (ioSocket) {
     var socket = new socket_1.ServerSocket(ioSocket);
     console.log("Client connected - " + ioSocket.id);

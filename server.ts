@@ -10,8 +10,7 @@ import * as sakuraba from 'sakuraba';
 import { createInitialState } from 'sakuraba/utils';
 import browserSync = require('browser-sync');
 import connectBrowserSync = require('connect-browser-sync');
-import { app, h } from 'hyperapp';
-import * as mainApp from 'sakuraba/app/main';
+import * as apps from 'sakuraba/apps';
 import { ServerSocket } from 'sakuraba/socket';
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
@@ -75,8 +74,7 @@ function saveBoard(boardId: string, board: state.Board, callback: () => void){
   });
 }
 
-let view = () => h('div');
-let appActions = mainApp.launch(createInitialState(), null);
+let appActions = apps.main.run(createInitialState(), null);
 
 io.on('connection', (ioSocket) => {
   const socket = new ServerSocket(ioSocket);
