@@ -1,4 +1,4 @@
-import { Megami } from "../../sakuraba";
+import { Megami } from "sakuraba";
 import { ClientSocket } from "../socket";
 
 export as namespace state

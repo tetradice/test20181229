@@ -1,5 +1,5 @@
 import moment = require('moment');
-import * as models from "../models";
+import * as models from "sakuraba/models";
 
 export default {
     appendActionLog: (p: {text: string}) => (state: state.State) => {

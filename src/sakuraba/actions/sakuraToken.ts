@@ -1,6 +1,6 @@
 import * as  _ from "lodash";
-import * as models from "../models";
-import * as utils from "../utils";
+import * as models from "sakuraba/models";
+import * as utils from "sakuraba/utils";
 import { ActionsType } from ".";
 
 export default {

@@ -1,4 +1,4 @@
-import * as sakuraba from '../../sakuraba';
+import * as sakuraba from "sakuraba";
 
 /** プレイヤーサイドを逆にする */
 export function flipSide(side: PlayerSide): PlayerSide{

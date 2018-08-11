@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { Megami } from "../../sakuraba";
+import { Megami } from "sakuraba";
 
 export class Board implements state.Board {
     objects: state.BoardObject[];

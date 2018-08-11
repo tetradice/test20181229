@@ -1,6 +1,6 @@
 import { h } from "hyperapp";
-import { ActionsType } from "../actions";
-import * as utils from "../utils";
+import { ActionsType } from "sakuraba/actions";
+import * as utils from "sakuraba/utils";
 
 /** 集中力 */
 export const Vigor = (p: {side: PlayerSide, left: number, top: number}) => (state: state.State, actions: ActionsType) => {

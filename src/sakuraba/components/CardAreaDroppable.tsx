@@ -1,5 +1,5 @@
 import { h } from "hyperapp";
-import { ActionsType } from "../actions";
+import { ActionsType } from "sakuraba/actions";
 
 /** 領域枠 */
 interface Param {

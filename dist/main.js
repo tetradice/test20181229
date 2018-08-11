@@ -35714,9 +35714,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __importStar(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
-var models = __importStar(__webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts"));
-var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
-var sakuraba_1 = __webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts");
+var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
+var sakuraba_1 = __webpack_require__(/*! sakuraba */ "./src/sakuraba.ts");
 exports.default = {
     /** ボード全体を設定する */
     setBoard: function (newBoard) {
@@ -35825,8 +35825,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __importStar(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
-var models = __importStar(__webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts"));
-var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
+var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 exports.default = {
     /** カードを1枚追加する */
     addCard: function (p) { return function (state) {
@@ -36007,7 +36007,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
-var models = __importStar(__webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts"));
+var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 exports.default = {
     appendActionLog: function (p) { return function (state) {
         // 元の盤の状態をコピーして新しい盤を生成
@@ -36059,8 +36059,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __importStar(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
-var models = __importStar(__webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts"));
-var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
+var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 exports.default = {
     /** 桜花結晶を指定数追加する */
     addSakuraToken: function (p) { return function (state) {
@@ -36154,8 +36154,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
-var sakuraba = __importStar(__webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
+var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
 exports.Card = function (p) { return function (state, actions) {
     var styles = {
         left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * state.zoom + "px",
@@ -36353,12 +36353,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var sakuraba = __importStar(__webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts"));
-var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
+var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/components/ControlPanel.css"));
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
-var _1 = __webpack_require__(/*! . */ "./src/sakuraba/components/index.ts");
-var models = __importStar(__webpack_require__(/*! ../models */ "./src/sakuraba/models/index.ts"));
+var DeckBuildCard_1 = __webpack_require__(/*! ./DeckBuildCard */ "./src/sakuraba/components/DeckBuildCard.tsx");
+var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 // ルール編集メモ
 // 第二幕、新幕の選択
 // アンドゥ制約（山札を引いた後のUndoは可能か？）
@@ -36487,7 +36487,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                         var top = 4 + r * (160 + 8);
                         var left = 4 + c * (100 + 8);
                         var selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
-                        cardElements.push(hyperapp_1.h(_1.DeckBuildCard, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); }, zoom: state.zoom }));
+                        cardElements.push(hyperapp_1.h(DeckBuildCard_1.DeckBuildCard, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); }, zoom: state.zoom }));
                     });
                 });
                 var normalCardCount = deckBuildState.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'normal'; }).length;
@@ -36611,8 +36611,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
-var sakuraba = __importStar(__webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
+var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
 exports.DeckBuildCard = function (p) {
     var styles = {
         left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * p.zoom + "px",
@@ -36744,7 +36744,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 exports.SakuraTokenAreaDroppable = function (p) { return function (state, actions) {
     var styles = {
         left: p.left * state.zoom + "px",
@@ -36809,7 +36809,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 /** 集中力 */
 exports.Vigor = function (p) { return function (state, actions) {
     // DOMを返す
@@ -36856,7 +36856,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var utils = __importStar(__webpack_require__(/*! ../utils */ "./src/sakuraba/utils/index.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 /** 集中力 */
 exports.WitheredToken = function (p) { return function (state, actions) {
     // DOMを返す
@@ -37104,7 +37104,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var sakuraba = __importStar(__webpack_require__(/*! ../../sakuraba */ "./src/sakuraba.ts"));
+var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
 /** プレイヤーサイドを逆にする */
 function flipSide(side) {
     if (side === 'p1')

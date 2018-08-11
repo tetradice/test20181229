@@ -1,7 +1,7 @@
 import { h } from "hyperapp";
-import * as utils from "../utils";
-import * as sakuraba from '../../sakuraba';
-import { ActionsType } from "../actions";
+import * as utils from "sakuraba/utils";
+import * as sakuraba from "sakuraba";
+import { ActionsType } from "sakuraba/actions";
 
 /** カード */
 interface Param {

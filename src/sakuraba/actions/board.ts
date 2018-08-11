@@ -1,7 +1,7 @@
 import * as  _ from "lodash";
-import * as models from "../models";
-import * as utils from "../utils";
-import { Megami, CARD_DATA } from "../../sakuraba";
+import * as models from "sakuraba/models";
+import * as utils from "sakuraba/utils";
+import { Megami, CARD_DATA } from "sakuraba";
 import cardActions from './card';
 import { ActionsType } from ".";
 

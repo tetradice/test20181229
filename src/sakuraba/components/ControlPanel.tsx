@@ -1,12 +1,12 @@
 import { h, app } from "hyperapp";
-import { ActionsType } from "../actions";
-import * as sakuraba from "../../sakuraba";
-import * as utils from "../utils";
+import { ActionsType } from "sakuraba/actions";
+import * as sakuraba from "sakuraba";
+import * as utils from "sakuraba/utils";
 import { Card } from "./Card";
 import * as css from "./ControlPanel.css"
 import { withLogger } from "@hyperapp/logger"
-import { DeckBuildCard } from ".";
-import * as models from "../models";
+import { DeckBuildCard } from "./DeckBuildCard";
+import * as models from "sakuraba/models";
 
 
 // ルール編集メモ
