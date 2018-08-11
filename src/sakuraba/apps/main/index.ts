@@ -8,6 +8,6 @@ export function createInitialState(): any{
     return {};
 }
 
-export function launch(state: any, container: Element | null): ActionsType {
+export function run(state: any, container: Element | null): ActionsType {
     return withLogger(app)(state, actions, view, container);
-} 
+}

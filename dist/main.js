@@ -35501,7 +35501,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
-var mainApp = __importStar(__webpack_require__(/*! sakuraba/app/main */ "./src/sakuraba/app/main/index.ts"));
+var app = __importStar(__webpack_require__(/*! sakuraba/app */ "./src/sakuraba/app/index.ts"));
 var socket_1 = __webpack_require__(/*! sakuraba/socket */ "./src/sakuraba/socket.ts");
 function messageModal(desc) {
     $('#MESSAGE-MODAL .description').html(desc);
@@ -35531,7 +35531,7 @@ $(function () {
     st.boardId = params.boardId;
     st.side = params.side;
     // アプリケーション起動
-    var appActions = mainApp.launch(st, document.getElementById('BOARD2'));
+    var appActions = app.main.launch(st, document.getElementById('BOARD2'));
     // 山札ドラッグメニュー
     // 切札右クリックメニュー
     $.contextMenu({
@@ -35689,6 +35689,22 @@ exports.CARD_DATA = {
     // , '99-xxx-o-n-1': {megami: 'xxx', name: '　', ruby: '　', baseType: 'normal', types: ['attack'], range: " ", damage: '-/-', text: ''}
     // , '99-xxx-o-s-1': {megami: 'xxx', name: '　', ruby: '　', baseType: 'special', cost: '5', types: ['attack'], range: ' ', damage: '-/-', text: ''}
 };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/app/index.ts":
+/*!***********************************!*\
+  !*** ./src/sakuraba/app/index.ts ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var main_1 = __webpack_require__(/*! ./main */ "./src/sakuraba/app/main/index.ts");
+exports.main = main_1.default;
 
 
 /***/ }),
