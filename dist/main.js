@@ -35498,10 +35498,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
-var mainApp = __importStar(__webpack_require__(/*! sakuraba/apps/main */ "./src/sakuraba/apps/main/index.ts"));
+var apps_1 = __importDefault(__webpack_require__(/*! sakuraba/apps */ "./src/sakuraba/apps/index.ts"));
 var socket_1 = __webpack_require__(/*! sakuraba/socket */ "./src/sakuraba/socket.ts");
 function messageModal(desc) {
     $('#MESSAGE-MODAL .description').html(desc);
@@ -35531,7 +35534,7 @@ $(function () {
     st.boardId = params.boardId;
     st.side = params.side;
     // アプリケーション起動
-    var appActions = mainApp.run(st, document.getElementById('BOARD2'));
+    var appActions = apps_1.default.main.run(st, document.getElementById('BOARD2'));
     // 山札ドラッグメニュー
     // 切札右クリックメニュー
     $.contextMenu({
@@ -35688,6 +35691,31 @@ exports.CARD_DATA = {
     '03-himika-o-s-4': { megami: 'himika', name: 'ヴァーミリオンフィールド', ruby: '', baseType: 'special', cost: '2', types: ['action'], text: '連火-このカードがこのターンに使用した3枚目以降のカードならば、ダスト→間合：2\n【再起】あなたの手札が0枚である。' }
     // , '99-xxx-o-n-1': {megami: 'xxx', name: '　', ruby: '　', baseType: 'normal', types: ['attack'], range: " ", damage: '-/-', text: ''}
     // , '99-xxx-o-s-1': {megami: 'xxx', name: '　', ruby: '　', baseType: 'special', cost: '5', types: ['attack'], range: ' ', damage: '-/-', text: ''}
+};
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/index.ts":
+/*!************************************!*\
+  !*** ./src/sakuraba/apps/index.ts ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var main = __importStar(__webpack_require__(/*! ./main */ "./src/sakuraba/apps/main/index.ts"));
+exports.default = {
+    main: main
 };
 
 

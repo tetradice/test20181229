@@ -7,7 +7,7 @@ const config: webpack.Configuration = {
 
   // メインとなるJavaScriptファイル（エントリーポイント）
   entry: {
-    "server": "./server.ts"
+    "server": "./src/server.ts"
   },
   // エンジン
   target: 'node',
