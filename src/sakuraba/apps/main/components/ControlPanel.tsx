@@ -5,7 +5,7 @@ import * as utils from "sakuraba/utils";
 import { Card } from "./Card";
 import * as css from "./ControlPanel.css"
 import { withLogger } from "@hyperapp/logger"
-import { DeckBuildCard } from "./DeckBuildCard";
+import { DeckBuildCard } from "../../common/components";
 import * as models from "sakuraba/models";
 
 

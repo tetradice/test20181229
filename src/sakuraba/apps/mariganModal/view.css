@@ -1,0 +1,21 @@
+.modalTop {
+    display: flex !important;
+}
+
+.outer {
+    width: 100%;
+    overflow: scroll;
+    max-height: 320px;
+    position: relative;
+}
+
+.cardArea {
+    width: 1400px;
+    height: 310px;
+    position: relative;
+}
+
+.countCaption {
+    margin-top: 1em;
+    font-size: larger;
+}

@@ -1,6 +1,6 @@
 import * as models from "sakuraba/models";
 import * as utils from "sakuraba/utils";
-import apps from "sakuraba/apps";
+import * as apps from "sakuraba/apps";
 import { ClientSocket } from "sakuraba/socket";
 
 declare var params: {

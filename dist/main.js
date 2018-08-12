@@ -193,6 +193,30 @@ exports.locals = {
 
 /***/ }),
 
+/***/ "./node_modules/css-loader/index.js?!./src/sakuraba/apps/mariganModal/view.css":
+/*!*************************************************************************************!*\
+  !*** ./node_modules/css-loader??ref--5-1!./src/sakuraba/apps/mariganModal/view.css ***!
+  \*************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-loader/lib/css-base.js */ "./node_modules/css-loader/lib/css-base.js")(true);
+// imports
+
+
+// module
+exports.push([module.i, ".OCTNz7wT5Gh5f61rMHiUX {\r\n    display: flex !important;\r\n}\r\n\r\n._2B96DDiNapYUOu1RoYvWry {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n._3bdhO-R1sgFybwUsHg30xr {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n._3G1-4wCq97IzXnAh31mj28 {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}", "", {"version":3,"sources":["C:/Users/owner/Desktop/daisuke_temp/furuyoni/src/sakuraba/apps/mariganModal/view.css"],"names":[],"mappings":"AAAA;IACI,yBAAyB;CAC5B;;AAED;IACI,YAAY;IACZ,iBAAiB;IACjB,kBAAkB;IAClB,mBAAmB;CACtB;;AAED;IACI,cAAc;IACd,cAAc;IACd,mBAAmB;CACtB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;CACrB","file":"view.css","sourcesContent":[".modalTop {\r\n    display: flex !important;\r\n}\r\n\r\n.outer {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.cardArea {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n.countCaption {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}"],"sourceRoot":""}]);
+
+// exports
+exports.locals = {
+	"modalTop": "OCTNz7wT5Gh5f61rMHiUX",
+	"outer": "_2B96DDiNapYUOu1RoYvWry",
+	"cardArea": "_3bdhO-R1sgFybwUsHg30xr",
+	"countCaption": "_3G1-4wCq97IzXnAh31mj28"
+};
+
+/***/ }),
+
 /***/ "./node_modules/css-loader/lib/css-base.js":
 /*!*************************************************!*\
   !*** ./node_modules/css-loader/lib/css-base.js ***!
@@ -35498,13 +35522,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
-var apps_1 = __importDefault(__webpack_require__(/*! sakuraba/apps */ "./src/sakuraba/apps/index.ts"));
+var apps = __importStar(__webpack_require__(/*! sakuraba/apps */ "./src/sakuraba/apps/index.ts"));
 var socket_1 = __webpack_require__(/*! sakuraba/socket */ "./src/sakuraba/socket.ts");
 function messageModal(desc) {
     $('#MESSAGE-MODAL .description').html(desc);
@@ -35534,7 +35555,7 @@ $(function () {
     st.boardId = params.boardId;
     st.side = params.side;
     // アプリケーション起動
-    var appActions = apps_1.default.main.run(st, document.getElementById('BOARD2'));
+    var appActions = apps.main.run(st, document.getElementById('BOARD2'));
     // 山札ドラッグメニュー
     // 切札右クリックメニュー
     $.contextMenu({
@@ -35696,6 +35717,73 @@ exports.CARD_DATA = {
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/common/components/DeckBuildCard.tsx":
+/*!***************************************************************!*\
+  !*** ./src/sakuraba/apps/common/components/DeckBuildCard.tsx ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
+var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
+exports.DeckBuildCard = function (p) {
+    var styles = {
+        left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * p.zoom + "px",
+        top: (p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) * p.zoom + "px",
+        width: 100 * p.zoom + "px",
+        height: 140 * p.zoom + "px"
+    };
+    var cardData = sakuraba.CARD_DATA[p.target.cardId];
+    var className = "fbs-card open-normal clickable";
+    if (p.selected)
+        className += " selected";
+    var setPopup = function (element) {
+        // SemanticUI ポップアップ初期化
+        $(element).popup({
+            delay: { show: 500, hide: 0 },
+        });
+    };
+    var oncreate = function (element) {
+        setPopup(element);
+    };
+    var onupdate = function (element) {
+        setPopup(element);
+    };
+    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, "data-object-id": p.target.id, "data-region": p.target.region, onclick: p.onclick, ondblclick: ondblclick, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
+};
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/common/components/index.ts":
+/*!******************************************************!*\
+  !*** ./src/sakuraba/apps/common/components/index.ts ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(/*! ./DeckBuildCard */ "./src/sakuraba/apps/common/components/DeckBuildCard.tsx"));
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/index.ts":
 /*!************************************!*\
   !*** ./src/sakuraba/apps/index.ts ***!
@@ -35714,9 +35802,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var main = __importStar(__webpack_require__(/*! ./main */ "./src/sakuraba/apps/main/index.ts"));
-exports.default = {
-    main: main
-};
+exports.main = main;
+var mariganModal = __importStar(__webpack_require__(/*! ./mariganModal */ "./src/sakuraba/apps/mariganModal/index.ts"));
+exports.mariganModal = mariganModal;
 
 
 /***/ }),
@@ -36382,7 +36470,7 @@ var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/apps/main/components/ControlPanel.css"));
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
-var DeckBuildCard_1 = __webpack_require__(/*! ./DeckBuildCard */ "./src/sakuraba/apps/main/components/DeckBuildCard.tsx");
+var components_1 = __webpack_require__(/*! ../../common/components */ "./src/sakuraba/apps/common/components/index.ts");
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 // ルール編集メモ
 // 第二幕、新幕の選択
@@ -36512,7 +36600,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                         var top = 4 + r * (160 + 8);
                         var left = 4 + c * (100 + 8);
                         var selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
-                        cardElements.push(hyperapp_1.h(DeckBuildCard_1.DeckBuildCard, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); }, zoom: state.zoom }));
+                        cardElements.push(hyperapp_1.h(components_1.DeckBuildCard, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); }, zoom: state.zoom }));
                     });
                 });
                 var normalCardCount = deckBuildState.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'normal'; }).length;
@@ -36618,9 +36706,9 @@ exports.ControlPanel = function () { return function (state, actions) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/apps/main/components/DeckBuildCard.tsx":
+/***/ "./src/sakuraba/apps/main/components/MariganButton.tsx":
 /*!*************************************************************!*\
-  !*** ./src/sakuraba/apps/main/components/DeckBuildCard.tsx ***!
+  !*** ./src/sakuraba/apps/main/components/MariganButton.tsx ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -36636,48 +36724,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
-var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
-exports.DeckBuildCard = function (p) {
-    var styles = {
-        left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * p.zoom + "px",
-        top: (p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) * p.zoom + "px",
-        width: 100 * p.zoom + "px",
-        height: 140 * p.zoom + "px"
-    };
-    var cardData = sakuraba.CARD_DATA[p.target.cardId];
-    var className = "fbs-card open-normal clickable";
-    if (p.selected)
-        className += " selected";
-    var setPopup = function (element) {
-        // SemanticUI ポップアップ初期化
-        $(element).popup({
-            delay: { show: 500, hide: 0 },
-        });
-    };
-    var oncreate = function (element) {
-        setPopup(element);
-    };
-    var onupdate = function (element) {
-        setPopup(element);
-    };
-    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, "data-object-id": p.target.id, "data-region": p.target.region, onclick: p.onclick, ondblclick: ondblclick, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
-};
-
-
-/***/ }),
-
-/***/ "./src/sakuraba/apps/main/components/MariganButton.tsx":
-/*!*************************************************************!*\
-  !*** ./src/sakuraba/apps/main/components/MariganButton.tsx ***!
-  \*************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var apps = __importStar(__webpack_require__(/*! sakuraba/apps */ "./src/sakuraba/apps/index.ts"));
+var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 /** 手札の引き直しボタン */
 exports.MariganButton = function (p) { return function (state, actions) {
     // まだ最初の手札を引いてない場合か、すでに引き直し済みの場合は表示しない
@@ -36691,6 +36739,15 @@ exports.MariganButton = function (p) { return function (state, actions) {
         position: 'absolute'
     };
     var onClick = function () {
+        // マリガンダイアログを起動
+        var board = new models.Board(state.board);
+        var promise = new Promise(function (resolve, reject) {
+            var cardIds = board.getRegionCards(state.side, 'hand').map(function (c) { return c.cardId; });
+            var st = apps.mariganModal.State.create(state.side, cardIds, resolve, reject);
+            apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));
+        }).then(function (selectedCardIds) {
+            // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
+        });
     };
     return hyperapp_1.h("button", { style: styles, class: "ui basic button", onclick: onClick },
         hyperapp_1.h("span", { style: { color: 'blue' } }, "\u624B\u672D\u3092\u5F15\u304D\u76F4\u3059"));
@@ -36919,7 +36976,6 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(/*! ./Card */ "./src/sakuraba/apps/main/components/Card.tsx"));
-__export(__webpack_require__(/*! ./DeckBuildCard */ "./src/sakuraba/apps/main/components/DeckBuildCard.tsx"));
 __export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/apps/main/components/SakuraToken.tsx"));
 __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/apps/main/components/Vigor.tsx"));
 __export(__webpack_require__(/*! ./WitheredToken */ "./src/sakuraba/apps/main/components/WitheredToken.tsx"));
@@ -36950,10 +37006,6 @@ var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/sr
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
 var view_1 = __importDefault(__webpack_require__(/*! ./view */ "./src/sakuraba/apps/main/view.tsx"));
 var actions_1 = __webpack_require__(/*! ./actions */ "./src/sakuraba/apps/main/actions/index.ts");
-function createInitialState() {
-    return {};
-}
-exports.createInitialState = createInitialState;
 function run(state, container) {
     return logger_1.withLogger(hyperapp_1.app)(state, actions_1.actions, view_1.default, container);
 }
@@ -37095,6 +37147,190 @@ var view = function (state, actions) {
         hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680, top: 610 }),
         hyperapp_1.h(components.ControlPanel, null),
         hyperapp_1.h(components.MariganButton, { left: 10, top: 750 })));
+};
+exports.default = view;
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/mariganModal/actions.ts":
+/*!***************************************************!*\
+  !*** ./src/sakuraba/apps/mariganModal/actions.ts ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.actions = {
+    hide: function () {
+        return { shown: false };
+    },
+    selectCard: function (cardId) { return function (state) {
+        var newSelectedCardIds = state.selectedCardIds.concat([]);
+        if (newSelectedCardIds.indexOf(cardId) >= 0) {
+            // 選択OFF
+            newSelectedCardIds.splice(newSelectedCardIds.indexOf(cardId), 1);
+        }
+        else {
+            // 選択ON
+            newSelectedCardIds.push(cardId);
+        }
+        return { selectedCardIds: newSelectedCardIds };
+    }; },
+};
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/mariganModal/index.ts":
+/*!*************************************************!*\
+  !*** ./src/sakuraba/apps/mariganModal/index.ts ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
+var view_1 = __importDefault(__webpack_require__(/*! ./view */ "./src/sakuraba/apps/mariganModal/view.tsx"));
+var actions_1 = __webpack_require__(/*! ./actions */ "./src/sakuraba/apps/mariganModal/actions.ts");
+var state_1 = __webpack_require__(/*! ./state */ "./src/sakuraba/apps/mariganModal/state.ts");
+exports.State = state_1.State;
+function run(state, container) {
+    return logger_1.withLogger(hyperapp_1.app)(state, actions_1.actions, view_1.default, container);
+}
+exports.run = run;
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/mariganModal/state.ts":
+/*!*************************************************!*\
+  !*** ./src/sakuraba/apps/mariganModal/state.ts ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var State;
+(function (State) {
+    /** 新しいstateの生成 */
+    function create(side, cardIds, promiseResolve, promiseReject) {
+        return {
+            shown: true,
+            side: side,
+            cardIds: cardIds,
+            selectedCardIds: [],
+            promiseResolve: promiseResolve,
+            promiseReject: promiseReject
+        };
+    }
+    State.create = create;
+})(State = exports.State || (exports.State = {}));
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/mariganModal/view.css":
+/*!*************************************************!*\
+  !*** ./src/sakuraba/apps/mariganModal/view.css ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader??ref--5-1!./view.css */ "./node_modules/css-loader/index.js?!./src/sakuraba/apps/mariganModal/view.css");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"sourceMap":true,"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../../node_modules/style-loader/lib/addStyles.js */ "./node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/mariganModal/view.tsx":
+/*!*************************************************!*\
+  !*** ./src/sakuraba/apps/mariganModal/view.tsx ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var components_1 = __webpack_require__(/*! ../common/components */ "./src/sakuraba/apps/common/components/index.ts");
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
+var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
+var css = __importStar(__webpack_require__(/*! ./view.css */ "./src/sakuraba/apps/mariganModal/view.css"));
+/** ポップアップ初期化 */
+function setPopup() {
+    // ポップアップ初期化
+    $('[data-html],[data-content]').popup({
+        delay: { show: 500, hide: 0 },
+        onShow: function () {
+            //if(draggingFrom !== null) return false;
+        },
+    });
+}
+// メインビューの定義
+var view = function (state, actions) {
+    if (!state.shown)
+        return null;
+    var cardElements = [];
+    state.cardIds.forEach(function (cardId, c) {
+        var card = utils.createCard("deck-" + cardId, cardId, null, state.side);
+        card.opened = true;
+        var top = 4;
+        var left = 4 + c * (100 + 8);
+        var selected = state.selectedCardIds.indexOf(cardId) >= 0;
+        cardElements.push(hyperapp_1.h(components_1.DeckBuildCard, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); }, zoom: 1.0 }));
+    });
+    var selectedCount = state.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'normal'; }).length;
+    var okButtonClass = "ui positive labeled icon button";
+    if (selectedCount === 0)
+        okButtonClass += " disabled";
+    return (hyperapp_1.h("div", { class: "ui dimmer modals page visible active " + css.modalTop, oncreate: function () { return setPopup(); } },
+        hyperapp_1.h("div", { class: "ui modal visible active" },
+            hyperapp_1.h("div", { class: "content" },
+                hyperapp_1.h("div", { class: "description", style: { marginBottom: '2em' } },
+                    hyperapp_1.h("p", null, "\u5C71\u672D\u306E\u5E95\u306B\u623B\u3059\u30AB\u30FC\u30C9\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002\uFF08\u3053\u306E\u64CD\u4F5C\u306F\u4E00\u5EA6\u3057\u304B\u884C\u3048\u307E\u305B\u3093\uFF09")),
+                hyperapp_1.h("div", { class: css.outer },
+                    hyperapp_1.h("div", { class: css.cardArea, id: "DECK-BUILD-CARD-AREA" }, cardElements))),
+            hyperapp_1.h("div", { class: "actions" },
+                hyperapp_1.h("div", { class: okButtonClass, onclick: function () { actions.hide(); state.promiseResolve(state.selectedCardIds); } },
+                    "\u6C7A\u5B9A ",
+                    hyperapp_1.h("i", { class: "checkmark icon" })),
+                hyperapp_1.h("div", { class: "ui black deny button", onclick: function () { actions.hide(); state.promiseReject(); } }, "\u30AD\u30E3\u30F3\u30BB\u30EB")))));
 };
 exports.default = view;
 
