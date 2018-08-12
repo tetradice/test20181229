@@ -2,15 +2,14 @@
   "name": "furuyoni_simulator",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "start": "node dist/server.js",
-    "start:dev": "node-dev dist/server.js",
-    "watch:main": "webpack --watch",
-    "watch:server": "tsc --watch",
-    "build": "npm run build:main && npm run build:server",
-    "build:main": "webpack",
-    "build:server": "tsc"
+    "start": "npm run build:server && node dist/server.js",
+    "start:dev": "npm run build:server && node-dev dist/server.js",
+    "watch:client": "webpack --watch --config webpack.config.client.ts",
+    "watch:server": "webpack --watch --config webpack.config.server.ts",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "webpack --config webpack.config.client.ts",
+    "build:server": "webpack --config webpack.config.server.ts"
   },
   "keywords": [],
   "author": "",
@@ -34,8 +33,7 @@
     "redis": "^2.8.0",
     "socket.io": "2.1.1",
     "style-loader": "^0.21.0",
-    "ts-node": "^7.0.0",
-    "ts-node-dev": "^1.0.0-pre.26"
+    "ts-node": "^7.0.0"
   },
   "devDependencies": {
     "@types/browser-sync": "^0.0.41",
