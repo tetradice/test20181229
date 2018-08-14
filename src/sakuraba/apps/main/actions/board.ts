@@ -6,6 +6,44 @@ import cardActions from './card';
 import { ActionsType } from ".";
 
 export default {
+    /** 複数の操作を行い、必要に応じてUndo履歴、ログを設定。同時にソケットに変更後ボードを送信 */
+    operate: (p: {
+        /** 
+         * 元に戻す履歴の処理タイプ
+         * undoable - 元に戻すことが可能 (デフォルト)
+         * notBack - 操作を行うと元に戻せなくなる (履歴も削除される)
+         * ignore - 元に戻す対象とならない
+         */
+        undoType?: 'undoable' | 'notBack' | 'ignore';
+        
+        /**
+         * 操作ログに記録する内容
+         */
+        logText?: string;
+
+        /**
+         * 実行する処理の内容
+         */
+        proc: () => void;
+    }) => (state: state.State, actions: ActionsType) => {
+        if(p.undoType === undefined || p.undoType === 'undoable'){
+            // ボード履歴を記録する
+            actions.memorizeBoardHistory();
+        } else if(p.undoType === 'notBack'){
+            // ボード履歴を削除し、元に戻せないようにする
+            actions.forgetBoardHistory();
+        }
+
+        // メイン処理の実行
+        p.proc();
+
+        // 処理の実行が終わったら、socket.ioで更新後のボードの内容を送信
+        let newState = actions.getState();
+        if(newState.socket){
+            newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board})
+        }
+    },
+
     /** ボード全体を設定する */
     setBoard: (newBoard: state.Board) => {
         return {board: newBoard};

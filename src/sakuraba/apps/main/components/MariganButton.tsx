@@ -28,14 +28,19 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
             apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));            
         }).then((selectedCards) => {
             // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
-            actions.memorizeBoardHistory();
-            selectedCards.forEach(card => {
-                actions.moveCard({from: card.id, to: [state.side, 'library'], toPosition: 'first'});
-                actions.moveCard({from: [state.side, 'library'], to: [state.side, 'hand']});
+            actions.operate({
+                logText: `手札${selectedCards.length}枚を山札の底に入れ、同じ枚数のカードを引き直し`,
+                proc: () => {
+                    // 選択したカードを山札の底に移動
+                    selectedCards.forEach(card => {
+                        actions.moveCard({from: card.id, to: [state.side, 'library'], toPosition: 'first'});
+                        actions.moveCard({from: [state.side, 'library'], to: [state.side, 'hand']});
+                    });
+        
+                    // マリガンフラグON
+                    actions.setMariganFlag({side: state.side, value: true});
+                }
             })
-
-            // マリガンフラグON
-            actions.setMariganFlag({side: state.side, value: true});
         });
     }
 

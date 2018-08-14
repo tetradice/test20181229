@@ -35831,6 +35831,24 @@ var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/saku
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var sakuraba_1 = __webpack_require__(/*! sakuraba */ "./src/sakuraba.ts");
 exports.default = {
+    /** 複数の操作を行い、必要に応じてUndo履歴、ログを設定。同時にソケットに変更後ボードを送信 */
+    operate: function (p) { return function (state, actions) {
+        if (p.undoType === undefined || p.undoType === 'undoable') {
+            // ボード履歴を記録する
+            actions.memorizeBoardHistory();
+        }
+        else if (p.undoType === 'notBack') {
+            // ボード履歴を削除し、元に戻せないようにする
+            actions.forgetBoardHistory();
+        }
+        // メイン処理の実行
+        p.proc();
+        // 処理の実行が終わったら、socket.ioで更新後のボードの内容を送信
+        var newState = actions.getState();
+        if (newState.socket) {
+            newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board });
+        }
+    }; },
     /** ボード全体を設定する */
     setBoard: function (newBoard) {
         return { board: newBoard };
@@ -36774,13 +36792,18 @@ exports.MariganButton = function (p) { return function (state, actions) {
             apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));
         }).then(function (selectedCards) {
             // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
-            actions.memorizeBoardHistory();
-            selectedCards.forEach(function (card) {
-                actions.moveCard({ from: card.id, to: [state.side, 'library'], toPosition: 'first' });
-                actions.moveCard({ from: [state.side, 'library'], to: [state.side, 'hand'] });
+            actions.operate({
+                logText: "\u624B\u672D" + selectedCards.length + "\u679A\u3092\u5C71\u672D\u306E\u5E95\u306B\u5165\u308C\u3001\u540C\u3058\u679A\u6570\u306E\u30AB\u30FC\u30C9\u3092\u5F15\u304D\u76F4\u3057",
+                proc: function () {
+                    // 選択したカードを山札の底に移動
+                    selectedCards.forEach(function (card) {
+                        actions.moveCard({ from: card.id, to: [state.side, 'library'], toPosition: 'first' });
+                        actions.moveCard({ from: [state.side, 'library'], to: [state.side, 'hand'] });
+                    });
+                    // マリガンフラグON
+                    actions.setMariganFlag({ side: state.side, value: true });
+                }
             });
-            // マリガンフラグON
-            actions.setMariganFlag({ side: state.side, value: true });
         });
     };
     return hyperapp_1.h("button", { style: styles, class: "ui basic button", onclick: onClick },
