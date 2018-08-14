@@ -270,19 +270,20 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             </table>
 
 <div class="ui sub header">ボードサイズ</div>
-<div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', '100')}>
+<div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', state.zoom * 10)}>
 
-  <input type="hidden" name="boardSize" onchange={(e) => {return actions.setZoom(Number($(e.target).val()) * 0.01)}} />
+  <input type="hidden" name="boardSize" onchange={(e) => {return actions.setZoom(Number($(e.target).val()) * 0.1)}} />
   <i class="dropdown icon"></i>
   <div class="default text"></div>
   <div class="menu">
-  <div class="item" data-value="60">60%</div>
-  <div class="item" data-value="70">70%</div>
-    <div class="item" data-value="80">80%</div>
-    <div class="item" data-value="90">90%</div>
-    <div class="item" data-value="100">100%</div>
-    <div class="item" data-value="110">110%</div>
-    <div class="item" data-value="120">120%</div>
+    <div class="item" data-value="5">5</div>
+    <div class="item" data-value="6">6</div>
+    <div class="item" data-value="7">7</div>
+    <div class="item" data-value="8">8</div>
+    <div class="item" data-value="9">9</div>
+    <div class="item" data-value="10">10</div>
+    <div class="item" data-value="11">11</div>
+    <div class="item" data-value="12">12</div>
   </div>
 </div>
 

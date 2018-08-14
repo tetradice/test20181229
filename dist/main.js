@@ -35527,6 +35527,7 @@ var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/saku
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var apps = __importStar(__webpack_require__(/*! sakuraba/apps */ "./src/sakuraba/apps/index.ts"));
 var socket_1 = __webpack_require__(/*! sakuraba/socket */ "./src/sakuraba/socket.ts");
+var sakuraba_1 = __webpack_require__(/*! ./sakuraba */ "./src/sakuraba.ts");
 function messageModal(desc) {
     $('#MESSAGE-MODAL .description').html(desc);
     $('#MESSAGE-MODAL')
@@ -35554,6 +35555,18 @@ $(function () {
     st.socket = socket;
     st.boardId = params.boardId;
     st.side = params.side;
+    // ズーム設定を調整
+    var clientWidth = window.innerWidth - 350;
+    if (clientWidth < 1200)
+        st.zoom = 0.9;
+    if (clientWidth < 1200 - 120)
+        st.zoom = 0.8;
+    if (clientWidth < 1200 - 120 * 2)
+        st.zoom = 0.7;
+    if (clientWidth < 1200 - 120 * 3)
+        st.zoom = 0.6;
+    if (clientWidth < 1200 - 120 * 4)
+        st.zoom = 0.5;
     // アプリケーション起動
     var appActions = apps.main.run(st, document.getElementById('BOARD2'));
     // 山札ドラッグメニュー
@@ -35569,6 +35582,12 @@ $(function () {
             items['flip'] = { name: (card.opened ? '裏向きにする' : '表向きにする') };
             return {
                 callback: function (key) {
+                    appActions.operate({
+                        logText: sakuraba_1.CARD_DATA[card.cardId].name + "\u3092" + (card.opened ? '表向き' : '裏向き') + "\u306B\u5909\u66F4",
+                        proc: function () {
+                            appActions.flipCard(id);
+                        }
+                    });
                 },
                 items: items,
             };
@@ -36734,18 +36753,19 @@ exports.ControlPanel = function () { return function (state, actions) {
                     hyperapp_1.h("td", null, "\u89B3\u6226\u8005"),
                     hyperapp_1.h("td", null)))),
         hyperapp_1.h("div", { class: "ui sub header" }, "\u30DC\u30FC\u30C9\u30B5\u30A4\u30BA"),
-        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', '100'); } },
-            hyperapp_1.h("input", { type: "hidden", name: "boardSize", onchange: function (e) { return actions.setZoom(Number($(e.target).val()) * 0.01); } }),
+        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', state.zoom * 10); } },
+            hyperapp_1.h("input", { type: "hidden", name: "boardSize", onchange: function (e) { return actions.setZoom(Number($(e.target).val()) * 0.1); } }),
             hyperapp_1.h("i", { class: "dropdown icon" }),
             hyperapp_1.h("div", { class: "default text" }),
             hyperapp_1.h("div", { class: "menu" },
-                hyperapp_1.h("div", { class: "item", "data-value": "60" }, "60%"),
-                hyperapp_1.h("div", { class: "item", "data-value": "70" }, "70%"),
-                hyperapp_1.h("div", { class: "item", "data-value": "80" }, "80%"),
-                hyperapp_1.h("div", { class: "item", "data-value": "90" }, "90%"),
-                hyperapp_1.h("div", { class: "item", "data-value": "100" }, "100%"),
-                hyperapp_1.h("div", { class: "item", "data-value": "110" }, "110%"),
-                hyperapp_1.h("div", { class: "item", "data-value": "120" }, "120%")))));
+                hyperapp_1.h("div", { class: "item", "data-value": "5" }, "5"),
+                hyperapp_1.h("div", { class: "item", "data-value": "6" }, "6"),
+                hyperapp_1.h("div", { class: "item", "data-value": "7" }, "7"),
+                hyperapp_1.h("div", { class: "item", "data-value": "8" }, "8"),
+                hyperapp_1.h("div", { class: "item", "data-value": "9" }, "9"),
+                hyperapp_1.h("div", { class: "item", "data-value": "10" }, "10"),
+                hyperapp_1.h("div", { class: "item", "data-value": "11" }, "11"),
+                hyperapp_1.h("div", { class: "item", "data-value": "12" }, "12")))));
 }; };
 
 

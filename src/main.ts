@@ -2,6 +2,7 @@ import * as models from "sakuraba/models";
 import * as utils from "sakuraba/utils";
 import * as apps from "sakuraba/apps";
 import { ClientSocket } from "sakuraba/socket";
+import { CARD_DATA } from "./sakuraba";
 
 declare var params: {
     boardId: string;
@@ -40,6 +41,14 @@ $(function(){
     st.boardId = params.boardId;
     st.side = params.side;
 
+    // ズーム設定を調整
+    let clientWidth = window.innerWidth - 350;
+    if(clientWidth < 1200) st.zoom = 0.9;
+    if(clientWidth < 1200 - 120) st.zoom = 0.8;
+    if(clientWidth < 1200 - 120 * 2) st.zoom = 0.7;
+    if(clientWidth < 1200 - 120 * 3) st.zoom = 0.6;
+    if(clientWidth < 1200 - 120 * 4) st.zoom = 0.5;
+
     // アプリケーション起動
     let appActions = apps.main.run(st, document.getElementById('BOARD2'));
 
@@ -59,6 +68,13 @@ $(function(){
             items['flip'] =  {name: (card.opened ? '裏向きにする' : '表向きにする')}
             return {
                 callback: function(key: string) {
+                    appActions.operate({
+                        logText: `${CARD_DATA[card.cardId].name}を${card.opened ? '表向き' : '裏向き'}に変更`,
+                        proc: () => {
+                            appActions.flipCard(id);
+                        }
+                    });
+                    
                 },
                 items: items,
             }
