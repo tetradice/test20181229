@@ -24,7 +24,7 @@ export default {
     },
 
     /** Undo */
-    UndoBoard: () => (state: state.State) => {
+    undoBoard: () => (state: state.State) => {
         let newPast = state.boardHistoryPast.concat(); // clone array
         let newFuture = state.boardHistoryFuture.concat(); // clone array
 
@@ -34,7 +34,7 @@ export default {
     },
 
     /** Redo */
-    RedoBoard: () => (state: state.State) => {
+    redoBoard: () => (state: state.State) => {
         let newPast = state.boardHistoryPast.concat(); // clone array
         let newFuture = state.boardHistoryFuture.concat(); // clone array
 

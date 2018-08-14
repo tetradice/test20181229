@@ -35845,7 +35845,7 @@ exports.default = {
         return { boardHistoryPast: state.boardHistoryPast.concat([state.board]), boardHistoryFuture: [] };
     }; },
     /** Undo */
-    UndoBoard: function () { return function (state) {
+    undoBoard: function () { return function (state) {
         var newPast = state.boardHistoryPast.concat(); // clone array
         var newFuture = state.boardHistoryFuture.concat(); // clone array
         newFuture.push(state.board);
@@ -35853,7 +35853,7 @@ exports.default = {
         return { boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard };
     }; },
     /** Redo */
-    RedoBoard: function () { return function (state) {
+    redoBoard: function () { return function (state) {
         var newPast = state.boardHistoryPast.concat(); // clone array
         var newFuture = state.boardHistoryFuture.concat(); // clone array
         newPast.push(state.board);
@@ -36691,9 +36691,9 @@ exports.ControlPanel = function () { return function (state, actions) {
         hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? '' : 'disabled'), onclick: firstHandSet }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F")));
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
         hyperapp_1.h("div", { class: "ui icon basic buttons" },
-            hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.UndoBoard(); } },
+            hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.undoBoard(); } },
                 hyperapp_1.h("i", { class: "undo alternate icon" })),
-            hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryFuture.length === 0 ? 'disabled' : ''), onclick: function () { return actions.RedoBoard(); } },
+            hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryFuture.length === 0 ? 'disabled' : ''), onclick: function () { return actions.redoBoard(); } },
                 hyperapp_1.h("i", { class: "redo alternate icon" }))),
         hyperapp_1.h("button", { class: "ui basic button", onclick: reset }, "\u2605\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8"),
         hyperapp_1.h("br", null),
