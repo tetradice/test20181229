@@ -95,7 +95,7 @@ $(function(){
             if(key === 'draw'){
                 // 1枚引く
                 appActions.memorizeBoardHistory(); // Undoのために履歴を記憶
-                appActions.moveCard({from: 'library', fromSide: state.side, to: 'hand', toSide: state.side});
+                appActions.moveCard({from: [state.side, 'library'], to: [state.side, 'hand']});
             }
 
             if(key === 'reshuffle'){

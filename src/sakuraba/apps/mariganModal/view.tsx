@@ -22,17 +22,17 @@ const view: View<State, ActionsType> = (state, actions) => {
     if(!state.shown) return null;
 
     let cardElements: JSX.Element[] = [];
-    state.cardIds.forEach((cardId, c) => {
-        let card = utils.createCard(`deck-${cardId}`, cardId, null, state.side);
-        card.opened = true;
+    state.cards.forEach((card, c) => {
+        let sCard = utils.createCard(`deck-${card.id}`, card.id, null, state.side);
+        sCard.opened = true;
         let top = 4;
         let left = 4 + c * (100 + 8);
-        let selected = state.selectedCardIds.indexOf(cardId) >= 0;
+        let selected = state.selectedCards.indexOf(card) >= 0;
         
-        cardElements.push(<DeckBuildCard target={card} left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={1.0}></DeckBuildCard>);
+        cardElements.push(<DeckBuildCard target={card} left={left} top={top} selected={selected} onclick={() => actions.selectCard(card)} zoom={1.0}></DeckBuildCard>);
     });
 
-    let selectedCount = state.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'normal').length;
+    let selectedCount = state.selectedCards.filter(card => sakuraba.CARD_DATA[card.cardId].baseType === 'normal').length;
 
     let okButtonClass = "ui positive labeled icon button";
     if(selectedCount === 0) okButtonClass += " disabled";
@@ -51,7 +51,7 @@ const view: View<State, ActionsType> = (state, actions) => {
                     </div>
                 </div>
                 <div class="actions">
-                    <div class={okButtonClass} onclick={() => {actions.hide(); state.promiseResolve(state.selectedCardIds)}}>
+                    <div class={okButtonClass} onclick={() => {actions.hide(); state.promiseResolve(state.selectedCards)}}>
                         決定 <i class="checkmark icon"></i>
                     </div>
                     <div class="ui black deny button" onclick={() => {actions.hide(); state.promiseReject()}}>

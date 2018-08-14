@@ -276,7 +276,9 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
   <i class="dropdown icon"></i>
   <div class="default text"></div>
   <div class="menu">
-  <div class="item" data-value="80">80%</div>
+  <div class="item" data-value="60">60%</div>
+  <div class="item" data-value="70">70%</div>
+    <div class="item" data-value="80">80%</div>
     <div class="item" data-value="90">90%</div>
     <div class="item" data-value="100">100%</div>
     <div class="item" data-value="110">110%</div>

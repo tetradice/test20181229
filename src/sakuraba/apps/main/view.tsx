@@ -130,7 +130,6 @@ const view: View<state.State, ActionsType> = (state, actions) => {
           
       ];
 
-
     let frameNodes: hyperapp.Children[] = [];
     let objectNodes: hyperapp.Children[] = [];
 

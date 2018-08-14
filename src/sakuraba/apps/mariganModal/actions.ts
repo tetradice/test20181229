@@ -5,18 +5,18 @@ export const actions = {
     hide: () => {
         return {shown: false};
     },
-    selectCard: (cardId: string) => (state: State) => {
-        let newSelectedCardIds = state.selectedCardIds.concat([]);
+    selectCard: (card: state.Card) => (state: State) => {
+        let newSelectedCards = state.selectedCards.concat([]);
 
-        if(newSelectedCardIds.indexOf(cardId) >= 0){
+        if(newSelectedCards.indexOf(card) >= 0){
             // 選択OFF
-            newSelectedCardIds.splice(newSelectedCardIds.indexOf(cardId), 1);
+            newSelectedCards.splice(newSelectedCards.indexOf(card), 1);
         } else {
             // 選択ON
-            newSelectedCardIds.push(cardId)
+            newSelectedCards.push(card)
         }
 
-        return {selectedCardIds: newSelectedCardIds};
+        return {selectedCards: newSelectedCards};
     },
 };
 

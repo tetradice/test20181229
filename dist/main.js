@@ -205,7 +205,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, ".OCTNz7wT5Gh5f61rMHiUX {\r\n    display: flex !important;\r\n}\r\n\r\n._2B96DDiNapYUOu1RoYvWry {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n._3bdhO-R1sgFybwUsHg30xr {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n._3G1-4wCq97IzXnAh31mj28 {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}", "", {"version":3,"sources":["C:/Users/owner/Desktop/daisuke_temp/furuyoni/src/sakuraba/apps/mariganModal/view.css"],"names":[],"mappings":"AAAA;IACI,yBAAyB;CAC5B;;AAED;IACI,YAAY;IACZ,iBAAiB;IACjB,kBAAkB;IAClB,mBAAmB;CACtB;;AAED;IACI,cAAc;IACd,cAAc;IACd,mBAAmB;CACtB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;CACrB","file":"view.css","sourcesContent":[".modalTop {\r\n    display: flex !important;\r\n}\r\n\r\n.outer {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.cardArea {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n.countCaption {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}"],"sourceRoot":""}]);
+exports.push([module.i, ".OCTNz7wT5Gh5f61rMHiUX {\r\n    display: flex !important;\r\n}\r\n\r\n._2B96DDiNapYUOu1RoYvWry {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n._3bdhO-R1sgFybwUsHg30xr {\r\n    width: 320px;\r\n    height: 180px;\r\n    position: relative;\r\n}\r\n\r\n._3G1-4wCq97IzXnAh31mj28 {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}", "", {"version":3,"sources":["C:/Users/owner/Desktop/daisuke_temp/furuyoni/src/sakuraba/apps/mariganModal/view.css"],"names":[],"mappings":"AAAA;IACI,yBAAyB;CAC5B;;AAED;IACI,YAAY;IACZ,iBAAiB;IACjB,kBAAkB;IAClB,mBAAmB;CACtB;;AAED;IACI,aAAa;IACb,cAAc;IACd,mBAAmB;CACtB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;CACrB","file":"view.css","sourcesContent":[".modalTop {\r\n    display: flex !important;\r\n}\r\n\r\n.outer {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.cardArea {\r\n    width: 320px;\r\n    height: 180px;\r\n    position: relative;\r\n}\r\n\r\n.countCaption {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}"],"sourceRoot":""}]);
 
 // exports
 exports.locals = {
@@ -35600,7 +35600,7 @@ $(function () {
             if (key === 'draw') {
                 // 1枚引く
                 appActions.memorizeBoardHistory(); // Undoのために履歴を記憶
-                appActions.moveCard({ from: 'library', fromSide: state.side, to: 'hand', toSide: state.side });
+                appActions.moveCard({ from: [state.side, 'library'], to: [state.side, 'hand'] });
             }
             if (key === 'reshuffle') {
                 // 再構成
@@ -35891,6 +35891,12 @@ exports.default = {
         newBoard.witherFlags[p.side] = p.value;
         return { board: newBoard };
     }; },
+    /** マリガンフラグを変更 */
+    setMariganFlag: function (p) { return function (state, actions) {
+        var newBoard = models.Board.clone(state.board);
+        newBoard.mariganFlags[p.side] = p.value;
+        return { board: newBoard };
+    }; },
     /** デッキのカードを設定する */
     setDeckCards: function (p) { return function (state, actions) {
         actions.memorizeBoardHistory(); // Undoのために履歴を記憶
@@ -35968,20 +35974,42 @@ exports.default = {
     moveCard: function (p) { return function (state, actions) {
         // 元の盤の状態をコピーして新しい盤を生成
         var newBoard = models.Board.clone(state.board);
-        // カードを指定枚数移動 (省略時は0枚)
-        var fromIndex = (p.fromIndex === undefined ? 0 : p.fromIndex);
+        // カードを指定枚数移動 (省略時は1枚)
         var num = (p.moveNumber === undefined ? 1 : p.moveNumber);
-        var fromRegionCards = newBoard.getRegionCards(p.fromSide, p.from).sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
-        var toRegionCards = newBoard.getRegionCards(p.toSide, p.to).sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
-        var indexes = toRegionCards.map(function (c) { return c.indexOfRegion; });
-        var maxIndex = Math.max.apply(Math, indexes);
-        var targetCards = fromRegionCards.slice(fromIndex, fromIndex + num);
-        targetCards.forEach(function (c) {
-            c.region = p.to;
-            // 領域インデックスは最大値+1
-            c.indexOfRegion = maxIndex + 1;
-            maxIndex++;
-        });
+        var fromCards;
+        if (typeof p.from === 'string') {
+            fromCards = newBoard.objects.filter(function (o) { return o.type === 'card' && o.id === p.from; });
+        }
+        else {
+            var _a = p.from, side = _a[0], region = _a[1];
+            var fromRegionCards = newBoard.getRegionCards(side, region).sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
+            if (p.fromPosition === 'first') {
+                fromCards = fromRegionCards.slice(0, num);
+            }
+            else {
+                fromCards = fromRegionCards.slice(num * -1);
+            }
+        }
+        var _b = p.to, toSide = _b[0], toRegion = _b[1];
+        if (p.toPosition === 'first') {
+            var i_1 = -1;
+            fromCards.forEach(function (c) {
+                c.region = toRegion;
+                c.indexOfRegion = i_1;
+                i_1--;
+            });
+        }
+        else {
+            var toRegionCards = newBoard.getRegionCards(toSide, toRegion).sort(function (a, b) { return a.indexOfRegion - b.indexOfRegion; });
+            var indexes = toRegionCards.map(function (c) { return c.indexOfRegion; });
+            var maxIndex_1 = Math.max.apply(Math, indexes);
+            fromCards.forEach(function (c) {
+                c.region = toRegion;
+                // 領域インデックスは最大値+1
+                c.indexOfRegion = maxIndex_1 + 1;
+                maxIndex_1++;
+            });
+        }
         // 領域情報の更新
         newBoard.updateRegionInfo();
         // 新しい盤を返す
@@ -36004,7 +36032,7 @@ exports.default = {
         // 山札をシャッフル
         actions.shuffle({ side: p.side });
         // 手札を3枚引く
-        actions.moveCard({ from: 'library', fromSide: p.side, to: 'hand', toSide: p.side, moveNumber: 3 });
+        actions.moveCard({ from: [p.side, 'library'], to: [p.side, 'hand'], moveNumber: 3 });
         // フラグON
         var newBoard = models.Board.clone(actions.getState().board);
         newBoard.firstDrawFlags[p.side] = true;
@@ -36030,10 +36058,10 @@ exports.default = {
         // 使用済、伏せ札をすべて山札へ移動
         var newBoard = models.Board.clone(state.board);
         var usedCards = newBoard.getRegionCards(p.side, 'used');
-        actions.moveCard({ from: 'used', fromSide: p.side, to: 'library', toSide: p.side, moveNumber: usedCards.length });
+        actions.moveCard({ from: [p.side, 'used'], to: [p.side, 'library'], moveNumber: usedCards.length });
         newBoard = models.Board.clone(actions.getState().board);
         var hiddenUsedCards = newBoard.getRegionCards(p.side, 'hidden-used');
-        actions.moveCard({ from: 'hidden-used', fromSide: p.side, to: 'library', toSide: p.side, moveNumber: hiddenUsedCards.length });
+        actions.moveCard({ from: [p.side, 'hidden-used'], to: [p.side, 'library'], moveNumber: hiddenUsedCards.length });
         // 山札を混ぜる
         actions.shuffle({ side: p.side });
     }; },
@@ -36322,7 +36350,7 @@ exports.Card = function (p) { return function (state, actions) {
         // 山札なら1枚引く
         if (data.baseType === 'normal' && p.target.region === 'library') {
             actions.memorizeBoardHistory(); // Undoのために履歴を記憶
-            actions.moveCard({ from: 'library', fromSide: state.side, to: 'hand', toSide: state.side });
+            actions.moveCard({ from: [state.side, 'library'], to: [state.side, 'hand'] });
         }
     };
     var draggable = p.target.region !== 'library' || p.target.indexOfRegion === (state.board.objects.filter(function (o) { return o.type === 'card' && o.region === p.target.region; }).length - 1);
@@ -36403,11 +36431,8 @@ exports.CardAreaDroppable = function (p) { return function (state, actions) {
         if (currentState.draggingHoverCardRegion) {
             actions.memorizeBoardHistory(); // Undoのために履歴を記憶
             actions.moveCard({
-                fromSide: currentState.side,
-                from: currentState.draggingFromCard.region,
-                fromIndex: currentState.draggingFromCard.indexOfRegion,
-                toSide: (currentState.side === 'p1' ? 'p2' : 'p1'),
-                to: currentState.draggingHoverCardRegion
+                from: currentState.draggingFromCard.id,
+                to: [currentState.draggingHoverSide, currentState.draggingHoverCardRegion]
             });
         }
         return false;
@@ -36696,6 +36721,8 @@ exports.ControlPanel = function () { return function (state, actions) {
             hyperapp_1.h("i", { class: "dropdown icon" }),
             hyperapp_1.h("div", { class: "default text" }),
             hyperapp_1.h("div", { class: "menu" },
+                hyperapp_1.h("div", { class: "item", "data-value": "60" }, "60%"),
+                hyperapp_1.h("div", { class: "item", "data-value": "70" }, "70%"),
                 hyperapp_1.h("div", { class: "item", "data-value": "80" }, "80%"),
                 hyperapp_1.h("div", { class: "item", "data-value": "90" }, "90%"),
                 hyperapp_1.h("div", { class: "item", "data-value": "100" }, "100%"),
@@ -36742,11 +36769,18 @@ exports.MariganButton = function (p) { return function (state, actions) {
         // マリガンダイアログを起動
         var board = new models.Board(state.board);
         var promise = new Promise(function (resolve, reject) {
-            var cardIds = board.getRegionCards(state.side, 'hand').map(function (c) { return c.cardId; });
-            var st = apps.mariganModal.State.create(state.side, cardIds, resolve, reject);
+            var cards = board.getRegionCards(state.side, 'hand');
+            var st = apps.mariganModal.State.create(state.side, cards, resolve, reject);
             apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));
-        }).then(function (selectedCardIds) {
+        }).then(function (selectedCards) {
             // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
+            actions.memorizeBoardHistory();
+            selectedCards.forEach(function (card) {
+                actions.moveCard({ from: card.id, to: [state.side, 'library'], toPosition: 'first' });
+                actions.moveCard({ from: [state.side, 'library'], to: [state.side, 'hand'] });
+            });
+            // マリガンフラグON
+            actions.setMariganFlag({ side: state.side, value: true });
         });
     };
     return hyperapp_1.h("button", { style: styles, class: "ui basic button", onclick: onClick },
@@ -37167,17 +37201,17 @@ exports.actions = {
     hide: function () {
         return { shown: false };
     },
-    selectCard: function (cardId) { return function (state) {
-        var newSelectedCardIds = state.selectedCardIds.concat([]);
-        if (newSelectedCardIds.indexOf(cardId) >= 0) {
+    selectCard: function (card) { return function (state) {
+        var newSelectedCards = state.selectedCards.concat([]);
+        if (newSelectedCards.indexOf(card) >= 0) {
             // 選択OFF
-            newSelectedCardIds.splice(newSelectedCardIds.indexOf(cardId), 1);
+            newSelectedCards.splice(newSelectedCards.indexOf(card), 1);
         }
         else {
             // 選択ON
-            newSelectedCardIds.push(cardId);
+            newSelectedCards.push(card);
         }
-        return { selectedCardIds: newSelectedCardIds };
+        return { selectedCards: newSelectedCards };
     }; },
 };
 
@@ -37224,12 +37258,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var State;
 (function (State) {
     /** 新しいstateの生成 */
-    function create(side, cardIds, promiseResolve, promiseReject) {
+    function create(side, cards, promiseResolve, promiseReject) {
         return {
             shown: true,
             side: side,
-            cardIds: cardIds,
-            selectedCardIds: [],
+            cards: cards,
+            selectedCards: [],
             promiseResolve: promiseResolve,
             promiseReject: promiseReject
         };
@@ -37307,15 +37341,15 @@ var view = function (state, actions) {
     if (!state.shown)
         return null;
     var cardElements = [];
-    state.cardIds.forEach(function (cardId, c) {
-        var card = utils.createCard("deck-" + cardId, cardId, null, state.side);
-        card.opened = true;
+    state.cards.forEach(function (card, c) {
+        var sCard = utils.createCard("deck-" + card.id, card.id, null, state.side);
+        sCard.opened = true;
         var top = 4;
         var left = 4 + c * (100 + 8);
-        var selected = state.selectedCardIds.indexOf(cardId) >= 0;
-        cardElements.push(hyperapp_1.h(components_1.DeckBuildCard, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); }, zoom: 1.0 }));
+        var selected = state.selectedCards.indexOf(card) >= 0;
+        cardElements.push(hyperapp_1.h(components_1.DeckBuildCard, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(card); }, zoom: 1.0 }));
     });
-    var selectedCount = state.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'normal'; }).length;
+    var selectedCount = state.selectedCards.filter(function (card) { return sakuraba.CARD_DATA[card.cardId].baseType === 'normal'; }).length;
     var okButtonClass = "ui positive labeled icon button";
     if (selectedCount === 0)
         okButtonClass += " disabled";
@@ -37327,7 +37361,7 @@ var view = function (state, actions) {
                 hyperapp_1.h("div", { class: css.outer },
                     hyperapp_1.h("div", { class: css.cardArea, id: "DECK-BUILD-CARD-AREA" }, cardElements))),
             hyperapp_1.h("div", { class: "actions" },
-                hyperapp_1.h("div", { class: okButtonClass, onclick: function () { actions.hide(); state.promiseResolve(state.selectedCardIds); } },
+                hyperapp_1.h("div", { class: okButtonClass, onclick: function () { actions.hide(); state.promiseResolve(state.selectedCards); } },
                     "\u6C7A\u5B9A ",
                     hyperapp_1.h("i", { class: "checkmark icon" })),
                 hyperapp_1.h("div", { class: "ui black deny button", onclick: function () { actions.hide(); state.promiseReject(); } }, "\u30AD\u30E3\u30F3\u30BB\u30EB")))));

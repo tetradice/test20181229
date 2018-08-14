@@ -22,12 +22,20 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
         // マリガンダイアログを起動
         let board = new models.Board(state.board);
         
-        let promise = new Promise<string[]>((resolve, reject) => {
-            let cardIds = board.getRegionCards(state.side, 'hand').map(c => c.cardId);
-            let st = apps.mariganModal.State.create(state.side, cardIds, resolve, reject);
+        let promise = new Promise<state.Card[]>((resolve, reject) => {
+            let cards = board.getRegionCards(state.side, 'hand');
+            let st = apps.mariganModal.State.create(state.side, cards, resolve, reject);
             apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));            
-        }).then((selectedCardIds) => {
+        }).then((selectedCards) => {
             // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
+            actions.memorizeBoardHistory();
+            selectedCards.forEach(card => {
+                actions.moveCard({from: card.id, to: [state.side, 'library'], toPosition: 'first'});
+                actions.moveCard({from: [state.side, 'library'], to: [state.side, 'hand']});
+            })
+
+            // マリガンフラグON
+            actions.setMariganFlag({side: state.side, value: true});
         });
     }
 

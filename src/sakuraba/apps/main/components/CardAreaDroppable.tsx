@@ -47,11 +47,8 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
         if(currentState.draggingHoverCardRegion){
             actions.memorizeBoardHistory(); // Undoのために履歴を記憶
             actions.moveCard({
-                  fromSide: currentState.side
-                , from: currentState.draggingFromCard.region
-                , fromIndex: currentState.draggingFromCard.indexOfRegion
-                , toSide: (currentState.side === 'p1' ? 'p2' : 'p1')
-                , to: currentState.draggingHoverCardRegion
+                  from: currentState.draggingFromCard.id
+                , to: [currentState.draggingHoverSide, currentState.draggingHoverCardRegion] 
             });
         }
 

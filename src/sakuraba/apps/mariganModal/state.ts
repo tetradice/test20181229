@@ -1,10 +1,10 @@
 export interface State {
     shown: boolean;
     side: PlayerSide;
-    cardIds: string[];
-    selectedCardIds: string[];
+    cards: state.Card[];
+    selectedCards: state.Card[];
 
-    promiseResolve: (selectedCardIds: string[]) => void;
+    promiseResolve: (selectedCards: state.Card[]) => void;
     promiseReject: Function;
 }
 
@@ -12,15 +12,15 @@ export namespace State {
     /** 新しいstateの生成 */
     export function create(
           side: PlayerSide
-        , cardIds: string[]
-        , promiseResolve: (selectedCardIds: string[]) => void
+        , cards: state.Card[]
+        , promiseResolve: (selectedCards: state.Card[]) => void
         , promiseReject: Function
     ): State{
         return {
               shown: true
             , side: side
-            , cardIds: cardIds
-            , selectedCardIds: []
+            , cards: cards
+            , selectedCards: []
             
             , promiseResolve: promiseResolve
             , promiseReject: promiseReject

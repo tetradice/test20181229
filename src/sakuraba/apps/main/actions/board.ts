@@ -96,6 +96,20 @@ export default {
         return {board: newBoard};
     },
 
+    /** マリガンフラグを変更 */
+    setMariganFlag: (p: {
+        /** どちら側のフラグか */
+        side: PlayerSide;
+        /** 新しいフラグの値 */
+        value: boolean;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        newBoard.mariganFlags[p.side] = p.value;
+
+        return {board: newBoard};
+    },
+
+
     /** デッキのカードを設定する */
     setDeckCards: (p: {cardIds: string[]}) => (state: state.State, actions: ActionsType) => {
         actions.memorizeBoardHistory(); // Undoのために履歴を記憶
