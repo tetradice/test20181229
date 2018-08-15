@@ -343,6 +343,7 @@ function createInitialState() {
         boardHistoryFuture: [],
         actionLog: [],
         messageLog: [],
+        actionLogVisible: false,
         zoom: 1,
         draggingFromCard: null,
         draggingHoverSide: null,
@@ -415,7 +416,7 @@ var PORT = process.env.PORT || 3000;
 var INDEX = path.join(__dirname, '../index.html');
 var MAIN_JS = path.join(__dirname, 'main.js');
 var MAIN_JS_MAP = path.join(__dirname, 'main.js.map');
-var browserSyncConfigurations = { "files": ["**/*.js", "**/*.ts", "**/*.tsx", "../**/*.ts"] };
+var browserSyncConfigurations = { "files": ["**/*.js"] };
 var server = express()
     .use(connectBrowserSync(browserSync(browserSyncConfigurations)))
     .set('views', __dirname + '/../')

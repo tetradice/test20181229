@@ -34,6 +34,11 @@ export default {
             actions.forgetBoardHistory();
         }
 
+        // アクションログ追加
+        if(p.logText){
+            actions.appendActionLog({text: p.logText});
+        }
+
         // メイン処理の実行
         p.proc();
 

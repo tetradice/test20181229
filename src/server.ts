@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, '../index.html');
 const MAIN_JS = path.join(__dirname, 'main.js');
 const MAIN_JS_MAP = path.join(__dirname, 'main.js.map');
-const browserSyncConfigurations = { "files": ["**/*.js", "**/*.ts", "**/*.tsx", "../**/*.ts"] };
+const browserSyncConfigurations = { "files": ["**/*.js"] };
 const server = express()
   .use(connectBrowserSync(browserSync(browserSyncConfigurations)))
   .set('views', __dirname + '/../')

@@ -16,6 +16,7 @@ export function createInitialState(): state.State{
 
         , actionLog: []
         , messageLog: []
+        , actionLogVisible: false
         , zoom: 1
         , draggingFromCard: null
         , draggingHoverSide: null

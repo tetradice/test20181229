@@ -35859,6 +35859,10 @@ exports.default = {
             // ボード履歴を削除し、元に戻せないようにする
             actions.forgetBoardHistory();
         }
+        // アクションログ追加
+        if (p.logText) {
+            actions.appendActionLog({ text: p.logText });
+        }
         // メイン処理の実行
         p.proc();
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容を送信
@@ -36053,11 +36057,11 @@ exports.default = {
     }; },
     /** 山札からカードを引く */
     oprDraw: function (num) { return function (state, actions) {
+        if (num === undefined)
+            num = 1;
         actions.operate({
             logText: "\u30AB\u30FC\u30C9\u3092" + num + "\u679A\u5F15\u304F",
             proc: function () {
-                if (num === undefined)
-                    num = 1;
                 actions.moveCard({ from: [state.side, 'library'], to: [state.side, 'hand'], moveNumber: num });
             }
         });
@@ -36190,23 +36194,16 @@ exports.actions = actionsTemp2;
 
 "use strict";
 
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
-var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 exports.default = {
+    toggleActionLogVisible: function () { return function (state) {
+        return { actionLogVisible: !state.actionLogVisible };
+    }; },
     appendActionLog: function (p) { return function (state) {
-        // 元の盤の状態をコピーして新しい盤を生成
-        var newBoard = models.Board.clone(state.board);
-        var append = { body: p.text, time: moment().format() };
-        newBoard.actionLog.push(append);
-        return { board: newBoard };
+        var append = { body: p.text, time: moment().format(), playerSide: state.side };
+        var newLogs = state.actionLog.concat([append]);
+        return { actionLog: newLogs };
     }; }
 };
 
@@ -36323,6 +36320,36 @@ exports.default = {
         ret.draggingHoverSakuraTokenRegion = null;
         return ret;
     },
+};
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/main/components/ActionLogWindow.tsx":
+/*!***************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/ActionLogWindow.tsx ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+/** 操作ログ */
+exports.ActionLogWindow = function (p) {
+    if (p.shown) {
+        var logElements_1 = [];
+        p.logs.forEach(function (log) {
+            logElements_1.push(hyperapp_1.h("div", null, log.body));
+        });
+        return (hyperapp_1.h("div", { id: "ACTION-LOG-WINDOW", style: { height: "500px" }, class: "ui segment draggable ui-widget-content resizable" },
+            hyperapp_1.h("div", { class: "ui top attached label" }, "\u30ED\u30B0"),
+            hyperapp_1.h("div", { id: "ACTION-LOG-AREA" }, logElements_1)));
+    }
+    else {
+        return null;
+    }
 };
 
 
@@ -36747,6 +36774,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                 hyperapp_1.h("i", { class: "redo alternate icon" }))),
         hyperapp_1.h("button", { class: "ui basic button", onclick: reset }, "\u2605\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8"),
         hyperapp_1.h("br", null),
+        hyperapp_1.h("button", { class: "ui basic button", onclick: function () { return actions.toggleActionLogVisible(); } }, "\u64CD\u4F5C\u30ED\u30B0\u8868\u793A"),
         commandButtons,
         hyperapp_1.h("table", { class: "ui definition table", style: { width: '25em' } },
             hyperapp_1.h("tbody", null,
@@ -37075,6 +37103,7 @@ __export(__webpack_require__(/*! ./CardAreaDroppable */ "./src/sakuraba/apps/mai
 __export(__webpack_require__(/*! ./SakuraTokenAreaBackground */ "./src/sakuraba/apps/main/components/SakuraTokenAreaBackground.tsx"));
 __export(__webpack_require__(/*! ./SakuraTokenAreaDroppable */ "./src/sakuraba/apps/main/components/SakuraTokenAreaDroppable.tsx"));
 __export(__webpack_require__(/*! ./MariganButton */ "./src/sakuraba/apps/main/components/MariganButton.tsx"));
+__export(__webpack_require__(/*! ./ActionLogWindow */ "./src/sakuraba/apps/main/components/ActionLogWindow.tsx"));
 
 
 /***/ }),
@@ -37236,7 +37265,8 @@ var view = function (state, actions) {
         hyperapp_1.h(components.WitheredToken, { side: opponentSide, left: 390, top: 40 }),
         hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680, top: 610 }),
         hyperapp_1.h(components.ControlPanel, null),
-        hyperapp_1.h(components.MariganButton, { left: 10, top: 750 })));
+        hyperapp_1.h(components.MariganButton, { left: 10, top: 750 }),
+        hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible })));
 };
 exports.default = view;
 
@@ -37728,6 +37758,7 @@ function createInitialState() {
         boardHistoryFuture: [],
         actionLog: [],
         messageLog: [],
+        actionLogVisible: false,
         zoom: 1,
         draggingFromCard: null,
         draggingHoverSide: null,

@@ -19,6 +19,8 @@ export interface State {
     actionLog: LogRecord[];
     messageLog: LogRecord[];
 
+    actionLogVisible: boolean;
+
     draggingHoverSide?: PlayerSide;
 
     draggingFromCard: Card;

@@ -184,6 +184,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.WitheredToken side={selfSide} left={680} top={610} />
             <components.ControlPanel />
             <components.MariganButton left={10} top={750} />
+            <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
         </div>
     );
 }

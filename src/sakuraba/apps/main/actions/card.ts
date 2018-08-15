@@ -102,10 +102,10 @@ export default {
 
     /** 山札からカードを引く */
     oprDraw: (num?: number) => (state: state.State, actions: ActionsType) => {
+        if(num === undefined) num = 1;
         actions.operate({
             logText: `カードを${num}枚引く`,
             proc: () => {
-                if(num === undefined) num = 1;
                 actions.moveCard({from: [state.side, 'library'], to: [state.side, 'hand'], moveNumber: num});
             }
         });

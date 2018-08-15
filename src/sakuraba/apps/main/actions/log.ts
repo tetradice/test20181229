@@ -2,12 +2,14 @@ import moment = require('moment');
 import * as models from "sakuraba/models";
 
 export default {
+    toggleActionLogVisible: () => (state: state.State) => {
+        return {actionLogVisible: !state.actionLogVisible};
+    },
+
     appendActionLog: (p: {text: string}) => (state: state.State) => {
-        // 元の盤の状態をコピーして新しい盤を生成
-        let newBoard = models.Board.clone(state.board);
-        let append: state.LogRecord = {body: p.text, time: moment().format()};
-        newBoard.actionLog.push(append);
+        let append: state.LogRecord = {body: p.text, time: moment().format(), playerSide: state.side};
+        let newLogs = state.actionLog.concat([append]);
         
-        return {board: newBoard};
+        return {actionLog: newLogs};
     }
 }
