@@ -36336,6 +36336,11 @@ exports.default = {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+// ウインドウの表示状態をローカルストレージに保存
+function saveWindowState(elem) {
+    var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top'), width: $(elem).css('width'), height: $(elem).css('height') };
+    localStorage.setItem(elem.id + "-WindowState", JSON.stringify(current));
+}
 /** 操作ログ */
 exports.ActionLogWindow = function (p) {
     if (p.shown) {
@@ -36343,7 +36348,28 @@ exports.ActionLogWindow = function (p) {
         p.logs.forEach(function (log) {
             logElements_1.push(hyperapp_1.h("div", null, log.body));
         });
-        return (hyperapp_1.h("div", { id: "ACTION-LOG-WINDOW", style: { height: "500px" }, class: "ui segment draggable ui-widget-content resizable" },
+        var oncreate = function (e) {
+            // 一部ウインドウをリサイズ可能にする
+            $(e).draggable({
+                stop: function () {
+                    saveWindowState(e);
+                },
+            });
+            $(e).resizable({
+                minWidth: 200,
+                minHeight: 200,
+                stop: function () {
+                    saveWindowState(e);
+                },
+            });
+            // ウインドウの状態を復元
+            var actionLogWindowStateJson = localStorage.getItem(e.id + "-WindowState");
+            if (actionLogWindowStateJson) {
+                var windowState = JSON.parse(actionLogWindowStateJson);
+                $(e).css(windowState);
+            }
+        };
+        return (hyperapp_1.h("div", { id: "ACTION-LOG-WINDOW", style: { height: "500px" }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
             hyperapp_1.h("div", { class: "ui top attached label" }, "\u30ED\u30B0"),
             hyperapp_1.h("div", { id: "ACTION-LOG-AREA" }, logElements_1)));
     }
