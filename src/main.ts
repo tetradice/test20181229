@@ -110,13 +110,12 @@ $(function(){
             let state = appActions.getState();
             if(key === 'draw'){
                 // 1枚引く
-                appActions.memorizeBoardHistory(); // Undoのために履歴を記憶
-                appActions.moveCard({from: [state.side, 'library'], to: [state.side, 'hand']});
+                appActions.oprDraw();
             }
 
             if(key === 'reshuffle'){
                 // 再構成
-                appActions.reshuffle({side: state.side});
+                appActions.oprReshuffle({side: state.side});
             }
 
             return;

@@ -100,6 +100,17 @@ export default {
         return {board: newBoard};
     },
 
+    /** 山札からカードを引く */
+    oprDraw: (num?: number) => (state: state.State, actions: ActionsType) => {
+        actions.operate({
+            logText: `カードを${num}枚引く`,
+            proc: () => {
+                if(num === undefined) num = 1;
+                actions.moveCard({from: [state.side, 'library'], to: [state.side, 'hand'], moveNumber: num});
+            }
+        });
+    },
+
     flipCard: (objectId: string) => (state: state.State, actions: ActionsType) => {
         actions.memorizeBoardHistory(); // Undoのために履歴を記憶
 
@@ -138,8 +149,6 @@ export default {
     },
 
     shuffle: (p: {side: PlayerSide}) => (state: state.State, actions: ActionsType) => {
-        actions.forgetBoardHistory(); // Undo履歴をクリア
-
         let ret: Partial<state.State> = {};
 
         let newBoard = models.Board.clone(state.board);
@@ -155,21 +164,25 @@ export default {
         return {board: newBoard};
     },
 
-    /** 再構成 */
-    reshuffle: (p: {side: PlayerSide, lifeDecrease?: boolean}) => (state: state.State, actions: ActionsType) => {
-        actions.forgetBoardHistory(); // Undo履歴をクリア
+    /** 再構成操作 */
+    oprReshuffle: (p: {side: PlayerSide, lifeDecrease?: boolean}) => (state: state.State, actions: ActionsType) => {
+        actions.operate({
+            undoType: 'notBack', // Undo不可
+            logText: (p.lifeDecrease ? `再構成` : `再構成 (ライフ減少なし)`),
+            proc: () => {
+                // 使用済、伏せ札をすべて山札へ移動
+                let newBoard = models.Board.clone(state.board);
+                let usedCards = newBoard.getRegionCards(p.side, 'used');
+                actions.moveCard({from: [p.side, 'used'], to: [p.side, 'library'], moveNumber: usedCards.length});
+                
+                newBoard = models.Board.clone(actions.getState().board);
+                let hiddenUsedCards = newBoard.getRegionCards(p.side, 'hidden-used');
+                actions.moveCard({from: [p.side, 'hidden-used'], to: [p.side, 'library'], moveNumber: hiddenUsedCards.length});
 
-        // 使用済、伏せ札をすべて山札へ移動
-        let newBoard = models.Board.clone(state.board);
-        let usedCards = newBoard.getRegionCards(p.side, 'used');
-        actions.moveCard({from: [p.side, 'used'], to: [p.side, 'library'], moveNumber: usedCards.length});
-        
-        newBoard = models.Board.clone(actions.getState().board);
-        let hiddenUsedCards = newBoard.getRegionCards(p.side, 'hidden-used');
-        actions.moveCard({from: [p.side, 'hidden-used'], to: [p.side, 'library'], moveNumber: hiddenUsedCards.length});
-
-        // 山札を混ぜる
-        actions.shuffle({side: p.side});
+                // 山札を混ぜる
+                actions.shuffle({side: p.side});
+            }
+        });
     },
 
     /** ドラッグ開始 */

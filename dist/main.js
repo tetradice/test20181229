@@ -35618,12 +35618,11 @@ $(function () {
             var state = appActions.getState();
             if (key === 'draw') {
                 // 1枚引く
-                appActions.memorizeBoardHistory(); // Undoのために履歴を記憶
-                appActions.moveCard({ from: [state.side, 'library'], to: [state.side, 'hand'] });
+                appActions.oprDraw();
             }
             if (key === 'reshuffle') {
                 // 再構成
-                appActions.reshuffle({ side: state.side });
+                appActions.oprReshuffle({ side: state.side });
             }
             return;
         },
@@ -36052,6 +36051,17 @@ exports.default = {
         // 新しい盤を返す
         return { board: newBoard };
     }; },
+    /** 山札からカードを引く */
+    oprDraw: function (num) { return function (state, actions) {
+        actions.operate({
+            logText: "\u30AB\u30FC\u30C9\u3092" + num + "\u679A\u5F15\u304F",
+            proc: function () {
+                if (num === undefined)
+                    num = 1;
+                actions.moveCard({ from: [state.side, 'library'], to: [state.side, 'hand'], moveNumber: num });
+            }
+        });
+    }; },
     flipCard: function (objectId) { return function (state, actions) {
         actions.memorizeBoardHistory(); // Undoのために履歴を記憶
         var ret = {};
@@ -36076,7 +36086,6 @@ exports.default = {
         return { board: newBoard };
     }; },
     shuffle: function (p) { return function (state, actions) {
-        actions.forgetBoardHistory(); // Undo履歴をクリア
         var ret = {};
         var newBoard = models.Board.clone(state.board);
         // 山札のカードをすべて取得
@@ -36089,18 +36098,23 @@ exports.default = {
         // 新しいボードを返す
         return { board: newBoard };
     }; },
-    /** 再構成 */
-    reshuffle: function (p) { return function (state, actions) {
-        actions.forgetBoardHistory(); // Undo履歴をクリア
-        // 使用済、伏せ札をすべて山札へ移動
-        var newBoard = models.Board.clone(state.board);
-        var usedCards = newBoard.getRegionCards(p.side, 'used');
-        actions.moveCard({ from: [p.side, 'used'], to: [p.side, 'library'], moveNumber: usedCards.length });
-        newBoard = models.Board.clone(actions.getState().board);
-        var hiddenUsedCards = newBoard.getRegionCards(p.side, 'hidden-used');
-        actions.moveCard({ from: [p.side, 'hidden-used'], to: [p.side, 'library'], moveNumber: hiddenUsedCards.length });
-        // 山札を混ぜる
-        actions.shuffle({ side: p.side });
+    /** 再構成操作 */
+    oprReshuffle: function (p) { return function (state, actions) {
+        actions.operate({
+            undoType: 'notBack',
+            logText: (p.lifeDecrease ? "\u518D\u69CB\u6210" : "\u518D\u69CB\u6210 (\u30E9\u30A4\u30D5\u6E1B\u5C11\u306A\u3057)"),
+            proc: function () {
+                // 使用済、伏せ札をすべて山札へ移動
+                var newBoard = models.Board.clone(state.board);
+                var usedCards = newBoard.getRegionCards(p.side, 'used');
+                actions.moveCard({ from: [p.side, 'used'], to: [p.side, 'library'], moveNumber: usedCards.length });
+                newBoard = models.Board.clone(actions.getState().board);
+                var hiddenUsedCards = newBoard.getRegionCards(p.side, 'hidden-used');
+                actions.moveCard({ from: [p.side, 'hidden-used'], to: [p.side, 'library'], moveNumber: hiddenUsedCards.length });
+                // 山札を混ぜる
+                actions.shuffle({ side: p.side });
+            }
+        });
     }; },
     /** ドラッグ開始 */
     cardDragStart: function (card) { return function (state) {
@@ -36386,8 +36400,7 @@ exports.Card = function (p) { return function (state, actions) {
         }
         // 山札なら1枚引く
         if (data.baseType === 'normal' && p.target.region === 'library') {
-            actions.memorizeBoardHistory(); // Undoのために履歴を記憶
-            actions.moveCard({ from: [state.side, 'library'], to: [state.side, 'hand'] });
+            actions.oprDraw();
         }
     };
     var draggable = p.target.region !== 'library' || p.target.indexOfRegion === (state.board.objects.filter(function (o) { return o.type === 'card' && o.region === p.target.region; }).length - 1);
