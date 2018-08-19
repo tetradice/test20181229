@@ -164,6 +164,17 @@ $(function(){
         }
     });
 
+    // アクションログ情報をリクエスト
+    socket.emit('requestFirstActionLogs', {boardId: params.boardId});
+
+    // アクションログ情報を受け取った場合、ステートに設定
+    socket.on('onFirstActionLogsReceived', (p: {logs: state.LogRecord[]}) => {
+        appActions.setActionLogs(p.logs);
+    });
+    socket.on('onAppendedActionLogsReceived', (p: {logs: state.LogRecord[]}) => {
+        appActions.appendReceivedActionLogs(p.logs);
+    });
+
     // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
     socket.on('onBoardReceived', (p: {board: state.Board}) => {
         appActions.setBoard(p.board);

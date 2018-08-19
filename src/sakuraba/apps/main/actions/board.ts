@@ -19,7 +19,7 @@ export default {
         /**
          * 操作ログに記録する内容
          */
-        logText?: string;
+        logText?: string | string[];
 
         /**
          * 実行する処理の内容
@@ -34,18 +34,30 @@ export default {
             actions.forgetBoardHistory();
         }
 
-        // アクションログ追加
+        // アクションログを追加し、追加されたログレコードを取得
+        let appendLogs: state.LogRecord[] = null;
         if(p.logText){
-            actions.appendActionLog({text: p.logText});
+            if(typeof p.logText === 'string'){
+                actions.appendActionLog({text: p.logText});
+            } else {
+                p.logText.forEach((text) => actions.appendActionLog({text: text}));
+            }
         }
 
         // メイン処理の実行
         p.proc();
 
-        // 処理の実行が終わったら、socket.ioで更新後のボードの内容を送信
+        // 追加されたログだけを新しいステートから切り出す
         let newState = actions.getState();
+        let oldLength = state.actionLog.length;
+        appendLogs = newState.actionLog.slice(oldLength - 1);
+
+        // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         if(newState.socket){
-            newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board})
+            newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board});
+            if(p.logText){
+                newState.socket.emit('appendActionLogs', { boardId: newState.boardId, logs: appendLogs });
+            }
         }
     },
 

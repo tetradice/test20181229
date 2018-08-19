@@ -2,13 +2,17 @@ import { EventEmitter } from "events";
 
 interface ServerToClientEventProps {
     onFirstBoardReceived: {board: state.Board};
+    onFirstActionLogsReceived: {logs: state.LogRecord[]};
     onBoardReceived: {board: state.Board};
+    onAppendedActionLogsReceived: {logs: state.LogRecord[]};
 }
 type ServerToClientEventName = keyof ServerToClientEventProps;
 
 interface ClientToServerEventProps {
-    updateBoard: {boardId: string, side: PlayerSide, board: state.Board};
     requestFirstBoard: {boardId: string}; 
+    requestFirstActionLogs: {boardId: string}; 
+    updateBoard: {boardId: string, side: PlayerSide, board: state.Board};
+    appendActionLogs: {boardId: string, logs: state.LogRecord[]};
 }
 type ClientToServerEventName = keyof ClientToServerEventProps;
 
@@ -20,10 +24,12 @@ export class ServerSocket {
     }
 
     emit<E extends ServerToClientEventName>(event: E, props?: ServerToClientEventProps[E]){
+        console.log(`[socket] emit ${event} server -> client`, props);
         this.ioSocket.emit(event, props);
     }
 
     broadcastEmit<E extends ServerToClientEventName>(event: E, props?: ServerToClientEventProps[E]){
+        console.log(`[socket] broadcastEmit ${event} server -> client`, props);
         this.ioSocket.broadcast.emit(event, props);
     }
 

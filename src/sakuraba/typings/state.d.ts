@@ -84,5 +84,6 @@ export interface LogRecord {
     body: string;
     time: string; // momentから変換した値を渡す
     playerSide?: PlayerSide;
+    hidden?: boolean;
 }
 

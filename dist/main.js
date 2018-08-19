@@ -181,7 +181,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../../node_modules/c
 
 
 // module
-exports.push([module.i, ".Zqq_xZe4NsbcOf8knpWVB {\r\n    display: flex !important;\r\n}\r\n\r\n._2snAdIMQX8BRTPul7_eSaO {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.mybh7Mf1H5J4DxPRxUQd {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n._2IBrx_Md0JU9vkk-dFyT8y {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}", "", {"version":3,"sources":["C:/Users/owner/Desktop/daisuke_temp/furuyoni/src/sakuraba/apps/main/components/ControlPanel.css"],"names":[],"mappings":"AAAA;IACI,yBAAyB;CAC5B;;AAED;IACI,YAAY;IACZ,iBAAiB;IACjB,kBAAkB;IAClB,mBAAmB;CACtB;;AAED;IACI,cAAc;IACd,cAAc;IACd,mBAAmB;CACtB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;CACrB","file":"ControlPanel.css","sourcesContent":[".modalTop {\r\n    display: flex !important;\r\n}\r\n\r\n.outer {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.cardArea {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n.countCaption {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}"],"sourceRoot":""}]);
+exports.push([module.i, ".Zqq_xZe4NsbcOf8knpWVB {\r\n    display: flex !important;\r\n}\r\n\r\n._2snAdIMQX8BRTPul7_eSaO {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.mybh7Mf1H5J4DxPRxUQd {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n._2IBrx_Md0JU9vkk-dFyT8y {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}", "", {"version":3,"sources":["D:/work/furuyoni_simulator/server/src/sakuraba/apps/main/components/ControlPanel.css"],"names":[],"mappings":"AAAA;IACI,yBAAyB;CAC5B;;AAED;IACI,YAAY;IACZ,iBAAiB;IACjB,kBAAkB;IAClB,mBAAmB;CACtB;;AAED;IACI,cAAc;IACd,cAAc;IACd,mBAAmB;CACtB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;CACrB","file":"ControlPanel.css","sourcesContent":[".modalTop {\r\n    display: flex !important;\r\n}\r\n\r\n.outer {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.cardArea {\r\n    width: 1400px;\r\n    height: 310px;\r\n    position: relative;\r\n}\r\n\r\n.countCaption {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}"],"sourceRoot":""}]);
 
 // exports
 exports.locals = {
@@ -205,7 +205,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, ".OCTNz7wT5Gh5f61rMHiUX {\r\n    display: flex !important;\r\n}\r\n\r\n._2B96DDiNapYUOu1RoYvWry {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n._3bdhO-R1sgFybwUsHg30xr {\r\n    width: 320px;\r\n    height: 180px;\r\n    position: relative;\r\n}\r\n\r\n._3G1-4wCq97IzXnAh31mj28 {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}", "", {"version":3,"sources":["C:/Users/owner/Desktop/daisuke_temp/furuyoni/src/sakuraba/apps/mariganModal/view.css"],"names":[],"mappings":"AAAA;IACI,yBAAyB;CAC5B;;AAED;IACI,YAAY;IACZ,iBAAiB;IACjB,kBAAkB;IAClB,mBAAmB;CACtB;;AAED;IACI,aAAa;IACb,cAAc;IACd,mBAAmB;CACtB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;CACrB","file":"view.css","sourcesContent":[".modalTop {\r\n    display: flex !important;\r\n}\r\n\r\n.outer {\r\n    width: 100%;\r\n    overflow: scroll;\r\n    max-height: 320px;\r\n    position: relative;\r\n}\r\n\r\n.cardArea {\r\n    width: 320px;\r\n    height: 180px;\r\n    position: relative;\r\n}\r\n\r\n.countCaption {\r\n    margin-top: 1em;\r\n    font-size: larger;\r\n}"],"sourceRoot":""}]);
+exports.push([module.i, ".OCTNz7wT5Gh5f61rMHiUX {\n    display: flex !important;\n}\n\n._2B96DDiNapYUOu1RoYvWry {\n    width: 100%;\n    overflow: scroll;\n    max-height: 320px;\n    position: relative;\n}\n\n._3bdhO-R1sgFybwUsHg30xr {\n    width: 320px;\n    height: 180px;\n    position: relative;\n}\n\n._3G1-4wCq97IzXnAh31mj28 {\n    margin-top: 1em;\n    font-size: larger;\n}", "", {"version":3,"sources":["D:/work/furuyoni_simulator/server/src/sakuraba/apps/mariganModal/view.css"],"names":[],"mappings":"AAAA;IACI,yBAAyB;CAC5B;;AAED;IACI,YAAY;IACZ,iBAAiB;IACjB,kBAAkB;IAClB,mBAAmB;CACtB;;AAED;IACI,aAAa;IACb,cAAc;IACd,mBAAmB;CACtB;;AAED;IACI,gBAAgB;IAChB,kBAAkB;CACrB","file":"view.css","sourcesContent":[".modalTop {\n    display: flex !important;\n}\n\n.outer {\n    width: 100%;\n    overflow: scroll;\n    max-height: 320px;\n    position: relative;\n}\n\n.cardArea {\n    width: 320px;\n    height: 180px;\n    position: relative;\n}\n\n.countCaption {\n    margin-top: 1em;\n    font-size: larger;\n}"],"sourceRoot":""}]);
 
 // exports
 exports.locals = {
@@ -35661,6 +35661,15 @@ $(function () {
             });
         }
     });
+    // アクションログ情報をリクエスト
+    socket.emit('requestFirstActionLogs', { boardId: params.boardId });
+    // アクションログ情報を受け取った場合、ステートに設定
+    socket.on('onFirstActionLogsReceived', function (p) {
+        appActions.setActionLogs(p.logs);
+    });
+    socket.on('onAppendedActionLogsReceived', function (p) {
+        appActions.appendReceivedActionLogs(p.logs);
+    });
     // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
     socket.on('onBoardReceived', function (p) {
         appActions.setBoard(p.board);
@@ -35859,16 +35868,28 @@ exports.default = {
             // ボード履歴を削除し、元に戻せないようにする
             actions.forgetBoardHistory();
         }
-        // アクションログ追加
+        // アクションログを追加し、追加されたログレコードを取得
+        var appendLogs = null;
         if (p.logText) {
-            actions.appendActionLog({ text: p.logText });
+            if (typeof p.logText === 'string') {
+                actions.appendActionLog({ text: p.logText });
+            }
+            else {
+                p.logText.forEach(function (text) { return actions.appendActionLog({ text: text }); });
+            }
         }
         // メイン処理の実行
         p.proc();
-        // 処理の実行が終わったら、socket.ioで更新後のボードの内容を送信
+        // 追加されたログだけを新しいステートから切り出す
         var newState = actions.getState();
+        var oldLength = state.actionLog.length;
+        appendLogs = newState.actionLog.slice(oldLength - 1);
+        // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         if (newState.socket) {
             newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board });
+            if (p.logText) {
+                newState.socket.emit('appendActionLogs', { boardId: newState.boardId, logs: appendLogs });
+            }
         }
     }; },
     /** ボード全体を設定する */
@@ -35986,6 +36007,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var _ = __importStar(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
+var sakuraba_1 = __webpack_require__(/*! sakuraba */ "./src/sakuraba.ts");
 exports.default = {
     /** カードを1枚追加する */
     addCard: function (p) { return function (state) {
@@ -36030,6 +36052,11 @@ exports.default = {
                 fromCards = fromRegionCards.slice(num * -1);
             }
         }
+        // 移動するカード名を記録
+        if (p.cardNameLogging) {
+            var cardNames = fromCards.map(function (c) { return "[" + sakuraba_1.CARD_DATA[c.cardId].name + "]"; }).join('、');
+            actions.appendActionLog({ text: "-> " + cardNames, hidden: true });
+        }
         var _b = p.to, toSide = _b[0], toRegion = _b[1];
         if (p.toPosition === 'first') {
             var i_1 = -1;
@@ -36062,7 +36089,12 @@ exports.default = {
         actions.operate({
             logText: "\u30AB\u30FC\u30C9\u3092" + num + "\u679A\u5F15\u304F",
             proc: function () {
-                actions.moveCard({ from: [state.side, 'library'], to: [state.side, 'hand'], moveNumber: num });
+                actions.moveCard({
+                    from: [state.side, 'library'],
+                    to: [state.side, 'hand'],
+                    moveNumber: num,
+                    cardNameLogging: true
+                });
             }
         });
     }; },
@@ -36201,8 +36233,14 @@ exports.default = {
         return { actionLogVisible: !state.actionLogVisible };
     }; },
     appendActionLog: function (p) { return function (state) {
-        var append = { body: p.text, time: moment().format(), playerSide: state.side };
+        var append = { body: p.text, time: moment().format(), playerSide: state.side, hidden: p.hidden };
         var newLogs = state.actionLog.concat([append]);
+        return { actionLog: newLogs };
+    }; },
+    appendReceivedActionLogs: function (logs) { return function (state) {
+        return { actionLog: state.actionLog.concat(logs) };
+    }; },
+    setActionLogs: function (newLogs) { return function (state) {
         return { actionLog: newLogs };
     }; }
 };
@@ -36334,19 +36372,39 @@ exports.default = {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var moment_1 = __importDefault(__webpack_require__(/*! moment */ "./node_modules/moment/moment.js"));
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem) {
     var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top'), width: $(elem).css('width'), height: $(elem).css('height') };
     localStorage.setItem(elem.id + "-WindowState", JSON.stringify(current));
 }
 /** 操作ログ */
-exports.ActionLogWindow = function (p) {
+exports.ActionLogWindow = function (p) { return function (state) {
     if (p.shown) {
         var logElements_1 = [];
+        var now_1 = moment_1.default();
         p.logs.forEach(function (log) {
-            logElements_1.push(hyperapp_1.h("div", null, log.body));
+            // 相手サイドの隠しログは表示しない
+            if (log.hidden && log.playerSide !== state.side)
+                return;
+            // 今日のログか昨日以前のログかで形式を変更
+            var logTime = moment_1.default(log.time);
+            var timeStr = (logTime.isSame(now_1, 'date') ? logTime.format('h:m') : logTime.format('YYYY/M/D h:m'));
+            var bodyStyle = (log.hidden ? { color: 'green' } : null);
+            logElements_1.push(hyperapp_1.h("div", null,
+                state.board.playerNames[log.playerSide],
+                ": ",
+                hyperapp_1.h("span", { style: bodyStyle }, log.body),
+                " ",
+                hyperapp_1.h("span", { style: { fontSize: 'smaller', color: 'silver' } },
+                    "(",
+                    timeStr,
+                    ")")));
         });
         var oncreate = function (e) {
             // 一部ウインドウをリサイズ可能にする
@@ -36376,7 +36434,7 @@ exports.ActionLogWindow = function (p) {
     else {
         return null;
     }
-};
+}; };
 
 
 /***/ }),
@@ -37607,9 +37665,11 @@ var ServerSocket = /** @class */ (function () {
         this.ioSocket = ioSocket;
     }
     ServerSocket.prototype.emit = function (event, props) {
+        console.log("[socket] emit " + event + " server -> client", props);
         this.ioSocket.emit(event, props);
     };
     ServerSocket.prototype.broadcastEmit = function (event, props) {
+        console.log("[socket] broadcastEmit " + event + " server -> client", props);
         this.ioSocket.broadcast.emit(event, props);
     };
     ServerSocket.prototype.on = function (event, fn) {

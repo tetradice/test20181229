@@ -1,4 +1,5 @@
 import { h, Children } from "hyperapp";
+import moment from "moment";
 import * as utils from "sakuraba/utils";
 
 // ウインドウの表示状態をローカルストレージに保存
@@ -8,11 +9,23 @@ function saveWindowState(elem: HTMLElement){
 }
 
 /** 操作ログ */
-export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) => {
+export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) => (state: state.State) => {
     if(p.shown){
         let logElements: Children[] = [];
+        let now = moment();
         p.logs.forEach((log) => {
-            logElements.push(<div>{log.body}</div>)
+            // 相手サイドの隠しログは表示しない
+            if(log.hidden && log.playerSide !== state.side) return;
+
+            // 今日のログか昨日以前のログかで形式を変更
+            let logTime = moment(log.time);
+            let timeStr = (logTime.isSame(now, 'date') ? logTime.format('h:m') : logTime.format('YYYY/M/D h:m'));
+            let bodyStyle = (log.hidden ? {color: 'green'} : null);
+            logElements.push(
+                <div>
+                {state.board.playerNames[log.playerSide]}: <span style={bodyStyle}>{log.body}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
+                </div>
+            )
         });
 
         const oncreate = (e) => {

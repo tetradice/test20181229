@@ -56,20 +56,44 @@ function getStoredBoard(boardId: string, callback: (board: state.Board) => void)
   // ボード情報を取得
   RedisClient.HGET('boards', boardId, (err, json) => {
     let boardData = JSON.parse(json) as state.Board;
-    console.log('getStoredBoard: ', boardData);
 
     // コールバックを実行
-    callback.call(undefined, boardData);
+    callback(boardData);
   });
 }
 
 /** Redisへボードデータを保存 */
 function saveBoard(boardId: string, board: state.Board, callback: () => void){
-  console.log('saveBoard: ', JSON.stringify(board));
   // ボード情報を保存
   RedisClient.HSET('boards', boardId, JSON.stringify(board), (err, success) => {
     // コールバックを実行
-    callback.call(undefined);
+    callback();
+  });
+}
+
+/** Redis上に保存されたアクションログを取得 */
+function getStoredActionLogs(boardId: string, callback: (logs: state.LogRecord[]) => void){
+  // ログを取得
+  RedisClient.LRANGE(`actionLogs:${boardId}`, 0, -1, (err, jsons) => {
+
+    let logs = jsons.map((json) => JSON.parse(json) as state.LogRecord); 
+
+    // コールバックを実行
+    callback(logs);
+  });
+}
+
+/** Redisへアクションログデータを追加 */
+function appendActionLogs(boardId: string, logs: state.LogRecord[], callback: (logs: state.LogRecord[]) => void){
+  // ログをトランザクションで追加
+  let commands: string[][] = [];
+  logs.forEach((log) => {
+    commands.push(['RPUSH', `actionLogs:${boardId}`, JSON.stringify(log)]);
+  });
+  RedisClient.multi(commands).exec((err, success) => {
+    // コールバックを実行
+    console.log('appendActionLogs response: ', success);
+    callback(logs);
   });
 }
 
@@ -87,41 +111,8 @@ io.on('connection', (ioSocket) => {
     });
   });
 
-  // ログ追加
-  ioSocket.on('append_action_log', (data: sakuraba.SocketParam.appendActionLog) => {
-    console.log('on append_action_log: ', data);
-    // ボード情報を取得
-    getStoredBoard(data.boardId, (board) => {
-      // // ログをアップデートして保存
-      // let rec = new sakuraba.LogRecord();
-      // Object.assign(rec, data.log);
-      // board.actionLog.push(rec);
-      // saveBoard(data.boardId, board, () => {
-      //   // イベントを他ユーザーに配信
-      //   let param: sakuraba.SocketParam.bcAppendActionLog = {log: rec};
-      //   ioSocket.broadcast.emit('bc_append_action_log', param);
-      // });
-    });
-  });
-  ioSocket.on('append_chat_log', (data: sakuraba.SocketParam.appendChatLog) => {
-    console.log('on append_chat_log: ', data);
-    // ボード情報を取得
-    getStoredBoard(data.boardId, (board) => {
-      // // ログをアップデートして保存
-      // let rec = new sakuraba.LogRecord();
-      // Object.assign(rec, data.log);
-      // board.chatLog.push(rec);
-      // saveBoard(data.boardId, board, () => {
-      //   // イベントを他ユーザーに配信
-      //   let param: sakuraba.SocketParam.bcAppendChatLog = {log: rec};
-      //   ioSocket.broadcast.emit('bc_append_chat_log', param);
-      // });
-    });
-  });
-
-
   // ボード状態の更新
-  socket.on('updateBoard', (p: {boardId: string, side: PlayerSide, board: state.Board}) => {
+  socket.on('updateBoard', (p) => {
     // ボード情報を取得
     getStoredBoard(p.boardId, (board) => {
       // 送信されたボード情報を上書き
@@ -131,6 +122,24 @@ io.on('connection', (ioSocket) => {
       });
     });
   });
+
+  // アクションログ情報のリクエスト
+  socket.on('requestFirstActionLogs', (p) => {
+    // アクションログ情報を取得
+    getStoredActionLogs(p.boardId, (logs) => {
+      socket.emit('onFirstActionLogsReceived', {logs: logs});
+    });
+  });
+
+
+  // アクションログの追加
+  socket.on('appendActionLogs', (p) => {
+    appendActionLogs(p.boardId, p.logs, (logs) => {
+        // ログが追加されたイベントを他ユーザーに配信
+        socket.broadcastEmit('onAppendedActionLogsReceived', {logs: logs});
+    });
+  });
+
 
   // 名前の入力
   ioSocket.on('player_name_input', (data: {boardId: string, side: PlayerSide, name: string}) => {
@@ -185,18 +194,6 @@ io.on('connection', (ioSocket) => {
         // デッキが構築されたイベントを他ユーザーに配信
         ioSocket.broadcast.emit('on_deck_build', board);
       });
-
-      // let myBoardSide = board.getMySide(data.side);
-
-      // let serialized = board.serialize();
-      // serialized.p1Side.library = data.library;
-      // serialized.p1Side.specials = data.specials;
-      // board.deserialize(serialized);
-
-      // saveBoard(data.boardId, board, () => {
-      //   // デッキが構築されたイベントを他ユーザーに配信
-      //   ioSocket.broadcast.emit('on_deck_build',  board);
-      // });
     });
   });
 

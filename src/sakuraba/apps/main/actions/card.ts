@@ -2,6 +2,7 @@ import * as  _ from "lodash";
 import * as models from "sakuraba/models";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from ".";
+import { CARD_DATA } from "sakuraba";
 
 export default {
     /** カードを1枚追加する */
@@ -50,6 +51,8 @@ export default {
         fromPosition?: 'first' | 'last';
         /** カードをスタックの先頭に入れるか末尾に入れるか。省略時は末尾 */
         toPosition?: 'first' | 'last';
+        /** カード名をアクションログに出力するか */
+        cardNameLogging?: boolean
     }) => (state: state.State, actions: ActionsType) => {
         // 元の盤の状態をコピーして新しい盤を生成
         let newBoard = models.Board.clone(state.board);
@@ -68,6 +71,12 @@ export default {
             } else {
                 fromCards = fromRegionCards.slice(num * -1);
             }
+        }
+
+        // 移動するカード名を記録
+        if(p.cardNameLogging){
+            let cardNames = fromCards.map((c) => `[${CARD_DATA[c.cardId].name}]`).join('、');
+            actions.appendActionLog({text: `-> ${cardNames}`, hidden: true});
         }
 
         let [toSide, toRegion] = p.to;
@@ -106,7 +115,12 @@ export default {
         actions.operate({
             logText: `カードを${num}枚引く`,
             proc: () => {
-                actions.moveCard({from: [state.side, 'library'], to: [state.side, 'hand'], moveNumber: num});
+                actions.moveCard({
+                      from: [state.side, 'library']
+                    , to: [state.side, 'hand']
+                    , moveNumber: num
+                    , cardNameLogging: true
+                });
             }
         });
     },
