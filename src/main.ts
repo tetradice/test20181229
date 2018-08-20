@@ -150,16 +150,15 @@ $(function(){
                 if(playerName === ''){
                     playerName = playerCommonName;
                 }
-                appActions.setPlayerName({side: params.side, name: playerName});
+                appActions.operate({
+                    logText: `卓に参加`,
+                    undoType: 'notBack',
+                    proc: () => {
+                        appActions.setPlayerName({side: params.side, name: playerName});
+                    }
+                });
 
-                // 最初の名前決定時に、桜花結晶を作り、同時に集中力をセット
-                appActions.addSakuraToken({side: params.side, region: 'aura', number: 3});
-                appActions.addSakuraToken({side: params.side, region: 'life', number: 10});
-                appActions.setVigor({side: params.side, value: 0});
-
-                socket.emit('updateBoard', {boardId: params.boardId, side: params.side, board: appActions.getState().board});
-
-                messageModal(`<p>ゲームを始める準備ができたら、まずは「メガミ選択」ボタンをクリックしてください。</p>`);
+                messageModal(`<p>ゲームを始める準備ができたら、まずは右上の「メガミ選択」ボタンをクリックしてください。</p>`);
             });
         }
     });

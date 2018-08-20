@@ -4,7 +4,6 @@ import express = require('express');
 import socketIO = require('socket.io');
 import * as path from 'path';
 import * as redis from 'redis';
-import moment = require('moment');
 import * as randomstring from 'randomstring';
 import * as sakuraba from 'sakuraba';
 import browserSync = require('browser-sync');
@@ -140,7 +139,6 @@ io.on('connection', (ioSocket) => {
     });
   });
 
-
   // 名前の入力
   ioSocket.on('player_name_input', (data: {boardId: string, side: PlayerSide, name: string}) => {
     console.log('on player_name_input: ', data);
@@ -210,9 +208,3 @@ io.on('connection', (ioSocket) => {
     });
   });
 });
-// setInterval(() => {
-//   let count = RedisClient.INCR('counter', (error, n) => {
-//     io.emit('time', n);
-//   });
-  
-// }, 1000);

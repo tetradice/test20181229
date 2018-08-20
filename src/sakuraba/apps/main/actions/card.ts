@@ -110,17 +110,22 @@ export default {
     },
 
     /** 山札からカードを引く */
-    oprDraw: (num?: number) => (state: state.State, actions: ActionsType) => {
+    draw: (num?: number) => (state: state.State, actions: ActionsType) => {
         if(num === undefined) num = 1;
+        actions.appendActionLog({text: `カードを${num}枚引く`});
+        actions.moveCard({
+              from: [state.side, 'library']
+            , to: [state.side, 'hand']
+            , moveNumber: num
+            , cardNameLogging: true
+        });
+    },
+
+    /** 山札からカードを引く操作実行 */
+    oprDraw: (num?: number) => (state: state.State, actions: ActionsType) => {
         actions.operate({
-            logText: `カードを${num}枚引く`,
             proc: () => {
-                actions.moveCard({
-                      from: [state.side, 'library']
-                    , to: [state.side, 'hand']
-                    , moveNumber: num
-                    , cardNameLogging: true
-                });
+                actions.draw(num);
             }
         });
     },
@@ -142,25 +147,6 @@ export default {
 
 
 
-    /** 最初の手札を引く */
-    firstDraw: (p: {
-        /** どちら側の手札を引くか */
-        side: PlayerSide;
-    }) => (state: state.State, actions: ActionsType) => {
-        actions.forgetBoardHistory(); // Undo履歴の削除
-
-        // 山札をシャッフル
-        actions.shuffle({side: p.side});
-
-        // 手札を3枚引く
-        actions.moveCard({from: [p.side, 'library'], to: [p.side, 'hand'], moveNumber: 3});
-
-        // フラグON
-        let newBoard = models.Board.clone(actions.getState().board);
-        newBoard.firstDrawFlags[p.side] = true;
-
-        return {board: newBoard};
-    },
 
     shuffle: (p: {side: PlayerSide}) => (state: state.State, actions: ActionsType) => {
         let ret: Partial<state.State> = {};

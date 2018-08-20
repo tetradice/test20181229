@@ -5,6 +5,7 @@ export function confirmModal(desc: string, yesCallback: (this: JQuery, $element:
         .modal('show');
 }
 
+/** メッセージを表示する */
 export function messageModal(desc: string){
     $('#MESSAGE-MODAL .description').html(desc);
     $('#MESSAGE-MODAL')

@@ -1,4 +1,4 @@
-import { h, app } from "hyperapp";
+import { h, app, Children } from "hyperapp";
 import { ActionsType } from "../actions";
 import * as sakuraba from "sakuraba";
 import * as utils from "sakuraba/utils";
@@ -87,10 +87,13 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             // 選択したメガミを設定
             let megamis = [$('#MEGAMI1-SELECTION').val() as sakuraba.Megami, $('#MEGAMI2-SELECTION').val() as sakuraba.Megami];
 
-            actions.setMegamis({side: state.side, megami1: megamis[0], megami2: megamis[1]});
-            if(state.socket){
-                state.socket.emit('updateBoard', {boardId: state.boardId, side: state.side, board: actions.getState().board});
-            }
+            actions.operate({
+                logText: `メガミを選択`,
+                proc: () => {
+                    actions.appendActionLog({text: `-> ${utils.getMegamiDispName(megamis[0])}、${utils.getMegamiDispName(megamis[1])}`, hidden: true});
+                    actions.setMegamis({side: state.side, megami1: megamis[0], megami2: megamis[1]});
+                }
+            });
 
             return undefined;
         }}).modal('show');
@@ -215,14 +218,22 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         });
     }
 
+    let megamiOpen = () => {
+        utils.confirmModal('選択したメガミ2柱を公開します。<br><br>この操作を行うと、それ以降メガミの変更は行えません。<br>よろしいですか？', () => {
+            actions.operate({
+                logText: `選択したメガミを公開`,
+                undoType: 'notBack',
+                proc: () => {
+                    actions.appendActionLog({text: `-> ${utils.getMegamiDispName(board.megamis[state.side][0])}、${utils.getMegamiDispName(board.megamis[state.side][1])}`});
+                    actions.setMegamiOpenFlag({side: state.side, value: true});
+                    utils.messageModal("次に、右上の「デッキ構築」ボタンをクリックし、デッキの構築を行ってください。");
+                }
+            });
+        });
+    };
     let firstHandSet = () => {
-        utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', () => {
-            actions.firstDraw({side: state.side});
-
-            // サーバーに送信
-            if(state.socket){
-                state.socket.emit('updateBoard', {boardId: state.boardId, side: state.side, board: actions.getState().board});
-            }
+        utils.confirmModal('手札を引くと、それ以降デッキの変更は行えません。<br>よろしいですか？', () => {
+            actions.oprBoardSetup({side: state.side});
         });
     };
 
@@ -234,13 +245,54 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     if(state.board.firstDrawFlags[state.side]){
         styles = {display: 'none'};
     }
-    let commandButtons = (
-        <div style={styles}>
-        <button class={`ui basic button`} onclick={megamiSelect}>メガミ選択</button>
-        <button class={`ui basic button ${state.board.megamis[state.side] !== null ? '' : 'disabled'}`} onclick={deckBuild}>デッキ構築</button>
-        <button class={`ui basic button ${deckBuilded ? '' : 'disabled'}`} onclick={firstHandSet}>最初の手札を引く</button>
-        </div>
-    );
+
+    // コマンドボタンの決定
+    let commandButtons: Children = null;
+    if(state.board.firstDrawFlags[state.side]){
+        // 最初の手札を引いたあとの場合
+
+    } else if(state.board.megamiOpenFlags[state.side]){
+        // 選択したメガミを公開済みの場合
+        commandButtons = (
+            <div style={styles}>
+            <button class={`ui basic button`} onclick={deckBuild}>デッキ構築</button>
+            <button class={`ui basic button ${deckBuilded ? '' : 'disabled'}`} onclick={firstHandSet}>最初の手札を引く</button>
+            </div>
+        );
+    } else {
+        // まだメガミを公開済みでない場合
+        commandButtons = (
+            <div style={styles}>
+            <button class={`ui basic button`} onclick={megamiSelect}>メガミ選択</button>
+            <button class={`ui basic button ${state.board.megamis[state.side] !== null ? '' : 'disabled'}`} onclick={megamiOpen}>選択したメガミを公開</button>
+            </div>
+        );
+    }
+
+    // メガミ表示の決定
+    let megamiCaptionP1 = "";
+    let megamiCaptionP2 = "";
+
+    if(board.megamis.p1 !== null){
+        if(state.side === 'p1' || board.megamiOpenFlags.p1){
+            // プレイヤー1のメガミ名を表示可能な場合 (自分がプレイヤー1である or プレイヤー1のメガミが公開されている)
+            megamiCaptionP1 = ` - ${utils.getMegamiDispName(board.megamis.p1[0])}、${utils.getMegamiDispName(board.megamis.p1[1])}`
+        } else {
+            // プレイヤー1のメガミ名を表示不可能な場合
+            megamiCaptionP1 = ` - ？？？、？？？`
+        }
+    }
+    if(board.megamis.p2 !== null){
+        if(state.side === 'p2' || board.megamiOpenFlags.p2){
+            // プレイヤー2のメガミ名を表示可能な場合 (自分がプレイヤー2である or プレイヤー2のメガミが公開されている)
+            megamiCaptionP2 = ` - ${utils.getMegamiDispName(board.megamis.p2[0])}、${utils.getMegamiDispName(board.megamis.p2[1])}`
+        } else {
+            // プレイヤー2のメガミ名を表示不可能な場合
+            megamiCaptionP2 = ` - ？？？、？？？`
+        }
+    }
+   
+
 
     return (
         <div id="CONTROL-PANEL">    
@@ -248,7 +300,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <button class={`ui button ${state.boardHistoryPast.length === 0 ? 'disabled' : ''}`} onclick={() => actions.undoBoard()}><i class="undo alternate icon"></i></button>
                 <button class={`ui button ${state.boardHistoryFuture.length === 0 ? 'disabled' : ''}`}  onclick={() => actions.redoBoard()}><i class="redo alternate icon"></i></button>
             </div>
-            <button class="ui basic button" onclick={reset}>★ボードリセット</button><br />
+            <button class="ui basic button" onclick={reset}>ボードリセット</button><br />
             <button class="ui basic button" onclick={() => actions.toggleActionLogVisible()}>操作ログ表示</button>
 
             {commandButtons}
@@ -257,11 +309,11 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <tbody>
                     <tr>
                         <td class="collapsing">プレイヤー1</td>
-                        <td>{board.playerNames.p1} {(board.megamis.p1 !== null ? `(${sakuraba.MEGAMI_DATA[board.megamis.p1[0]].name}、${sakuraba.MEGAMI_DATA[board.megamis.p1[1]].name})` : '')}</td>
+                        <td>{board.playerNames.p1} {megamiCaptionP1}</td>
                     </tr>
                     <tr>
                         <td>プレイヤー2</td>
-                        <td>{board.playerNames.p2} {(board.megamis.p2 !== null ? `(${sakuraba.MEGAMI_DATA[board.megamis.p2[0]].name}、${sakuraba.MEGAMI_DATA[board.megamis.p2[1]].name})` : '')}</td>
+                        <td>{board.playerNames.p2} {megamiCaptionP2}</td>
                     </tr>
                     <tr>
                         <td>観戦者</td>

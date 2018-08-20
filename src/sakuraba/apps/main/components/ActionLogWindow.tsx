@@ -1,6 +1,7 @@
 import { h, Children } from "hyperapp";
 import moment from "moment";
 import * as utils from "sakuraba/utils";
+import { ActionsType } from "../actions";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -9,7 +10,7 @@ function saveWindowState(elem: HTMLElement){
 }
 
 /** 操作ログ */
-export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) => (state: state.State) => {
+export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) => (state: state.State, actions: ActionsType) => {
     if(p.shown){
         let logElements: Children[] = [];
         let now = moment();
@@ -53,10 +54,10 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
 
         return (
             <div id="ACTION-LOG-WINDOW"
-             style={{height: "500px"}}
+             style={{height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)"}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}>
-                <div class="ui top attached label">ログ</div>
+                <div class="ui top attached label">操作ログ<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleActionLogVisible()}><i class="times icon"></i></a></div>
                 <div id="ACTION-LOG-AREA">{logElements}</div>
             </div>
         )

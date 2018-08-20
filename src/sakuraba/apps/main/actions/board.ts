@@ -50,7 +50,7 @@ export default {
         // 追加されたログだけを新しいステートから切り出す
         let newState = actions.getState();
         let oldLength = state.actionLog.length;
-        appendLogs = newState.actionLog.slice(oldLength - 1);
+        appendLogs = newState.actionLog.slice(oldLength);
 
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         if(newState.socket){
@@ -113,8 +113,6 @@ export default {
 
     /** 指定したサイドのメガミを設定する */
     setMegamis: (p: {side: PlayerSide, megami1: Megami, megami2: Megami}) => (state: state.State, actions: ActionsType) => {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
-
         let newBoard = _.merge({}, state.board);
         newBoard.megamis[p.side] = [p.megami1, p.megami2];
         
@@ -151,19 +149,6 @@ export default {
         return {board: newBoard};
     },
 
-    /** マリガンフラグを変更 */
-    setMariganFlag: (p: {
-        /** どちら側のフラグか */
-        side: PlayerSide;
-        /** 新しいフラグの値 */
-        value: boolean;
-    }) => (state: state.State, actions: ActionsType) => {
-        let newBoard = models.Board.clone(state.board);
-        newBoard.mariganFlags[p.side] = p.value;
-
-        return {board: newBoard};
-    },
-
 
     /** デッキのカードを設定する */
     setDeckCards: (p: {cardIds: string[]}) => (state: state.State, actions: ActionsType) => {
@@ -181,6 +166,76 @@ export default {
             if(data.baseType === 'special'){
                 actions.addCard({region: 'special', cardId: id});
             }           
+        });
+    },
+
+    /** メガミを公開したフラグをセット */
+    setMegamiOpenFlag: (p: {
+        /** どちら側のフラグか */
+        side: PlayerSide;
+        /** 新しいフラグの値 */
+        value: boolean;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        newBoard.megamiOpenFlags[p.side] = p.value;
+
+        return {board: newBoard};
+    },
+
+    /** 最初の手札を引いたフラグをセット */
+    setFirstDrawFlag: (p: {
+        /** どちら側のフラグか */
+        side: PlayerSide;
+        /** 新しいフラグの値 */
+        value: boolean;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        newBoard.firstDrawFlags[p.side] = p.value;
+
+        return {board: newBoard};
+    },
+
+    /** マリガンフラグを変更 */
+    setMariganFlag: (p: {
+        /** どちら側のフラグか */
+        side: PlayerSide;
+        /** 新しいフラグの値 */
+        value: boolean;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        newBoard.mariganFlags[p.side] = p.value;
+
+        return {board: newBoard};
+    },
+
+
+    /** 最初の手札を引き、桜花結晶などを配置する */
+    oprBoardSetup: () => (state: state.State, actions: ActionsType) => {
+        actions.operate({
+            undoType: 'notBack',
+            proc: () => {
+                let board = new models.Board(state.board);
+
+                // 山札をシャッフル
+                actions.shuffle({side: state.side});
+
+                // 山札を3枚引く
+                actions.draw(3);
+
+                // 桜花結晶を作り、同時に集中力をセット
+                actions.addSakuraToken({side: state.side, region: 'aura', number: 3});
+                actions.addSakuraToken({side: state.side, region: 'life', number: 10});
+                actions.setVigor({side: state.side, value: 0});
+                actions.appendActionLog({text: '桜花結晶と集中力を配置'});
+
+                // まだ間合が置かれていなければセット
+                if(board.getRegionSakuraTokens(null, 'distance').length === 0){
+                    actions.addSakuraToken({side: null, region: 'distance', number: 10});
+                };
+
+                // 最初の手札を引いたフラグをセット
+                actions.setFirstDrawFlag({side: state.side, value: true});
+            }
         });
     },
 

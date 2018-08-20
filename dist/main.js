@@ -35651,13 +35651,14 @@ $(function () {
                 if (playerName === '') {
                     playerName = playerCommonName_1;
                 }
-                appActions.setPlayerName({ side: params.side, name: playerName });
-                // 最初の名前決定時に、桜花結晶を作り、同時に集中力をセット
-                appActions.addSakuraToken({ side: params.side, region: 'aura', number: 3 });
-                appActions.addSakuraToken({ side: params.side, region: 'life', number: 10 });
-                appActions.setVigor({ side: params.side, value: 0 });
-                socket.emit('updateBoard', { boardId: params.boardId, side: params.side, board: appActions.getState().board });
-                messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u308B\u6E96\u5099\u304C\u3067\u304D\u305F\u3089\u3001\u307E\u305A\u306F\u300C\u30E1\u30AC\u30DF\u9078\u629E\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
+                appActions.operate({
+                    logText: "\u5353\u306B\u53C2\u52A0",
+                    undoType: 'notBack',
+                    proc: function () {
+                        appActions.setPlayerName({ side: params.side, name: playerName });
+                    }
+                });
+                messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u308B\u6E96\u5099\u304C\u3067\u304D\u305F\u3089\u3001\u307E\u305A\u306F\u53F3\u4E0A\u306E\u300C\u30E1\u30AC\u30DF\u9078\u629E\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
             });
         }
     });
@@ -35883,7 +35884,7 @@ exports.default = {
         // 追加されたログだけを新しいステートから切り出す
         var newState = actions.getState();
         var oldLength = state.actionLog.length;
-        appendLogs = newState.actionLog.slice(oldLength - 1);
+        appendLogs = newState.actionLog.slice(oldLength);
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         if (newState.socket) {
             newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board });
@@ -35933,7 +35934,6 @@ exports.default = {
     }; },
     /** 指定したサイドのメガミを設定する */
     setMegamis: function (p) { return function (state, actions) {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
         var newBoard = _.merge({}, state.board);
         newBoard.megamis[p.side] = [p.megami1, p.megami2];
         return { board: newBoard };
@@ -35952,12 +35952,6 @@ exports.default = {
         newBoard.witherFlags[p.side] = p.value;
         return { board: newBoard };
     }; },
-    /** マリガンフラグを変更 */
-    setMariganFlag: function (p) { return function (state, actions) {
-        var newBoard = models.Board.clone(state.board);
-        newBoard.mariganFlags[p.side] = p.value;
-        return { board: newBoard };
-    }; },
     /** デッキのカードを設定する */
     setDeckCards: function (p) { return function (state, actions) {
         actions.memorizeBoardHistory(); // Undoのために履歴を記憶
@@ -35971,6 +35965,49 @@ exports.default = {
             }
             if (data.baseType === 'special') {
                 actions.addCard({ region: 'special', cardId: id });
+            }
+        });
+    }; },
+    /** メガミを公開したフラグをセット */
+    setMegamiOpenFlag: function (p) { return function (state, actions) {
+        var newBoard = models.Board.clone(state.board);
+        newBoard.megamiOpenFlags[p.side] = p.value;
+        return { board: newBoard };
+    }; },
+    /** 最初の手札を引いたフラグをセット */
+    setFirstDrawFlag: function (p) { return function (state, actions) {
+        var newBoard = models.Board.clone(state.board);
+        newBoard.firstDrawFlags[p.side] = p.value;
+        return { board: newBoard };
+    }; },
+    /** マリガンフラグを変更 */
+    setMariganFlag: function (p) { return function (state, actions) {
+        var newBoard = models.Board.clone(state.board);
+        newBoard.mariganFlags[p.side] = p.value;
+        return { board: newBoard };
+    }; },
+    /** 最初の手札を引き、桜花結晶などを配置する */
+    oprBoardSetup: function () { return function (state, actions) {
+        actions.operate({
+            undoType: 'notBack',
+            proc: function () {
+                var board = new models.Board(state.board);
+                // 山札をシャッフル
+                actions.shuffle({ side: state.side });
+                // 山札を3枚引く
+                actions.draw(3);
+                // 桜花結晶を作り、同時に集中力をセット
+                actions.addSakuraToken({ side: state.side, region: 'aura', number: 3 });
+                actions.addSakuraToken({ side: state.side, region: 'life', number: 10 });
+                actions.setVigor({ side: state.side, value: 0 });
+                actions.appendActionLog({ text: '桜花結晶と集中力を配置' });
+                // まだ間合が置かれていなければセット
+                if (board.getRegionSakuraTokens(null, 'distance').length === 0) {
+                    actions.addSakuraToken({ side: null, region: 'distance', number: 10 });
+                }
+                ;
+                // 最初の手札を引いたフラグをセット
+                actions.setFirstDrawFlag({ side: state.side, value: true });
             }
         });
     }; },
@@ -36083,18 +36120,22 @@ exports.default = {
         return { board: newBoard };
     }; },
     /** 山札からカードを引く */
-    oprDraw: function (num) { return function (state, actions) {
+    draw: function (num) { return function (state, actions) {
         if (num === undefined)
             num = 1;
+        actions.appendActionLog({ text: "\u30AB\u30FC\u30C9\u3092" + num + "\u679A\u5F15\u304F" });
+        actions.moveCard({
+            from: [state.side, 'library'],
+            to: [state.side, 'hand'],
+            moveNumber: num,
+            cardNameLogging: true
+        });
+    }; },
+    /** 山札からカードを引く操作実行 */
+    oprDraw: function (num) { return function (state, actions) {
         actions.operate({
-            logText: "\u30AB\u30FC\u30C9\u3092" + num + "\u679A\u5F15\u304F",
             proc: function () {
-                actions.moveCard({
-                    from: [state.side, 'library'],
-                    to: [state.side, 'hand'],
-                    moveNumber: num,
-                    cardNameLogging: true
-                });
+                actions.draw(num);
             }
         });
     }; },
@@ -36108,18 +36149,6 @@ exports.default = {
         }
         ret.board = newBoard;
         return ret;
-    }; },
-    /** 最初の手札を引く */
-    firstDraw: function (p) { return function (state, actions) {
-        actions.forgetBoardHistory(); // Undo履歴の削除
-        // 山札をシャッフル
-        actions.shuffle({ side: p.side });
-        // 手札を3枚引く
-        actions.moveCard({ from: [p.side, 'library'], to: [p.side, 'hand'], moveNumber: 3 });
-        // フラグON
-        var newBoard = models.Board.clone(actions.getState().board);
-        newBoard.firstDrawFlags[p.side] = true;
-        return { board: newBoard };
     }; },
     shuffle: function (p) { return function (state, actions) {
         var ret = {};
@@ -36384,7 +36413,7 @@ function saveWindowState(elem) {
     localStorage.setItem(elem.id + "-WindowState", JSON.stringify(current));
 }
 /** 操作ログ */
-exports.ActionLogWindow = function (p) { return function (state) {
+exports.ActionLogWindow = function (p) { return function (state, actions) {
     if (p.shown) {
         var logElements_1 = [];
         var now_1 = moment_1.default();
@@ -36427,8 +36456,11 @@ exports.ActionLogWindow = function (p) { return function (state) {
                 $(e).css(windowState);
             }
         };
-        return (hyperapp_1.h("div", { id: "ACTION-LOG-WINDOW", style: { height: "500px" }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
-            hyperapp_1.h("div", { class: "ui top attached label" }, "\u30ED\u30B0"),
+        return (hyperapp_1.h("div", { id: "ACTION-LOG-WINDOW", style: { height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)" }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
+            hyperapp_1.h("div", { class: "ui top attached label" },
+                "\u64CD\u4F5C\u30ED\u30B0",
+                hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleActionLogVisible(); } },
+                    hyperapp_1.h("i", { class: "times icon" }))),
             hyperapp_1.h("div", { id: "ACTION-LOG-AREA" }, logElements_1)));
     }
     else {
@@ -36724,10 +36756,13 @@ exports.ControlPanel = function () { return function (state, actions) {
                 }
                 // 選択したメガミを設定
                 var megamis = [$('#MEGAMI1-SELECTION').val(), $('#MEGAMI2-SELECTION').val()];
-                actions.setMegamis({ side: state.side, megami1: megamis[0], megami2: megamis[1] });
-                if (state.socket) {
-                    state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: actions.getState().board });
-                }
+                actions.operate({
+                    logText: "\u30E1\u30AC\u30DF\u3092\u9078\u629E",
+                    proc: function () {
+                        actions.appendActionLog({ text: "-> " + utils.getMegamiDispName(megamis[0]) + "\u3001" + utils.getMegamiDispName(megamis[1]), hidden: true });
+                        actions.setMegamis({ side: state.side, megami1: megamis[0], megami2: megamis[1] });
+                    }
+                });
                 return undefined;
             } }).modal('show');
         $('#MEGAMI1-SELECTION, #MEGAMI2-SELECTION').on('change', function (e) {
@@ -36830,13 +36865,22 @@ exports.ControlPanel = function () { return function (state, actions) {
         }).catch(function (reason) {
         });
     };
+    var megamiOpen = function () {
+        utils.confirmModal('選択したメガミ2柱を公開します。<br><br>この操作を行うと、それ以降メガミの変更は行えません。<br>よろしいですか？', function () {
+            actions.operate({
+                logText: "\u9078\u629E\u3057\u305F\u30E1\u30AC\u30DF\u3092\u516C\u958B",
+                undoType: 'notBack',
+                proc: function () {
+                    actions.appendActionLog({ text: "-> " + utils.getMegamiDispName(board.megamis[state.side][0]) + "\u3001" + utils.getMegamiDispName(board.megamis[state.side][1]) });
+                    actions.setMegamiOpenFlag({ side: state.side, value: true });
+                    utils.messageModal("次に、右上の「デッキ構築」ボタンをクリックし、デッキの構築を行ってください。");
+                }
+            });
+        });
+    };
     var firstHandSet = function () {
-        utils.confirmModal('手札を引くと、それ以降メガミやデッキの変更は行えなくなります。<br>よろしいですか？', function () {
-            actions.firstDraw({ side: state.side });
-            // サーバーに送信
-            if (state.socket) {
-                state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: actions.getState().board });
-            }
+        utils.confirmModal('手札を引くと、それ以降デッキの変更は行えません。<br>よろしいですか？', function () {
+            actions.oprBoardSetup({ side: state.side });
         });
     };
     var board = state.board;
@@ -36846,17 +36890,53 @@ exports.ControlPanel = function () { return function (state, actions) {
     if (state.board.firstDrawFlags[state.side]) {
         styles = { display: 'none' };
     }
-    var commandButtons = (hyperapp_1.h("div", { style: styles },
-        hyperapp_1.h("button", { class: "ui basic button", onclick: megamiSelect }, "\u30E1\u30AC\u30DF\u9078\u629E"),
-        hyperapp_1.h("button", { class: "ui basic button " + (state.board.megamis[state.side] !== null ? '' : 'disabled'), onclick: deckBuild }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
-        hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? '' : 'disabled'), onclick: firstHandSet }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F")));
+    // コマンドボタンの決定
+    var commandButtons = null;
+    if (state.board.firstDrawFlags[state.side]) {
+        // 最初の手札を引いたあとの場合
+    }
+    else if (state.board.megamiOpenFlags[state.side]) {
+        // 選択したメガミを公開済みの場合
+        commandButtons = (hyperapp_1.h("div", { style: styles },
+            hyperapp_1.h("button", { class: "ui basic button", onclick: deckBuild }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
+            hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? '' : 'disabled'), onclick: firstHandSet }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F")));
+    }
+    else {
+        // まだメガミを公開済みでない場合
+        commandButtons = (hyperapp_1.h("div", { style: styles },
+            hyperapp_1.h("button", { class: "ui basic button", onclick: megamiSelect }, "\u30E1\u30AC\u30DF\u9078\u629E"),
+            hyperapp_1.h("button", { class: "ui basic button " + (state.board.megamis[state.side] !== null ? '' : 'disabled'), onclick: megamiOpen }, "\u9078\u629E\u3057\u305F\u30E1\u30AC\u30DF\u3092\u516C\u958B")));
+    }
+    // メガミ表示の決定
+    var megamiCaptionP1 = "";
+    var megamiCaptionP2 = "";
+    if (board.megamis.p1 !== null) {
+        if (state.side === 'p1' || board.megamiOpenFlags.p1) {
+            // プレイヤー1のメガミ名を表示可能な場合 (自分がプレイヤー1である or プレイヤー1のメガミが公開されている)
+            megamiCaptionP1 = " - " + utils.getMegamiDispName(board.megamis.p1[0]) + "\u3001" + utils.getMegamiDispName(board.megamis.p1[1]);
+        }
+        else {
+            // プレイヤー1のメガミ名を表示不可能な場合
+            megamiCaptionP1 = " - \uFF1F\uFF1F\uFF1F\u3001\uFF1F\uFF1F\uFF1F";
+        }
+    }
+    if (board.megamis.p2 !== null) {
+        if (state.side === 'p2' || board.megamiOpenFlags.p2) {
+            // プレイヤー2のメガミ名を表示可能な場合 (自分がプレイヤー2である or プレイヤー2のメガミが公開されている)
+            megamiCaptionP2 = " - " + utils.getMegamiDispName(board.megamis.p2[0]) + "\u3001" + utils.getMegamiDispName(board.megamis.p2[1]);
+        }
+        else {
+            // プレイヤー2のメガミ名を表示不可能な場合
+            megamiCaptionP2 = " - \uFF1F\uFF1F\uFF1F\u3001\uFF1F\uFF1F\uFF1F";
+        }
+    }
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
         hyperapp_1.h("div", { class: "ui icon basic buttons" },
             hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.undoBoard(); } },
                 hyperapp_1.h("i", { class: "undo alternate icon" })),
             hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryFuture.length === 0 ? 'disabled' : ''), onclick: function () { return actions.redoBoard(); } },
                 hyperapp_1.h("i", { class: "redo alternate icon" }))),
-        hyperapp_1.h("button", { class: "ui basic button", onclick: reset }, "\u2605\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8"),
+        hyperapp_1.h("button", { class: "ui basic button", onclick: reset }, "\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8"),
         hyperapp_1.h("br", null),
         hyperapp_1.h("button", { class: "ui basic button", onclick: function () { return actions.toggleActionLogVisible(); } }, "\u64CD\u4F5C\u30ED\u30B0\u8868\u793A"),
         commandButtons,
@@ -36867,13 +36947,13 @@ exports.ControlPanel = function () { return function (state, actions) {
                     hyperapp_1.h("td", null,
                         board.playerNames.p1,
                         " ",
-                        (board.megamis.p1 !== null ? "(" + sakuraba.MEGAMI_DATA[board.megamis.p1[0]].name + "\u3001" + sakuraba.MEGAMI_DATA[board.megamis.p1[1]].name + ")" : ''))),
+                        megamiCaptionP1)),
                 hyperapp_1.h("tr", null,
                     hyperapp_1.h("td", null, "\u30D7\u30EC\u30A4\u30E4\u30FC2"),
                     hyperapp_1.h("td", null,
                         board.playerNames.p2,
                         " ",
-                        (board.megamis.p2 !== null ? "(" + sakuraba.MEGAMI_DATA[board.megamis.p2[0]].name + "\u3001" + sakuraba.MEGAMI_DATA[board.megamis.p2[1]].name + ")" : ''))),
+                        megamiCaptionP2)),
                 hyperapp_1.h("tr", null,
                     hyperapp_1.h("td", null, "\u89B3\u6226\u8005"),
                     hyperapp_1.h("td", null)))),
@@ -37749,6 +37829,12 @@ function flipSide(side) {
     return side;
 }
 exports.flipSide = flipSide;
+/** メガミの表示名を取得 */
+function getMegamiDispName(megami) {
+    var data = sakuraba.MEGAMI_DATA[megami];
+    return data.name + "[" + data.symbol + "]";
+}
+exports.getMegamiDispName = getMegamiDispName;
 /** カードの説明用ポップアップHTMLを取得する */
 function getDescriptionHtml(cardId) {
     var cardData = sakuraba.CARD_DATA[cardId];
@@ -37806,6 +37892,7 @@ function confirmModal(desc, yesCallback) {
         .modal('show');
 }
 exports.confirmModal = confirmModal;
+/** メッセージを表示する */
 function messageModal(desc) {
     $('#MESSAGE-MODAL .description').html(desc);
     $('#MESSAGE-MODAL')
@@ -37837,6 +37924,7 @@ function createInitialState() {
             megamis: { p1: null, p2: null },
             vigors: { p1: null, p2: null },
             witherFlags: { p1: false, p2: false },
+            megamiOpenFlags: { p1: false, p2: false },
             firstDrawFlags: { p1: false, p2: false },
             mariganFlags: { p1: false, p2: false }
         },

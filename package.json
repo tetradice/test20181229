@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "npm run build:server && node dist/server.js",
-    "start:dev": "npm run build:server && node-dev dist/server.js",
+    "start": "node dist/server.js",
+    "start:dev": "node-dev dist/server.js",
     "watch:client": "webpack --watch --config webpack.config.client.ts",
     "watch:server": "webpack --watch --config webpack.config.server.ts",
     "build": "npm run build:client && npm run build:server",

@@ -250,6 +250,12 @@ function flipSide(side) {
     return side;
 }
 exports.flipSide = flipSide;
+/** メガミの表示名を取得 */
+function getMegamiDispName(megami) {
+    var data = sakuraba.MEGAMI_DATA[megami];
+    return data.name + "[" + data.symbol + "]";
+}
+exports.getMegamiDispName = getMegamiDispName;
 /** カードの説明用ポップアップHTMLを取得する */
 function getDescriptionHtml(cardId) {
     var cardData = sakuraba.CARD_DATA[cardId];
@@ -307,6 +313,7 @@ function confirmModal(desc, yesCallback) {
         .modal('show');
 }
 exports.confirmModal = confirmModal;
+/** メッセージを表示する */
 function messageModal(desc) {
     $('#MESSAGE-MODAL .description').html(desc);
     $('#MESSAGE-MODAL')
@@ -338,6 +345,7 @@ function createInitialState() {
             megamis: { p1: null, p2: null },
             vigors: { p1: null, p2: null },
             witherFlags: { p1: false, p2: false },
+            megamiOpenFlags: { p1: false, p2: false },
             firstDrawFlags: { p1: false, p2: false },
             mariganFlags: { p1: false, p2: false }
         },

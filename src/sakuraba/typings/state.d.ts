@@ -42,6 +42,8 @@ export interface Board {
     /** 萎縮 */
     witherFlags: {p1: boolean, p2: boolean};
 
+    /** メガミを公開したかどうか */
+    megamiOpenFlags: {p1: boolean, p2: boolean};
     /** 最初の手札を引いたかどうか */
     firstDrawFlags: {p1: boolean, p2: boolean};
     /** 手札の引き直しを行ったかどうか */

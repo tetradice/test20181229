@@ -7,6 +7,12 @@ export function flipSide(side: PlayerSide): PlayerSide{
   return side;
 }
 
+/** メガミの表示名を取得 */
+export function getMegamiDispName(megami: sakuraba.Megami): string{
+    let data = sakuraba.MEGAMI_DATA[megami];
+    return `${data.name}[${data.symbol}]`
+}
+
 /** カードの説明用ポップアップHTMLを取得する */
 export function getDescriptionHtml(cardId: string): string{
   let cardData = sakuraba.CARD_DATA[cardId];
