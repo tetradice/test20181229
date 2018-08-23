@@ -55,7 +55,7 @@ export default {
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         if(newState.socket){
             newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board});
-            if(p.logText){
+            if(appendLogs.length >= 1){
                 newState.socket.emit('appendActionLogs', { boardId: newState.boardId, logs: appendLogs });
             }
         }

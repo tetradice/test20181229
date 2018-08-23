@@ -2,7 +2,6 @@ import { h, app, Children } from "hyperapp";
 import { ActionsType } from "../actions";
 import * as sakuraba from "sakuraba";
 import * as utils from "sakuraba/utils";
-import { Card } from "./Card";
 import * as css from "./ControlPanel.css"
 import { withLogger } from "@hyperapp/logger"
 import { DeckBuildCard } from "../../common/components";
@@ -90,7 +89,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             actions.operate({
                 logText: `メガミを選択`,
                 proc: () => {
-                    actions.appendActionLog({text: `-> ${utils.getMegamiDispName(megamis[0])}、${utils.getMegamiDispName(megamis[1])}`, hidden: true});
+                    //actions.appendActionLog({text: `-> ${utils.getMegamiDispName(megamis[0])}、${utils.getMegamiDispName(megamis[1])}`, hidden: true});
                     actions.setMegamis({side: state.side, megami1: megamis[0], megami2: megamis[1]});
                 }
             });
@@ -206,13 +205,13 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
         // モーダル終了後の処理
         promise.then((finalState: typeof initialState) => {
-            // 確定した場合、デッキを保存し、桜花結晶を追加
-            actions.setDeckCards({cardIds: finalState.selectedCardIds});
-
-            // サーバーに送信
-            if(state.socket){
-                state.socket.emit('updateBoard', {boardId: state.boardId, side: state.side, board: actions.getState().board});
-            }
+            // 確定した場合、デッキを保存
+            actions.operate({
+                logText: `デッキを構築`,
+                proc: () => {
+                    actions.setDeckCards({cardIds: finalState.selectedCardIds});
+                }
+            });
         }).catch((reason) => {
             
         });
@@ -240,31 +239,33 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     let board = state.board;
     let deckBuilded = boardModel.getSideCards(state.side).length >= 1;
 
-    // 最初の手札を引いていれば、準備系のボタンは表示しない
-    let styles = null;
-    if(state.board.firstDrawFlags[state.side]){
-        styles = {display: 'none'};
-    }
 
     // コマンドボタンの決定
     let commandButtons: Children = null;
     if(state.board.firstDrawFlags[state.side]){
         // 最初の手札を引いたあとの場合
-
+        commandButtons = (
+            <div class={css.commandButtons}>
+            <div class={css.currentPhase}>- 桜花決闘 -</div>
+            </div>
+        );
     } else if(state.board.megamiOpenFlags[state.side]){
         // 選択したメガミを公開済みの場合
         commandButtons = (
-            <div style={styles}>
-            <button class={`ui basic button`} onclick={deckBuild}>デッキ構築</button>
-            <button class={`ui basic button ${deckBuilded ? '' : 'disabled'}`} onclick={firstHandSet}>最初の手札を引く</button>
+            <div class={css.commandButtons}>
+            <div class={css.currentPhase}>- 眼前構築 -</div>
+            <button class={`ui basic button ${deckBuilded ? '' : 'focused-button'}`} onclick={deckBuild}>デッキ構築</button>
+            <button class={`ui basic button ${deckBuilded ? 'focused-button' : 'disabled'}`} onclick={firstHandSet}>最初の手札を引く</button>
             </div>
         );
     } else {
         // まだメガミを公開済みでない場合
+        let megamiSelected = state.board.megamis[state.side] !== null;
         commandButtons = (
-            <div style={styles}>
-            <button class={`ui basic button`} onclick={megamiSelect}>メガミ選択</button>
-            <button class={`ui basic button ${state.board.megamis[state.side] !== null ? '' : 'disabled'}`} onclick={megamiOpen}>選択したメガミを公開</button>
+            <div class={css.commandButtons}>
+            <div class={css.currentPhase}>- 双掌繚乱 -</div>
+            <button class={`ui basic button ${megamiSelected ? '' : 'focused-button'}`} onclick={megamiSelect}>メガミ選択</button>
+            <button class={`ui basic button ${megamiSelected ? 'focused-button' : 'disabled'}`} onclick={megamiOpen}>選択したメガミを公開</button>
             </div>
         );
     }

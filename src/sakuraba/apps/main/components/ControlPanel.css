@@ -19,3 +19,12 @@
     margin-top: 1em;
     font-size: larger;
 }
+
+.commandButtons {
+    margin-top: 1em;
+}
+
+.currentPhase {
+    font-weight: bold;
+}
+

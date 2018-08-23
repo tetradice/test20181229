@@ -59,6 +59,12 @@
   version "3.3.4"
   resolved "https://registry.yarnpkg.com/@types/jquery/-/jquery-3.3.4.tgz#f1850fb9a70041a14ace4f81a7ed782db8548317"
 
+"@types/jqueryui@^1.12.3":
+  version "1.12.3"
+  resolved "https://registry.yarnpkg.com/@types/jqueryui/-/jqueryui-1.12.3.tgz#f7c8d0e4a5c7447eff3dfe7f0486ca1e0bee1011"
+  dependencies:
+    "@types/jquery" "*"
+
 "@types/json5@^0.0.29":
   version "0.0.29"
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
@@ -2185,8 +2191,8 @@ hyperapp-devtools@^0.3.0:
     spectre.css "^0.5.1"
 
 hyperapp-types@^0.2.0:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/hyperapp-types/-/hyperapp-types-0.2.1.tgz#419c613dc01ffe2d4fc44154dedc8d148e810a3b"
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/hyperapp-types/-/hyperapp-types-0.2.2.tgz#66108626c0403bb7c1bd3359a77f879e70bcdc69"
 
 hyperapp@^1.1.2, hyperapp@^1.2.5, hyperapp@^1.2.6:
   version "1.2.6"

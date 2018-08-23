@@ -20,7 +20,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
 
             // 今日のログか昨日以前のログかで形式を変更
             let logTime = moment(log.time);
-            let timeStr = (logTime.isSame(now, 'date') ? logTime.format('h:m') : logTime.format('YYYY/M/D h:m'));
+            let timeStr = (logTime.isSame(now, 'date') ? logTime.format('h:mm') : logTime.format('YYYY/M/D h:mm'));
             let bodyStyle = (log.hidden ? {color: 'green'} : null);
             logElements.push(
                 <div>
@@ -32,6 +32,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
         const oncreate = (e) => {
             // 一部ウインドウをリサイズ可能にする
             $(e).draggable({
+                cursor: "move", 
                 stop: function(){
                     saveWindowState(e);
                 },

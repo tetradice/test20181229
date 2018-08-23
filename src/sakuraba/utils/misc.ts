@@ -10,7 +10,7 @@ export function flipSide(side: PlayerSide): PlayerSide{
 /** メガミの表示名を取得 */
 export function getMegamiDispName(megami: sakuraba.Megami): string{
     let data = sakuraba.MEGAMI_DATA[megami];
-    return `${data.name}[${data.symbol}]`
+    return `${data.name}(${data.symbol})`
 }
 
 /** カードの説明用ポップアップHTMLを取得する */
@@ -41,7 +41,7 @@ export function getDescriptionHtml(cardId: string): string{
   if(cardData.damage !== undefined){
       html += `${cardData.damage}<br>`;
   }
-  html += `${cardData.text.replace('\n', '<br>')}`;
+  html += `${cardData.text.replace(/\n/g, '<br>')}`;
   html += `</div>`;
   return html;
 }

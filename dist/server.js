@@ -253,7 +253,7 @@ exports.flipSide = flipSide;
 /** メガミの表示名を取得 */
 function getMegamiDispName(megami) {
     var data = sakuraba.MEGAMI_DATA[megami];
-    return data.name + "[" + data.symbol + "]";
+    return data.name + "(" + data.symbol + ")";
 }
 exports.getMegamiDispName = getMegamiDispName;
 /** カードの説明用ポップアップHTMLを取得する */
@@ -287,7 +287,7 @@ function getDescriptionHtml(cardId) {
     if (cardData.damage !== undefined) {
         html += cardData.damage + "<br>";
     }
-    html += "" + cardData.text.replace('\n', '<br>');
+    html += "" + cardData.text.replace(/\n/g, '<br>');
     html += "</div>";
     return html;
 }
