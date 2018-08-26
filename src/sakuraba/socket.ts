@@ -5,6 +5,8 @@ interface ServerToClientEventProps {
     onFirstActionLogsReceived: {logs: state.LogRecord[]};
     onBoardReceived: {board: state.Board};
     onAppendedActionLogsReceived: {logs: state.LogRecord[]};
+
+    onNotifyReceived: {message: string};
 }
 type ServerToClientEventName = keyof ServerToClientEventProps;
 
@@ -13,6 +15,8 @@ interface ClientToServerEventProps {
     requestFirstActionLogs: {boardId: string}; 
     updateBoard: {boardId: string, side: PlayerSide, board: state.Board};
     appendActionLogs: {boardId: string, logs: state.LogRecord[]};
+    
+    notify: {boardId: string, message: string};
 }
 type ClientToServerEventName = keyof ClientToServerEventProps;
 

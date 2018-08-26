@@ -293,6 +293,9 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         }
     }
    
+    let notifyTest = () => {
+        state.socket.emit('notify', {boardId: state.boardId, message: '通知テストです。'});
+    };
 
 
     return (
@@ -301,7 +304,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <button class={`ui button ${state.boardHistoryPast.length === 0 ? 'disabled' : ''}`} onclick={() => actions.undoBoard()}><i class="undo alternate icon"></i></button>
                 <button class={`ui button ${state.boardHistoryFuture.length === 0 ? 'disabled' : ''}`}  onclick={() => actions.redoBoard()}><i class="redo alternate icon"></i></button>
             </div>
-            <button class="ui basic button" onclick={reset}>ボードリセット</button><br />
+            <button class="ui basic button" onclick={reset}>★ボードリセット</button> <button class="ui basic button" onclick={notifyTest}>★通知テスト</button><br />
             <button class="ui basic button" onclick={() => actions.toggleActionLogVisible()}>操作ログ表示</button>
 
             {commandButtons}

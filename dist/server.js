@@ -557,6 +557,11 @@ io.on('connection', function (ioSocket) {
             socket.broadcastEmit('onAppendedActionLogsReceived', { logs: logs });
         });
     });
+    // 通知送信
+    socket.on('notify', function (p) {
+        // ログが追加されたイベントを他ユーザーに配信
+        socket.broadcastEmit('onNotifyReceived', { message: p.message });
+    });
     // 名前の入力
     ioSocket.on('player_name_input', function (data) {
         console.log('on player_name_input: ', data);

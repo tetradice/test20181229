@@ -139,6 +139,13 @@ io.on('connection', (ioSocket) => {
     });
   });
 
+  
+  // 通知送信
+  socket.on('notify', (p) => {
+      // ログが追加されたイベントを他ユーザーに配信
+      socket.broadcastEmit('onNotifyReceived', {message: p.message});
+  });
+
   // 名前の入力
   ioSocket.on('player_name_input', (data: {boardId: string, side: PlayerSide, name: string}) => {
     console.log('on player_name_input: ', data);

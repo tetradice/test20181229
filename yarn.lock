@@ -169,6 +169,12 @@
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@types/tapable/-/tapable-1.0.4.tgz#b4ffc7dc97b498c969b360a41eee247f82616370"
 
+"@types/toastr@^2.1.35":
+  version "2.1.35"
+  resolved "https://registry.yarnpkg.com/@types/toastr/-/toastr-2.1.35.tgz#9b29ee786744994c4f7eafee415b125f835dd854"
+  dependencies:
+    "@types/jquery" "*"
+
 "@types/uglify-js@*":
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/@types/uglify-js/-/uglify-js-3.0.3.tgz#801a5ca1dc642861f47c46d14b700ed2d610840b"
@@ -2532,6 +2538,10 @@ jquery-contextmenu@^2.6.4:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/jquery-contextmenu/-/jquery-contextmenu-2.7.0.tgz#fa489641051dcdb726094ee5960c0a43070c2a36"
 
+jquery@>=1.12.0:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
+
 js-base64@^2.1.9:
   version "2.4.6"
   resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-2.4.6.tgz#1d49f618bef43630cd191f4e122447acfdb947d8"
@@ -4666,6 +4676,12 @@ to-regex@^3.0.1, to-regex@^3.0.2:
     extend-shallow "^3.0.2"
     regex-not "^1.0.2"
     safe-regex "^1.1.0"
+
+toastr@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/toastr/-/toastr-2.1.4.tgz#8b43be64fb9d0c414871446f2db8e8ca4e95f181"
+  dependencies:
+    jquery ">=1.12.0"
 
 trim-newlines@^1.0.0:
   version "1.0.0"

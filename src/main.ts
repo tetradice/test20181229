@@ -1,3 +1,5 @@
+import toastr from "toastr";
+
 import * as models from "sakuraba/models";
 import * as utils from "sakuraba/utils";
 import * as apps from "sakuraba/apps";
@@ -178,4 +180,16 @@ $(function(){
     socket.on('onBoardReceived', (p: {board: state.Board}) => {
         appActions.setBoard(p.board);
     });
+
+    // 通知を受け取った場合、toastを時間無制限で表示
+    socket.on('onNotifyReceived', (p: {message: string}) => {
+        toastr.options = {
+              timeOut: 0
+            , hideDuration: 300
+            , showDuration: 300
+            , tapToDismiss: false
+            , closeButton: true
+        };
+        toastr.info(p.message);
+    });  
 });
