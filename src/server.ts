@@ -143,7 +143,7 @@ io.on('connection', (ioSocket) => {
   // 通知送信
   socket.on('notify', (p) => {
       // ログが追加されたイベントを他ユーザーに配信
-      socket.broadcastEmit('onNotifyReceived', {message: p.message});
+      socket.broadcastEmit('onNotifyReceived', {senderSide: p.senderSide, message: p.message});
   });
 
   // 名前の入力

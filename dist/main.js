@@ -46473,18 +46473,17 @@ $(function () {
     });
     // 集中力右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD2 .fbs-vigor-card',
+        selector: '#BOARD2 .fbs-vigor-card, #BOARD2 .withered-token',
         build: function ($elem, event) {
             var st = appActions.getState();
             var board = new models.Board(st.board);
+            var side = $elem.closest('[data-side]').attr('data-side');
             var items = {};
-            items['wither'] = { name: (board.witherFlags[st.side] ? '萎縮を解除' : '萎縮') };
+            items['wither'] = {
+                name: (board.witherFlags[side] ? '萎縮を解除' : '萎縮'),
+                callback: function () { return appActions.oprSetWitherFlag({ side: side, value: !board.witherFlags[side] }); }
+            };
             return {
-                callback: function (key) {
-                    if (key === 'wither') {
-                        appActions.setWitherFlag({ side: st.side, value: !board.witherFlags[st.side] });
-                    }
-                },
                 items: items,
             };
         }
@@ -46548,23 +46547,30 @@ $(function () {
     });
     socket.on('onAppendedActionLogsReceived', function (p) {
         appActions.appendReceivedActionLogs(p.logs);
+        // 受け取ったログをtoastrで表示
+        var st = appActions.getState();
+        var targetLogs = p.logs.filter(function (log) { return !log.hidden; });
+        var msg = targetLogs.map(function (log) { return log.body; }).join('<br>');
+        toastr_1.default.info(msg, st.board.playerNames[targetLogs[0].playerSide] + ":");
     });
     // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
     socket.on('onBoardReceived', function (p) {
         appActions.setBoard(p.board);
     });
-    // toastrのオプションを設定
+    // toastrの標準オプションを設定
     toastr_1.default.options = {
-        timeOut: 0,
-        extendedTimeOut: 0,
         hideDuration: 300,
-        showDuration: 300,
-        tapToDismiss: false,
-        closeButton: true
+        showDuration: 300
     };
-    // 通知を受け取った場合、toastを時間無制限で表示
+    // 相手プレイヤーからの通知を受け取った場合、toastを時間無制限で表示
     socket.on('onNotifyReceived', function (p) {
-        toastr_1.default.info(p.message);
+        var st = appActions.getState();
+        toastr_1.default.info(p.message, st.board.playerNames[p.senderSide] + "\u3088\u308A\u901A\u77E5:", {
+            timeOut: 0,
+            extendedTimeOut: 0,
+            tapToDismiss: false,
+            closeButton: true
+        });
     });
 });
 
@@ -46583,9 +46589,13 @@ $(function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MEGAMI_DATA = {
     'yurina': { name: 'ユリナ', symbol: '刀' },
+    'yurina-a': { name: '第一章ユリナ', symbol: '古刀' },
     'saine': { name: 'サイネ', symbol: '薙刀' },
+    'saine-a': { name: '第二章サイネ', symbol: '琵琶' },
     'himika': { name: 'ヒミカ', symbol: '銃' },
+    'himika-a': { name: '原初ヒミカ', symbol: '炎' },
     'tokoyo': { name: 'トコヨ', symbol: '扇' },
+    'tokoyo-a': { name: '旅芸人トコヨ', symbol: '笛' },
     'oboro': { name: 'オボロ', symbol: '忍' },
     'yukihi': { name: 'ユキヒ', symbol: '傘/簪' },
     'shinra': { name: 'シンラ', symbol: '書' },
@@ -46593,7 +46603,8 @@ exports.MEGAMI_DATA = {
     'chikage': { name: 'チカゲ', symbol: '毒' },
     'kururu': { name: 'クルル', symbol: '絡繰' },
     'thallya': { name: 'サリヤ', symbol: '乗騎' },
-    'raira': { name: 'ライラ', symbol: '爪' }
+    'raira': { name: 'ライラ', symbol: '爪' },
+    'utsuro': { name: 'ウツロ', symbol: '鎌' }
 };
 exports.CARD_DATA = {
     '01-yurina-o-n-1': { megami: 'yurina', name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: "3-4", damage: '3/1', text: '' },
@@ -46830,32 +46841,80 @@ exports.default = {
         return { board: newBoard };
     }; },
     /** 集中力の値を変更 */
+    oprSetVigor: function (p) { return function (state, actions) {
+        var oldValue = state.board.vigors[p.side];
+        // ログの内容を設定 (増加か減少かで変更)
+        var logText;
+        if (p.value >= oldValue) {
+            logText = "\u96C6\u4E2D\u529B\u3092" + (p.value - oldValue) + "\u5897\u3084\u3057\u307E\u3057\u305F";
+        }
+        else {
+            logText = "\u96C6\u4E2D\u529B\u3092" + (oldValue - p.value) + "\u6E1B\u3089\u3057\u307E\u3057\u305F";
+        }
+        // 他の人の集中力を変更した場合
+        if (p.side !== state.side) {
+            logText = state.board.playerNames[p.side] + "\u306E" + logText;
+        }
+        // 実行
+        actions.operate({
+            logText: logText,
+            proc: function () {
+                actions.setVigor(p);
+            }
+        });
+    }; },
+    /** 集中力の値を変更 */
     setVigor: function (p) { return function (state, actions) {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
         var newBoard = models.Board.clone(state.board);
         newBoard.vigors[p.side] = p.value;
         return { board: newBoard };
     }; },
     /** 萎縮フラグを変更 */
+    oprSetWitherFlag: function (p) { return function (state, actions) {
+        // ログの内容を設定
+        var logText;
+        if (p.value) {
+            if (p.side !== state.side) {
+                logText = state.board.playerNames[p.side] + "\u3092\u840E\u7E2E\u3055\u305B\u307E\u3057\u305F";
+            }
+            else {
+                logText = "\u840E\u7E2E\u3057\u307E\u3057\u305F";
+            }
+        }
+        else {
+            if (p.side !== state.side) {
+                logText = state.board.playerNames[p.side] + "\u306E\u840E\u7E2E\u3092\u89E3\u9664\u3057\u307E\u3057\u305F";
+            }
+            else {
+                logText = "\u840E\u7E2E\u3092\u89E3\u9664\u3057\u307E\u3057\u305F";
+            }
+        }
+        // 実行
+        actions.operate({
+            logText: logText,
+            proc: function () {
+                actions.setWitherFlag(p);
+            }
+        });
+    }; },
+    /** 萎縮フラグを変更 */
     setWitherFlag: function (p) { return function (state, actions) {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
         var newBoard = models.Board.clone(state.board);
         newBoard.witherFlags[p.side] = p.value;
         return { board: newBoard };
     }; },
     /** デッキのカードを設定する */
     setDeckCards: function (p) { return function (state, actions) {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
         // 自分の側のカードをすべて削除
         actions.clearDeckCards();
         // 選択されたカードを追加
         p.cardIds.forEach(function (id) {
             var data = sakuraba_1.CARD_DATA[id];
             if (data.baseType === 'normal') {
-                actions.addCard({ region: 'library', cardId: id });
+                actions.addCard({ side: state.side, region: 'library', cardId: id });
             }
             if (data.baseType === 'special') {
-                actions.addCard({ region: 'special', cardId: id });
+                actions.addCard({ side: state.side, region: 'special', cardId: id });
             }
         });
     }; },
@@ -46944,7 +47003,7 @@ exports.default = {
         // 現在カード数 + 1で新しい連番を振る
         var cardCount = newBoard.objects.filter(function (obj) { return obj.type === 'card'; }).length;
         var objectId = "card-" + (cardCount + 1);
-        var newCard = utils.createCard(objectId, p.cardId, p.region, 'p1');
+        var newCard = utils.createCard(objectId, p.cardId, p.region, p.side);
         newBoard.objects.push(newCard);
         // 領域情報更新
         newBoard.updateRegionInfo();
@@ -47857,21 +47916,17 @@ exports.ControlPanel = function () { return function (state, actions) {
             megamiCaptionP2 = " - \uFF1F\uFF1F\uFF1F\u3001\uFF1F\uFF1F\uFF1F";
         }
     }
-    var notifyTest = function () {
-        state.socket.emit('notify', { boardId: state.boardId, message: '通知テストです。' });
-    };
     var notify = function () {
-        var selfName = state.board.playerNames[state.side];
         var opponentName = state.board.playerNames[utils.flipSide(state.side)];
         var notifyType = $('[name=notifyType]').val();
         if (notifyType === 'ready') {
-            state.socket.emit('notify', { boardId: state.boardId, message: selfName + "\u3088\u308A\u901A\u77E5: \u6E96\u5099\u3067\u304D\u307E\u3057\u305F" });
+            state.socket.emit('notify', { boardId: state.boardId, senderSide: state.side, message: "\u6E96\u5099\u3067\u304D\u307E\u3057\u305F" });
         }
         if (notifyType === 'turnEnd') {
-            state.socket.emit('notify', { boardId: state.boardId, message: selfName + "\u3088\u308A\u901A\u77E5: \u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F" });
+            state.socket.emit('notify', { boardId: state.boardId, senderSide: state.side, message: "\u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F" });
         }
         if (notifyType === 'reaction') {
-            state.socket.emit('notify', { boardId: state.boardId, message: selfName + "\u3088\u308A\u901A\u77E5: \u5BFE\u5FDC\u3057\u307E\u3059" });
+            state.socket.emit('notify', { boardId: state.boardId, senderSide: state.side, message: "\u5BFE\u5FDC\u3057\u307E\u3059" });
         }
         // 送信完了
         toastr_1.default.success(opponentName + "\u3078\u901A\u77E5\u3057\u307E\u3057\u305F\u3002", '', { timeOut: 5000 });
@@ -47885,8 +47940,6 @@ exports.ControlPanel = function () { return function (state, actions) {
             hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryFuture.length === 0 ? 'disabled' : ''), onclick: function () { return actions.redoBoard(); } },
                 hyperapp_1.h("i", { class: "redo alternate icon" }))),
         hyperapp_1.h("button", { class: "ui basic button", onclick: reset }, "\u2605\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8"),
-        " ",
-        hyperapp_1.h("button", { class: "ui basic button", onclick: notifyTest }, "\u2605\u901A\u77E5\u30C6\u30B9\u30C8"),
         hyperapp_1.h("br", null),
         hyperapp_1.h("button", { class: "ui basic button", onclick: function () { return actions.toggleActionLogVisible(); } }, "\u64CD\u4F5C\u30ED\u30B0\u8868\u793A"),
         commandButtons,
@@ -48155,10 +48208,10 @@ exports.Vigor = function (p) { return function (state, actions) {
         className += " reverse-rotated";
     if (p.side === utils.flipSide(state.side))
         className += " opponent-side";
-    return hyperapp_1.h("div", { class: className, style: styles },
-        hyperapp_1.h("div", { class: "vigor0" + (vigor !== 0 ? " clickable" : ""), onclick: function () { return actions.setVigor({ value: 0, side: p.side }); } }),
-        hyperapp_1.h("div", { class: "vigor1" + (vigor !== 1 ? " clickable" : ""), onclick: function () { return actions.setVigor({ value: 1, side: p.side }); } }),
-        hyperapp_1.h("div", { class: "vigor2" + (vigor !== 2 ? " clickable" : ""), onclick: function () { return actions.setVigor({ value: 2, side: p.side }); } }));
+    return hyperapp_1.h("div", { class: className, style: styles, "data-side": p.side },
+        hyperapp_1.h("div", { class: "vigor0" + (vigor !== 0 ? " clickable" : ""), onclick: function () { return actions.oprSetVigor({ value: 0, side: p.side }); } }),
+        hyperapp_1.h("div", { class: "vigor1" + (vigor !== 1 ? " clickable" : ""), onclick: function () { return actions.oprSetVigor({ value: 1, side: p.side }); } }),
+        hyperapp_1.h("div", { class: "vigor2" + (vigor !== 2 ? " clickable" : ""), onclick: function () { return actions.oprSetVigor({ value: 2, side: p.side }); } }));
 }; };
 
 
@@ -48192,11 +48245,11 @@ exports.WitheredToken = function (p) { return function (state, actions) {
         width: 80 * state.zoom + "px",
         height: 89 * state.zoom + "px"
     };
-    var className = "withered-token clickable";
+    var className = "withered-token";
     if (p.side === utils.flipSide(state.side))
         className += " opponent-side";
     if (state.board.witherFlags[p.side]) {
-        return hyperapp_1.h("div", { class: className, onclick: function () { return actions.setWitherFlag({ side: p.side, value: false }); }, style: styles });
+        return hyperapp_1.h("div", { "data-side": p.side, class: className, style: styles });
     }
     else {
         return null;

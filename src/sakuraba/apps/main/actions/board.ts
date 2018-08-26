@@ -120,19 +120,80 @@ export default {
     },
 
     /** 集中力の値を変更 */
+    oprSetVigor: (p: {
+        /** どちら側の集中力か */
+        side: PlayerSide;
+        /** 新しい集中力の値 */
+        value: VigorValue;
+    }) => (state: state.State, actions: ActionsType) => {
+        let oldValue = state.board.vigors[p.side];
+
+        // ログの内容を設定 (増加か減少かで変更)
+        let logText: string;
+        if(p.value >= oldValue){
+            logText = `集中力を${p.value - oldValue}増やしました`;
+        } else {
+            logText = `集中力を${oldValue - p.value}減らしました`;
+        }
+
+        // 他の人の集中力を変更した場合
+        if(p.side !== state.side){
+            logText = `${state.board.playerNames[p.side]}の` + logText;
+        }
+
+        // 実行
+        actions.operate({
+            logText: logText,
+            proc: () => {
+                actions.setVigor(p);
+            }
+        });
+    }, 
+
+    /** 集中力の値を変更 */
     setVigor: (p: {
         /** どちら側の集中力か */
         side: PlayerSide;
         /** 新しい集中力の値 */
         value: VigorValue;
     }) => (state: state.State, actions: ActionsType) => {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
-
         let newBoard = models.Board.clone(state.board);
         newBoard.vigors[p.side] = p.value;
 
         return {board: newBoard};
     },
+
+    /** 萎縮フラグを変更 */
+    oprSetWitherFlag: (p: {
+        /** どちら側の萎縮フラグか */
+        side: PlayerSide;
+        /** 新しい萎縮フラグの値 */
+        value: boolean;
+    }) => (state: state.State, actions: ActionsType) => {
+        // ログの内容を設定
+        let logText: string;
+        if(p.value){
+            if(p.side !== state.side){
+                logText = `${state.board.playerNames[p.side]}を萎縮させました`;
+            } else {
+                logText = `萎縮しました`;
+            }
+        } else {
+            if(p.side !== state.side){
+                logText = `${state.board.playerNames[p.side]}の萎縮を解除しました`;
+            } else {
+                logText = `萎縮を解除しました`;
+            }
+        }
+
+        // 実行
+        actions.operate({
+            logText: logText,
+            proc: () => {
+                actions.setWitherFlag(p);
+            }
+        });
+    }, 
 
     /** 萎縮フラグを変更 */
     setWitherFlag: (p: {
@@ -141,8 +202,6 @@ export default {
         /** 新しい萎縮フラグの値 */
         value: boolean;
     }) => (state: state.State, actions: ActionsType) => {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
-
         let newBoard = models.Board.clone(state.board);
         newBoard.witherFlags[p.side] = p.value;
 
@@ -152,8 +211,6 @@ export default {
 
     /** デッキのカードを設定する */
     setDeckCards: (p: {cardIds: string[]}) => (state: state.State, actions: ActionsType) => {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
-
         // 自分の側のカードをすべて削除
         actions.clearDeckCards();
 
@@ -161,10 +218,10 @@ export default {
         p.cardIds.forEach((id) => {
             const data = CARD_DATA[id];
             if(data.baseType === 'normal'){
-                actions.addCard({region: 'library', cardId: id});
+                actions.addCard({side: state.side, region: 'library', cardId: id});
             }
             if(data.baseType === 'special'){
-                actions.addCard({region: 'special', cardId: id});
+                actions.addCard({side: state.side, region: 'special', cardId: id});
             }           
         });
     },

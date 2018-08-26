@@ -173,7 +173,6 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         frameNodes.push(<components.SakuraTokenAreaDroppable side={area.side} region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
 
-
     return (
         <div style={{ position: 'relative', zIndex: 100 }}>
             {objectNodes}

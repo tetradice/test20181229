@@ -294,23 +294,18 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         }
     }
    
-    let notifyTest = () => {
-        state.socket.emit('notify', {boardId: state.boardId, message: '通知テストです。'});
-    };
-
     let notify = () => {
-        let selfName = state.board.playerNames[state.side];
         let opponentName = state.board.playerNames[utils.flipSide(state.side)];
 
         let notifyType = $('[name=notifyType]').val();
         if(notifyType === 'ready'){
-            state.socket.emit('notify', {boardId: state.boardId, message: `${selfName}より通知: 準備できました`});
+            state.socket.emit('notify', {boardId: state.boardId, senderSide: state.side, message: `準備できました`});
         }
         if(notifyType === 'turnEnd'){
-            state.socket.emit('notify', {boardId: state.boardId, message: `${selfName}より通知: ターンを終了しました`});
+            state.socket.emit('notify', {boardId: state.boardId, senderSide: state.side, message: `ターンを終了しました`});
         }
         if(notifyType === 'reaction'){
-            state.socket.emit('notify', {boardId: state.boardId, message: `${selfName}より通知: 対応します`});
+            state.socket.emit('notify', {boardId: state.boardId, senderSide: state.side, message: `対応します`});
         }
 
         // 送信完了
@@ -327,7 +322,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <button class={`ui button ${state.boardHistoryPast.length === 0 ? 'disabled' : ''}`} onclick={() => actions.undoBoard()}><i class="undo alternate icon"></i></button>
                 <button class={`ui button ${state.boardHistoryFuture.length === 0 ? 'disabled' : ''}`}  onclick={() => actions.redoBoard()}><i class="redo alternate icon"></i></button>
             </div>
-            <button class="ui basic button" onclick={reset}>★ボードリセット</button> <button class="ui basic button" onclick={notifyTest}>★通知テスト</button><br />
+            <button class="ui basic button" onclick={reset}>★ボードリセット</button><br />
             <button class="ui basic button" onclick={() => actions.toggleActionLogVisible()}>操作ログ表示</button>
 
             {commandButtons}

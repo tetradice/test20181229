@@ -98,9 +98,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MEGAMI_DATA = {
     'yurina': { name: 'ユリナ', symbol: '刀' },
+    'yurina-a': { name: '第一章ユリナ', symbol: '古刀' },
     'saine': { name: 'サイネ', symbol: '薙刀' },
+    'saine-a': { name: '第二章サイネ', symbol: '琵琶' },
     'himika': { name: 'ヒミカ', symbol: '銃' },
+    'himika-a': { name: '原初ヒミカ', symbol: '炎' },
     'tokoyo': { name: 'トコヨ', symbol: '扇' },
+    'tokoyo-a': { name: '旅芸人トコヨ', symbol: '笛' },
     'oboro': { name: 'オボロ', symbol: '忍' },
     'yukihi': { name: 'ユキヒ', symbol: '傘/簪' },
     'shinra': { name: 'シンラ', symbol: '書' },
@@ -108,7 +112,8 @@ exports.MEGAMI_DATA = {
     'chikage': { name: 'チカゲ', symbol: '毒' },
     'kururu': { name: 'クルル', symbol: '絡繰' },
     'thallya': { name: 'サリヤ', symbol: '乗騎' },
-    'raira': { name: 'ライラ', symbol: '爪' }
+    'raira': { name: 'ライラ', symbol: '爪' },
+    'utsuro': { name: 'ウツロ', symbol: '鎌' }
 };
 exports.CARD_DATA = {
     '01-yurina-o-n-1': { megami: 'yurina', name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: "3-4", damage: '3/1', text: '' },
@@ -560,7 +565,7 @@ io.on('connection', function (ioSocket) {
     // 通知送信
     socket.on('notify', function (p) {
         // ログが追加されたイベントを他ユーザーに配信
-        socket.broadcastEmit('onNotifyReceived', { message: p.message });
+        socket.broadcastEmit('onNotifyReceived', { senderSide: p.senderSide, message: p.message });
     });
     // 名前の入力
     ioSocket.on('player_name_input', function (data) {

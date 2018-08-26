@@ -85,19 +85,18 @@ $(function(){
 
     // 集中力右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD2 .fbs-vigor-card',
+        selector: '#BOARD2 .fbs-vigor-card, #BOARD2 .withered-token',
         build: function($elem: JQuery, event: JQueryEventObject){
             let st = appActions.getState();
             let board = new models.Board(st.board);
+            let side = $elem.closest('[data-side]').attr('data-side') as PlayerSide;
 
             let items = {};
-            items['wither'] =  {name: (board.witherFlags[st.side] ? '萎縮を解除' : '萎縮')}
+            items['wither'] =  {
+                  name: (board.witherFlags[side] ? '萎縮を解除' : '萎縮')
+                , callback: () => appActions.oprSetWitherFlag({side: side, value: !board.witherFlags[side]})
+            }
             return {
-                callback: function(key: string) {
-                    if(key === 'wither'){
-                        appActions.setWitherFlag({side: st.side, value: !board.witherFlags[st.side]});
-                    }
-                },
                 items: items,
             }
         }
@@ -174,6 +173,12 @@ $(function(){
     });
     socket.on('onAppendedActionLogsReceived', (p: {logs: state.LogRecord[]}) => {
         appActions.appendReceivedActionLogs(p.logs);
+
+        // 受け取ったログをtoastrで表示
+        let st = appActions.getState();
+        let targetLogs = p.logs.filter((log) => !log.hidden);
+        let msg = targetLogs.map((log) => log.body).join('<br>');
+        toastr.info(msg, `${st.board.playerNames[targetLogs[0].playerSide]}:`);
     });
 
     // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
@@ -181,18 +186,20 @@ $(function(){
         appActions.setBoard(p.board);
     });
 
-    // toastrのオプションを設定
+    // toastrの標準オプションを設定
     toastr.options = {
-        timeOut: 0
-      , extendedTimeOut: 0
-      , hideDuration: 300
+        hideDuration: 300
       , showDuration: 300
-      , tapToDismiss: false
-      , closeButton: true
-  };
+    };
 
-    // 通知を受け取った場合、toastを時間無制限で表示
-    socket.on('onNotifyReceived', (p: {message: string}) => {
-        toastr.info(p.message);
+    // 相手プレイヤーからの通知を受け取った場合、toastを時間無制限で表示
+    socket.on('onNotifyReceived', (p: {senderSide: PlayerSide, message: string}) => {
+        let st = appActions.getState();
+        toastr.info(p.message, `${st.board.playerNames[p.senderSide]}より通知:`, {
+              timeOut: 0
+            , extendedTimeOut: 0
+            , tapToDismiss: false
+            , closeButton: true
+        });
     });  
 });

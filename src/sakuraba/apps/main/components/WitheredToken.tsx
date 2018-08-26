@@ -11,11 +11,11 @@ export const WitheredToken = (p: {side: PlayerSide, left: number, top: number}) 
         , width: `${80 * state.zoom}px`
         , height: `${89 * state.zoom}px`
     };
-    let className = "withered-token clickable";
+    let className = "withered-token";
     if(p.side === utils.flipSide(state.side)) className += " opponent-side"; 
 
     if(state.board.witherFlags[p.side]){
-        return <div class={className} onclick={() => actions.setWitherFlag({side: p.side, value: false})} style={styles}></div>;
+        return <div data-side={p.side} class={className} style={styles}></div>;
     } else {
         return null;
     }

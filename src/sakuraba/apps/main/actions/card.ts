@@ -6,7 +6,7 @@ import { CARD_DATA } from "sakuraba";
 
 export default {
     /** カードを1枚追加する */
-    addCard: (p: {region: CardRegion, cardId: string}) => (state: state.State) => {
+    addCard: (p: {side: PlayerSide, region: CardRegion, cardId: string}) => (state: state.State) => {
         // 元の盤の状態をコピーして新しい盤を生成
         let newBoard = models.Board.clone(state.board);
 
@@ -14,7 +14,7 @@ export default {
         let cardCount = newBoard.objects.filter(obj => obj.type === 'card').length;
         let objectId = `card-${cardCount + 1}`;
 
-        let newCard = utils.createCard(objectId, p.cardId, p.region, 'p1');
+        let newCard = utils.createCard(objectId, p.cardId, p.region, p.side);
         newBoard.objects.push(newCard);
 
         // 領域情報更新
