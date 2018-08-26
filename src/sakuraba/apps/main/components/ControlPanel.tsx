@@ -6,6 +6,7 @@ import * as css from "./ControlPanel.css"
 import { withLogger } from "@hyperapp/logger"
 import { DeckBuildCard } from "../../common/components";
 import * as models from "sakuraba/models";
+import toastr from "toastr";
 
 
 // ルール編集メモ
@@ -297,6 +298,28 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         state.socket.emit('notify', {boardId: state.boardId, message: '通知テストです。'});
     };
 
+    let notify = () => {
+        let selfName = state.board.playerNames[state.side];
+        let opponentName = state.board.playerNames[utils.flipSide(state.side)];
+
+        let notifyType = $('[name=notifyType]').val();
+        if(notifyType === 'ready'){
+            state.socket.emit('notify', {boardId: state.boardId, message: `${selfName}より通知: 準備できました`});
+        }
+        if(notifyType === 'turnEnd'){
+            state.socket.emit('notify', {boardId: state.boardId, message: `${selfName}より通知: ターンを終了しました`});
+        }
+        if(notifyType === 'reaction'){
+            state.socket.emit('notify', {boardId: state.boardId, message: `${selfName}より通知: 対応します`});
+        }
+
+        // 送信完了
+        toastr.success(`${opponentName}へ通知しました。`, '', {timeOut: 5000});
+
+        // ドロップダウンを元に戻す
+        $('[name=notifyType]').closest('.dropdown').dropdown('set selected', '-');
+    };
+
 
     return (
         <div id="CONTROL-PANEL">    
@@ -308,6 +331,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             <button class="ui basic button" onclick={() => actions.toggleActionLogVisible()}>操作ログ表示</button>
 
             {commandButtons}
+
+
 
             <table class="ui definition table" style={{ width: '25em' }}>
                 <tbody>
@@ -326,6 +351,21 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 </tbody>
             </table>
 
+<div class="ui sub header">相手プレイヤーへ通知</div>
+<div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', '-')}>
+
+  <input type="hidden" name="notifyType" />
+  <i class="dropdown icon"></i>
+  <div class="default text"></div>
+  <div class="menu">
+    <div class="item" data-value="-"></div>
+    <div class="item" data-value="ready">準備できました</div>
+    <div class="item" data-value="turnEnd">ターンを終了しました</div>
+    <div class="item" data-value="reaction">対応します</div>
+  </div>
+</div>
+<button class="ui basic button" onclick={notify}>送信</button>
+
 <div class="ui sub header">ボードサイズ</div>
 <div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', state.zoom * 10)}>
 
@@ -343,6 +383,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     <div class="item" data-value="12">12</div>
   </div>
 </div>
+
+
 
         </div>
     );

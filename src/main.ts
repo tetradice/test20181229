@@ -181,15 +181,18 @@ $(function(){
         appActions.setBoard(p.board);
     });
 
+    // toastrのオプションを設定
+    toastr.options = {
+        timeOut: 0
+      , extendedTimeOut: 0
+      , hideDuration: 300
+      , showDuration: 300
+      , tapToDismiss: false
+      , closeButton: true
+  };
+
     // 通知を受け取った場合、toastを時間無制限で表示
     socket.on('onNotifyReceived', (p: {message: string}) => {
-        toastr.options = {
-              timeOut: 0
-            , hideDuration: 300
-            , showDuration: 300
-            , tapToDismiss: false
-            , closeButton: true
-        };
         toastr.info(p.message);
     });  
 });

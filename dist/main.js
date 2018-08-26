@@ -46553,15 +46553,17 @@ $(function () {
     socket.on('onBoardReceived', function (p) {
         appActions.setBoard(p.board);
     });
+    // toastrのオプションを設定
+    toastr_1.default.options = {
+        timeOut: 0,
+        extendedTimeOut: 0,
+        hideDuration: 300,
+        showDuration: 300,
+        tapToDismiss: false,
+        closeButton: true
+    };
     // 通知を受け取った場合、toastを時間無制限で表示
     socket.on('onNotifyReceived', function (p) {
-        toastr_1.default.options = {
-            timeOut: 0,
-            hideDuration: 300,
-            showDuration: 300,
-            tapToDismiss: false,
-            closeButton: true
-        };
         toastr_1.default.info(p.message);
     });
 });
@@ -47602,6 +47604,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
@@ -47610,6 +47615,7 @@ var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/saku
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
 var components_1 = __webpack_require__(/*! ../../common/components */ "./src/sakuraba/apps/common/components/index.ts");
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
+var toastr_1 = __importDefault(__webpack_require__(/*! toastr */ "./node_modules/toastr/toastr.js"));
 // ルール編集メモ
 // 第二幕、新幕の選択
 // アンドゥ制約（山札を引いた後のUndoは可能か？）
@@ -47854,6 +47860,24 @@ exports.ControlPanel = function () { return function (state, actions) {
     var notifyTest = function () {
         state.socket.emit('notify', { boardId: state.boardId, message: '通知テストです。' });
     };
+    var notify = function () {
+        var selfName = state.board.playerNames[state.side];
+        var opponentName = state.board.playerNames[utils.flipSide(state.side)];
+        var notifyType = $('[name=notifyType]').val();
+        if (notifyType === 'ready') {
+            state.socket.emit('notify', { boardId: state.boardId, message: selfName + "\u3088\u308A\u901A\u77E5: \u6E96\u5099\u3067\u304D\u307E\u3057\u305F" });
+        }
+        if (notifyType === 'turnEnd') {
+            state.socket.emit('notify', { boardId: state.boardId, message: selfName + "\u3088\u308A\u901A\u77E5: \u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F" });
+        }
+        if (notifyType === 'reaction') {
+            state.socket.emit('notify', { boardId: state.boardId, message: selfName + "\u3088\u308A\u901A\u77E5: \u5BFE\u5FDC\u3057\u307E\u3059" });
+        }
+        // 送信完了
+        toastr_1.default.success(opponentName + "\u3078\u901A\u77E5\u3057\u307E\u3057\u305F\u3002", '', { timeOut: 5000 });
+        // ドロップダウンを元に戻す
+        $('[name=notifyType]').closest('.dropdown').dropdown('set selected', '-');
+    };
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
         hyperapp_1.h("div", { class: "ui icon basic buttons" },
             hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.undoBoard(); } },
@@ -47883,6 +47907,17 @@ exports.ControlPanel = function () { return function (state, actions) {
                 hyperapp_1.h("tr", null,
                     hyperapp_1.h("td", null, "\u89B3\u6226\u8005"),
                     hyperapp_1.h("td", null)))),
+        hyperapp_1.h("div", { class: "ui sub header" }, "\u76F8\u624B\u30D7\u30EC\u30A4\u30E4\u30FC\u3078\u901A\u77E5"),
+        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', '-'); } },
+            hyperapp_1.h("input", { type: "hidden", name: "notifyType" }),
+            hyperapp_1.h("i", { class: "dropdown icon" }),
+            hyperapp_1.h("div", { class: "default text" }),
+            hyperapp_1.h("div", { class: "menu" },
+                hyperapp_1.h("div", { class: "item", "data-value": "-" }),
+                hyperapp_1.h("div", { class: "item", "data-value": "ready" }, "\u6E96\u5099\u3067\u304D\u307E\u3057\u305F"),
+                hyperapp_1.h("div", { class: "item", "data-value": "turnEnd" }, "\u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F"),
+                hyperapp_1.h("div", { class: "item", "data-value": "reaction" }, "\u5BFE\u5FDC\u3057\u307E\u3059"))),
+        hyperapp_1.h("button", { class: "ui basic button", onclick: notify }, "\u9001\u4FE1"),
         hyperapp_1.h("div", { class: "ui sub header" }, "\u30DC\u30FC\u30C9\u30B5\u30A4\u30BA"),
         hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', state.zoom * 10); } },
             hyperapp_1.h("input", { type: "hidden", name: "boardSize", onchange: function (e) { return actions.setZoom(Number($(e.target).val()) * 0.1); } }),
