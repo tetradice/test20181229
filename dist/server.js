@@ -292,6 +292,33 @@ function getDescriptionHtml(cardId) {
     return html;
 }
 exports.getDescriptionHtml = getDescriptionHtml;
+/** リージョン名を取得 */
+function getCardRegionTitle(selfSide, side, region) {
+    var titleBase = "";
+    if (region === 'hand') {
+        titleBase = "手札";
+    }
+    if (region === 'hidden-used') {
+        titleBase = "伏せ札";
+    }
+    if (region === 'library') {
+        titleBase = "山札";
+    }
+    if (region === 'special') {
+        titleBase = "切り札";
+    }
+    if (region === 'used') {
+        titleBase = "使用済み";
+    }
+    // 相手側に移動した場合は、「相手の」をつける
+    if (selfSide !== side) {
+        return "\u76F8\u624B\u306E" + titleBase;
+    }
+    else {
+        return titleBase;
+    }
+}
+exports.getCardRegionTitle = getCardRegionTitle;
 
 
 /***/ }),

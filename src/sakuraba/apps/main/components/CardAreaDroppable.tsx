@@ -1,5 +1,7 @@
 import { h } from "hyperapp";
 import { ActionsType } from "../actions";
+import * as sakuraba from "sakuraba";
+import * as utils from "sakuraba/utils";
 
 /** 領域枠 */
 interface Param {
@@ -45,10 +47,33 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
         
         // カードを移動 (リージョンが空でなければ)
         if(currentState.draggingHoverCardRegion){
-            actions.memorizeBoardHistory(); // Undoのために履歴を記憶
-            actions.moveCard({
-                  from: currentState.draggingFromCard.id
-                , to: [currentState.draggingHoverSide, currentState.draggingHoverCardRegion] 
+            // 移動ログを決定
+            let log: string;
+            let cardName = sakuraba.CARD_DATA[currentState.draggingFromCard.cardId].name;
+            let fromRegionTitle = utils.getCardRegionTitle(currentState.side, currentState.draggingFromCard.side, currentState.draggingFromCard.region);
+            let toRegionTitle = utils.getCardRegionTitle(currentState.side, currentState.draggingHoverSide, currentState.draggingHoverCardRegion);
+
+            log = `[${cardName}]を移動：${fromRegionTitle} → ${toRegionTitle}`;
+            let cardNameLogging = false;
+            
+            // 一定の条件を満たす場合はログを置き換える
+            if(currentState.draggingFromCard.region === 'hand' && currentState.draggingHoverCardRegion === 'hidden-used'){
+                log = `[${cardName}]を伏せ札にする`;
+            }
+            if(currentState.draggingFromCard.region === 'library' && currentState.draggingHoverCardRegion === 'hand'){
+                log = `カードを引く`;
+                cardNameLogging = true;
+            }
+
+            actions.operate({
+                logText: log,
+                proc: () => {
+                    actions.moveCard({
+                        from: currentState.draggingFromCard.id
+                      , to: [currentState.draggingHoverSide, currentState.draggingHoverCardRegion] 
+                      , cardNameLogging: cardNameLogging
+                    });
+                }
             });
         }
 

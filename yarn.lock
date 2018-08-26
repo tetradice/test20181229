@@ -2190,9 +2190,9 @@ hyperapp-devtools@^0.3.0:
     hyperapp "^1.2.5"
     spectre.css "^0.5.1"
 
-hyperapp-types@^0.2.0:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/hyperapp-types/-/hyperapp-types-0.2.2.tgz#66108626c0403bb7c1bd3359a77f879e70bcdc69"
+hyperapp-types@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/hyperapp-types/-/hyperapp-types-0.3.0.tgz#a3ecb565abd75b99c663ae2b3aac4a8f4036bd2c"
 
 hyperapp@^1.1.2, hyperapp@^1.2.5, hyperapp@^1.2.6:
   version "1.2.6"

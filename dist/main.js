@@ -36094,7 +36094,8 @@ exports.default = {
         // 移動するカード名を記録
         if (p.cardNameLogging) {
             var cardNames = fromCards.map(function (c) { return "[" + sakuraba_1.CARD_DATA[c.cardId].name + "]"; }).join('、');
-            actions.appendActionLog({ text: "-> " + cardNames, hidden: true });
+            var title = (p.cardNameLogTitle ? p.cardNameLogTitle + " " : '');
+            actions.appendActionLog({ text: title + "-> " + cardNames, hidden: true });
         }
         var _b = p.to, toSide = _b[0], toRegion = _b[1];
         if (p.toPosition === 'first') {
@@ -36592,8 +36593,17 @@ exports.CardAreaBackground = function (p) { return function (state) {
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 exports.CardAreaDroppable = function (p) { return function (state, actions) {
     var styles = {
         left: p.left * state.zoom + "px",
@@ -36625,10 +36635,30 @@ exports.CardAreaDroppable = function (p) { return function (state, actions) {
         var currentState = actions.getState();
         // カードを移動 (リージョンが空でなければ)
         if (currentState.draggingHoverCardRegion) {
-            actions.memorizeBoardHistory(); // Undoのために履歴を記憶
-            actions.moveCard({
-                from: currentState.draggingFromCard.id,
-                to: [currentState.draggingHoverSide, currentState.draggingHoverCardRegion]
+            // 移動ログを決定
+            var log = void 0;
+            var cardName = sakuraba.CARD_DATA[currentState.draggingFromCard.cardId].name;
+            var fromRegionTitle = utils.getCardRegionTitle(currentState.side, currentState.draggingFromCard.side, currentState.draggingFromCard.region);
+            var toRegionTitle = utils.getCardRegionTitle(currentState.side, currentState.draggingHoverSide, currentState.draggingHoverCardRegion);
+            log = "[" + cardName + "]\u3092\u79FB\u52D5\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle;
+            var cardNameLogging_1 = false;
+            // 一定の条件を満たす場合はログを置き換える
+            if (currentState.draggingFromCard.region === 'hand' && currentState.draggingHoverCardRegion === 'hidden-used') {
+                log = "[" + cardName + "]\u3092\u4F0F\u305B\u672D\u306B\u3059\u308B";
+            }
+            if (currentState.draggingFromCard.region === 'library' && currentState.draggingHoverCardRegion === 'hand') {
+                log = "\u30AB\u30FC\u30C9\u3092\u5F15\u304F";
+                cardNameLogging_1 = true;
+            }
+            actions.operate({
+                logText: log,
+                proc: function () {
+                    actions.moveCard({
+                        from: currentState.draggingFromCard.id,
+                        to: [currentState.draggingHoverSide, currentState.draggingHoverCardRegion],
+                        cardNameLogging: cardNameLogging_1
+                    });
+                }
             });
         }
         return false;
@@ -37022,13 +37052,14 @@ exports.MariganButton = function (p) { return function (state, actions) {
         }).then(function (selectedCards) {
             // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
             actions.operate({
-                logText: "\u624B\u672D" + selectedCards.length + "\u679A\u3092\u5C71\u672D\u306E\u5E95\u306B\u5165\u308C\u3001\u540C\u3058\u679A\u6570\u306E\u30AB\u30FC\u30C9\u3092\u5F15\u304D\u76F4\u3057",
+                logText: "\u624B\u672D" + selectedCards.length + "\u679A\u3092\u5C71\u672D\u306E\u5E95\u306B\u7F6E\u304D\u3001\u540C\u3058\u679A\u6570\u306E\u30AB\u30FC\u30C9\u3092\u5F15\u304D\u76F4\u3057",
                 proc: function () {
                     // 選択したカードを山札の底に移動
                     selectedCards.forEach(function (card) {
-                        actions.moveCard({ from: card.id, to: [state.side, 'library'], toPosition: 'first' });
-                        actions.moveCard({ from: [state.side, 'library'], to: [state.side, 'hand'] });
+                        actions.moveCard({ from: card.id, to: [state.side, 'library'], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す' });
                     });
+                    // 手札n枚を引く
+                    actions.draw(selectedCards.length);
                     // マリガンフラグON
                     actions.setMariganFlag({ side: state.side, value: true });
                 }
@@ -37875,6 +37906,33 @@ function getDescriptionHtml(cardId) {
     return html;
 }
 exports.getDescriptionHtml = getDescriptionHtml;
+/** リージョン名を取得 */
+function getCardRegionTitle(selfSide, side, region) {
+    var titleBase = "";
+    if (region === 'hand') {
+        titleBase = "手札";
+    }
+    if (region === 'hidden-used') {
+        titleBase = "伏せ札";
+    }
+    if (region === 'library') {
+        titleBase = "山札";
+    }
+    if (region === 'special') {
+        titleBase = "切り札";
+    }
+    if (region === 'used') {
+        titleBase = "使用済み";
+    }
+    // 相手側に移動した場合は、「相手の」をつける
+    if (selfSide !== side) {
+        return "\u76F8\u624B\u306E" + titleBase;
+    }
+    else {
+        return titleBase;
+    }
+}
+exports.getCardRegionTitle = getCardRegionTitle;
 
 
 /***/ }),

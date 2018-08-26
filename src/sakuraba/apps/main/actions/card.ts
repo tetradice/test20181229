@@ -53,6 +53,8 @@ export default {
         toPosition?: 'first' | 'last';
         /** カード名をアクションログに出力するか */
         cardNameLogging?: boolean
+        /** カード名ログのタイトル */
+        cardNameLogTitle?: string
     }) => (state: state.State, actions: ActionsType) => {
         // 元の盤の状態をコピーして新しい盤を生成
         let newBoard = models.Board.clone(state.board);
@@ -76,7 +78,8 @@ export default {
         // 移動するカード名を記録
         if(p.cardNameLogging){
             let cardNames = fromCards.map((c) => `[${CARD_DATA[c.cardId].name}]`).join('、');
-            actions.appendActionLog({text: `-> ${cardNames}`, hidden: true});
+            let title = (p.cardNameLogTitle ? `${p.cardNameLogTitle} ` : '');
+            actions.appendActionLog({text: `${title}-> ${cardNames}`, hidden: true});
         }
 
         let [toSide, toRegion] = p.to;

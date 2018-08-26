@@ -29,13 +29,15 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
         }).then((selectedCards) => {
             // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
             actions.operate({
-                logText: `手札${selectedCards.length}枚を山札の底に入れ、同じ枚数のカードを引き直し`,
+                logText: `手札${selectedCards.length}枚を山札の底に置き、同じ枚数のカードを引き直し`,
                 proc: () => {
                     // 選択したカードを山札の底に移動
                     selectedCards.forEach(card => {
-                        actions.moveCard({from: card.id, to: [state.side, 'library'], toPosition: 'first'});
-                        actions.moveCard({from: [state.side, 'library'], to: [state.side, 'hand']});
+                        actions.moveCard({from: card.id, to: [state.side, 'library'], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す'});
                     });
+
+                    // 手札n枚を引く
+                    actions.draw(selectedCards.length);
         
                     // マリガンフラグON
                     actions.setMariganFlag({side: state.side, value: true});

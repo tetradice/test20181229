@@ -45,3 +45,30 @@ export function getDescriptionHtml(cardId: string): string{
   html += `</div>`;
   return html;
 }
+
+/** リージョン名を取得 */
+export function getCardRegionTitle(selfSide: PlayerSide, side: PlayerSide, region: CardRegion){
+    let titleBase = ``;
+    if(region === 'hand'){
+        titleBase = "手札";
+    }
+    if(region === 'hidden-used'){
+        titleBase = "伏せ札";
+    }
+    if(region === 'library'){
+        titleBase = "山札";
+    }
+    if(region === 'special'){
+        titleBase = "切り札";
+    }
+    if(region === 'used'){
+        titleBase = "使用済み";
+    }
+
+    // 相手側に移動した場合は、「相手の」をつける
+    if(selfSide !== side){
+        return `相手の${titleBase}`
+    } else {
+        return titleBase;
+    }
+}
