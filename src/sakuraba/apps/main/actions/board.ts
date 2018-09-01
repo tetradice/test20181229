@@ -54,10 +54,7 @@ export default {
 
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         if(newState.socket){
-            newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board});
-            if(appendLogs.length >= 1){
-                newState.socket.emit('appendActionLogs', { boardId: newState.boardId, logs: appendLogs });
-            }
+            newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board, appendedActionLogs: appendLogs });
         }
     },
 
@@ -66,11 +63,11 @@ export default {
         return {board: newBoard};
     },
 
-    /** ボード全体を初期化する */
+    /** ボード全体を初期化する（プレイヤー名除く） */
     resetBoard: () => (state: state.State, actions: ActionsType) => {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
 
-        return {board: utils.createInitialState().board};
+        let extended: Partial<state.Board> = {playerNames: state.board.playerNames};
+        return {board: _.extend(utils.createInitialState().board, extended)};
     },
 
     /** ボードの状態をUndo用に記憶 */

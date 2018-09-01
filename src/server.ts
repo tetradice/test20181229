@@ -117,7 +117,7 @@ io.on('connection', (ioSocket) => {
       // 送信されたボード情報を上書き
       saveBoard(p.boardId, p.board, () => {
         // ボードが更新されたイベントを他ユーザーに配信
-        socket.broadcastEmit('onBoardReceived', {board: p.board});
+        socket.broadcastEmit('onBoardReceived', {board: p.board, appendedActionLogs: p.appendedActionLogs});
       });
     });
   });
@@ -127,15 +127,6 @@ io.on('connection', (ioSocket) => {
     // アクションログ情報を取得
     getStoredActionLogs(p.boardId, (logs) => {
       socket.emit('onFirstActionLogsReceived', {logs: logs});
-    });
-  });
-
-
-  // アクションログの追加
-  socket.on('appendActionLogs', (p) => {
-    appendActionLogs(p.boardId, p.logs, (logs) => {
-        // ログが追加されたイベントを他ユーザーに配信
-        socket.broadcastEmit('onAppendedActionLogsReceived', {logs: logs});
     });
   });
 
@@ -159,21 +150,7 @@ io.on('connection', (ioSocket) => {
       });
     });
   });
-
-  ioSocket.on('reset_board', (data: {boardId: string}) => {
-    console.log('on reset_board: ', data);
-    // ボード情報を取得
-    getStoredBoard(data.boardId, (board) => {
-      // 盤を初期状態に戻す
-      let newBoard = utils.createInitialState().board;
-
-      saveBoard(data.boardId, newBoard, () => {
-        // ボードが更新されたイベントを他ユーザーに配信
-        socket.broadcastEmit('onBoardReceived', {board: newBoard});
-      });
-    });
-  });
-
+  
   // メガミの選択
   ioSocket.on('megami_select', (data: {boardId: string, side: PlayerSide, megamis: sakuraba.Megami[]}) => {
     console.log('on megami_select: ', data);

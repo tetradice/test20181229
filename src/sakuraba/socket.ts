@@ -3,8 +3,7 @@ import { EventEmitter } from "events";
 interface ServerToClientEventProps {
     onFirstBoardReceived: {board: state.Board};
     onFirstActionLogsReceived: {logs: state.LogRecord[]};
-    onBoardReceived: {board: state.Board};
-    onAppendedActionLogsReceived: {logs: state.LogRecord[]};
+    onBoardReceived: {board: state.Board, appendedActionLogs: state.LogRecord[] | null};
 
     onNotifyReceived: {senderSide: PlayerSide, message: string};
 }
@@ -13,8 +12,7 @@ type ServerToClientEventName = keyof ServerToClientEventProps;
 interface ClientToServerEventProps {
     requestFirstBoard: {boardId: string}; 
     requestFirstActionLogs: {boardId: string}; 
-    updateBoard: {boardId: string, side: PlayerSide, board: state.Board};
-    appendActionLogs: {boardId: string, logs: state.LogRecord[]};
+    updateBoard: {boardId: string, side: PlayerSide, board: state.Board, appendedActionLogs: state.LogRecord[] | null};
     
     notify: {boardId: string, senderSide: PlayerSide, message: string};
 }

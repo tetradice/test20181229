@@ -25,12 +25,6 @@ function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery
         .modal('show');
 }
 
-function userInputModal(desc: string, decideCallback: (this: JQuery, $element: JQuery) => false | void){
-    $('#INPUT-MODAL .description-body').html(desc);
-    $('#INPUT-MODAL')
-        .modal({closable: false, onApprove:decideCallback})
-        .modal('show');
-}
 
 $(function(){
     // socket.ioに接続し、ラッパーを作成
@@ -146,13 +140,13 @@ $(function(){
         if(p.board.playerNames[params.side] === null){
             let playerCommonName = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
             let opponentPlayerCommonName = (params.side === 'p1' ? 'プレイヤー2' : 'プレイヤー1');
-            userInputModal(`<p>ふるよにボードシミュレーターへようこそ。<br>あなたは${playerCommonName}として卓に参加します。</p><p>プレイヤー名：</p>`, ($elem) => {
+            utils.userInputModal(`<p>ふるよにボードシミュレーターへようこそ。<br>あなたは${playerCommonName}として卓に参加します。</p><p>プレイヤー名：</p>`, ($elem) => {
                 let playerName = $('#INPUT-MODAL input').val() as string;
                 if(playerName === ''){
                     playerName = playerCommonName;
                 }
                 appActions.operate({
-                    logText: `卓に参加`,
+                    logText: `卓に参加しました`,
                     undoType: 'notBack',
                     proc: () => {
                         appActions.setPlayerName({side: params.side, name: playerName});
@@ -171,19 +165,23 @@ $(function(){
     socket.on('onFirstActionLogsReceived', (p: {logs: state.LogRecord[]}) => {
         appActions.setActionLogs(p.logs);
     });
-    socket.on('onAppendedActionLogsReceived', (p: {logs: state.LogRecord[]}) => {
-        appActions.appendReceivedActionLogs(p.logs);
-
-        // 受け取ったログをtoastrで表示
-        let st = appActions.getState();
-        let targetLogs = p.logs.filter((log) => !log.hidden);
-        let msg = targetLogs.map((log) => log.body).join('<br>');
-        toastr.info(msg, `${st.board.playerNames[targetLogs[0].playerSide]}:`);
-    });
 
     // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
-    socket.on('onBoardReceived', (p: {board: state.Board}) => {
+    socket.on('onBoardReceived', (p: {board: state.Board, appendedActionLogs: state.LogRecord[] | null}) => {
         appActions.setBoard(p.board);
+
+        // 追加ログがあれば
+        if(p.appendedActionLogs !== null){
+            // ログも追加
+            appActions.appendReceivedActionLogs(p.appendedActionLogs);
+
+            // 受け取ったログをtoastrで表示
+            let st = appActions.getState();
+            let targetLogs = p.appendedActionLogs.filter((log) => !log.hidden);
+            let msg = targetLogs.map((log) => log.body).join('<br>');
+            toastr.info(msg, `${st.board.playerNames[targetLogs[0].playerSide]}:`);
+        }
+
     });
 
     // toastrの標準オプションを設定
@@ -201,5 +199,12 @@ $(function(){
             , tapToDismiss: false
             , closeButton: true
         });
-    });  
+    });
+
+    // モーダルでEnterを押下した場合、ボタンを押下したものと扱う
+    $('body').keydown(function(e){
+        if(e.key === 'Enter'){
+            $('.modals.active .positive.button').click();
+        }
+    });
 });

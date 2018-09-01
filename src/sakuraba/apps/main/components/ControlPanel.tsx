@@ -21,12 +21,27 @@ import toastr from "toastr";
 /** コントロールパネル */
 export const ControlPanel = () => (state: state.State, actions: ActionsType) => {
     let reset = () => {
-        console.log('clicked');
-        actions.resetBoard();
-        // サーバーに送信
-        if(state.socket){
-            state.socket.emit('updateBoard', {boardId: state.boardId, side: state.side, board: actions.getState().board});
-        }
+        utils.confirmModal('卓を初期状態に戻します。（操作ログは初期化されません）<br>この操作は相手プレイヤーに確認を取ってから行ってください。<br><br>よろしいですか？', () => {
+            actions.operate({
+                logText: `ボードリセットを行いました`,
+                proc: () => {
+                    actions.resetBoard();
+                }
+            });
+        })
+    }
+
+    let playerNameChange = () => {
+        $('#INPUT-MODAL input').val(state.board.playerNames[state.side]);
+        utils.userInputModal(`<p>新しいプレイヤー名を入力してください。</p>`, ($elem) => {
+            let playerName = $('#INPUT-MODAL input').val() as string;
+            actions.operate({
+                logText: `プレイヤー名を変更しました`,
+                proc: () => {
+                    actions.setPlayerName({side: state.side, name: playerName});
+                }
+            });
+        });
     }
 
     /** ポップアップ初期化 */
@@ -88,7 +103,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             let megamis = [$('#MEGAMI1-SELECTION').val() as sakuraba.Megami, $('#MEGAMI2-SELECTION').val() as sakuraba.Megami];
 
             actions.operate({
-                logText: `メガミを選択`,
+                logText: `メガミを選択しました`,
                 proc: () => {
                     //actions.appendActionLog({text: `-> ${utils.getMegamiDispName(megamis[0])}、${utils.getMegamiDispName(megamis[1])}`, hidden: true});
                     actions.setMegamis({side: state.side, megami1: megamis[0], megami2: megamis[1]});
@@ -315,6 +330,9 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         $('[name=notifyType]').closest('.dropdown').dropdown('set selected', '-');
     };
 
+    const dropdownCreate = (e) => {
+        $(e).dropdown();
+    };
 
     return (
         <div id="CONTROL-PANEL">    
@@ -322,7 +340,14 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <button class={`ui button ${state.boardHistoryPast.length === 0 ? 'disabled' : ''}`} onclick={() => actions.undoBoard()}><i class="undo alternate icon"></i></button>
                 <button class={`ui button ${state.boardHistoryFuture.length === 0 ? 'disabled' : ''}`}  onclick={() => actions.redoBoard()}><i class="redo alternate icon"></i></button>
             </div>
-            <button class="ui basic button" onclick={reset}>★ボードリセット</button><br />
+            <button class="ui basic button dropdown" oncreate={dropdownCreate}>
+                メニュー
+                <i class="dropdown icon"></i>
+                <div class="menu">
+                    <div class="item" onclick={playerNameChange}>プレイヤー名の変更</div>
+                    <div class="item" onclick={reset}>ボードリセット (初期化)</div>
+                </div>
+            </button><br />
             <button class="ui basic button" onclick={() => actions.toggleActionLogVisible()}>操作ログ表示</button>
 
             {commandButtons}

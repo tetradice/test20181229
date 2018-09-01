@@ -394,6 +394,14 @@ function messageModal(desc) {
         .modal('show');
 }
 exports.messageModal = messageModal;
+/** 入力ボックスを表示する */
+function userInputModal(desc, decideCallback) {
+    $('#INPUT-MODAL .description-body').html(desc);
+    $('#INPUT-MODAL')
+        .modal({ closable: false, onApprove: decideCallback })
+        .modal('show');
+}
+exports.userInputModal = userInputModal;
 
 
 /***/ }),
@@ -585,7 +593,7 @@ io.on('connection', function (ioSocket) {
             // 送信されたボード情報を上書き
             saveBoard(p.boardId, p.board, function () {
                 // ボードが更新されたイベントを他ユーザーに配信
-                socket.broadcastEmit('onBoardReceived', { board: p.board });
+                socket.broadcastEmit('onBoardReceived', { board: p.board, appendedActionLogs: p.appendedActionLogs });
             });
         });
     });
@@ -594,13 +602,6 @@ io.on('connection', function (ioSocket) {
         // アクションログ情報を取得
         getStoredActionLogs(p.boardId, function (logs) {
             socket.emit('onFirstActionLogsReceived', { logs: logs });
-        });
-    });
-    // アクションログの追加
-    socket.on('appendActionLogs', function (p) {
-        appendActionLogs(p.boardId, p.logs, function (logs) {
-            // ログが追加されたイベントを他ユーザーに配信
-            socket.broadcastEmit('onAppendedActionLogsReceived', { logs: logs });
         });
     });
     // 通知送信
@@ -618,18 +619,6 @@ io.on('connection', function (ioSocket) {
             saveBoard(data.boardId, board, function () {
                 // プレイヤー名が入力されたイベントを他ユーザーに配信
                 ioSocket.broadcast.emit('on_player_name_input', board);
-            });
-        });
-    });
-    ioSocket.on('reset_board', function (data) {
-        console.log('on reset_board: ', data);
-        // ボード情報を取得
-        getStoredBoard(data.boardId, function (board) {
-            // 盤を初期状態に戻す
-            var newBoard = utils.createInitialState().board;
-            saveBoard(data.boardId, newBoard, function () {
-                // ボードが更新されたイベントを他ユーザーに配信
-                socket.broadcastEmit('onBoardReceived', { board: newBoard });
             });
         });
     });

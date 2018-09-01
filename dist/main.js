@@ -46418,12 +46418,6 @@ function confirmModal(desc, yesCallback) {
         .modal({ closable: false, onApprove: yesCallback })
         .modal('show');
 }
-function userInputModal(desc, decideCallback) {
-    $('#INPUT-MODAL .description-body').html(desc);
-    $('#INPUT-MODAL')
-        .modal({ closable: false, onApprove: decideCallback })
-        .modal('show');
-}
 $(function () {
     // socket.ioに接続し、ラッパーを作成
     var ioSocket = io();
@@ -46523,13 +46517,13 @@ $(function () {
         if (p.board.playerNames[params.side] === null) {
             var playerCommonName_1 = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
             var opponentPlayerCommonName = (params.side === 'p1' ? 'プレイヤー2' : 'プレイヤー1');
-            userInputModal("<p>\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u3078\u3088\u3046\u3053\u305D\u3002<br>\u3042\u306A\u305F\u306F" + playerCommonName_1 + "\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3059\u3002</p><p>\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\uFF1A</p>", function ($elem) {
+            utils.userInputModal("<p>\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u3078\u3088\u3046\u3053\u305D\u3002<br>\u3042\u306A\u305F\u306F" + playerCommonName_1 + "\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3059\u3002</p><p>\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\uFF1A</p>", function ($elem) {
                 var playerName = $('#INPUT-MODAL input').val();
                 if (playerName === '') {
                     playerName = playerCommonName_1;
                 }
                 appActions.operate({
-                    logText: "\u5353\u306B\u53C2\u52A0",
+                    logText: "\u5353\u306B\u53C2\u52A0\u3057\u307E\u3057\u305F",
                     undoType: 'notBack',
                     proc: function () {
                         appActions.setPlayerName({ side: params.side, name: playerName });
@@ -46545,17 +46539,19 @@ $(function () {
     socket.on('onFirstActionLogsReceived', function (p) {
         appActions.setActionLogs(p.logs);
     });
-    socket.on('onAppendedActionLogsReceived', function (p) {
-        appActions.appendReceivedActionLogs(p.logs);
-        // 受け取ったログをtoastrで表示
-        var st = appActions.getState();
-        var targetLogs = p.logs.filter(function (log) { return !log.hidden; });
-        var msg = targetLogs.map(function (log) { return log.body; }).join('<br>');
-        toastr_1.default.info(msg, st.board.playerNames[targetLogs[0].playerSide] + ":");
-    });
     // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
     socket.on('onBoardReceived', function (p) {
         appActions.setBoard(p.board);
+        // 追加ログがあれば
+        if (p.appendedActionLogs !== null) {
+            // ログも追加
+            appActions.appendReceivedActionLogs(p.appendedActionLogs);
+            // 受け取ったログをtoastrで表示
+            var st_1 = appActions.getState();
+            var targetLogs = p.appendedActionLogs.filter(function (log) { return !log.hidden; });
+            var msg = targetLogs.map(function (log) { return log.body; }).join('<br>');
+            toastr_1.default.info(msg, st_1.board.playerNames[targetLogs[0].playerSide] + ":");
+        }
     });
     // toastrの標準オプションを設定
     toastr_1.default.options = {
@@ -46571,6 +46567,12 @@ $(function () {
             tapToDismiss: false,
             closeButton: true
         });
+    });
+    // モーダルでEnterを押下した場合、ボタンを押下したものと扱う
+    $('body').keydown(function (e) {
+        if (e.key === 'Enter') {
+            $('.modals.active .positive.button').click();
+        }
     });
 });
 
@@ -46830,20 +46832,17 @@ exports.default = {
         appendLogs = newState.actionLog.slice(oldLength);
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         if (newState.socket) {
-            newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board });
-            if (appendLogs.length >= 1) {
-                newState.socket.emit('appendActionLogs', { boardId: newState.boardId, logs: appendLogs });
-            }
+            newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board, appendedActionLogs: appendLogs });
         }
     }; },
     /** ボード全体を設定する */
     setBoard: function (newBoard) {
         return { board: newBoard };
     },
-    /** ボード全体を初期化する */
+    /** ボード全体を初期化する（プレイヤー名除く） */
     resetBoard: function () { return function (state, actions) {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
-        return { board: utils.createInitialState().board };
+        var extended = { playerNames: state.board.playerNames };
+        return { board: _.extend(utils.createInitialState().board, extended) };
     }; },
     /** ボードの状態をUndo用に記憶 */
     memorizeBoardHistory: function () { return function (state) {
@@ -47725,12 +47724,26 @@ var toastr_1 = __importDefault(__webpack_require__(/*! toastr */ "./node_modules
 /** コントロールパネル */
 exports.ControlPanel = function () { return function (state, actions) {
     var reset = function () {
-        console.log('clicked');
-        actions.resetBoard();
-        // サーバーに送信
-        if (state.socket) {
-            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: actions.getState().board });
-        }
+        utils.confirmModal('卓を初期状態に戻します。（操作ログは初期化されません）<br>この操作は相手プレイヤーに確認を取ってから行ってください。<br><br>よろしいですか？', function () {
+            actions.operate({
+                logText: "\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8\u3092\u884C\u3044\u307E\u3057\u305F",
+                proc: function () {
+                    actions.resetBoard();
+                }
+            });
+        });
+    };
+    var playerNameChange = function () {
+        $('#INPUT-MODAL input').val(state.board.playerNames[state.side]);
+        utils.userInputModal("<p>\u65B0\u3057\u3044\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>", function ($elem) {
+            var playerName = $('#INPUT-MODAL input').val();
+            actions.operate({
+                logText: "\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\u3092\u5909\u66F4\u3057\u307E\u3057\u305F",
+                proc: function () {
+                    actions.setPlayerName({ side: state.side, name: playerName });
+                }
+            });
+        });
     };
     /** ポップアップ初期化 */
     function setPopup() {
@@ -47783,7 +47796,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                 // 選択したメガミを設定
                 var megamis = [$('#MEGAMI1-SELECTION').val(), $('#MEGAMI2-SELECTION').val()];
                 actions.operate({
-                    logText: "\u30E1\u30AC\u30DF\u3092\u9078\u629E",
+                    logText: "\u30E1\u30AC\u30DF\u3092\u9078\u629E\u3057\u307E\u3057\u305F",
                     proc: function () {
                         //actions.appendActionLog({text: `-> ${utils.getMegamiDispName(megamis[0])}、${utils.getMegamiDispName(megamis[1])}`, hidden: true});
                         actions.setMegamis({ side: state.side, megami1: megamis[0], megami2: megamis[1] });
@@ -47974,13 +47987,21 @@ exports.ControlPanel = function () { return function (state, actions) {
         // ドロップダウンを元に戻す
         $('[name=notifyType]').closest('.dropdown').dropdown('set selected', '-');
     };
+    var dropdownCreate = function (e) {
+        $(e).dropdown();
+    };
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
         hyperapp_1.h("div", { class: "ui icon basic buttons" },
             hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.undoBoard(); } },
                 hyperapp_1.h("i", { class: "undo alternate icon" })),
             hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryFuture.length === 0 ? 'disabled' : ''), onclick: function () { return actions.redoBoard(); } },
                 hyperapp_1.h("i", { class: "redo alternate icon" }))),
-        hyperapp_1.h("button", { class: "ui basic button", onclick: reset }, "\u2605\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8"),
+        hyperapp_1.h("button", { class: "ui basic button dropdown", oncreate: dropdownCreate },
+            "\u30E1\u30CB\u30E5\u30FC",
+            hyperapp_1.h("i", { class: "dropdown icon" }),
+            hyperapp_1.h("div", { class: "menu" },
+                hyperapp_1.h("div", { class: "item", onclick: playerNameChange }, "\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\u306E\u5909\u66F4"),
+                hyperapp_1.h("div", { class: "item", onclick: reset }, "\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8 (\u521D\u671F\u5316)"))),
         hyperapp_1.h("br", null),
         hyperapp_1.h("button", { class: "ui basic button", onclick: function () { return actions.toggleActionLogVisible(); } }, "\u64CD\u4F5C\u30ED\u30B0\u8868\u793A"),
         commandButtons,
@@ -48999,6 +49020,14 @@ function messageModal(desc) {
         .modal('show');
 }
 exports.messageModal = messageModal;
+/** 入力ボックスを表示する */
+function userInputModal(desc, decideCallback) {
+    $('#INPUT-MODAL .description-body').html(desc);
+    $('#INPUT-MODAL')
+        .modal({ closable: false, onApprove: decideCallback })
+        .modal('show');
+}
+exports.userInputModal = userInputModal;
 
 
 /***/ }),
