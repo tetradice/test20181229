@@ -47,12 +47,13 @@
         
         .fbs-card[draggable]:hover,
         .fbs-card.droppable.over,
-        .clickable:hover,
+        .clickable:hover{
+            filter: drop-shadow(0 0 3px #7098ff);
+        }
         .fbs-vigor-card .vigor0.clickable:hover,
         .fbs-vigor-card .vigor1.clickable:hover,
         .fbs-vigor-card .vigor2.clickable:hover{
-            /*box-shadow: 0 0 2px 1px #7098ff;*/
-            filter: drop-shadow(0 0 3px #7098ff);
+            box-shadow: 0 0 2px 1px #7098ff;
         }
         .fbs-card.selected{
             border: 2px solid rgb(0, 100, 255) !important;
@@ -98,18 +99,18 @@
         }
 
         .fbs-card.back-normal {
-            background-image: url(/furuyoni_commons/cards/cardback_normal.png);
+            background-image: url(/furuyoni_commons/furuyoni_na/cards/cardback_normal.png);
         }
 
         .fbs-card.back-special {
-            background-image: url(/furuyoni_commons/cards/cardback_special.png);
+            background-image: url(/furuyoni_commons/furuyoni_na/cards/cardback_special.png);
         }
         .fbs-vigor-card {
             width: 140px;
             height: 100px;
             background-size: contain;
             background-repeat: no-repeat;
-            background-image: url(/furuyoni_commons/cards/vigor.png);
+            background-image: url(/furuyoni_commons/furuyoni_na/cards/vigor.png);
         }
         .withered-token {
             width: 140px;

@@ -105,6 +105,22 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             , { region: 'hand',        side: selfSide, title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 580, width: 640, height: 160 }
             , { region: 'special',     side: selfSide, title: "切札",     cardLayoutType: 'horizontal', left: 850,  top: 580, width: 330, height: 160 }
     ];
+    // 追加札を持つメガミを宿している場合のみ、追加札領域を追加
+    ['p1', 'p2'].forEach((side: PlayerSide) => {
+        if(state.board.megamis[side] &&
+        state.board.megamis[side].find((megami) => megami === 'chikage' || megami === 'kururu' || megami === 'thallya' || megami === 'raira')){
+            cardAreaData.push({
+                  region: 'extra'
+                , side: side
+                , title: (side === state.side ? '追加札' : null)
+                , cardLayoutType: 'horizontal'
+                , left: 1220
+                , top: (side === state.side ? 410 : 10)
+                , width: 120
+                , height: 340
+            });
+        }
+    });
 
     let sakuraTokenAreaData: {
         region: SakuraTokenRegion

@@ -21,7 +21,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     if(p.target.opened){
         className += " open-normal";
     } else {
-        className += " back-normal";
+        className += (cardData.baseType === 'special' ? " back-special" : " back-normal");
     }
     if(p.target.rotated) className += " rotated";
     if(p.target.side === utils.flipSide(state.side)) className += " opponent-side"; 

@@ -47497,7 +47497,7 @@ exports.Card = function (p) { return function (state, actions) {
         className += " open-normal";
     }
     else {
-        className += " back-normal";
+        className += (cardData.baseType === 'special' ? " back-special" : " back-normal");
     }
     if (p.target.rotated)
         className += " rotated";
@@ -48433,6 +48433,22 @@ var view = function (state, actions) {
         { region: 'hand', side: selfSide, title: "手札", cardLayoutType: 'horizontal', left: 10, top: 580, width: 640, height: 160 },
         { region: 'special', side: selfSide, title: "切札", cardLayoutType: 'horizontal', left: 850, top: 580, width: 330, height: 160 }
     ];
+    // 追加札を持つメガミを宿している場合のみ、追加札領域を追加
+    ['p1', 'p2'].forEach(function (side) {
+        if (state.board.megamis[side] &&
+            state.board.megamis[side].find(function (megami) { return megami === 'chikage' || megami === 'kururu' || megami === 'thallya' || megami === 'raira'; })) {
+            cardAreaData.push({
+                region: 'extra',
+                side: side,
+                title: (side === state.side ? '追加札' : null),
+                cardLayoutType: 'horizontal',
+                left: 1220,
+                top: (side === state.side ? 410 : 10),
+                width: 120,
+                height: 340
+            });
+        }
+    });
     var sakuraTokenAreaData = [
         { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 180, width: 350, tokenWidth: 280, height: 30 },
         { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 220, width: 350, tokenWidth: 280, height: 30 },
