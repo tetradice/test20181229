@@ -47032,14 +47032,6 @@ var sakuraba_1 = __webpack_require__(/*! sakuraba */ "./src/sakuraba.ts");
 exports.default = {
     /** 複数の操作を行い、必要に応じてUndo履歴、ログを設定。同時にソケットに変更後ボードを送信 */
     operate: function (p) { return function (state, actions) {
-        if (p.undoType === undefined || p.undoType === 'undoable') {
-            // ボード履歴を記録する
-            actions.memorizeBoardHistory();
-        }
-        else if (p.undoType === 'notBack') {
-            // ボード履歴を削除し、元に戻せないようにする
-            actions.forgetBoardHistory();
-        }
         // アクションログを追加し、追加されたログレコードを取得
         var appendLogs = null;
         if (p.log !== undefined) {
@@ -47065,6 +47057,19 @@ exports.default = {
         if (newState.socket) {
             newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board, appendedActionLogs: appendLogs });
         }
+        // 履歴を忘れるモードの場合は、ボード履歴を削除し、元に戻せないようにする
+        if (p.undoType === 'notBack') {
+            actions.forgetBoardHistory();
+        }
+        // 履歴の更新 (履歴を記録するモードの場合のみ)
+        if (p.undoType === undefined || p.undoType === 'undoable') {
+            var newHist = { board: state.board, appendedLogs: appendLogs };
+            return { boardHistoryPast: state.boardHistoryPast.concat([newHist]), boardHistoryFuture: [] };
+        }
+        else {
+            // 履歴の更新が必要ない場合はnullを返す
+            return null;
+        }
     }; },
     /** ボード全体を設定する */
     setBoard: function (newBoard) {
@@ -47075,39 +47080,33 @@ exports.default = {
         var extended = { playerNames: state.board.playerNames };
         return { board: _.extend(utils.createInitialState().board, extended) };
     }; },
-    /** ボードの状態をUndo用に記憶 */
-    memorizeBoardHistory: function () { return function (state) {
-        return { boardHistoryPast: state.boardHistoryPast.concat([state.board]), boardHistoryFuture: [] };
-    }; },
     /** Undo */
     undoBoard: function () { return function (state, actions) {
         var newPast = state.boardHistoryPast.concat(); // clone array
         var newFuture = state.boardHistoryFuture.concat(); // clone array
-        newFuture.push(state.board);
-        var newBoard = newPast.pop();
+        var recoveredHistItem = newPast.pop();
+        newFuture.push({ board: state.board, appendedLogs: recoveredHistItem.appendedLogs });
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         var appendLogs = [];
         var newActionLogs = actions.appendActionLog({ text: "\u76F4\u524D\u306E\u64CD\u4F5C\u3092\u53D6\u308A\u6D88\u3057\u307E\u3057\u305F" }).actionLog;
         var appendedLogs = [newActionLogs[newActionLogs.length - 1]];
         if (state.socket) {
-            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: newBoard, appendedActionLogs: appendedLogs });
+            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: appendedLogs });
         }
-        return { boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard };
+        return { boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board };
     }; },
     /** Redo */
     redoBoard: function () { return function (state, actions) {
         var newPast = state.boardHistoryPast.concat(); // clone array
         var newFuture = state.boardHistoryFuture.concat(); // clone array
-        newPast.push(state.board);
-        var newBoard = newFuture.pop();
+        var recoveredHistItem = newFuture.pop();
+        newPast.push({ board: state.board, appendedLogs: recoveredHistItem.appendedLogs });
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
-        var appendLogs = [];
-        var newActionLogs = actions.appendActionLog({ text: "\u76F4\u524D\u306B\u53D6\u308A\u6D88\u3057\u305F\u64CD\u4F5C\u3092\u3084\u308A\u76F4\u3057\u307E\u3057\u305F" }).actionLog;
-        var appendedLogs = [newActionLogs[newActionLogs.length - 1]];
+        recoveredHistItem.appendedLogs.forEach(function (log) { return actions.appendActionLog({ text: log.body, visibility: log.visibility }); });
         if (state.socket) {
-            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: newBoard, appendedActionLogs: appendedLogs });
+            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: recoveredHistItem.appendedLogs });
         }
-        return { boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard };
+        return { boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board };
     }; },
     /** ボード履歴を削除して、Undo/Redoを禁止する */
     forgetBoardHistory: function () {

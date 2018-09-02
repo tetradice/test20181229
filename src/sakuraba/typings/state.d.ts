@@ -8,8 +8,8 @@ export interface State {
     stateDataVersion: number;
 
     board: Board;
-    boardHistoryPast: Board[];
-    boardHistoryFuture: Board[];
+    boardHistoryPast: BoardHistoryItem[];
+    boardHistoryFuture: BoardHistoryItem[];
 
     zoom: number;
     socket?: ClientSocket;
@@ -20,6 +20,12 @@ export interface State {
     messageLog: LogRecord[];
 
     actionLogVisible: boolean;
+}
+
+/** ボード履歴 */
+export interface BoardHistoryItem {
+    board: Board;
+    appendedLogs: state.LogRecord[];
 }
 
 /** 卓情報 */

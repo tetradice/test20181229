@@ -28,14 +28,6 @@ export default {
          */
         proc: () => void;
     }) => (state: state.State, actions: ActionsType) => {
-        if(p.undoType === undefined || p.undoType === 'undoable'){
-            // ボード履歴を記録する
-            actions.memorizeBoardHistory();
-        } else if(p.undoType === 'notBack'){
-            // ボード履歴を削除し、元に戻せないようにする
-            actions.forgetBoardHistory();
-        }
-
         // アクションログを追加し、追加されたログレコードを取得
         let appendLogs: state.LogRecord[] = null;
 
@@ -63,6 +55,20 @@ export default {
         if(newState.socket){
             newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board, appendedActionLogs: appendLogs });
         }
+
+        // 履歴を忘れるモードの場合は、ボード履歴を削除し、元に戻せないようにする
+        if(p.undoType === 'notBack'){
+            actions.forgetBoardHistory();
+        }
+
+        // 履歴の更新 (履歴を記録するモードの場合のみ)
+        if(p.undoType === undefined || p.undoType === 'undoable'){
+            let newHist: state.BoardHistoryItem = {board: state.board, appendedLogs: appendLogs};
+            return {boardHistoryPast: state.boardHistoryPast.concat([newHist]), boardHistoryFuture: []};
+        } else {
+            // 履歴の更新が必要ない場合はnullを返す
+            return null;
+        }
     },
 
     /** ボード全体を設定する */
@@ -77,18 +83,13 @@ export default {
         return {board: _.extend(utils.createInitialState().board, extended)};
     },
 
-    /** ボードの状態をUndo用に記憶 */
-    memorizeBoardHistory: () => (state: state.State) => {
-        return {boardHistoryPast: state.boardHistoryPast.concat([state.board]), boardHistoryFuture: []};
-    },
-
     /** Undo */
     undoBoard: () => (state: state.State, actions: ActionsType) => {
         let newPast = state.boardHistoryPast.concat(); // clone array
         let newFuture = state.boardHistoryFuture.concat(); // clone array
 
-        newFuture.push(state.board);
-        let newBoard = newPast.pop();
+        let recoveredHistItem = newPast.pop();
+        newFuture.push({board: state.board, appendedLogs: recoveredHistItem.appendedLogs});
 
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         let appendLogs: state.LogRecord[] = [];
@@ -96,9 +97,9 @@ export default {
         let appendedLogs = [newActionLogs[newActionLogs.length - 1]];
 
         if(state.socket){
-            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: newBoard, appendedActionLogs: appendedLogs});
+            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: appendedLogs});
         }
-        return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard};
+        return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board};
     },
 
     /** Redo */
@@ -106,18 +107,16 @@ export default {
         let newPast = state.boardHistoryPast.concat(); // clone array
         let newFuture = state.boardHistoryFuture.concat(); // clone array
 
-        newPast.push(state.board);
-        let newBoard = newFuture.pop();
+        let recoveredHistItem = newFuture.pop();
+        newPast.push({board: state.board, appendedLogs: recoveredHistItem.appendedLogs});
 
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
-        let appendLogs: state.LogRecord[] = [];
-        let newActionLogs = actions.appendActionLog({text: `直前に取り消した操作をやり直しました`}).actionLog;
-        let appendedLogs = [newActionLogs[newActionLogs.length - 1]];
+        recoveredHistItem.appendedLogs.forEach(log => actions.appendActionLog({text: log.body, visibility: log.visibility}));
 
         if(state.socket){
-            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: newBoard, appendedActionLogs: appendedLogs});
+            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: recoveredHistItem.appendedLogs});
         }
-        return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard};
+        return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board};
     },
 
     /** ボード履歴を削除して、Undo/Redoを禁止する */
