@@ -5,7 +5,7 @@ import { Megami, CARD_DATA } from "sakuraba";
 import cardActions from './card';
 import { ActionsType } from ".";
 
-type LogParam = {text: string, hidden: boolean};
+type LogParam = {text: string, visibility?: LogVisibility};
 
 export default {
     /** 複数の操作を行い、必要に応じてUndo履歴、ログを設定。同時にソケットに変更後ボードを送信 */
@@ -46,7 +46,7 @@ export default {
                 if(typeof p.log[0] === 'string'){
                     (p.log as string[]).forEach((text) => actions.appendActionLog({text: text}));
                 } else {
-                    (p.log as LogParam[]).forEach((log) => actions.appendActionLog({text: log.text, hidden: log.hidden}));
+                    (p.log as LogParam[]).forEach((log) => actions.appendActionLog({text: log.text, visibility: log.visibility}));
                 }
             }
         }
@@ -287,7 +287,7 @@ export default {
                 actions.addSakuraToken({side: state.side, region: 'aura', number: 3});
                 actions.addSakuraToken({side: state.side, region: 'life', number: 10});
                 actions.setVigor({side: state.side, value: 0});
-                actions.appendActionLog({text: '桜花結晶と集中力を配置'});
+                actions.appendActionLog({text: '桜花結晶と集中力を配置', visibility: 'shown'});
 
                 // まだ間合が置かれていなければセット
                 if(board.getRegionSakuraTokens(null, 'distance').length === 0){

@@ -79,7 +79,7 @@ export default {
         if(p.cardNameLogging){
             let cardNames = fromCards.map((c) => `[${CARD_DATA[c.cardId].name}]`).join('、');
             let title = (p.cardNameLogTitle ? `${p.cardNameLogTitle} ` : '');
-            actions.appendActionLog({text: `${title}-> ${cardNames}`, hidden: true});
+            actions.appendActionLog({text: `${title}-> ${cardNames}`, visibility: 'ownerOnly'});
         }
 
         let [toSide, toRegion] = p.to;

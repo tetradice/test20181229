@@ -180,7 +180,7 @@ $(function(){
 
             // 受け取ったログをtoastrで表示
             let st = appActions.getState();
-            let targetLogs = p.appendedActionLogs.filter((log) => !log.hidden);
+            let targetLogs = p.appendedActionLogs.filter((log) => utils.logIsVisible(log, st.side));
             let msg = targetLogs.map((log) => log.body).join('<br>');
             toastr.info(msg, `${st.board.playerNames[targetLogs[0].playerSide]}:`);
         }
@@ -302,28 +302,32 @@ $(function(){
                 let toRegion = $this.attr('data-region') as CardRegion;
 
                 // 移動ログを決定
-                let log: string;
+                let logs: {text: string, visibility?: LogVisibility}[] = [];
                 let cardName = CARD_DATA[dragInfo.draggingFrom.cardId].name;
                 let fromRegionTitle = utils.getCardRegionTitle(currentState.side, dragInfo.draggingFrom.side, dragInfo.draggingFrom.region);
                 let toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion);
 
-                log = `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}`;
+                logs.push({text: `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}`});
                 let cardNameLogging = false;
                 
                 // 一定の条件を満たす場合はログを置き換える
                 if(dragInfo.draggingFrom.region === 'hand' && toRegion === 'hidden-used'){
-                    log = `[${cardName}]を伏せ札にしました`;
+                    logs = [];
+                    logs.push({text: `[${cardName}]を伏せ札にしました`, visibility: 'ownerOnly'});
+                    logs.push({text: `カードを1枚伏せ札にしました`, visibility: 'outerOnly'});
                 }
                 if(dragInfo.draggingFrom.region === 'hand' && toRegion === 'used'){
-                    log = `[${cardName}]を場に出しました`;
+                    logs = [];
+                    logs.push({text: `[${cardName}]を場に出しました`});
                 }
                 if(dragInfo.draggingFrom.region === 'library' && toRegion === 'hand'){
-                    log = `カードを1枚引きました`;
+                    logs = [];
+                    logs.push({text: `カードを1枚引きました`});
                     cardNameLogging = true;
                 }
 
                 appActions.operate({
-                    log: log,
+                    log: logs,
                     proc: () => {
                         appActions.moveCard({
                             from: dragInfo.draggingFrom.id

@@ -15,13 +15,13 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
         let logElements: Children[] = [];
         let now = moment();
         p.logs.forEach((log) => {
-            // 相手サイドの隠しログは表示しない
-            if(log.hidden && log.playerSide !== state.side) return;
+            // 表示対象外の場合はスキップ
+            if(!utils.logIsVisible(log, state.side)) return;
 
             // 今日のログか昨日以前のログかで形式を変更
             let logTime = moment(log.time);
             let timeStr = (logTime.isSame(now, 'date') ? logTime.format('h:mm') : logTime.format('YYYY/M/D h:mm'));
-            let bodyStyle = (log.hidden ? {color: 'green'} : null);
+            let bodyStyle = (log.visibility === 'ownerOnly' ? {color: 'green'} : null);
             logElements.push(
                 <div>
                 {state.board.playerNames[log.playerSide]}: <span style={bodyStyle}>{log.body}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>

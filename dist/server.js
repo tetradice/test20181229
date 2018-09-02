@@ -175,17 +175,17 @@ exports.CARD_DATA = {
     '05-oboro-o-s-2': { megami: 'oboro', name: '鳶影', ruby: 'とびかげ', baseType: 'special', types: ['action', 'reaction'], cost: '3', text: '伏せ札から《全力》でないカードを1枚選び、そのカードを使用してもよい。この際、このカードが対応している《攻撃》があるならば、使用されたカードはそれに対応しているものと扱う。' },
     '05-oboro-o-s-3': { megami: 'oboro', name: '虚魚', ruby: 'うろうお', baseType: 'special', types: ['action'], cost: '4', text: '【使用済】あなたは1回の再構成に対して、設置を持つカードを任意の枚数、任意の順で使用できる。' },
     '05-oboro-o-s-4': { megami: 'oboro', name: '壬蔓', ruby: 'みかずら', baseType: 'special', types: ['action'], cost: '0', text: '相オーラ→自フレア：1 \n再起：あなたのフレアが0である。' },
-    '06-yukihi-o-n-1': { megami: 'yukihi', name: 'しこみばり / ふくみばり', ruby: '', baseType: 'normal', types: ['attack'], range: '[閉]4-6 [開]0-2', damage: '[閉]3/1 [開]1/2', text: '' },
-    '06-yukihi-o-n-2': { megami: 'yukihi', name: 'しこみび / ねこだまし', ruby: '', baseType: 'normal', types: ['attack'], text: '[開]【攻撃後】このカードを手札に戻し、傘の開閉を行う。 ' },
-    '06-yukihi-o-n-3': { megami: 'yukihi', name: 'ふりはらい / たぐりよせ', ruby: '', baseType: 'normal', types: ['attack'], text: '' },
-    '06-yukihi-o-n-4': { megami: 'yukihi', name: 'ふりまわし / つきさし', ruby: '', baseType: 'normal', types: ['attack', 'fullpower'], text: '' },
-    '06-yukihi-o-n-5': { megami: 'yukihi', name: 'かさまわし', ruby: '', baseType: 'normal', types: ['action'], text: '' },
-    '06-yukihi-o-n-6': { megami: 'yukihi', name: 'ひきあし / もぐりこみ', ruby: '', baseType: 'normal', types: ['action', 'reaction'], text: '' },
-    '06-yukihi-o-n-7': { megami: 'yukihi', name: 'えんむすび', ruby: '', baseType: 'normal', types: ['enhance'], capacity: '2', text: '' },
-    '06-yukihi-o-s-1': { megami: 'yukihi', name: 'はらりゆき', ruby: '', baseType: 'special', types: ['attack'], cost: '2', text: '' },
-    '06-yukihi-o-s-2': { megami: 'yukihi', name: 'ゆらりび', ruby: '', baseType: 'special', types: ['attack'], cost: '5', text: '' },
-    '06-yukihi-o-s-3': { megami: 'yukihi', name: 'どろりうら', ruby: '', baseType: 'special', types: ['enhance', 'fullpower'], cost: '3', text: '' },
-    '06-yukihi-o-s-4': { megami: 'yukihi', name: 'くるりみ', ruby: '', baseType: 'special', types: ['action', 'reaction'], cost: '1', text: '' },
+    '06-yukihi-o-n-1': { megami: 'yukihi', name: 'しこみばり / ふくみばり', ruby: '', baseType: 'normal', types: ['attack'], range: '4-6', rangeOpened: '0-2', damage: '3/1', damageOpened: '1/2', text: '', textOpened: '' },
+    '06-yukihi-o-n-2': { megami: 'yukihi', name: 'しこみび / ねこだまし', ruby: '', baseType: 'normal', types: ['attack'], range: '5-6', rangeOpened: '0-2', damage: '1/1', damageOpened: '1/1', text: '【攻撃後】このカードを手札に戻し、傘の開閉を行う。 ', textOpened: '' },
+    '06-yukihi-o-n-3': { megami: 'yukihi', name: 'ふりはらい / たぐりよせ', ruby: '', baseType: 'normal', types: ['attack'], range: '2-5', rangeOpened: '0-2', damage: '1/1', damageOpened: '1/1', text: '【攻撃後】ダスト⇔間合：1 ', textOpened: '【攻撃後】間合→ダスト：2' },
+    '06-yukihi-o-n-4': { megami: 'yukihi', name: 'ふりまわし / つきさし', ruby: '', baseType: 'normal', types: ['attack', 'fullpower'], range: '4-6', rangeOpened: '0-2', damage: '5/-', damageOpened: '-/2', text: '', textOpened: '' },
+    '06-yukihi-o-n-5': { megami: 'yukihi', name: 'かさまわし', ruby: '', baseType: 'normal', types: ['action'], text: '(このカードは使用しても効果はない) \n【常時】あなたが傘の開閉を行った時、このカードを手札から公開してもよい。そうした場合、 \nダスト→自オーラ：1\n', textOpened: '' },
+    '06-yukihi-o-n-6': { megami: 'yukihi', name: 'ひきあし / もぐりこみ', ruby: '', baseType: 'normal', types: ['action', 'reaction'], text: '', textOpened: '' },
+    '06-yukihi-o-n-7': { megami: 'yukihi', name: 'えんむすび', ruby: '', baseType: 'normal', types: ['enhance'], capacity: '2', text: '【展開時】間合→ダスト：1 \n【破棄時】ダスト→間合：1 \n【常時】あなたの傘が開いているならば、このカードの矢印(→)は逆になる。', textOpened: '' },
+    '06-yukihi-o-s-1': { megami: 'yukihi', name: 'はらりゆき', ruby: '', baseType: 'special', types: ['attack'], range: '3-5', rangeOpened: '0-1', damage: '3/1', damageOpened: '0/0', cost: '2', text: '【即再起】あなたが傘の開閉を行う。 ', textOpened: '' },
+    '06-yukihi-o-s-2': { megami: 'yukihi', name: 'ゆらりび', ruby: '', baseType: 'special', types: ['attack'], range: '4-6', rangeOpened: '0', damage: '0/0', damageOpened: '4/5', cost: '5', text: '', textOpened: '' },
+    '06-yukihi-o-s-3': { megami: 'yukihi', name: 'どろりうら', ruby: '', baseType: 'special', types: ['enhance', 'fullpower'], capacity: '7', cost: '3', text: '【展開中】あなたのユキヒの《攻撃》は傘を開いた状態と傘を閉じた状態両方の適正距離を持つ。', textOpened: '' },
+    '06-yukihi-o-s-4': { megami: 'yukihi', name: 'くるりみ', ruby: '', baseType: 'special', types: ['action', 'reaction'], cost: '1', text: '傘の開閉を行う。 \nダスト→自オーラ：1', textOpened: '' },
     '09-chikage-o-n-1': { megami: 'chikage', name: '飛苦無', ruby: 'とびくない', baseType: 'normal', types: ['attack'], range: '4-5', damage: '2/2', text: '' },
     '09-chikage-o-n-2': { megami: 'chikage', name: '毒針', ruby: 'どくばり', baseType: 'normal', types: ['attack'], range: '4', damage: '1/1', text: '【攻撃後】毒袋から「麻痺毒」「幻覚毒」「弛緩毒」のいずれか1枚を選び、そのカードを相手の山札の一番上に置く。' },
     '09-chikage-o-n-3': { megami: 'chikage', name: '遁術', ruby: 'とんじゅつ', baseType: 'normal', types: ['attack', 'reaction'], range: '1-3', damage: '1/-', text: '【攻撃後】自オーラ→間合：2 \n【攻撃後】このターン中、全てのプレイヤーは基本動作《前進》を行えない。' },
@@ -313,12 +313,26 @@ function getMegamiDispName(megami) {
     return data.name + "(" + data.symbol + ")";
 }
 exports.getMegamiDispName = getMegamiDispName;
+/** ログを表示できるかどうか判定 */
+function logIsVisible(log, side) {
+    if (log.visibility === 'shown')
+        return true;
+    if (log.visibility === 'ownerOnly' && log.playerSide === side)
+        return true;
+    if (log.visibility === 'outerOnly' && log.playerSide !== side)
+        return true;
+    return false;
+}
+exports.logIsVisible = logIsVisible;
 /** カードの説明用ポップアップHTMLを取得する */
 function getDescriptionHtml(cardId) {
     var cardData = sakuraba.CARD_DATA[cardId];
     var cardTitleHtml = "<ruby><rb>" + cardData.name + "</rb><rp>(</rp><rt>" + cardData.ruby + "</rt><rp>)</rp></ruby>";
     var html = "<div class='ui header' style='margin-right: 2em;'>" + cardTitleHtml;
     html += "</div><div class='ui content'>";
+    if (cardData.baseType === 'special') {
+        html += "<div class='ui top right attached label'>\u6D88\u8CBB: " + cardData.cost + "</div>";
+    }
     var typeCaptions = [];
     if (cardData.types.indexOf('attack') >= 0)
         typeCaptions.push("<span style='color: red; font-weight: bold;'>攻撃</span>");
@@ -332,19 +346,30 @@ function getDescriptionHtml(cardId) {
         typeCaptions.push("<span style='color: #E0C000; font-weight: bold;'>全力</span>");
     html += "" + typeCaptions.join('/');
     if (cardData.range !== undefined) {
-        html += "<span style='margin-left: 1em;'>\u9069\u6B63\u8DDD\u96E2" + cardData.range + "</span>";
+        if (cardData.rangeOpened !== undefined) {
+            html += "<span style='margin-left: 1em;'>\u9069\u6B63\u8DDD\u96E2 [\u9589]" + cardData.range + " [\u958B]" + cardData.rangeOpened + "</span>";
+        }
+        else {
+            html += "<span style='margin-left: 1em;'>\u9069\u6B63\u8DDD\u96E2" + cardData.range + "</span>";
+        }
     }
     html += "<br>";
-    if (cardData.baseType === 'special') {
-        html += "<div class='ui top right attached label'>\u6D88\u8CBB: " + cardData.cost + "</div>";
-    }
     if (cardData.types.indexOf('enhance') >= 0) {
         html += "\u7D0D: " + cardData.capacity + "<br>";
     }
-    if (cardData.damage !== undefined) {
-        html += cardData.damage + "<br>";
+    if (cardData.damageOpened !== undefined) {
+        html += "[\u9589] " + cardData.damage + "<br>";
+        html += "" + cardData.text.replace(/\n/g, '<br>');
+        html += (cardData.text ? '<br>' : '');
+        html += "[\u958B] " + cardData.damageOpened + "<br>";
+        html += "" + cardData.textOpened.replace(/\n/g, '<br>');
     }
-    html += "" + cardData.text.replace(/\n/g, '<br>');
+    else {
+        if (cardData.damage !== undefined) {
+            html += cardData.damage + "<br>";
+        }
+        html += "" + cardData.text.replace(/\n/g, '<br>');
+    }
     html += "</div>";
     return html;
 }
