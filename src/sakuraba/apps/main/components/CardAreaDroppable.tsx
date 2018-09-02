@@ -53,15 +53,18 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
             let fromRegionTitle = utils.getCardRegionTitle(currentState.side, currentState.draggingFromCard.side, currentState.draggingFromCard.region);
             let toRegionTitle = utils.getCardRegionTitle(currentState.side, currentState.draggingHoverSide, currentState.draggingHoverCardRegion);
 
-            log = `[${cardName}]を移動：${fromRegionTitle} → ${toRegionTitle}`;
+            log = `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}`;
             let cardNameLogging = false;
             
             // 一定の条件を満たす場合はログを置き換える
             if(currentState.draggingFromCard.region === 'hand' && currentState.draggingHoverCardRegion === 'hidden-used'){
-                log = `[${cardName}]を伏せ札にする`;
+                log = `[${cardName}]を伏せ札にしました`;
+            }
+            if(currentState.draggingFromCard.region === 'hand' && currentState.draggingHoverCardRegion === 'used'){
+                log = `[${cardName}]を場に出しました`;
             }
             if(currentState.draggingFromCard.region === 'library' && currentState.draggingHoverCardRegion === 'hand'){
-                log = `カードを引く`;
+                log = `カードを1枚引きました`;
                 cardNameLogging = true;
             }
 

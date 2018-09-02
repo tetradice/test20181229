@@ -46493,7 +46493,11 @@ $(function () {
             }
             if (key === 'reshuffle') {
                 // 再構成
-                appActions.oprReshuffle({ side: state.side });
+                appActions.oprReshuffle({ side: state.side, lifeDecrease: true });
+            }
+            if (key === 'reshuffleWithoutDamage') {
+                // 再構成
+                appActions.oprReshuffle({ side: state.side, lifeDecrease: false });
             }
             return;
         },
@@ -47114,7 +47118,7 @@ exports.default = {
     draw: function (num) { return function (state, actions) {
         if (num === undefined)
             num = 1;
-        actions.appendActionLog({ text: "\u30AB\u30FC\u30C9\u3092" + num + "\u679A\u5F15\u304F" });
+        actions.appendActionLog({ text: "\u30AB\u30FC\u30C9\u3092" + num + "\u679A\u5F15\u304D\u307E\u3057\u305F" });
         actions.moveCard({
             from: [state.side, 'library'],
             to: [state.side, 'hand'],
@@ -47145,7 +47149,7 @@ exports.default = {
         var board = new models.Board(state.board);
         var card = board.getCard(p.objectId);
         actions.operate({
-            logText: (p.value ? sakuraba_1.CARD_DATA[card.cardId].name + "\u3092\u8868\u8FD4\u3057\u3001\u4F7F\u7528\u6E08\u306B\u3057\u307E\u3057\u305F" : sakuraba_1.CARD_DATA[card.cardId].name + "\u3092\u88CF\u8FD4\u3057\u3001\u672A\u4F7F\u7528\u306B\u623B\u3057\u307E\u3057\u305F"),
+            logText: (p.value ? "[" + sakuraba_1.CARD_DATA[card.cardId].name + "]\u3092\u8868\u5411\u304D\u306B\u3057\u307E\u3057\u305F" : "[" + sakuraba_1.CARD_DATA[card.cardId].name + "]\u3092\u88CF\u8FD4\u3057\u307E\u3057\u305F"),
             proc: function () {
                 actions.setSpecialUsed(p);
             }
@@ -47168,7 +47172,7 @@ exports.default = {
     oprReshuffle: function (p) { return function (state, actions) {
         actions.operate({
             undoType: 'notBack',
-            logText: (p.lifeDecrease ? "\u518D\u69CB\u6210" : "\u518D\u69CB\u6210 (\u30E9\u30A4\u30D5\u6E1B\u5C11\u306A\u3057)"),
+            logText: (p.lifeDecrease ? "\u518D\u69CB\u6210\u3057\u307E\u3057\u305F (\u30E9\u30A4\u30D5-1)" : "\u30E9\u30A4\u30D5\u6E1B\u5C11\u306A\u3057\u3067\u518D\u69CB\u6210\u3057\u307E\u3057\u305F"),
             proc: function () {
                 // 使用済、伏せ札をすべて山札へ移動
                 var newBoard = models.Board.clone(state.board);
@@ -47645,14 +47649,17 @@ exports.CardAreaDroppable = function (p) { return function (state, actions) {
             var cardName = sakuraba.CARD_DATA[currentState.draggingFromCard.cardId].name;
             var fromRegionTitle = utils.getCardRegionTitle(currentState.side, currentState.draggingFromCard.side, currentState.draggingFromCard.region);
             var toRegionTitle = utils.getCardRegionTitle(currentState.side, currentState.draggingHoverSide, currentState.draggingHoverCardRegion);
-            log = "[" + cardName + "]\u3092\u79FB\u52D5\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle;
+            log = "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle;
             var cardNameLogging_1 = false;
             // 一定の条件を満たす場合はログを置き換える
             if (currentState.draggingFromCard.region === 'hand' && currentState.draggingHoverCardRegion === 'hidden-used') {
-                log = "[" + cardName + "]\u3092\u4F0F\u305B\u672D\u306B\u3059\u308B";
+                log = "[" + cardName + "]\u3092\u4F0F\u305B\u672D\u306B\u3057\u307E\u3057\u305F";
+            }
+            if (currentState.draggingFromCard.region === 'hand' && currentState.draggingHoverCardRegion === 'used') {
+                log = "[" + cardName + "]\u3092\u5834\u306B\u51FA\u3057\u307E\u3057\u305F";
             }
             if (currentState.draggingFromCard.region === 'library' && currentState.draggingHoverCardRegion === 'hand') {
-                log = "\u30AB\u30FC\u30C9\u3092\u5F15\u304F";
+                log = "\u30AB\u30FC\u30C9\u30921\u679A\u5F15\u304D\u307E\u3057\u305F";
                 cardNameLogging_1 = true;
             }
             actions.operate({
@@ -48007,6 +48014,12 @@ exports.ControlPanel = function () { return function (state, actions) {
     var dropdownCreate = function (e) {
         $(e).dropdown({ action: 'hide' });
     };
+    var audioPlay = function () {
+        var bgm = new Audio('/audio/sword_dance.mp3');
+        bgm.volume = 0.5;
+        bgm.loop = true;
+        bgm.play();
+    };
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
         hyperapp_1.h("div", { class: "ui icon basic buttons" },
             hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.undoBoard(); } },
@@ -48022,6 +48035,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                 hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleActionLogVisible(); } },
                     (state.actionLogVisible ? hyperapp_1.h("i", { class: "check icon" }) : null),
                     "\u64CD\u4F5C\u30ED\u30B0\u3092\u8868\u793A"),
+                hyperapp_1.h("div", { class: "item", onclick: audioPlay }, "BGM\u518D\u751F"),
                 hyperapp_1.h("div", { class: "item" }, "\u5353\u60C5\u5831"),
                 hyperapp_1.h("div", { class: "divider" }),
                 hyperapp_1.h("div", { class: "item" }, "\u3053\u306E\u30B5\u30A4\u30C8\u306B\u3064\u3044\u3066 (\u30D0\u30FC\u30B8\u30E7\u30F3\u3001\u8457\u4F5C\u6A29\u60C5\u5831)"))),
@@ -48580,8 +48594,8 @@ var view = function (state, actions) {
         hyperapp_1.h(components.ControlPanel, null),
         hyperapp_1.h(components.MariganButton, { left: 10, top: 770 }),
         hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),
-        hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 10, width: 1200, side: state.side }),
-        hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: utils.flipSide(state.side) })));
+        hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 10, width: 1200, side: utils.flipSide(state.side) }),
+        hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: state.side })));
 };
 exports.default = view;
 

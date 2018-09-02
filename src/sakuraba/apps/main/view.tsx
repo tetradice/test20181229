@@ -200,8 +200,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.ControlPanel />
             <components.MariganButton left={10} top={770} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
-            <components.PlayerNameDisplay left={10} top={10} width={1200} side={state.side} />
-            <components.PlayerNameDisplay left={10} top={770} width={1200} side={utils.flipSide(state.side)} />
+            <components.PlayerNameDisplay left={10} top={10} width={1200} side={utils.flipSide(state.side)} />
+            <components.PlayerNameDisplay left={10} top={770} width={1200} side={state.side} />
         </div>
     );
 }

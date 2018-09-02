@@ -110,9 +110,12 @@ $(function(){
 
             if(key === 'reshuffle'){
                 // 再構成
-                appActions.oprReshuffle({side: state.side});
+                appActions.oprReshuffle({side: state.side, lifeDecrease: true});
             }
-
+            if(key === 'reshuffleWithoutDamage'){
+                // 再構成
+                appActions.oprReshuffle({side: state.side, lifeDecrease: false});
+            }
             return;
         },
         items: {

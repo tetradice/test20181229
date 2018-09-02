@@ -115,7 +115,7 @@ export default {
     /** 山札からカードを引く */
     draw: (num?: number) => (state: state.State, actions: ActionsType) => {
         if(num === undefined) num = 1;
-        actions.appendActionLog({text: `カードを${num}枚引く`});
+        actions.appendActionLog({text: `カードを${num}枚引きました`});
         actions.moveCard({
               from: [state.side, 'library']
             , to: [state.side, 'hand']
@@ -153,7 +153,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            logText: (p.value ? `${CARD_DATA[card.cardId].name}を表返し、使用済にしました` : `${CARD_DATA[card.cardId].name}を裏返し、未使用に戻しました`),
+            logText: (p.value ? `[${CARD_DATA[card.cardId].name}]を表向きにしました` : `[${CARD_DATA[card.cardId].name}]を裏返しました`),
             proc: () => {
                 actions.setSpecialUsed(p);
             }
@@ -179,10 +179,10 @@ export default {
     },
 
     /** 再構成操作 */
-    oprReshuffle: (p: {side: PlayerSide, lifeDecrease?: boolean}) => (state: state.State, actions: ActionsType) => {
+    oprReshuffle: (p: {side: PlayerSide, lifeDecrease: boolean}) => (state: state.State, actions: ActionsType) => {
         actions.operate({
             undoType: 'notBack', // Undo不可
-            logText: (p.lifeDecrease ? `再構成` : `再構成 (ライフ減少なし)`),
+            logText: (p.lifeDecrease ? `再構成しました (ライフ-1)` : `ライフ減少なしで再構成しました`),
             proc: () => {
                 // 使用済、伏せ札をすべて山札へ移動
                 let newBoard = models.Board.clone(state.board);

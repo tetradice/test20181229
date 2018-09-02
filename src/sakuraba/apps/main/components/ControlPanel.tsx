@@ -334,6 +334,13 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         $(e).dropdown({action: 'hide'});
     };
 
+    const audioPlay = () => {
+        const bgm = new Audio('/audio/sword_dance.mp3');
+        bgm.volume = 0.5;
+        bgm.loop = true;
+        bgm.play();
+    };
+
     return (
         <div id="CONTROL-PANEL">    
             <div class="ui icon basic buttons">
@@ -350,6 +357,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                         {(state.actionLogVisible ? <i class="check icon"></i> : null)}
                         操作ログを表示
                     </div>
+                    <div class="item" onclick={audioPlay}>BGM再生</div>
                     <div class="item">卓情報</div>
                     <div class="divider"></div>
                     <div class="item">このサイトについて (バージョン、著作権情報)</div>
