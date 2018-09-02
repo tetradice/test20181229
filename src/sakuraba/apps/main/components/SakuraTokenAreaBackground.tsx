@@ -25,9 +25,11 @@ export const SakuraTokenAreaBackground = (p: Param) => (state: state.State) => {
 
     return (
         <div
-            class={"area background sakura-token-region ui segment " + (state.draggingHoverSakuraTokenRegion === p.region ? 'over' : '')}
+            class={"area background sakura-token-region ui segment "}
             style={styles}
-            key={`SakuraTokenAreaBackground_${p.side}_${p.region}`}
+            data-side={p.side}
+            data-region={p.region}
+               key={`SakuraTokenAreaBackground_${p.side}_${p.region}`}
         >
             <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`}}>{p.title}</div>
         </div>

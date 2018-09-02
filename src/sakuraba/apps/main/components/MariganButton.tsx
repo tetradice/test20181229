@@ -29,7 +29,7 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
         }).then((selectedCards) => {
             // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
             actions.operate({
-                logText: `手札${selectedCards.length}枚を山札の底に置き、同じ枚数のカードを引き直し`,
+                log: `手札${selectedCards.length}枚を山札の底に置き、同じ枚数のカードを引き直し`,
                 proc: () => {
                     // 選択したカードを山札の底に移動
                     selectedCards.forEach(card => {

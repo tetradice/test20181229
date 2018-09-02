@@ -5,6 +5,7 @@ import * as utils from "sakuraba/utils";
 import * as apps from "sakuraba/apps";
 import { ClientSocket } from "sakuraba/socket";
 import { CARD_DATA } from "./sakuraba";
+import dragInfo from "sakuraba/dragInfo";
 
 declare var params: {
     boardId: string;
@@ -24,7 +25,6 @@ function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery
         .modal({closable: false, onApprove:yesCallback})
         .modal('show');
 }
-
 
 $(function(){
     // socket.ioに接続し、ラッパーを作成
@@ -46,13 +46,13 @@ $(function(){
     if(clientWidth < 1200 - 120 * 4) st.zoom = 0.5;
 
     // アプリケーション起動
-    let appActions = apps.main.run(st, document.getElementById('BOARD2'));
+    let appActions = apps.main.run(st, document.getElementById('BOARD'));
 
     // 山札ドラッグメニュー
 
     // 切札右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD2 .fbs-card[data-region=special]',
+        selector: '#BOARD .fbs-card[data-region=special]',
 
         build: function($elem: JQuery, event: JQueryEventObject){
             let id = $elem.attr('data-object-id');
@@ -65,7 +65,7 @@ $(function(){
             return {
                 callback: function(key: string) {
                     appActions.operate({
-                        logText: `${CARD_DATA[card.cardId].name}を${card.specialUsed ? '表向き' : '裏向き'}に変更`,
+                        log: `${CARD_DATA[card.cardId].name}を${card.specialUsed ? '表向き' : '裏向き'}に変更`,
                         proc: () => {
                             appActions.oprSetSpecialUsed({objectId: id, value: !card.specialUsed});
                         }
@@ -79,7 +79,7 @@ $(function(){
 
     // 集中力右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD2 .fbs-vigor-card, #BOARD2 .withered-token',
+        selector: '#BOARD .fbs-vigor-card, #BOARD .withered-token',
         build: function($elem: JQuery, event: JQueryEventObject){
             let st = appActions.getState();
             let board = new models.Board(st.board);
@@ -100,7 +100,7 @@ $(function(){
 
     // 山札エリア右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD2 .area.background[data-region=library], #BOARD2 .fbs-card[data-region=library]',
+        selector: '#BOARD .area.background[data-region=library], #BOARD .fbs-card[data-region=library]',
         callback: function(key: string) {
             let state = appActions.getState();
             if(key === 'draw'){
@@ -149,7 +149,7 @@ $(function(){
                     playerName = playerCommonName;
                 }
                 appActions.operate({
-                    logText: `卓に参加しました`,
+                    log: `卓に参加しました`,
                     undoType: 'notBack',
                     proc: () => {
                         appActions.setPlayerName({side: params.side, name: playerName});
@@ -210,4 +210,159 @@ $(function(){
             $('.modals.active .positive.button').click();
         }
     });
+
+
+    let contextMenuShowingAfterDrop: boolean = false;    
+    // ドラッグ開始
+    $('#BOARD').on('dragstart', '.fbs-card,.sakura-token', function(e){
+        let currentState = appActions.getState();
+
+        this.style.opacity = '0.4';  // this / e.target is the source node.
+        //(e.originalEvent as DragEvent).dataTransfer.setDragImage($(this.closest('.draw-region'))[0], 0, 0);
+        let objectId = $(this).attr('data-object-id');
+        let object = currentState.board.objects.find(c => c.id === objectId);
+
+        // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択したカードを記憶
+        $(`.area.droppable:not([data-side=${object.side}][data-region=${object.region}])`).css('z-index', 9999);
+        $(`.fbs-card.droppable`).css('z-index', 10000);
+        dragInfo.draggingFrom = object;
+
+        if(object.region === 'aura'){
+            // 場に出ている付与札があれば、それも移動対象
+            $('[data-region=used]').addClass('droppable');
+        }
+
+        $('.fbs-card').popup('hide all');
+
+    });
+
+    function processOnDragEnd(){
+        // コンテキストメニューを表示している場合、一部属性の解除を行わない
+        if(!contextMenuShowingAfterDrop){
+            $('[draggable]').css('opacity', '1.0');
+            $('.area,.fbs-card').removeClass('over');
+        }
+        
+        $('.area.droppable').css('z-index', -9999);
+        $('.fbs-card.droppable').css('z-index', 0);
+        dragInfo.draggingFrom = null;
+    }
+
+    $('#BOARD').on('dragend', '.fbs-card,.sakura-token', function(e){
+        console.log('dragend', this);
+        processOnDragEnd();
+
+    });
+    $('#BOARD').on('dragover', '.droppable', function(e){
+        if (e.preventDefault) {
+            e.preventDefault(); // Necessary. Allows us to drop.
+        }
+        //((e as any) as DragEvent).dataTransfer.dropEffect = 'move';  // See the section on the DataTransfer object.
+
+        return false;
+    });
+
+    // ドラッグで要素に進入した
+    $('#BOARD').on('dragenter', '.area.droppable', function(e){
+        let side = $(this).attr('data-side');
+        let region = $(this).attr('data-region');
+        $(`.area.background[data-side=${side}][data-region=${region}]`).addClass('over');
+    });
+
+    $('#BOARD').on('dragleave', '.area.droppable', function(e){
+        let side = $(this).attr('data-side');
+        let region = $(this).attr('data-region');
+        $(`.area.background[data-side=${side}][data-region=${region}]`).removeClass('over');  // this / e.target is previous target element.
+    });
+    $('#BOARD').on('dragenter', '.fbs-card.droppable', function(e){
+        $($(this)).addClass('over');
+    });
+    $('#BOARD').on('dragleave', '.fbs-card.droppable', function(e){
+        $($(this)).removeClass('over');  // this / e.target is previous target element.
+    });
+
+
+    let lastDraggingFrom: state.BoardObject = null; 
+    $('#BOARD').on('drop', '.area,.fbs-card.droppable', function(e){
+        // this / e.target is current target element.
+        console.log('drop', this);
+        let $this = $(this);
+
+        if (e.stopPropagation) {
+            e.stopPropagation(); // stops the browser from redirecting.
+        }
+    
+        if(dragInfo.draggingFrom !== null){
+            // 現在のステートを取得
+            let currentState = appActions.getState();
+
+            // カードを別領域に移動した場合
+            if(dragInfo.draggingFrom.type === 'card'){
+                let toSide = $this.attr('data-side') as PlayerSide;
+                let toRegion = $this.attr('data-region') as CardRegion;
+
+                // 移動ログを決定
+                let log: string;
+                let cardName = CARD_DATA[dragInfo.draggingFrom.cardId].name;
+                let fromRegionTitle = utils.getCardRegionTitle(currentState.side, dragInfo.draggingFrom.side, dragInfo.draggingFrom.region);
+                let toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion);
+
+                log = `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}`;
+                let cardNameLogging = false;
+                
+                // 一定の条件を満たす場合はログを置き換える
+                if(dragInfo.draggingFrom.region === 'hand' && toRegion === 'hidden-used'){
+                    log = `[${cardName}]を伏せ札にしました`;
+                }
+                if(dragInfo.draggingFrom.region === 'hand' && toRegion === 'used'){
+                    log = `[${cardName}]を場に出しました`;
+                }
+                if(dragInfo.draggingFrom.region === 'library' && toRegion === 'hand'){
+                    log = `カードを1枚引きました`;
+                    cardNameLogging = true;
+                }
+
+                appActions.operate({
+                    log: log,
+                    proc: () => {
+                        appActions.moveCard({
+                            from: dragInfo.draggingFrom.id
+                        , to: [toSide, toRegion] 
+                        , cardNameLogging: cardNameLogging
+                        });
+                    }
+                });
+            }
+
+
+            // // 山札に移動した場合は特殊処理
+            // if(to === 'library'){
+            //     lastDraggingFrom = dragInfo.draggingFrom;
+            //     contextMenuShowingAfterDrop = true;
+            //     $('#CONTEXT-DRAG-TO-LIBRARY').contextMenu({x: e.pageX, y: e.pageY});
+            //     return false;
+            // } else {
+            //     // 山札以外への移動の場合
+            //     if(dragInfo.draggingFrom.type === 'card'){
+            //         //moveCard(dragInfo.draggingFrom.region as sakuraba.CardArea, dragInfo.draggingFrom.indexOfRegion, to as sakuraba.CardArea);
+            //         return false;
+            //     }
+
+            //     if(dragInfo.draggingFrom.type === 'sakura-token'){
+            //         let cardId: string = null;
+            //         if(to === 'on-card'){
+            //             cardId = $(this).attr('data-card-id');
+            //         }
+            //         //moveSakuraToken(dragInfo.draggingFrom.region as sakuraba.SakuraTokenArea, to as sakuraba.SakuraTokenArea, cardId);
+            //         return false;
+            //     }
+            // }
+
+
+
+        }
+
+        return false;
+    });
+
 });

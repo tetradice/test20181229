@@ -124,6 +124,18 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
     , '05-oboro-o-s-3': {megami: 'oboro', name: '虚魚', ruby: 'うろうお', baseType: 'special', types: ['action'], cost: '4', text: '【使用済】あなたは1回の再構成に対して、設置を持つカードを任意の枚数、任意の順で使用できる。'}
     , '05-oboro-o-s-4': {megami: 'oboro', name: '壬蔓', ruby: 'みかずら', baseType: 'special', types: ['action'], cost: '0', text: '相オーラ→自フレア：1 \n再起：あなたのフレアが0である。'}
 
+    , '06-yukihi-o-n-1': {megami: 'yukihi', name: 'しこみばり / ふくみばり', ruby: '', baseType: 'normal', types: ['attack'], range: '[閉]4-6 [開]0-2', damage: '[閉]3/1 [開]1/2', text: ''}
+    , '06-yukihi-o-n-2': {megami: 'yukihi', name: 'しこみび / ねこだまし', ruby: '', baseType: 'normal', types: ['attack'], text: '[開]【攻撃後】このカードを手札に戻し、傘の開閉を行う。 '}
+    , '06-yukihi-o-n-3': {megami: 'yukihi', name: 'ふりはらい / たぐりよせ', ruby: '', baseType: 'normal', types: ['attack'], text: ''}
+    , '06-yukihi-o-n-4': {megami: 'yukihi', name: 'ふりまわし / つきさし', ruby: '', baseType: 'normal', types: ['attack', 'fullpower'], text: ''}
+    , '06-yukihi-o-n-5': {megami: 'yukihi', name: 'かさまわし', ruby: '', baseType: 'normal', types: ['action'], text: ''}
+    , '06-yukihi-o-n-6': {megami: 'yukihi', name: 'ひきあし / もぐりこみ', ruby: '', baseType: 'normal', types: ['action', 'reaction'], text: ''}
+    , '06-yukihi-o-n-7': {megami: 'yukihi', name: 'えんむすび', ruby: '', baseType: 'normal', types: ['enhance'], capacity: '2', text: ''}
+    , '06-yukihi-o-s-1': {megami: 'yukihi', name: 'はらりゆき', ruby: '', baseType: 'special', types: ['attack'], cost: '2', text: ''}
+    , '06-yukihi-o-s-2': {megami: 'yukihi', name: 'ゆらりび', ruby: '', baseType: 'special', types: ['attack'], cost: '5', text: ''}
+    , '06-yukihi-o-s-3': {megami: 'yukihi', name: 'どろりうら', ruby: '', baseType: 'special', types: ['enhance', 'fullpower'], cost: '3', text: ''}
+    , '06-yukihi-o-s-4': {megami: 'yukihi', name: 'くるりみ', ruby: '', baseType: 'special', types: ['action', 'reaction'], cost: '1', text: ''}
+    
     , '09-chikage-o-n-1': {megami: 'chikage', name: '飛苦無', ruby: 'とびくない', baseType: 'normal', types: ['attack'], range: '4-5', damage: '2/2', text: ''}
     , '09-chikage-o-n-2': {megami: 'chikage', name: '毒針', ruby: 'どくばり', baseType: 'normal', types: ['attack'], range: '4', damage: '1/1', text: '【攻撃後】毒袋から「麻痺毒」「幻覚毒」「弛緩毒」のいずれか1枚を選び、そのカードを相手の山札の一番上に置く。'}
     , '09-chikage-o-n-3': {megami: 'chikage', name: '遁術', ruby: 'とんじゅつ', baseType: 'normal', types: ['attack', 'reaction'], range: '1-3', damage: '1/-', text: '【攻撃後】自オーラ→間合：2 \n【攻撃後】このターン中、全てのプレイヤーは基本動作《前進》を行えない。'}

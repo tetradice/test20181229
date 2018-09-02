@@ -22,14 +22,14 @@
         -webkit-user-drag: element;
         }
 
-        #BOARD {
+        /* #BOARD {
             height: 80vh;
             left: 1vw;  
             width: 98vw;
             top: 20vh;
             position: absolute;
             z-index: 0;
-        }
+        } */
 
         .ui.popup {
             min-width: 200px;
@@ -338,7 +338,6 @@
 </head>
 <body>
 
-<div id="BOARD2"></div>
 <div id="BOARD">
 
 </div>
@@ -500,6 +499,8 @@
 
 <script type="text/javascript">
     var params = {boardId: '<%= boardId %>', side: '<%= side %>'};
+    // グローバル変数初期化
+    var draggingFrom = null;
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="/jquery-3.3.1.min.js"></script>
@@ -507,7 +508,6 @@
 <script type="text/javascript" src="/semantic/dist/semantic.js"></script>
 <script type="text/javascript" src="/jquery-contextmenu/dist/jquery.ui.position.js"></script>
 <script type="text/javascript" src="/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
-
 <script type="text/javascript" src="/dist/main.js"></script>
 </body>
 </html>

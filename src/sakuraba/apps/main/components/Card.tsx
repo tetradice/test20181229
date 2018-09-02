@@ -2,6 +2,7 @@ import { h } from "hyperapp";
 import * as utils from "sakuraba/utils";
 import * as sakuraba from "sakuraba";
 import { ActionsType } from "../actions";
+import dragInfo from "sakuraba/dragInfo";
 
 /** カード */
 interface Param {
@@ -29,7 +30,8 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     }
     if(p.target.rotated) className += " rotated";
     if(p.target.side === utils.flipSide(state.side)) className += " opponent-side"; 
-    if(state.draggingFromCard && p.target.id === state.draggingFromCard.id) className += " dragging";
+
+    if(p.target.region === 'used') className += " droppable";
 
     const setPopup = (element) => {
         // SemanticUI ポップアップ初期化
@@ -44,18 +46,17 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
                 )
                 if(!known) return false;
 
-                let st = actions.getState();
-                if(st.draggingFromCard !== null) return false;
+                if(dragInfo.draggingFrom !== null) return false;
             },
         });
     }
 
     const oncreate = (element) => {
-        if(state.draggingFromCard !== null) return;
+        //if(state.draggingFromCard !== null) return;
         setPopup(element);
     }
     const onupdate = (element) => {
-        if(state.draggingFromCard !== null) return;
+        //if(state.draggingFromCard !== null) return;
         setPopup(element);
     }
     const ondblclick = (element) => {
@@ -71,7 +72,14 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             actions.oprDraw();
         }
     }
-    let draggable = p.target.region !== 'library' || p.target.indexOfRegion === (state.board.objects.filter(o => o.type === 'card' && o.region === p.target.region).length - 1);
+
+    // ドラッグ可否判定
+    let libraryCards = state.board.objects.filter(o => o.type === 'card' && o.side === p.target.side && o.region === p.target.region);
+    let draggable = (
+        p.target.region !== 'library'
+        ||
+        p.target.indexOfRegion === (libraryCards.length - 1)
+    );
 
     return (
         <div
@@ -83,8 +91,6 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             data-object-id={p.target.id}
             data-region={p.target.region}
             ondblclick={ondblclick}
-            ondragstart={(elem) => { $(elem).popup('hide all'); actions.cardDragStart(p.target); }}
-            ondragend={() => actions.cardDragEnd()}
             oncreate={oncreate}
             onupdate={onupdate}
             data-html={utils.getDescriptionHtml(p.target.cardId)}            

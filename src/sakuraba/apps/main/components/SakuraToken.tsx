@@ -15,8 +15,6 @@ export const SakuraToken = (p: {target: state.SakuraToken, left: number, top: nu
       draggable={draggable}
       data-object-id={p.target.id}
       data-region={p.target.region}
-      ondragstart={(elem) => { $(elem).popup('hide all'); actions.sakuraTokenDragStart(p.target); }}
-      ondragend={() => actions.sakuraTokenDragEnd()}
       id={'board-object-' + p.target.id}
       key={'sakura-token-' + p.target.id}
       style={styles}>

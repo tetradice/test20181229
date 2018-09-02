@@ -23,7 +23,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     let reset = () => {
         utils.confirmModal('卓を初期状態に戻します。（操作ログは初期化されません）<br>この操作は相手プレイヤーに確認を取ってから行ってください。<br><br>よろしいですか？', () => {
             actions.operate({
-                logText: `ボードリセットを行いました`,
+                log: `ボードリセットを行いました`,
                 proc: () => {
                     actions.resetBoard();
                 }
@@ -36,7 +36,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         utils.userInputModal(`<p>新しいプレイヤー名を入力してください。</p>`, ($elem) => {
             let playerName = $('#INPUT-MODAL input').val() as string;
             actions.operate({
-                logText: `プレイヤー名を変更しました`,
+                log: `プレイヤー名を変更しました`,
                 proc: () => {
                     actions.setPlayerName({side: state.side, name: playerName});
                 }
@@ -103,7 +103,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             let megamis = [$('#MEGAMI1-SELECTION').val() as sakuraba.Megami, $('#MEGAMI2-SELECTION').val() as sakuraba.Megami];
 
             actions.operate({
-                logText: `メガミを選択しました`,
+                log: `メガミを選択しました`,
                 proc: () => {
                     //actions.appendActionLog({text: `-> ${utils.getMegamiDispName(megamis[0])}、${utils.getMegamiDispName(megamis[1])}`, hidden: true});
                     actions.setMegamis({side: state.side, megami1: megamis[0], megami2: megamis[1]});
@@ -223,7 +223,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         promise.then((finalState: typeof initialState) => {
             // 確定した場合、デッキを保存
             actions.operate({
-                logText: `デッキを構築しました`,
+                log: `デッキを構築しました`,
                 proc: () => {
                     actions.setDeckCards({cardIds: finalState.selectedCardIds});
                 }
@@ -236,7 +236,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     let megamiOpen = () => {
         utils.confirmModal('選択したメガミ2柱を公開します。<br><br>この操作を行うと、それ以降メガミの変更は行えません。<br>よろしいですか？', () => {
             actions.operate({
-                logText: `選択したメガミを公開しました`,
+                log: `選択したメガミを公開しました`,
                 undoType: 'notBack',
                 proc: () => {
                     actions.appendActionLog({text: `-> ${utils.getMegamiDispName(board.megamis[state.side][0])}、${utils.getMegamiDispName(board.megamis[state.side][1])}`});

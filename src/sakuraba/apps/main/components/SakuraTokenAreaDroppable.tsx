@@ -21,51 +21,14 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
         , height: `${p.height * state.zoom}px`
         , position: 'relative'
     };
-    if(state.draggingFromSakuraToken !== null && p.region !== state.draggingFromSakuraToken.region){
-        styles.zIndex = '9999';
-    }
-    const dragover = (e: DragEvent) => {
-        if (e.preventDefault) {
-            e.preventDefault(); // Necessary. Allows us to drop.
-        }
-        e.dataTransfer.dropEffect = 'move';  // See the section on the DataTransfer object.
-
-        return false;
-    };
-    const dragenter = (e: DragEvent) => {
-        actions.sakuraTokenDragEnter(p.region);
-    };
-    const dragleave = (e: DragEvent) => {
-        actions.sakuraTokenDragLeave();
-    };
-    const drop = (e: DragEvent) => {
-        if (e.stopPropagation) {
-            e.stopPropagation(); // stops the browser from redirecting.
-        }
-        let currentState = actions.getState();
-        
-        // 桜花結晶を移動 (リージョンが空でなければ)
-        if(state.draggingHoverSakuraTokenRegion){
-            actions.moveSakuraToken({
-                fromSide: currentState.side
-              , from: currentState.draggingFromSakuraToken.region
-              , toSide: utils.flipSide(currentState.side)
-              , to: currentState.draggingHoverSakuraTokenRegion
-          });
-      }
-
-        return false;
-    };
 
     return (
         <div
          class="area droppable"
          style={styles}
+         data-side={p.side}
+         data-region={p.region}
          key={`SakuraTokenAreaDroppable_${p.side}_${p.region}`}
-         ondragover={dragover}
-         ondragenter={dragenter}
-         ondragleave={dragleave}
-         ondrop={drop}
          ></div>
     );
 }

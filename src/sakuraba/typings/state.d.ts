@@ -20,14 +20,6 @@ export interface State {
     messageLog: LogRecord[];
 
     actionLogVisible: boolean;
-
-    draggingHoverSide?: PlayerSide;
-
-    draggingFromCard: Card;
-    draggingHoverCardRegion: CardRegion;
-
-    draggingFromSakuraToken: SakuraToken;
-    draggingHoverSakuraTokenRegion: SakuraTokenRegion;
 }
 
 /** 卓情報 */

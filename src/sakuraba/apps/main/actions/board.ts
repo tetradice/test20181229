@@ -5,6 +5,8 @@ import { Megami, CARD_DATA } from "sakuraba";
 import cardActions from './card';
 import { ActionsType } from ".";
 
+type LogParam = {text: string, hidden: boolean};
+
 export default {
     /** 複数の操作を行い、必要に応じてUndo履歴、ログを設定。同時にソケットに変更後ボードを送信 */
     operate: (p: {
@@ -19,7 +21,7 @@ export default {
         /**
          * 操作ログに記録する内容
          */
-        logText?: string | string[];
+        log?: string | string[] | LogParam[];
 
         /**
          * 実行する処理の内容
@@ -36,11 +38,16 @@ export default {
 
         // アクションログを追加し、追加されたログレコードを取得
         let appendLogs: state.LogRecord[] = null;
-        if(p.logText){
-            if(typeof p.logText === 'string'){
-                actions.appendActionLog({text: p.logText});
-            } else {
-                p.logText.forEach((text) => actions.appendActionLog({text: text}));
+
+        if(p.log !== undefined){
+            if(typeof p.log === 'string'){
+                actions.appendActionLog({text: p.log});
+            } else if(p.log.length >= 1){
+                if(typeof p.log[0] === 'string'){
+                    (p.log as string[]).forEach((text) => actions.appendActionLog({text: text}));
+                } else {
+                    (p.log as LogParam[]).forEach((log) => actions.appendActionLog({text: log.text, hidden: log.hidden}));
+                }
             }
         }
 
@@ -140,7 +147,7 @@ export default {
 
         // 実行
         actions.operate({
-            logText: logText,
+            log: logText,
             proc: () => {
                 actions.setVigor(p);
             }
@@ -185,7 +192,7 @@ export default {
 
         // 実行
         actions.operate({
-            logText: logText,
+            log: logText,
             proc: () => {
                 actions.setWitherFlag(p);
             }

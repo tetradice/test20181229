@@ -153,7 +153,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            logText: (p.value ? `[${CARD_DATA[card.cardId].name}]を表向きにしました` : `[${CARD_DATA[card.cardId].name}]を裏返しました`),
+            log: (p.value ? `[${CARD_DATA[card.cardId].name}]を表向きにしました` : `[${CARD_DATA[card.cardId].name}]を裏返しました`),
             proc: () => {
                 actions.setSpecialUsed(p);
             }
@@ -182,7 +182,7 @@ export default {
     oprReshuffle: (p: {side: PlayerSide, lifeDecrease: boolean}) => (state: state.State, actions: ActionsType) => {
         actions.operate({
             undoType: 'notBack', // Undo不可
-            logText: (p.lifeDecrease ? `再構成しました (ライフ-1)` : `ライフ減少なしで再構成しました`),
+            log: (p.lifeDecrease ? `再構成しました (ライフ-1)` : `ライフ減少なしで再構成しました`),
             proc: () => {
                 // 使用済、伏せ札をすべて山札へ移動
                 let newBoard = models.Board.clone(state.board);
@@ -197,54 +197,5 @@ export default {
                 actions.shuffle({side: p.side});
             }
         });
-    },
-
-    /** ドラッグ開始 */
-    cardDragStart: (card: state.Card) => (state: state.State) => {
-        let ret: Partial<state.State> = {};
-
-        // ドラッグを開始したカードと、開始サイドを設定
-        ret.draggingFromCard = card;
-
-        return ret;
-    },
-
-    
-    /** ドラッグ中にカード領域の上に移動 */
-    cardDragEnter: (p: {side: PlayerSide, region: CardRegion}) => (state: state.State) => {
-        let ret: Partial<state.State> = {};
-
-        // 切札エリアからのドラッグや、切札エリアへのドラッグは禁止
-        if(state.draggingFromCard.region === 'special' || p.region === 'special'){
-            return null;
-        }
-
-        // ドラッグを開始した領域を設定
-        ret.draggingHoverSide = p.side;
-        ret.draggingHoverCardRegion = p.region;
-
-        return ret;
-    },
-    
-    /** ドラッグ中にカード領域の上から離れた */
-    cardDragLeave: () => (state: state.State) => {
-        let ret: Partial<state.State> = {};
-
-        // ドラッグ中領域の初期化
-        ret.draggingHoverSide = null;
-        ret.draggingHoverCardRegion = null;
-
-        return ret;
-    },
-
-    /** ドラッグ終了 */
-    cardDragEnd: () => {
-        let ret: Partial<state.State> = {};
-
-        ret.draggingFromCard = null;
-        ret.draggingHoverSide = null;
-        ret.draggingHoverCardRegion = null;
-
-        return ret;
     },
 }

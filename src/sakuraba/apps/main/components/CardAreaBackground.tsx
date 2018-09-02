@@ -25,7 +25,7 @@ export const CardAreaBackground = (p: Param) => (state: state.State) => {
 
     return (
         <div
-            class={"area background ui segment " + (state.draggingHoverSide === p.side && state.draggingHoverCardRegion === p.region ? 'over' : '')}
+            class={"area background ui segment"}
             style={styles}
             key={`CardAreaBackground_${p.side}_${p.region}`}
             data-region={p.region}
