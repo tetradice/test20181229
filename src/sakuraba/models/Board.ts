@@ -78,14 +78,19 @@ export class Board implements state.Board {
                 index++;
 
                 // 開閉状態更新
-                c.opened = (region === 'used' || region === 'hand');
+                if(region === 'used' || (region === 'special' && c.specialUsed)){
+                    // 使用済み領域にある場合か、切り札領域にあって使用済みフラグがONの場合、公開済み
+                    c.openState = 'opened';
+                } else if(region === 'hand'){
+                    // 手札にあれば、所有者のみ表示可能
+                    c.openState = 'ownerOnly';
+                } else {
+                    // それ以外の場合は裏向き
+                    c.openState = 'hidden';
+                }
 
                 // 回転状態更新
                 c.rotated = (region === 'hidden-used');
-
-                // known状態 (中身を知っているかどうか) 更新
-                c.known.p1 = true;
-                if(c.region === 'library') c.known.p1 = false; // 山札の場合は分からない
 
             });
         });

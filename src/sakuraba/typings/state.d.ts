@@ -69,8 +69,8 @@ export interface Card extends BoardObjectBase {
     cardId: string;
     region: CardRegion;
     rotated: boolean;
-    opened: boolean;
-    known: {p1: boolean, p2: boolean};
+    openState: 'hidden' | 'ownerOnly' | 'opened';
+    specialUsed: boolean;
 }
 
 export interface SakuraToken extends BoardObjectBase {

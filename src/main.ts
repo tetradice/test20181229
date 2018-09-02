@@ -61,13 +61,13 @@ $(function(){
             let card = board.getCard(id);
 
             let items = {};
-            items['flip'] =  {name: (card.opened ? '裏向きにする' : '表向きにする')}
+            items['flip'] =  {name: (card.specialUsed ? '裏向きにする' : '表向きにする')}
             return {
                 callback: function(key: string) {
                     appActions.operate({
-                        logText: `${CARD_DATA[card.cardId].name}を${card.opened ? '表向き' : '裏向き'}に変更`,
+                        logText: `${CARD_DATA[card.cardId].name}を${card.specialUsed ? '表向き' : '裏向き'}に変更`,
                         proc: () => {
-                            appActions.flipCard(id);
+                            appActions.oprSetSpecialUsed({objectId: id, value: !card.specialUsed});
                         }
                     });
                     

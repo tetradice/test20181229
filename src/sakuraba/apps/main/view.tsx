@@ -92,18 +92,18 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         , cardCountDisplay?: boolean
     }[] = [
             // 対戦相手
-              { region: 'used',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 750,   top: 180,  width: 450, height: 160 }
-            , { region: 'hidden-used', side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 560,  top: 180,  width: 170, height: 160, cardCountDisplay: true }
-            , { region: 'library',     side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 380,  top: 180,  width: 160, height: 160, cardCountDisplay: true }
-            , { region: 'hand',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 560,   top: 10, width: 640, height: 160 }
-            , { region: 'special',     side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 10,  top: 10, width: 330, height: 160 }
+              { region: 'used',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 750,   top: 200,  width: 450, height: 160 }
+            , { region: 'hidden-used', side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 560,  top: 200,  width: 170, height: 160, cardCountDisplay: true }
+            , { region: 'library',     side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 380,  top: 200,  width: 160, height: 160, cardCountDisplay: true }
+            , { region: 'hand',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 560,   top: 30, width: 640, height: 160 }
+            , { region: 'special',     side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 10,  top: 30, width: 330, height: 160 }
 
             // 自分
-            , { region: 'used',        side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10,   top: 410,  width: 450, height: 160 }
-            , { region: 'hidden-used', side: selfSide, title: "伏せ札",   cardLayoutType: 'stacked',    left: 480,  top: 410,  width: 170, height: 160, cardCountDisplay: true }
-            , { region: 'library',     side: selfSide, title: "山札",     cardLayoutType: 'stacked',    left: 670,  top: 410,  width: 160, height: 160, cardCountDisplay: true }
-            , { region: 'hand',        side: selfSide, title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 580, width: 640, height: 160 }
-            , { region: 'special',     side: selfSide, title: "切札",     cardLayoutType: 'horizontal', left: 850,  top: 580, width: 330, height: 160 }
+            , { region: 'used',        side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10,   top: 430,  width: 450, height: 160 }
+            , { region: 'hidden-used', side: selfSide, title: "伏せ札",   cardLayoutType: 'stacked',    left: 480,  top: 430,  width: 170, height: 160, cardCountDisplay: true }
+            , { region: 'library',     side: selfSide, title: "山札",     cardLayoutType: 'stacked',    left: 670,  top: 430,  width: 160, height: 160, cardCountDisplay: true }
+            , { region: 'hand',        side: selfSide, title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 600, width: 640, height: 160 }
+            , { region: 'special',     side: selfSide, title: "切札",     cardLayoutType: 'horizontal', left: 850,  top: 600, width: 330, height: 160 }
     ];
     // 追加札を持つメガミを宿している場合のみ、追加札領域を追加
     ['p1', 'p2'].forEach((side: PlayerSide) => {
@@ -115,7 +115,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
                 , title: (side === state.side ? '追加札' : null)
                 , cardLayoutType: 'horizontal'
                 , left: 1220
-                , top: (side === state.side ? 410 : 10)
+                , top: (side === state.side ? 430 : 30)
                 , width: 120
                 , height: 340
             });
@@ -133,16 +133,16 @@ const view: View<state.State, ActionsType> = (state, actions) => {
       , tokenWidth: number
       , height: number
   }[] = [
-            { region: 'aura',     side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10,   top: 180,  width: 350, tokenWidth: 280, height: 30 }
-          , { region: 'life',     side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10,   top: 220,  width: 350, tokenWidth: 280, height: 30 }
-          , { region: 'flair',    side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10,   top: 260,  width: 350, tokenWidth: 280, height: 30 }
+            { region: 'aura',     side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10,   top: 200,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'life',     side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10,   top: 240,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'flair',    side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10,   top: 280,  width: 350, tokenWidth: 280, height: 30 }
 
-          , { region: 'distance', side: null, title: "間合",   layoutType: 'horizontal', left: 10,    top: 360,  width: 350, tokenWidth: 280, height: 30 }
-          , { region: 'dust',     side: null, title: "ダスト", layoutType: 'horizontal', left: 380,   top: 360,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'distance', side: null, title: "間合",   layoutType: 'horizontal', left: 10,    top: 380,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'dust',     side: null, title: "ダスト", layoutType: 'horizontal', left: 380,   top: 380,  width: 350, tokenWidth: 280, height: 30 }
 
-          , { region: 'aura',     side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850,   top: 410,  width: 350, tokenWidth: 280, height: 30 }
-          , { region: 'life',     side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850,   top: 450,  width: 350, tokenWidth: 280, height: 30 }
-          , { region: 'flair',    side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850,   top: 490,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'aura',     side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850,   top: 430,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'life',     side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850,   top: 470,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'flair',    side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850,   top: 510,  width: 350, tokenWidth: 280, height: 30 }
           
       ];
 
@@ -193,13 +193,15 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         <div style={{ position: 'relative', zIndex: 100 }}>
             {objectNodes}
             {frameNodes}
-            <components.Vigor side={opponentSide} left={390} top={40} />
-            <components.Vigor side={selfSide} left={680} top={610} />
-            <components.WitheredToken side={opponentSide} left={390} top={40} />
-            <components.WitheredToken side={selfSide} left={680} top={610} />
+            <components.Vigor side={opponentSide} left={390} top={60} />
+            <components.Vigor side={selfSide} left={680} top={630} />
+            <components.WitheredToken side={opponentSide} left={390} top={60} />
+            <components.WitheredToken side={selfSide} left={680} top={630} />
             <components.ControlPanel />
-            <components.MariganButton left={10} top={750} />
+            <components.MariganButton left={10} top={770} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
+            <components.PlayerNameDisplay left={10} top={10} width={1200} side={state.side} />
+            <components.PlayerNameDisplay left={10} top={770} width={1200} side={utils.flipSide(state.side)} />
         </div>
     );
 }

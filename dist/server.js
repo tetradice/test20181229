@@ -454,9 +454,9 @@ function createCard(id, cardId, region, side) {
         region: region,
         indexOfRegion: 0,
         rotated: false,
-        opened: false,
-        side: side,
-        known: { p1: true, p2: true }
+        openState: 'opened',
+        specialUsed: false,
+        side: side
     };
 }
 exports.createCard = createCard;
@@ -596,6 +596,12 @@ io.on('connection', function (ioSocket) {
                 socket.broadcastEmit('onBoardReceived', { board: p.board, appendedActionLogs: p.appendedActionLogs });
             });
         });
+        // ログがあればサーバー側DBにログを追加
+        if (p.appendedActionLogs !== null) {
+            appendActionLogs(p.boardId, p.appendedActionLogs, function (logs) {
+                // 送信成功後は何もしない
+            });
+        }
     });
     // アクションログ情報のリクエスト
     socket.on('requestFirstActionLogs', function (p) {

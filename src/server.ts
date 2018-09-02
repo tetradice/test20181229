@@ -120,6 +120,12 @@ io.on('connection', (ioSocket) => {
         socket.broadcastEmit('onBoardReceived', {board: p.board, appendedActionLogs: p.appendedActionLogs});
       });
     });
+    // ログがあればサーバー側DBにログを追加
+    if(p.appendedActionLogs !== null){
+      appendActionLogs(p.boardId, p.appendedActionLogs, (logs) => {
+        // 送信成功後は何もしない
+      });
+    }
   });
 
   // アクションログ情報のリクエスト

@@ -18,7 +18,11 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     };
     let cardData = sakuraba.CARD_DATA[p.target.cardId];
     let className = "fbs-card";
-    if(p.target.opened){
+
+    // 公開判定
+    let opened = (p.target.openState === 'opened' || (p.target.openState === 'ownerOnly' && p.target.side === state.side));
+
+    if(opened){
         className += " open-normal";
     } else {
         className += (cardData.baseType === 'special' ? " back-special" : " back-normal");
@@ -32,7 +36,13 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
         $(element).popup({
             delay: {show: 500, hide: 0},
             onShow: function(): false | void{
-                if(!p.target.known.p1) return false;
+                // 表向きであるか、自分の切り札であれば説明を見ることができる
+                let known = (
+                    p.target.openState === 'opened'
+                    || (p.target.openState === 'ownerOnly' && p.target.side === state.side)
+                    || (p.target.region === 'special' && p.target.side === state.side)
+                )
+                if(!known) return false;
 
                 let st = actions.getState();
                 if(st.draggingFromCard !== null) return false;
@@ -53,7 +63,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
 
         // 切札なら裏返す
         if(data.baseType === 'special'){
-            actions.flipCard(p.target.id);
+            actions.oprSetSpecialUsed({objectId: p.target.id, value: !p.target.specialUsed});
         }
 
         // 山札なら1枚引く
@@ -79,7 +89,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             onupdate={onupdate}
             data-html={utils.getDescriptionHtml(p.target.cardId)}            
         >
-            {(p.target.opened ? cardData.name : '')}
+            <div class="card-name">{(opened ? cardData.name : '')}</div>
         </div>
     );
 }

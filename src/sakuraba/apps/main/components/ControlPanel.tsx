@@ -170,7 +170,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 cardIds.forEach((cardIdsInRow, r) => {
                     cardIdsInRow.forEach((cardId, c) => {
                         let card = utils.createCard(`deck-${cardId}`, cardId, null, state.side);
-                        card.opened = true;
+                        card.openState = 'opened';
                         let top = 4 + r * (160 + 8);
                         let left = 4 + c * (100 + 8);
                         let selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
@@ -223,7 +223,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         promise.then((finalState: typeof initialState) => {
             // 確定した場合、デッキを保存
             actions.operate({
-                logText: `デッキを構築`,
+                logText: `デッキを構築しました`,
                 proc: () => {
                     actions.setDeckCards({cardIds: finalState.selectedCardIds});
                 }
@@ -236,7 +236,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     let megamiOpen = () => {
         utils.confirmModal('選択したメガミ2柱を公開します。<br><br>この操作を行うと、それ以降メガミの変更は行えません。<br>よろしいですか？', () => {
             actions.operate({
-                logText: `選択したメガミを公開`,
+                logText: `選択したメガミを公開しました`,
                 undoType: 'notBack',
                 proc: () => {
                     actions.appendActionLog({text: `-> ${utils.getMegamiDispName(board.megamis[state.side][0])}、${utils.getMegamiDispName(board.megamis[state.side][1])}`});
@@ -331,7 +331,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     };
 
     const dropdownCreate = (e) => {
-        $(e).dropdown();
+        $(e).dropdown({action: 'hide'});
     };
 
     return (
@@ -346,9 +346,15 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <div class="menu">
                     <div class="item" onclick={playerNameChange}>プレイヤー名の変更</div>
                     <div class="item" onclick={reset}>ボードリセット (初期化)</div>
+                    <div class="item" onclick={() => actions.toggleActionLogVisible()}>
+                        {(state.actionLogVisible ? <i class="check icon"></i> : null)}
+                        操作ログを表示
+                    </div>
+                    <div class="item">卓情報</div>
+                    <div class="divider"></div>
+                    <div class="item">このサイトについて (バージョン、著作権情報)</div>
                 </div>
             </button><br />
-            <button class="ui basic button" onclick={() => actions.toggleActionLogVisible()}>操作ログ表示</button>
 
             {commandButtons}
 

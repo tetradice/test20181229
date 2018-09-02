@@ -24,7 +24,7 @@ const view: View<State, ActionsType> = (state, actions) => {
     let cardElements: JSX.Element[] = [];
     state.cards.forEach((card, c) => {
         let sCard = utils.createCard(`deck-${card.id}`, card.id, null, state.side);
-        sCard.opened = true;
+        sCard.openState = 'opened';
         let top = 4;
         let left = 4 + c * (100 + 8);
         let selected = state.selectedCards.indexOf(card) >= 0;

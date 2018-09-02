@@ -9,3 +9,4 @@ export * from './SakuraTokenAreaBackground';
 export * from './SakuraTokenAreaDroppable';
 export * from './MariganButton';
 export * from './ActionLogWindow';
+export * from './PlayerNameDisplay';

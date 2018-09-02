@@ -50,7 +50,7 @@ export const DeckBuildCard = (p: Param) => {
             onupdate={onupdate}
             data-html={utils.getDescriptionHtml(p.target.cardId)}            
         >
-            {(p.target.opened ? cardData.name : '')}
+            {cardData.name}
         </div>
     );
 }

@@ -83,6 +83,28 @@
         .opponent-side.reverse-rotated {
             transform: rotate(90deg);
         }
+
+        .opponent-side.open-normal {
+            transform: none;
+        }
+
+        /* カード名 */
+        .fbs-card.open-normal .card-name,
+        .fbs-card.open-special .card-name {
+            position: absolute;
+            left: 2px;
+            top: 2px;
+        }
+        .fbs-card.opponent-side.open-normal .card-name,
+        .fbs-card.opponent-side.open-special .card-name {
+            position: absolute;
+            top: auto;
+            left: auto;
+            right: 2px;
+            bottom: 2px;
+            text-align: right;
+        }
+
         .sakura-token {
             width: 26px;
             height: 26px;

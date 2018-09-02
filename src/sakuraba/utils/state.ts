@@ -38,9 +38,9 @@ export function createCard(id: string, cardId: string, region: CardRegion | null
     , region: region
     , indexOfRegion: 0
     , rotated: false
-    , opened: false
+    , openState: 'opened'
+    , specialUsed: false
     , side: side
-    , known: {p1: true, p2: true}
   };
 }
 

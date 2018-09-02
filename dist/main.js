@@ -46451,13 +46451,13 @@ $(function () {
             var board = new models.Board(currentState.board);
             var card = board.getCard(id);
             var items = {};
-            items['flip'] = { name: (card.opened ? '裏向きにする' : '表向きにする') };
+            items['flip'] = { name: (card.specialUsed ? '裏向きにする' : '表向きにする') };
             return {
                 callback: function (key) {
                     appActions.operate({
-                        logText: sakuraba_1.CARD_DATA[card.cardId].name + "\u3092" + (card.opened ? '表向き' : '裏向き') + "\u306B\u5909\u66F4",
+                        logText: sakuraba_1.CARD_DATA[card.cardId].name + "\u3092" + (card.specialUsed ? '表向き' : '裏向き') + "\u306B\u5909\u66F4",
                         proc: function () {
-                            appActions.flipCard(id);
+                            appActions.oprSetSpecialUsed({ objectId: id, value: !card.specialUsed });
                         }
                     });
                 },
@@ -46733,7 +46733,7 @@ exports.DeckBuildCard = function (p) {
     var onupdate = function (element) {
         setPopup(element);
     };
-    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, "data-object-id": p.target.id, "data-region": p.target.region, onclick: p.onclick, ondblclick: ondblclick, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
+    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, "data-object-id": p.target.id, "data-region": p.target.region, onclick: p.onclick, ondblclick: ondblclick, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) }, cardData.name));
 };
 
 
@@ -47130,16 +47130,26 @@ exports.default = {
             }
         });
     }; },
-    flipCard: function (objectId) { return function (state, actions) {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+    /** 切り札の使用済状態を変更する */
+    setSpecialUsed: function (p) { return function (state, actions) {
         var ret = {};
         var newBoard = models.Board.clone(state.board);
-        var card = newBoard.getCard(objectId);
-        if (card.type !== null) {
-            card.opened = !card.opened;
-        }
-        ret.board = newBoard;
-        return ret;
+        var card = newBoard.getCard(p.objectId);
+        card.specialUsed = p.value;
+        // 領域情報を更新
+        newBoard.updateRegionInfo();
+        return { board: newBoard };
+    }; },
+    /** 切り札の表裏を変更する */
+    oprSetSpecialUsed: function (p) { return function (state, actions) {
+        var board = new models.Board(state.board);
+        var card = board.getCard(p.objectId);
+        actions.operate({
+            logText: (p.value ? sakuraba_1.CARD_DATA[card.cardId].name + "\u3092\u8868\u8FD4\u3057\u3001\u4F7F\u7528\u6E08\u306B\u3057\u307E\u3057\u305F" : sakuraba_1.CARD_DATA[card.cardId].name + "\u3092\u88CF\u8FD4\u3057\u3001\u672A\u4F7F\u7528\u306B\u623B\u3057\u307E\u3057\u305F"),
+            proc: function () {
+                actions.setSpecialUsed(p);
+            }
+        });
     }; },
     shuffle: function (p) { return function (state, actions) {
         var ret = {};
@@ -47492,7 +47502,9 @@ exports.Card = function (p) { return function (state, actions) {
     };
     var cardData = sakuraba.CARD_DATA[p.target.cardId];
     var className = "fbs-card";
-    if (p.target.opened) {
+    // 公開判定
+    var opened = (p.target.openState === 'opened' || (p.target.openState === 'ownerOnly' && p.target.side === state.side));
+    if (opened) {
         className += " open-normal";
     }
     else {
@@ -47509,7 +47521,11 @@ exports.Card = function (p) { return function (state, actions) {
         $(element).popup({
             delay: { show: 500, hide: 0 },
             onShow: function () {
-                if (!p.target.known.p1)
+                // 表向きであるか、自分の切り札であれば説明を見ることができる
+                var known = (p.target.openState === 'opened'
+                    || (p.target.openState === 'ownerOnly' && p.target.side === state.side)
+                    || (p.target.region === 'special' && p.target.side === state.side));
+                if (!known)
                     return false;
                 var st = actions.getState();
                 if (st.draggingFromCard !== null)
@@ -47531,7 +47547,7 @@ exports.Card = function (p) { return function (state, actions) {
         var data = sakuraba.CARD_DATA[p.target.cardId];
         // 切札なら裏返す
         if (data.baseType === 'special') {
-            actions.flipCard(p.target.id);
+            actions.oprSetSpecialUsed({ objectId: p.target.id, value: !p.target.specialUsed });
         }
         // 山札なら1枚引く
         if (data.baseType === 'normal' && p.target.region === 'library') {
@@ -47539,7 +47555,8 @@ exports.Card = function (p) { return function (state, actions) {
         }
     };
     var draggable = p.target.region !== 'library' || p.target.indexOfRegion === (state.board.objects.filter(function (o) { return o.type === 'card' && o.region === p.target.region; }).length - 1);
-    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: draggable, "data-object-id": p.target.id, "data-region": p.target.region, ondblclick: ondblclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) }, (p.target.opened ? cardData.name : '')));
+    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: draggable, "data-object-id": p.target.id, "data-region": p.target.region, ondblclick: ondblclick, ondragstart: function (elem) { $(elem).popup('hide all'); actions.cardDragStart(p.target); }, ondragend: function () { return actions.cardDragEnd(); }, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) },
+        hyperapp_1.h("div", { class: "card-name" }, (opened ? cardData.name : ''))));
 }; };
 
 
@@ -47856,7 +47873,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                 cardIds.forEach(function (cardIdsInRow, r) {
                     cardIdsInRow.forEach(function (cardId, c) {
                         var card = utils.createCard("deck-" + cardId, cardId, null, state.side);
-                        card.opened = true;
+                        card.openState = 'opened';
                         var top = 4 + r * (160 + 8);
                         var left = 4 + c * (100 + 8);
                         var selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
@@ -47897,7 +47914,7 @@ exports.ControlPanel = function () { return function (state, actions) {
         promise.then(function (finalState) {
             // 確定した場合、デッキを保存
             actions.operate({
-                logText: "\u30C7\u30C3\u30AD\u3092\u69CB\u7BC9",
+                logText: "\u30C7\u30C3\u30AD\u3092\u69CB\u7BC9\u3057\u307E\u3057\u305F",
                 proc: function () {
                     actions.setDeckCards({ cardIds: finalState.selectedCardIds });
                 }
@@ -47908,7 +47925,7 @@ exports.ControlPanel = function () { return function (state, actions) {
     var megamiOpen = function () {
         utils.confirmModal('選択したメガミ2柱を公開します。<br><br>この操作を行うと、それ以降メガミの変更は行えません。<br>よろしいですか？', function () {
             actions.operate({
-                logText: "\u9078\u629E\u3057\u305F\u30E1\u30AC\u30DF\u3092\u516C\u958B",
+                logText: "\u9078\u629E\u3057\u305F\u30E1\u30AC\u30DF\u3092\u516C\u958B\u3057\u307E\u3057\u305F",
                 undoType: 'notBack',
                 proc: function () {
                     actions.appendActionLog({ text: "-> " + utils.getMegamiDispName(board.megamis[state.side][0]) + "\u3001" + utils.getMegamiDispName(board.megamis[state.side][1]) });
@@ -47988,7 +48005,7 @@ exports.ControlPanel = function () { return function (state, actions) {
         $('[name=notifyType]').closest('.dropdown').dropdown('set selected', '-');
     };
     var dropdownCreate = function (e) {
-        $(e).dropdown();
+        $(e).dropdown({ action: 'hide' });
     };
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL" },
         hyperapp_1.h("div", { class: "ui icon basic buttons" },
@@ -48001,9 +48018,14 @@ exports.ControlPanel = function () { return function (state, actions) {
             hyperapp_1.h("i", { class: "dropdown icon" }),
             hyperapp_1.h("div", { class: "menu" },
                 hyperapp_1.h("div", { class: "item", onclick: playerNameChange }, "\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\u306E\u5909\u66F4"),
-                hyperapp_1.h("div", { class: "item", onclick: reset }, "\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8 (\u521D\u671F\u5316)"))),
+                hyperapp_1.h("div", { class: "item", onclick: reset }, "\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8 (\u521D\u671F\u5316)"),
+                hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleActionLogVisible(); } },
+                    (state.actionLogVisible ? hyperapp_1.h("i", { class: "check icon" }) : null),
+                    "\u64CD\u4F5C\u30ED\u30B0\u3092\u8868\u793A"),
+                hyperapp_1.h("div", { class: "item" }, "\u5353\u60C5\u5831"),
+                hyperapp_1.h("div", { class: "divider" }),
+                hyperapp_1.h("div", { class: "item" }, "\u3053\u306E\u30B5\u30A4\u30C8\u306B\u3064\u3044\u3066 (\u30D0\u30FC\u30B8\u30E7\u30F3\u3001\u8457\u4F5C\u6A29\u60C5\u5831)"))),
         hyperapp_1.h("br", null),
-        hyperapp_1.h("button", { class: "ui basic button", onclick: function () { return actions.toggleActionLogVisible(); } }, "\u64CD\u4F5C\u30ED\u30B0\u8868\u793A"),
         commandButtons,
         hyperapp_1.h("table", { class: "ui definition table", style: { width: '25em' } },
             hyperapp_1.h("tbody", null,
@@ -48110,6 +48132,38 @@ exports.MariganButton = function (p) { return function (state, actions) {
     };
     return hyperapp_1.h("button", { style: styles, class: "ui basic button", onclick: onClick },
         hyperapp_1.h("span", { style: { color: 'blue' } }, "\u624B\u672D\u3092\u5F15\u304D\u76F4\u3059"));
+}; };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx":
+/*!*****************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx ***!
+  \*****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+/** プレイヤー名 */
+exports.PlayerNameDisplay = function (p) { return function (state, actions) {
+    // 名前未決定の場合は表示しない
+    if (!state.board.playerNames[p.side]) {
+        return null;
+    }
+    // DOMを返す
+    var styles = {
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: p.width * state.zoom + "px",
+        position: 'absolute',
+        fontWeight: 'bold',
+        textAlign: 'center'
+    };
+    return hyperapp_1.h("div", { style: styles }, state.board.playerNames[p.side]);
 }; };
 
 
@@ -48345,6 +48399,7 @@ __export(__webpack_require__(/*! ./SakuraTokenAreaBackground */ "./src/sakuraba/
 __export(__webpack_require__(/*! ./SakuraTokenAreaDroppable */ "./src/sakuraba/apps/main/components/SakuraTokenAreaDroppable.tsx"));
 __export(__webpack_require__(/*! ./MariganButton */ "./src/sakuraba/apps/main/components/MariganButton.tsx"));
 __export(__webpack_require__(/*! ./ActionLogWindow */ "./src/sakuraba/apps/main/components/ActionLogWindow.tsx"));
+__export(__webpack_require__(/*! ./PlayerNameDisplay */ "./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx"));
 
 
 /***/ }),
@@ -48393,6 +48448,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var components = __importStar(__webpack_require__(/*! ./components */ "./src/sakuraba/apps/main/components/index.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 /** オブジェクトの配置(座標の決定)を行う */
 function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spacing) {
@@ -48441,18 +48497,18 @@ var view = function (state, actions) {
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     var cardAreaData = [
         // 対戦相手
-        { region: 'used', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 750, top: 180, width: 450, height: 160 },
-        { region: 'hidden-used', side: opponentSide, title: null, cardLayoutType: 'stacked', left: 560, top: 180, width: 170, height: 160, cardCountDisplay: true },
-        { region: 'library', side: opponentSide, title: null, cardLayoutType: 'stacked', left: 380, top: 180, width: 160, height: 160, cardCountDisplay: true },
-        { region: 'hand', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 560, top: 10, width: 640, height: 160 },
-        { region: 'special', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 10, top: 10, width: 330, height: 160 }
+        { region: 'used', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 750, top: 200, width: 450, height: 160 },
+        { region: 'hidden-used', side: opponentSide, title: null, cardLayoutType: 'stacked', left: 560, top: 200, width: 170, height: 160, cardCountDisplay: true },
+        { region: 'library', side: opponentSide, title: null, cardLayoutType: 'stacked', left: 380, top: 200, width: 160, height: 160, cardCountDisplay: true },
+        { region: 'hand', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 560, top: 30, width: 640, height: 160 },
+        { region: 'special', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 10, top: 30, width: 330, height: 160 }
         // 自分
         ,
-        { region: 'used', side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10, top: 410, width: 450, height: 160 },
-        { region: 'hidden-used', side: selfSide, title: "伏せ札", cardLayoutType: 'stacked', left: 480, top: 410, width: 170, height: 160, cardCountDisplay: true },
-        { region: 'library', side: selfSide, title: "山札", cardLayoutType: 'stacked', left: 670, top: 410, width: 160, height: 160, cardCountDisplay: true },
-        { region: 'hand', side: selfSide, title: "手札", cardLayoutType: 'horizontal', left: 10, top: 580, width: 640, height: 160 },
-        { region: 'special', side: selfSide, title: "切札", cardLayoutType: 'horizontal', left: 850, top: 580, width: 330, height: 160 }
+        { region: 'used', side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10, top: 430, width: 450, height: 160 },
+        { region: 'hidden-used', side: selfSide, title: "伏せ札", cardLayoutType: 'stacked', left: 480, top: 430, width: 170, height: 160, cardCountDisplay: true },
+        { region: 'library', side: selfSide, title: "山札", cardLayoutType: 'stacked', left: 670, top: 430, width: 160, height: 160, cardCountDisplay: true },
+        { region: 'hand', side: selfSide, title: "手札", cardLayoutType: 'horizontal', left: 10, top: 600, width: 640, height: 160 },
+        { region: 'special', side: selfSide, title: "切札", cardLayoutType: 'horizontal', left: 850, top: 600, width: 330, height: 160 }
     ];
     // 追加札を持つメガミを宿している場合のみ、追加札領域を追加
     ['p1', 'p2'].forEach(function (side) {
@@ -48464,21 +48520,21 @@ var view = function (state, actions) {
                 title: (side === state.side ? '追加札' : null),
                 cardLayoutType: 'horizontal',
                 left: 1220,
-                top: (side === state.side ? 410 : 10),
+                top: (side === state.side ? 430 : 30),
                 width: 120,
                 height: 340
             });
         }
     });
     var sakuraTokenAreaData = [
-        { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 180, width: 350, tokenWidth: 280, height: 30 },
-        { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 220, width: 350, tokenWidth: 280, height: 30 },
-        { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10, top: 260, width: 350, tokenWidth: 280, height: 30 },
-        { region: 'distance', side: null, title: "間合", layoutType: 'horizontal', left: 10, top: 360, width: 350, tokenWidth: 280, height: 30 },
-        { region: 'dust', side: null, title: "ダスト", layoutType: 'horizontal', left: 380, top: 360, width: 350, tokenWidth: 280, height: 30 },
-        { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 410, width: 350, tokenWidth: 280, height: 30 },
-        { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 450, width: 350, tokenWidth: 280, height: 30 },
-        { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 490, width: 350, tokenWidth: 280, height: 30 }
+        { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 200, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 240, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10, top: 280, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'distance', side: null, title: "間合", layoutType: 'horizontal', left: 10, top: 380, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'dust', side: null, title: "ダスト", layoutType: 'horizontal', left: 380, top: 380, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 430, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 470, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 280, height: 30 }
     ];
     var frameNodes = [];
     var objectNodes = [];
@@ -48517,13 +48573,15 @@ var view = function (state, actions) {
     return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
         objectNodes,
         frameNodes,
-        hyperapp_1.h(components.Vigor, { side: opponentSide, left: 390, top: 40 }),
-        hyperapp_1.h(components.Vigor, { side: selfSide, left: 680, top: 610 }),
-        hyperapp_1.h(components.WitheredToken, { side: opponentSide, left: 390, top: 40 }),
-        hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680, top: 610 }),
+        hyperapp_1.h(components.Vigor, { side: opponentSide, left: 390, top: 60 }),
+        hyperapp_1.h(components.Vigor, { side: selfSide, left: 680, top: 630 }),
+        hyperapp_1.h(components.WitheredToken, { side: opponentSide, left: 390, top: 60 }),
+        hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680, top: 630 }),
         hyperapp_1.h(components.ControlPanel, null),
-        hyperapp_1.h(components.MariganButton, { left: 10, top: 750 }),
-        hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible })));
+        hyperapp_1.h(components.MariganButton, { left: 10, top: 770 }),
+        hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),
+        hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 10, width: 1200, side: state.side }),
+        hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: utils.flipSide(state.side) })));
 };
 exports.default = view;
 
@@ -48686,7 +48744,7 @@ var view = function (state, actions) {
     var cardElements = [];
     state.cards.forEach(function (card, c) {
         var sCard = utils.createCard("deck-" + card.id, card.id, null, state.side);
-        sCard.opened = true;
+        sCard.openState = 'opened';
         var top = 4;
         var left = 4 + c * (100 + 8);
         var selected = state.selectedCards.indexOf(card) >= 0;
@@ -48788,13 +48846,20 @@ var Board = /** @class */ (function () {
                 c.indexOfRegion = index;
                 index++;
                 // 開閉状態更新
-                c.opened = (region === 'used' || region === 'hand');
+                if (region === 'used' || (region === 'special' && c.specialUsed)) {
+                    // 使用済み領域にある場合か、切り札領域にあって使用済みフラグがONの場合、公開済み
+                    c.openState = 'opened';
+                }
+                else if (region === 'hand') {
+                    // 手札にあれば、所有者のみ表示可能
+                    c.openState = 'ownerOnly';
+                }
+                else {
+                    // それ以外の場合は裏向き
+                    c.openState = 'hidden';
+                }
                 // 回転状態更新
                 c.rotated = (region === 'hidden-used');
-                // known状態 (中身を知っているかどうか) 更新
-                c.known.p1 = true;
-                if (c.region === 'library')
-                    c.known.p1 = false; // 山札の場合は分からない
             });
         });
     };
@@ -49080,9 +49145,9 @@ function createCard(id, cardId, region, side) {
         region: region,
         indexOfRegion: 0,
         rotated: false,
-        opened: false,
-        side: side,
-        known: { p1: true, p2: true }
+        openState: 'opened',
+        specialUsed: false,
+        side: side
     };
 }
 exports.createCard = createCard;

@@ -133,21 +133,32 @@ export default {
         });
     },
 
-    flipCard: (objectId: string) => (state: state.State, actions: ActionsType) => {
-        actions.memorizeBoardHistory(); // Undoのために履歴を記憶
+    /** 切り札の使用済状態を変更する */
+    setSpecialUsed: (p: {objectId: string, value: boolean}) => (state: state.State, actions: ActionsType) => {
 
         let ret: Partial<state.State> = {};
         let newBoard = models.Board.clone(state.board);
 
-        let card = newBoard.getCard(objectId);
-        if(card.type !== null){
-            card.opened = !card.opened;
-        }
-        ret.board = newBoard;
+        let card = newBoard.getCard(p.objectId);
+        card.specialUsed = p.value
+        // 領域情報を更新
+        newBoard.updateRegionInfo();
 
-        return ret;
+        return {board: newBoard};
     },
 
+    /** 切り札の表裏を変更する */
+    oprSetSpecialUsed: (p: {objectId: string, value: boolean}) => (state: state.State, actions: ActionsType) => {
+        let board = new models.Board(state.board);
+        let card = board.getCard(p.objectId);
+
+        actions.operate({
+            logText: (p.value ? `${CARD_DATA[card.cardId].name}を表返し、使用済にしました` : `${CARD_DATA[card.cardId].name}を裏返し、未使用に戻しました`),
+            proc: () => {
+                actions.setSpecialUsed(p);
+            }
+        });
+    },
 
 
 
