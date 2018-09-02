@@ -83,22 +83,40 @@ export default {
     },
 
     /** Undo */
-    undoBoard: () => (state: state.State) => {
+    undoBoard: () => (state: state.State, actions: ActionsType) => {
         let newPast = state.boardHistoryPast.concat(); // clone array
         let newFuture = state.boardHistoryFuture.concat(); // clone array
 
         newFuture.push(state.board);
         let newBoard = newPast.pop();
+
+        // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
+        let appendLogs: state.LogRecord[] = [];
+        let newActionLogs = actions.appendActionLog({text: `直前の操作を取り消しました`}).actionLog;
+        let appendedLogs = [newActionLogs[newActionLogs.length - 1]];
+
+        if(state.socket){
+            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: newBoard, appendedActionLogs: appendedLogs});
+        }
         return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard};
     },
 
     /** Redo */
-    redoBoard: () => (state: state.State) => {
+    redoBoard: () => (state: state.State, actions: ActionsType) => {
         let newPast = state.boardHistoryPast.concat(); // clone array
         let newFuture = state.boardHistoryFuture.concat(); // clone array
 
         newPast.push(state.board);
         let newBoard = newFuture.pop();
+
+        // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
+        let appendLogs: state.LogRecord[] = [];
+        let newActionLogs = actions.appendActionLog({text: `直前に取り消した操作をやり直しました`}).actionLog;
+        let appendedLogs = [newActionLogs[newActionLogs.length - 1]];
+
+        if(state.socket){
+            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: newBoard, appendedActionLogs: appendedLogs});
+        }
         return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: newBoard};
     },
 

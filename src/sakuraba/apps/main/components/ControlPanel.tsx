@@ -44,17 +44,6 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         });
     }
 
-    /** ポップアップ初期化 */
-    function setPopup(){
-        // ポップアップ初期化
-        $('[data-html],[data-content]').popup({
-            delay: {show: 500, hide: 0},
-            onShow: function(): false | void{
-                //if(draggingFrom !== null) return false;
-            },
-        });
-    }
-
     /** メガミ選択処理 */
     let megamiSelect = function(){
         // メガミ選択ダイアログでのボタン表示更新
@@ -191,7 +180,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 if(normalCardCount !== 7 || specialCardCount !== 3) okButtonClass += " disabled";
 
                 return(
-                    <div class={"ui dimmer modals page visible active " + css.modalTop} oncreate={() => setPopup()}>
+                    <div class={"ui dimmer modals page visible active " + css.modalTop}>
                         <div class="ui modal visible active">
                             <div class="content">
                                 <div class="description" style={{marginBottom: '2em'}}>

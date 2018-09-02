@@ -36,12 +36,14 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     const setPopup = (element) => {
         // SemanticUI ポップアップ初期化
         $(element).popup({
-            delay: {show: 500, hide: 0},
+            hoverable: true,
+            delay: {show: 500, hide: 500},
             onShow: function(): false | void{
-                // 表向きであるか、自分の切り札であれば説明を見ることができる
+                // 表向きであるか、自分の伏せ札であるか、自分の切り札であれば説明を見ることができる
                 let known = (
                     p.target.openState === 'opened'
                     || (p.target.openState === 'ownerOnly' && p.target.side === state.side)
+                    || (p.target.region === 'hidden-used' && p.target.side === state.side)
                     || (p.target.region === 'special' && p.target.side === state.side)
                 )
                 if(!known) return false;

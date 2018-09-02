@@ -25,7 +25,8 @@ export const DeckBuildCard = (p: Param) => {
     const setPopup = (element) => {
         // SemanticUI ポップアップ初期化
         $(element).popup({
-            delay: {show: 500, hide: 0},
+            hoverable: true,
+            delay: {show: 500, hide: 500},
         });
     }
 

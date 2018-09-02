@@ -161,6 +161,30 @@ export default {
     },
 
 
+    /** カードを取り除く */
+    removeCard: (p: {objectId: string}) => (state: state.State, actions: ActionsType) => {
+        let ret: Partial<state.State> = {};
+        let newBoard = models.Board.clone(state.board);
+
+        newBoard.objects = newBoard.objects.filter(o => o.id !== p.objectId);
+        // 領域情報を更新
+        newBoard.updateRegionInfo();
+
+        return {board: newBoard};
+    },
+
+    /** カードを取り除く */
+    oprRemoveCard: (p: {objectId: string}) => (state: state.State, actions: ActionsType) => {
+        let board = new models.Board(state.board);
+        let card = board.getCard(p.objectId);
+
+        actions.operate({
+            log: `[${CARD_DATA[card.cardId].name}]をボード上から取り除きました`,
+            proc: () => {
+                actions.removeCard(p);
+            }
+        });
+    },
 
     shuffle: (p: {side: PlayerSide}) => (state: state.State, actions: ActionsType) => {
         let ret: Partial<state.State> = {};

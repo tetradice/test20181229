@@ -36,6 +36,7 @@ export function getDescriptionHtml(cardId: string): string{
   if(cardData.types.indexOf('attack') >= 0) typeCaptions.push("<span style='color: red; font-weight: bold;'>攻撃</span>");
   if(cardData.types.indexOf('action') >= 0) typeCaptions.push("<span style='color: blue; font-weight: bold;'>行動</span>");
   if(cardData.types.indexOf('enhance') >= 0) typeCaptions.push("<span style='color: green; font-weight: bold;'>付与</span>");
+  if(cardData.types.indexOf('variable') >= 0) typeCaptions.push("<span style='color: gray; font-weight: bold;'>不定</span>");
   if(cardData.types.indexOf('reaction') >= 0) typeCaptions.push("<span style='color: purple; font-weight: bold;'>対応</span>");
   if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push("<span style='color: #E0C000; font-weight: bold;'>全力</span>");
   html += `${typeCaptions.join('/')}`;
@@ -52,16 +53,23 @@ export function getDescriptionHtml(cardId: string): string{
   }
 
   if(cardData.damageOpened !== undefined){
+    // 傘の開閉によって効果が分かれる攻撃カード
     html += `[閉] ${cardData.damage}<br>`;
-    html += `${cardData.text.replace(/\n/g, '<br>')}`;
+    html += `${cardData.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
     html += (cardData.text ? '<br>' : '');
     html += `[開] ${cardData.damageOpened}<br>`;
-    html += `${cardData.textOpened.replace(/\n/g, '<br>')}`;
+    html += `${cardData.textOpened.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+  } else if(cardData.textOpened) {
+    // 傘の開閉によって効果が分かれる非攻撃カード
+    html += `[閉] ${cardData.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+    html += (cardData.text ? '<br>' : '');
+    html += `[開] ${cardData.textOpened.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+
   } else {
     if(cardData.damage !== undefined){
         html += `${cardData.damage}<br>`;
     }
-    html += `${cardData.text.replace(/\n/g, '<br>')}`;
+    html += `${cardData.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
   }
   html += `</div>`;
   return html;

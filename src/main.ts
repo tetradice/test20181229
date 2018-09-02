@@ -61,17 +61,31 @@ $(function(){
             let card = board.getCard(id);
 
             let items = {};
-            items['flip'] =  {name: (card.specialUsed ? '裏向きにする' : '表向きにする')}
+            items['flip'] =  {
+                  name: (card.specialUsed ? '裏向きにする' : '表向きにする')
+                , callback: function() {
+                    appActions.oprSetSpecialUsed({objectId: id, value: !card.specialUsed});
+                }
+            }
+            if(CARD_DATA[card.cardId].removable){
+                items['remove'] =  {
+                    name: "ボード上から取り除く"
+                  , callback: function() {
+                    appActions.oprRemoveCard({objectId: id});
+                  }
+                }
+            };
+
             return {
-                callback: function(key: string) {
-                    appActions.operate({
-                        log: `${CARD_DATA[card.cardId].name}を${card.specialUsed ? '表向き' : '裏向き'}に変更`,
-                        proc: () => {
-                            appActions.oprSetSpecialUsed({objectId: id, value: !card.specialUsed});
-                        }
-                    });
+                // callback: function(key: string) {
+                //     appActions.operate({
+                //         log: `${CARD_DATA[card.cardId].name}を${card.specialUsed ? '表向き' : '裏向き'}に変更`,
+                //         proc: () => {
+                //             appActions.oprSetSpecialUsed({objectId: id, value: !card.specialUsed});
+                //         }
+                //     });
                     
-                },
+                // },
                 items: items,
             }
         }
