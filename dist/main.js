@@ -46863,17 +46863,17 @@ exports.CARD_DATA = {
     '09-chikage-o-p-2': { megami: 'chikage', name: '幻覚毒', ruby: 'げんかくどく', baseType: 'extra', types: ['action'], text: '毒（このカードは伏せ札にできない） \nこのカードを相手の毒袋に戻す。 \n自フレア→ダスト：2' },
     '09-chikage-o-p-3': { megami: 'chikage', name: '弛緩毒', ruby: 'しかんどく', baseType: 'extra', types: ['enhance'], capacity: '3', text: '毒（このカードは伏せ札にできない） \n【展開中】あなたは《攻撃》カードを使用できない。 \n【破棄時】このカードを相手の毒袋に戻す。' },
     '09-chikage-o-p-4': { megami: 'chikage', name: '滅灯毒', ruby: 'ほろびどく', baseType: 'extra', types: ['action'], text: '毒（このカードは伏せ札にできない） \n自オーラ→ダスト：3' },
-    '10-kururu-o-n-1': { megami: 'kururu', name: 'えれきてる', ruby: '', baseType: 'normal', types: ['action'], text: '<行行行対対> 相手のライフに1ダメージを与える。 ' },
-    '10-kururu-o-n-2': { megami: 'kururu', name: 'あくせらー', ruby: '', baseType: 'normal', types: ['action'], text: '<行行付> あなたの手札から《全力》カードを1枚選び、そのカードを使用してもよい。 \n(フェイズは終了しない) ' },
+    '10-kururu-o-n-1': { megami: 'kururu', name: 'えれきてる', ruby: '', baseType: 'normal', types: ['action'], text: '----\n<行行行対対> 相手のライフに1ダメージを与える。 ' },
+    '10-kururu-o-n-2': { megami: 'kururu', name: 'あくせらー', ruby: '', baseType: 'normal', types: ['action'], text: '----\n<行行付> あなたの手札から《全力》カードを1枚選び、そのカードを使用してもよい。 \n(フェイズは終了しない) ' },
     '10-kururu-o-n-3': { megami: 'kururu', name: 'くるるーん', ruby: '', baseType: 'normal', types: ['action', 'reaction'], text: '【常時】このカードは対応でしか使用できない。 \n以下から2つまでを選び、任意の順に行う。 \n(同じものを2回選ぶことはできない)\n・カードを1枚引く。\n・伏せ札1枚を山札の底に置く。\n・相手は手札を1枚捨て札にする。' },
-    '10-kururu-o-n-4': { megami: 'kururu', name: 'とるねーど', ruby: '', baseType: 'normal', types: ['action', 'fullpower'], text: '<攻攻> 相手のオーラに5ダメージを与える。 \n----\n<付付> 相手のライフに1ダメージを与える。' },
-    '10-kururu-o-n-5': { megami: 'kururu', name: 'りげいなー', ruby: '', baseType: 'normal', types: ['action', 'fullpower'], text: '<攻対> あなたの使用済の切札を1枚選んでもよい。そのカードを消費を支払わずに使用する。(《全力》カードでもよい) \n----\nあなたの集中力は0になる。' },
+    '10-kururu-o-n-4': { megami: 'kururu', name: 'とるねーど', ruby: '', baseType: 'normal', types: ['action', 'fullpower'], text: '----\n<攻攻> 相手のオーラに5ダメージを与える。 \n----\n<付付> 相手のライフに1ダメージを与える。' },
+    '10-kururu-o-n-5': { megami: 'kururu', name: 'りげいなー', ruby: '', baseType: 'normal', types: ['action', 'fullpower'], text: '----\n<攻対> あなたの使用済の切札を1枚選んでもよい。そのカードを消費を支払わずに使用する。(《全力》カードでもよい) \n----\nあなたの集中力は0になる。' },
     '10-kururu-o-n-6': { megami: 'kururu', name: 'もじゅるー', ruby: '', baseType: 'normal', types: ['enhance'], capacity: '3', text: '【展開中】あなたが《行動》カードを使用した時、その解決後に基本動作を1回行ってもよい。' },
-    '10-kururu-o-n-7': { megami: 'kururu', name: 'りふれくた', ruby: '', baseType: 'normal', types: ['enhance'], capacity: '0', text: '<攻対> 【展開時】このカードの上に桜花結晶を4個ダストから置く。 \n----\n【展開中】各ターンにおける相手の2回目の《攻撃》は打ち消される。\n' },
+    '10-kururu-o-n-7': { megami: 'kururu', name: 'りふれくた', ruby: '', baseType: 'normal', types: ['enhance'], capacity: '0', text: '----\n<攻対> 【展開時】このカードの上に桜花結晶を4個ダストから置く。 \n----\n【展開中】各ターンにおける相手の2回目の《攻撃》は打ち消される。\n' },
     '10-kururu-o-s-1': { megami: 'kururu', name: 'どれーんでびる', ruby: '', baseType: 'special', types: ['action', 'reaction'], cost: '2', text: '相オーラ→自オーラ：1 \n【使用済】あなたの使用済の切札が未使用に戻った時、このカードを消費を支払わずに使用してもよい。' },
-    '10-kururu-o-s-2': { megami: 'kururu', name: 'びっぐごーれむ', ruby: '', baseType: 'special', types: ['action'], cost: '4', text: '<対全全> 【使用済】あなたの終了フェイズに相手のライフに1ダメージを与えてもよい。そうした場合、山札を再構成する。 \n----\n【使用済】あなたが《全力》カードを使用した時、その解決後に基本動作を1回行ってもよい。\n' },
+    '10-kururu-o-s-2': { megami: 'kururu', name: 'びっぐごーれむ', ruby: '', baseType: 'special', types: ['action'], cost: '4', text: '----\n<対全全> 【使用済】あなたの終了フェイズに相手のライフに1ダメージを与えてもよい。そうした場合、山札を再構成する。 \n----\n【使用済】あなたが《全力》カードを使用した時、その解決後に基本動作を1回行ってもよい。\n' },
     '10-kururu-o-s-3': { megami: 'kururu', name: 'いんだすとりあ', ruby: '', baseType: 'special', types: ['action'], cost: '1', text: 'このカードにカードが封印されていないならば、あなたの手札から《付与》でないカードを1枚選び、そのカードをこのカードの下に表向きで封印してもよい。 \nあなたの追加札から「でゅーぷりぎあ」を山札の底に1枚置く(最大で合計3枚)。 \n----\n【即再起】あなたが山札を再構成する(再構成の後に未使用に戻る)。', sealable: true },
-    '10-kururu-o-s-4': { megami: 'kururu', name: '神渉装置：枢式', ruby: 'かんしょうそうちくるるしき', baseType: 'special', types: ['action'], cost: '3', text: '<攻攻行行行付付> 相手の切札を見て、その中から1枚選び、それを使用済にしてもよい。\n----\n相手の使用済の切札1枚を選んでもよい。そのカードを消費を支払わずに使用する(《全力》カードでもよい)。その後、このカードを取り除く。', removable: true },
+    '10-kururu-o-s-4': { megami: 'kururu', name: '神渉装置:枢式', ruby: 'かんしょうそうち　くるるしき', baseType: 'special', types: ['action'], cost: '3', text: '----\n<攻攻行行行付付> 相手の切札を見て、その中から1枚選び、それを使用済にしてもよい。\n----\n相手の使用済の切札1枚を選んでもよい。そのカードを消費を支払わずに使用する(《全力》カードでもよい)。その後、このカードを取り除く。', removable: true },
     '10-kururu-o-s-3-ex1': { megami: 'kururu', name: 'でゅーぷりぎあ', ruby: '', baseType: 'extra', types: ['variable'], text: '(カードタイプが不定のカードは使用できない) \n【常時】このカードはあなたの「いんだすとりあ」に封印されたカードの複製となる。但し、名前は変更されない。 \n(「いんだすとりあ」が未使用なら複製とならないので、使用できない)' },
     '11-thallya-o-n-1': { megami: 'thallya', name: 'Burning Steam', ruby: 'バーニングスチーム', baseType: 'normal', types: ['attack'], range: '3-5', damage: '2/1', text: '【攻撃後】騎動を行う。' },
     '11-thallya-o-n-2': { megami: 'thallya', name: 'Waving Edge', ruby: 'ウェービングエッジ', baseType: 'normal', types: ['attack'], range: '1-3', damage: '3/1', text: '燃焼 \n【攻撃後】騎動を行う。' },
@@ -47589,34 +47589,6 @@ exports.default = {
         // 新しい盤を返す
         return { board: newBoard };
     }; },
-    /** ドラッグ開始 */
-    sakuraTokenDragStart: function (sakuraToken) { return function (state) {
-        var ret = {};
-        // ドラッグを開始したカードを設定
-        ret.draggingFromSakuraToken = sakuraToken;
-        return ret;
-    }; },
-    /** ドラッグ中にカード領域の上に移動 */
-    sakuraTokenDragEnter: function (region) { return function (state) {
-        var ret = {};
-        // ドラッグを開始したカードを設定
-        ret.draggingHoverSakuraTokenRegion = region;
-        return ret;
-    }; },
-    /** ドラッグ中にカード領域の上から離れた */
-    sakuraTokenDragLeave: function () { return function (state) {
-        var ret = {};
-        // ドラッグ中領域の初期化
-        ret.draggingHoverSakuraTokenRegion = null;
-        return ret;
-    }; },
-    /** ドラッグ終了 */
-    sakuraTokenDragEnd: function () {
-        var ret = {};
-        ret.draggingFromSakuraToken = null;
-        ret.draggingHoverSakuraTokenRegion = null;
-        return ret;
-    },
 };
 
 
@@ -49270,6 +49242,17 @@ function getDescriptionHtml(cardId) {
         html += "" + cardData.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>');
     }
     html += "</div>";
+    if (cardData.megami === 'kururu') {
+        html = html.replace(/<([攻行付対全]+)>/g, function (str, arg) {
+            console.log(arg);
+            var replaced = arg.replace(/攻+/, function (str2) { return "<span style='color: red; font-weight: bold;'>" + str2 + "</span>"; })
+                .replace(/行+/, function (str2) { return "<span style='color: blue; font-weight: bold;'>" + str2 + "</span>"; })
+                .replace(/付+/, function (str2) { return "<span style='color: green; font-weight: bold;'>" + str2 + "</span>"; })
+                .replace(/対+/, function (str2) { return "<span style='color: purple; font-weight: bold;'>" + str2 + "</span>"; })
+                .replace(/全+/, function (str2) { return "<span style='color: #E0C000; font-weight: bold;'>" + str2 + "</span>"; });
+            return "<" + replaced + ">";
+        });
+    }
     return html;
 }
 exports.getDescriptionHtml = getDescriptionHtml;

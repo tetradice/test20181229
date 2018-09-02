@@ -72,6 +72,19 @@ export function getDescriptionHtml(cardId: string): string{
     html += `${cardData.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
   }
   html += `</div>`;
+
+  if(cardData.megami === 'kururu'){
+    html = html.replace(/<([攻行付対全]+)>/g, (str, arg) => {
+        console.log(arg);
+        let replaced = arg.replace(/攻+/, (str2) => `<span style='color: red; font-weight: bold;'>${str2}</span>`)
+                          .replace(/行+/, (str2) => `<span style='color: blue; font-weight: bold;'>${str2}</span>`)
+                          .replace(/付+/, (str2) => `<span style='color: green; font-weight: bold;'>${str2}</span>`)
+                          .replace(/対+/, (str2) => `<span style='color: purple; font-weight: bold;'>${str2}</span>`)
+                          .replace(/全+/, (str2) => `<span style='color: #E0C000; font-weight: bold;'>${str2}</span>`)
+        return `<${replaced}>`;
+    });
+  }
+
   return html;
 }
 

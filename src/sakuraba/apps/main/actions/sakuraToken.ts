@@ -66,44 +66,4 @@ export default {
         // 新しい盤を返す
         return {board: newBoard};
     },
-
-    /** ドラッグ開始 */
-    sakuraTokenDragStart: (sakuraToken: state.SakuraToken) => (state: state.State) => {
-        let ret: Partial<state.State> = {};
-
-        // ドラッグを開始したカードを設定
-        ret.draggingFromSakuraToken = sakuraToken;
-
-        return ret;
-    },
-    
-    /** ドラッグ中にカード領域の上に移動 */
-    sakuraTokenDragEnter: (region: SakuraTokenRegion) => (state: state.State) => {
-        let ret: Partial<state.State> = {};
-
-        // ドラッグを開始したカードを設定
-        ret.draggingHoverSakuraTokenRegion = region;
-
-        return ret;
-    },
-    
-    /** ドラッグ中にカード領域の上から離れた */
-    sakuraTokenDragLeave: () => (state: state.State) => {
-        let ret: Partial<state.State> = {};
-
-        // ドラッグ中領域の初期化
-        ret.draggingHoverSakuraTokenRegion = null;
-
-        return ret;
-    },
-
-    /** ドラッグ終了 */
-    sakuraTokenDragEnd: () => {
-        let ret: Partial<state.State> = {};
-
-        ret.draggingFromSakuraToken = null;
-        ret.draggingHoverSakuraTokenRegion = null;
-
-        return ret;
-    },
 }
