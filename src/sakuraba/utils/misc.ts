@@ -21,6 +21,28 @@ export function logIsVisible(log: state.LogRecord, side: PlayerSide): boolean{
     return false;
 }
 
+/** カードの適切な公開状態を判定 */
+export function judgeCardOpenState(
+      card: state.Card
+    , cardSide?: PlayerSide
+    , cardRegion?: CardRegion
+): CardOpenState{
+    if(cardSide === undefined) cardSide = card.side;
+    if(cardRegion === undefined) cardRegion = card.region;
+    let cardData = sakuraba.CARD_DATA[card.cardId];
+
+    if(cardRegion === 'used' || (cardData.baseType === 'special' && card.specialUsed)){
+        // カードが使用済み領域にある場合か、切り札で使用済みフラグがONの場合、公開済み
+        return 'opened';
+    } else if(cardRegion === 'hand'){
+        // 手札にあれば、所有者のみ表示可能
+        return 'ownerOnly';
+    }
+
+    // 上記以外の場合は裏向き
+    return 'hidden';
+}
+
 /** カードの説明用ポップアップHTMLを取得する */
 export function getDescriptionHtml(cardId: string): string{
   let cardData = sakuraba.CARD_DATA[cardId];
@@ -75,7 +97,6 @@ export function getDescriptionHtml(cardId: string): string{
 
   if(cardData.megami === 'kururu'){
     html = html.replace(/<([攻行付対全]+)>/g, (str, arg) => {
-        console.log(arg);
         let replaced = arg.replace(/攻+/, (str2) => `<span style='color: red; font-weight: bold;'>${str2}</span>`)
                           .replace(/行+/, (str2) => `<span style='color: blue; font-weight: bold;'>${str2}</span>`)
                           .replace(/付+/, (str2) => `<span style='color: green; font-weight: bold;'>${str2}</span>`)

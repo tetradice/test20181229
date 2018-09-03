@@ -237,6 +237,7 @@ $(function(){
         let object = currentState.board.objects.find(c => c.id === objectId);
 
         // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択したカードを記憶
+        // (同じ領域、もしくは切り札領域にはドラッグできない)
         $(`.area.droppable:not([data-side=${object.side}][data-region=${object.region}])`).css('z-index', 9999);
         $(`.fbs-card.droppable`).css('z-index', 10000);
         dragInfo.draggingFrom = object;
@@ -295,7 +296,6 @@ $(function(){
         $($(this)).removeClass('over');  // this / e.target is previous target element.
     });
 
-
     let lastDraggingFrom: state.BoardObject = null; 
     $('#BOARD').on('drop', '.area,.fbs-card.droppable', function(e){
         // this / e.target is current target element.
@@ -312,39 +312,86 @@ $(function(){
 
             // カードを別領域に移動した場合
             if(dragInfo.draggingFrom.type === 'card'){
+                let card = dragInfo.draggingFrom;
                 let toSide = $this.attr('data-side') as PlayerSide;
                 let toRegion = $this.attr('data-region') as CardRegion;
 
                 // 移動ログを決定
                 let logs: {text: string, visibility?: LogVisibility}[] = [];
-                let cardName = CARD_DATA[dragInfo.draggingFrom.cardId].name;
-                let fromRegionTitle = utils.getCardRegionTitle(currentState.side, dragInfo.draggingFrom.side, dragInfo.draggingFrom.region);
+                let cardName = CARD_DATA[card.cardId].name;
+                let fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region);
                 let toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion);
 
-                logs.push({text: `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}`});
+                // 移動元での公開状態と、移動先での公開状態を判定
+                let oldOpenState = card.openState;
+                let newOpenState = utils.judgeCardOpenState(card, toSide, toRegion);
+
+
+                // ログ内容を決定
+                console.log(`openState: ${oldOpenState} => ${newOpenState}`);
+                if(oldOpenState === 'opened' || newOpenState === 'opened'){
+                    // 公開状態から移動した場合や、公開状態へ移動した場合は、全員に名前を公開
+                    logs.push({text: `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}`});
+
+
+                } else {
+                    // 上記以外の場合は、移動元と移動先の組み合わせに応じてログを決定
+                    let oldMyKnown = ((card.region === 'hidden-used' || oldOpenState === 'ownerOnly') && card.side === currentState.side);
+                    let newMyKnown = ((toRegion === 'hidden-used' || newOpenState === 'ownerOnly') && toSide === currentState.side);
+                    let oldOpponentKnown = ((card.region === 'hidden-used' || oldOpenState === 'ownerOnly') && card.side === utils.flipSide(currentState.side));
+                    let newOpponentKnown = ((toRegion === 'hidden-used' || newOpenState === 'ownerOnly') && toSide === utils.flipSide(currentState.side));
+                    console.log(`known: my(${oldMyKnown} => ${newMyKnown}), opponent(${oldOpponentKnown} => ${newOpponentKnown})`);
+
+                    if(oldMyKnown || newMyKnown){
+                        // 自分は知っている
+                        if(oldOpponentKnown || newOpponentKnown){
+                            // 対戦相手も知っている (仮実装)
+                            logs.push({text: `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}`});
+                        } else {
+                            // 対戦相手は知らない
+                            logs.push({text: `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}`, visibility: 'ownerOnly'});
+                            logs.push({text: `カードを1枚移動しました：${fromRegionTitle} → ${toRegionTitle}`, visibility: 'outerOnly'});
+                        }
+                    } else {
+                        // 自分は知らない
+                        if(oldOpponentKnown || newOpponentKnown){
+                            // 対戦相手は知っている (仮実装)
+                            logs.push({text: `カードを1枚移動しました：${fromRegionTitle} → ${toRegionTitle}`});
+                        } else {
+                            // 対戦相手も知らない
+                            logs.push({text: `カードを1枚移動しました：${fromRegionTitle} → ${toRegionTitle}`});
+                        }
+                    }
+                    
+                }
                 let cardNameLogging = false;
                 
-                // 一定の条件を満たす場合はログを置き換える
-                if(dragInfo.draggingFrom.region === 'hand' && toRegion === 'hidden-used'){
-                    logs = [];
-                    logs.push({text: `[${cardName}]を伏せ札にしました`, visibility: 'ownerOnly'});
-                    logs.push({text: `カードを1枚伏せ札にしました`, visibility: 'outerOnly'});
-                }
-                if(dragInfo.draggingFrom.region === 'hand' && toRegion === 'used'){
-                    logs = [];
-                    logs.push({text: `[${cardName}]を場に出しました`});
-                }
-                if(dragInfo.draggingFrom.region === 'library' && toRegion === 'hand'){
-                    logs = [];
-                    logs.push({text: `カードを1枚引きました`});
-                    cardNameLogging = true;
+                // 自分のカードを操作した場合で、一定の条件を満たす場合はログを置き換える
+                if(card.side === currentState.side && toSide === currentState.side){
+                    if(card.region === 'hand' && toRegion === 'hidden-used'){
+                        // 伏せ札にした場合
+                        logs = [];
+                        logs.push({text: `[${cardName}]を伏せ札にしました`, visibility: 'ownerOnly'});
+                        logs.push({text: `カードを1枚伏せ札にしました`, visibility: 'outerOnly'});
+                    }
+                    if(card.region === 'hand' && toRegion === 'used'){
+                        // 場に出した場合
+                        logs = [];
+                        logs.push({text: `[${cardName}]を場に出しました`});
+                    }
+                    if(card.region === 'library' && toRegion === 'hand'){
+                        // カードを1枚引いた場合
+                        logs = [];
+                        logs.push({text: `カードを1枚引きました`});
+                        cardNameLogging = true;
+                    }
                 }
 
                 appActions.operate({
                     log: logs,
                     proc: () => {
                         appActions.moveCard({
-                            from: dragInfo.draggingFrom.id
+                            from: card.id
                         , to: [toSide, toRegion] 
                         , cardNameLogging: cardNameLogging
                         });

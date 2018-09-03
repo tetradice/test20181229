@@ -5,6 +5,7 @@ type PlayerSide = "p1" | "p2";
 type SheetSide = PlayerSide | "watcher";
 
 type LogVisibility = 'ownerOnly' | 'outerOnly' | 'shown';
+type CardOpenState = 'opened' | 'ownerOnly' | 'hidden';
 
 type VigorValue = 0 | 1 | 2;
 

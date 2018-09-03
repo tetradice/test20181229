@@ -67,7 +67,7 @@ export interface Card extends BoardObjectBase {
     cardId: string;
     region: CardRegion;
     rotated: boolean;
-    openState: 'hidden' | 'ownerOnly' | 'opened';
+    openState: CardOpenState;
     specialUsed: boolean;
 }
 

@@ -391,6 +391,25 @@ function logIsVisible(log, side) {
     return false;
 }
 exports.logIsVisible = logIsVisible;
+/** カードの適切な公開状態を判定 */
+function judgeCardOpenState(card, cardSide, cardRegion) {
+    if (cardSide === undefined)
+        cardSide = card.side;
+    if (cardRegion === undefined)
+        cardRegion = card.region;
+    var cardData = sakuraba.CARD_DATA[card.cardId];
+    if (cardRegion === 'used' || (cardData.baseType === 'special' && card.specialUsed)) {
+        // カードが使用済み領域にある場合か、切り札で使用済みフラグがONの場合、公開済み
+        return 'opened';
+    }
+    else if (cardRegion === 'hand') {
+        // 手札にあれば、所有者のみ表示可能
+        return 'ownerOnly';
+    }
+    // 上記以外の場合は裏向き
+    return 'hidden';
+}
+exports.judgeCardOpenState = judgeCardOpenState;
 /** カードの説明用ポップアップHTMLを取得する */
 function getDescriptionHtml(cardId) {
     var cardData = sakuraba.CARD_DATA[cardId];
@@ -449,7 +468,6 @@ function getDescriptionHtml(cardId) {
     html += "</div>";
     if (cardData.megami === 'kururu') {
         html = html.replace(/<([攻行付対全]+)>/g, function (str, arg) {
-            console.log(arg);
             var replaced = arg.replace(/攻+/, function (str2) { return "<span style='color: red; font-weight: bold;'>" + str2 + "</span>"; })
                 .replace(/行+/, function (str2) { return "<span style='color: blue; font-weight: bold;'>" + str2 + "</span>"; })
                 .replace(/付+/, function (str2) { return "<span style='color: green; font-weight: bold;'>" + str2 + "</span>"; })

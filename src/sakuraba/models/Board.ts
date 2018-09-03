@@ -1,5 +1,6 @@
 import * as _ from "lodash";
 import { Megami } from "sakuraba";
+import * as utils from "sakuraba/utils";
 
 export class Board implements state.Board {
     objects: state.BoardObject[];
@@ -78,16 +79,7 @@ export class Board implements state.Board {
                 index++;
 
                 // 開閉状態更新
-                if(region === 'used' || (region === 'special' && c.specialUsed)){
-                    // 使用済み領域にある場合か、切り札領域にあって使用済みフラグがONの場合、公開済み
-                    c.openState = 'opened';
-                } else if(region === 'hand'){
-                    // 手札にあれば、所有者のみ表示可能
-                    c.openState = 'ownerOnly';
-                } else {
-                    // それ以外の場合は裏向き
-                    c.openState = 'hidden';
-                }
+                c.openState = utils.judgeCardOpenState(c);
 
                 // 回転状態更新
                 c.rotated = (region === 'hidden-used');

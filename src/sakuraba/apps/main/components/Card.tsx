@@ -31,7 +31,10 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     if(p.target.rotated) className += " rotated";
     if(p.target.side === utils.flipSide(state.side)) className += " opponent-side"; 
 
-    if(p.target.region === 'used') className += " droppable";
+    // 対象のカードが他のカードを封印可能で、かつ公開状態である場合に限り、他のカードをドロップ可能
+    if(cardData.sealable && p.target.openState === 'opened'){
+        className += " droppable";
+    }
 
     const setPopup = (element) => {
         // SemanticUI ポップアップ初期化
@@ -77,11 +80,9 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
 
     // ドラッグ可否判定
     let libraryCards = state.board.objects.filter(o => o.type === 'card' && o.side === p.target.side && o.region === p.target.region);
-    let draggable = (
-        p.target.region !== 'library'
-        ||
-        p.target.indexOfRegion === (libraryCards.length - 1)
-    );
+    let draggable = true;
+    if(p.target.region === 'special') draggable = false; // 切り札はドラッグ不可
+    if(p.target.region === 'library' && p.target.indexOfRegion !== (libraryCards.length - 1)) draggable = false; // 山札にあって、かつ一番上のカードでない場合はドラッグ不可
 
     return (
         <div

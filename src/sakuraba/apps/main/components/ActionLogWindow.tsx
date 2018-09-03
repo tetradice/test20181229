@@ -50,14 +50,25 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
             if(actionLogWindowStateJson){
                 let windowState = JSON.parse(actionLogWindowStateJson);
                 $(e).css(windowState);
-            }    
-        }
+            }
+
+            // スクロールバーを最下部までスクロール
+            let $logArea = $(e).find('#ACTION-LOG-AREA');
+            $logArea.scrollTop($logArea.get(0).scrollHeight);
+        };
+
+        const onupdate = (e) => {
+            // スクロールバーを最下部までスクロール
+            let $logArea = $(e).find('#ACTION-LOG-AREA');
+            $logArea.scrollTop($logArea.get(0).scrollHeight);
+        };
 
         return (
             <div id="ACTION-LOG-WINDOW"
              style={{height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)"}}
               class="ui segment draggable ui-widget-content resizable"
-              oncreate={oncreate}>
+              oncreate={oncreate}
+              onupdate={onupdate}>
                 <div class="ui top attached label">操作ログ<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleActionLogVisible()}><i class="times icon"></i></a></div>
                 <div id="ACTION-LOG-AREA">{logElements}</div>
             </div>

@@ -166,7 +166,10 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
         // フレームを追加
         frameNodes.push(<components.CardAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
-        frameNodes.push(<components.CardAreaDroppable side={area.side} region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
+        if(area.region !== 'special'){
+            // 切り札領域でない場合のみドロップ可
+            frameNodes.push(<components.CardAreaDroppable side={area.side} region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
+        }
     });
 
     sakuraTokenAreaData.forEach((area) => {
