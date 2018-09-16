@@ -20,8 +20,8 @@ export const SakuraTokenAreaBackground = (p: Param) => (state: state.State) => {
         , top: `${p.top * state.zoom}px`
         , width: `${p.width * state.zoom}px`
         , height: `${p.height * state.zoom}px`
-        , position: 'relative'
     };
+
 
     return (
         <div
@@ -29,9 +29,11 @@ export const SakuraTokenAreaBackground = (p: Param) => (state: state.State) => {
             style={styles}
             data-side={p.side}
             data-region={p.region}
-               key={`SakuraTokenAreaBackground_${p.side}_${p.region}`}
+            key={`SakuraTokenAreaBackground_${p.side}_${p.region}`}
         >
-            <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`}}>{p.title}</div>
+            <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`, right: `24px`}}>{p.title}:</div>
+            <div class="card-count" style={{fontSize: `${(16 * state.zoom)}px`, bottom: `2px`}}>{p.tokenCount}</div>
+            
         </div>
     );
 }
