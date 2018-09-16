@@ -47,7 +47,8 @@
         
         .fbs-card[draggable]:hover,
         .fbs-card.droppable.over,
-        .clickable:hover{
+        .clickable:hover,
+        .focused{
             filter: drop-shadow(0 0 3px #7098ff);
         }
         .fbs-vigor-card .vigor0.clickable:hover,
@@ -106,13 +107,10 @@
         }
 
         .sakura-token {
-            width: 26px;
-            height: 26px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            background-image: url(/furuyoni_commons/others/sakura_token.png);
-            transform: rotate(40deg);
+            background-image: url(/furuyoni_commons/others/sakura_token_ghost1.png);
         }
 
         .fbs-card.open-normal, .fbs-card.open-special {
@@ -495,6 +493,27 @@
 <div id="DECK-BUILD-MODAL">
 </div>
 <div id="MARIGAN-MODAL">
+</div>
+
+<!-- ドラッグ時のghost画像は、他パネルの下に隠して配置 (ロード完了後に表示する) -->
+<div class="drag-ghost" id="sakura-token-ghost-1" style="display: block; width: 80px; height: 26px; z-index: -9999; position: absolute; left: 40px; top: 40px;">
+    <img src="/furuyoni_commons/others/sakura_token_ghost1.png" width="26" height="26">
+</div>
+<div class="drag-ghost" id="sakura-token-ghost-2" style="display: block; width: 80px; height: 26px; z-index: -9999; position: absolute; left: 40px; top: 40px;">
+    <img src="/furuyoni_commons/others/sakura_token_ghost2.png" width="35" height="26">
+</div>
+<div class="drag-ghost" id="sakura-token-ghost-3" style="display: block; width: 80px; height: 26px; z-index: -9999; position: absolute; left: 40px; top: 40px;">
+    <img src="/furuyoni_commons/others/sakura_token_ghost3.png" width="43" height="26">
+</div>
+<div class="drag-ghost" id="sakura-token-ghost-4" style="display: block; width: 80px; height: 26px; z-index: -9999; position: absolute; left: 40px; top: 40px;">
+    <img src="/furuyoni_commons/others/sakura_token_ghost4.png" width="52" height="26">
+</div>
+<div class="drag-ghost" id="sakura-token-ghost-5" style="display: block; width: 80px; height: 26px; z-index: -9999; position: absolute; left: 40px; top: 40px;">
+    <img src="/furuyoni_commons/others/sakura_token_ghost5.png" width="61" height="26">
+</div>
+<div class="drag-ghost" id="sakura-token-ghost-many" style="display: block; width: 72px; height: 26px; z-index: -9999; position: absolute; left: 40px; top: 40px;">
+    <img src="/furuyoni_commons/others/sakura_token_ghost5.png" width="61" height="26">
+    <div class="count" style="position: absolute; right: 2px; bottom: 2px; font-size: medium; color: silver; font-weight: bold; ">4</div>
 </div>
 
 <script type="text/javascript">

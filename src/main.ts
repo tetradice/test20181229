@@ -50,100 +50,133 @@ $(function(){
 
     // 山札ドラッグメニュー
 
-    // 切札右クリックメニュー
+    // 右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD .fbs-card[data-region=special]',
+        selector: '#BOARD *',
 
         build: function($elem: JQuery, event: JQueryEventObject){
-            let id = $elem.attr('data-object-id');
             let currentState = appActions.getState();
             let board = new models.Board(currentState.board);
-            let card = board.getCard(id);
+            let items: Object = null;
 
-            let items = {};
-            items['flip'] =  {
-                  name: (card.specialUsed ? '裏向きにする' : '表向きにする')
-                , callback: function() {
-                    appActions.oprSetSpecialUsed({objectId: id, value: !card.specialUsed});
-                }
-            }
-            if(CARD_DATA[card.cardId].removable){
-                items['remove'] =  {
-                    name: "ボード上から取り除く"
+            // 切り札で右クリック
+            if($elem.is('.fbs-card[data-region=special]')){
+                let id = $elem.attr('data-object-id');
+                let card = board.getCard(id);
+                
+                items = {};
+                items['flip'] =  {
+                    name: (card.specialUsed ? '裏向きにする' : '表向きにする')
                   , callback: function() {
-                    appActions.oprRemoveCard({objectId: id});
+                      appActions.oprSetSpecialUsed({objectId: id, value: !card.specialUsed});
                   }
                 }
-            };
-
-            return {
-                // callback: function(key: string) {
-                //     appActions.operate({
-                //         log: `${CARD_DATA[card.cardId].name}を${card.specialUsed ? '表向き' : '裏向き'}に変更`,
-                //         proc: () => {
-                //             appActions.oprSetSpecialUsed({objectId: id, value: !card.specialUsed});
-                //         }
-                //     });
-                    
-                // },
-                items: items,
+                if(CARD_DATA[card.cardId].removable){
+                    items['remove'] =  {
+                        name: "ボード上から取り除く"
+                        , callback: function() {
+                        appActions.oprRemoveCard({objectId: id});
+                        }
+                    }
+                };
             }
+
+            // 集中力で右クリック
+            if($elem.is('.fbs-vigor-card, .withered-token')){
+                let side = $elem.closest('[data-side]').attr('data-side') as PlayerSide;
+
+                items = {};
+                items['wither'] =  {
+                    name: (board.witherFlags[side] ? '萎縮を解除' : '萎縮')
+                    , callback: () => appActions.oprSetWitherFlag({side: side, value: !board.witherFlags[side]})
+                }
+            }
+
+            // 山札で右クリック
+            if($elem.is('.area.background[data-region=library], .fbs-card[data-region=library]')){
+                items = {
+                    'draw': {name: '1枚引く', disabled: () => {
+                        let board = new models.Board(appActions.getState().board);
+        
+                        let cards = board.getRegionCards(appActions.getState().side, 'library');
+                        return cards.length === 0;
+                    }, callback: () => {
+                        appActions.oprDraw();
+                    }},
+                    'sep1': '---------',
+                    'reshuffle': {name: '再構成する', callback: () => {
+                        appActions.oprReshuffle({side: currentState.side, lifeDecrease: true});
+                    }},
+                    'reshuffleWithoutDamage': {name: '再構成する (ライフ減少なし)', callback: () => {
+                        appActions.oprReshuffle({side: currentState.side, lifeDecrease: false});
+                    }},
+                }
+            }
+
+            if(items === null){
+                return false;
+            } else {
+                return {
+                    items: items,
+                };
+            }
+
         }
     });
 
-    // 集中力右クリックメニュー
-    $.contextMenu({
-        selector: '#BOARD .fbs-vigor-card, #BOARD .withered-token',
-        build: function($elem: JQuery, event: JQueryEventObject){
-            let st = appActions.getState();
-            let board = new models.Board(st.board);
-            let side = $elem.closest('[data-side]').attr('data-side') as PlayerSide;
+    // // 集中力右クリックメニュー
+    // $.contextMenu({
+    //     selector: '#BOARD .fbs-vigor-card, #BOARD .withered-token',
+    //     build: function($elem: JQuery, event: JQueryEventObject){
+    //         let st = appActions.getState();
+    //         let board = new models.Board(st.board);
+    //         let side = $elem.closest('[data-side]').attr('data-side') as PlayerSide;
 
-            let items = {};
-            items['wither'] =  {
-                  name: (board.witherFlags[side] ? '萎縮を解除' : '萎縮')
-                , callback: () => appActions.oprSetWitherFlag({side: side, value: !board.witherFlags[side]})
-            }
-            return {
-                items: items,
-            }
-        }
+    //         let items = {};
+    //         items['wither'] =  {
+    //               name: (board.witherFlags[side] ? '萎縮を解除' : '萎縮')
+    //             , callback: () => appActions.oprSetWitherFlag({side: side, value: !board.witherFlags[side]})
+    //         }
+    //         return {
+    //             items: items,
+    //         }
+    //     }
 
-    });
+    // });
 
 
-    // 山札エリア右クリックメニュー
-    $.contextMenu({
-        selector: '#BOARD .area.background[data-region=library], #BOARD .fbs-card[data-region=library]',
-        callback: function(key: string) {
-            let state = appActions.getState();
-            if(key === 'draw'){
-                // 1枚引く
-                appActions.oprDraw();
-            }
+    // // 山札エリア右クリックメニュー
+    // $.contextMenu({
+    //     selector: '#BOARD .area.background[data-region=library], #BOARD .fbs-card[data-region=library]',
+    //     callback: function(key: string) {
+    //         let state = appActions.getState();
+    //         if(key === 'draw'){
+    //             // 1枚引く
+    //             appActions.oprDraw();
+    //         }
 
-            if(key === 'reshuffle'){
-                // 再構成
-                appActions.oprReshuffle({side: state.side, lifeDecrease: true});
-            }
-            if(key === 'reshuffleWithoutDamage'){
-                // 再構成
-                appActions.oprReshuffle({side: state.side, lifeDecrease: false});
-            }
-            return;
-        },
-        items: {
-            'draw': {name: '1枚引く', disabled: () => {
-                let board = new models.Board(appActions.getState().board);
+    //         if(key === 'reshuffle'){
+    //             // 再構成
+    //             appActions.oprReshuffle({side: state.side, lifeDecrease: true});
+    //         }
+    //         if(key === 'reshuffleWithoutDamage'){
+    //             // 再構成
+    //             appActions.oprReshuffle({side: state.side, lifeDecrease: false});
+    //         }
+    //         return;
+    //     },
+    //     items: {
+    //         'draw': {name: '1枚引く', disabled: () => {
+    //             let board = new models.Board(appActions.getState().board);
 
-                let cards = board.getRegionCards(appActions.getState().side, 'library');
-                return cards.length === 0;
-            }},
-            'sep1': '---------',
-            'reshuffle': {name: '再構成する'},
-            'reshuffleWithoutDamage': {name: '再構成する (ライフ減少なし)'},
-        }
-    });
+    //             let cards = board.getRegionCards(appActions.getState().side, 'library');
+    //             return cards.length === 0;
+    //         }},
+    //         'sep1': '---------',
+    //         'reshuffle': {name: '再構成する'},
+    //         'reshuffleWithoutDamage': {name: '再構成する (ライフ減少なし)'},
+    //     }
+    // });
 
 
     // ボード情報をリクエスト
@@ -227,28 +260,67 @@ $(function(){
 
 
     let contextMenuShowingAfterDrop: boolean = false;    
+
+    // 桜花結晶の上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '.sakura-token', function(e){
+        // 自分と同じ領域で、インデックスが自分以下の要素をすべて選択扱いにする
+        let $this = $(this);
+        let index = parseInt($this.attr('data-region-index')) + 1;
+        $(`.sakura-token[data-side=${$this.attr('data-side')}][data-region=${$this.attr('data-region')}]:lt(${index})`).addClass('focused');
+    });
+    $('#BOARD').on('mouseleave', '.sakura-token', function(e){
+        $(`.sakura-token`).removeClass('focused');
+    });
+
     // ドラッグ開始
     $('#BOARD').on('dragstart', '.fbs-card,.sakura-token', function(e){
         let currentState = appActions.getState();
 
-        this.style.opacity = '0.4';  // this / e.target is the source node.
         //(e.originalEvent as DragEvent).dataTransfer.setDragImage($(this.closest('.draw-region'))[0], 0, 0);
         let objectId = $(this).attr('data-object-id');
         let object = currentState.board.objects.find(c => c.id === objectId);
 
-        // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択したカードを記憶
-        // (同じ領域、もしくは切り札領域にはドラッグできない)
-        $(`.area.droppable:not([data-side=${object.side}][data-region=${object.region}])`).css('z-index', 9999);
-        $(`.fbs-card.droppable`).css('z-index', 10000);
-        dragInfo.draggingFrom = object;
+        // カードの場合
+        if(object.type === 'card'){
+            this.style.opacity = '0.4';  // this / e.target is the source node.
+            
+            // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択したカードを記憶
+            // (同じ領域、もしくは切り札領域にはドラッグできない)
+            $(`.area.card-region.droppable:not([data-side=${object.side}][data-region=${object.region}])`).css('z-index', 9999);
+            $(`.fbs-card.droppable`).css('z-index', 10000);
+            dragInfo.draggingFrom = object;
 
-        if(object.region === 'aura'){
-            // 場に出ている付与札があれば、それも移動対象
-            $('[data-region=used]').addClass('droppable');
+            // ポップアップを非表示にする
+            $('.fbs-card').popup('hide all');
         }
 
-        $('.fbs-card').popup('hide all');
+        // 桜花結晶の場合
+        if(object.type === 'sakura-token'){
+            // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択した桜花結晶を記憶
+            $(`.area.sakura-token-region.droppable:not([data-side=${object.side}][data-region=${object.region}])`).css('z-index', 9999);
+            $(`.fbs-card.droppable`).css('z-index', 10000);
+            dragInfo.draggingFrom = object;
 
+            // 自分と同じ領域で、インデックスが自分以下の要素をすべて半透明にする
+            let $this = $(this);
+            let index = parseInt($this.attr('data-region-index'));
+            $(`.sakura-token[data-side=${$this.attr('data-side')}][data-region=${$this.attr('data-region')}]:lt(${index + 1})`).css('opacity', '0.4');
+
+
+            if(object.region === 'aura' || object.region === 'dust'){
+                // オーラやダストからの移動で、場に出ている付与札があれば、それも移動対象
+                $('.fbs-card[data-region=used]').addClass('droppable');
+            }
+
+            // ドラッグゴースト画像を設定
+            $('#sakura-token-ghost-many .count').text(index+1);
+            let ghost = (index >= 5 ? $('#sakura-token-ghost-many')[0] : $(`#sakura-token-ghost-${index+1}`)[0]);
+            //let ghost = $('<img src="/furuyoni_commons/others/sakura_token_ghost3.png" width="30" height="30">')[0];
+            (e.originalEvent as DragEvent).dataTransfer.setDragImage(ghost, 0, 0);
+
+            // 選択状態を解除
+            $(`.sakura-token`).removeClass('focused');
+        }
     });
 
     function processOnDragEnd(){
@@ -277,7 +349,6 @@ $(function(){
         return false;
     });
 
-    // ドラッグで要素に進入した
     $('#BOARD').on('dragenter', '.area.droppable', function(e){
         let side = $(this).attr('data-side');
         let region = $(this).attr('data-region');
@@ -399,6 +470,33 @@ $(function(){
                 });
             }
 
+            // // 桜花結晶を別領域に移動した場合
+            if(dragInfo.draggingFrom.type === 'sakura-token'){
+                let sakuraToken = dragInfo.draggingFrom;
+                let toSide = $this.attr('data-side') as PlayerSide;
+                let toRegion = $this.attr('data-region') as SakuraTokenRegion;
+                let moveCount = dragInfo.draggingFrom.indexOfRegion + 1;
+
+                // 移動ログを決定
+                let logs: {text: string, visibility?: LogVisibility}[] = [];
+                let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region);
+                let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion);
+
+                // ログ内容を決定
+                logs.push({text: `桜花結晶を${moveCount}つ移動しました：${fromRegionTitle} → ${toRegionTitle}`});
+                
+                appActions.operate({
+                    log: logs,
+                    proc: () => {
+                        appActions.moveSakuraToken({
+                          from: [sakuraToken.side, sakuraToken.region]
+                        , to: [toSide, toRegion]
+                        , moveNumber: moveCount
+                        });
+                    }
+                });
+            }
+
 
             // // 山札に移動した場合は特殊処理
             // if(to === 'library'){
@@ -430,4 +528,8 @@ $(function(){
         return false;
     });
 
+    // ドラッグゴースト画像を1秒後に表示
+    setTimeout(function(){
+        $('.drag-ghost').show();
+    }, 1000);
 });

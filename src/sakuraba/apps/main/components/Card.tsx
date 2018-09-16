@@ -81,7 +81,10 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
     // ドラッグ可否判定
     let libraryCards = state.board.objects.filter(o => o.type === 'card' && o.side === p.target.side && o.region === p.target.region);
     let draggable = true;
-    if(p.target.region === 'special') draggable = false; // 切り札はドラッグ不可
+    if(p.target.region === 'special'){
+        draggable = false; // 切り札はドラッグ不可
+        className += " clickable" // クリックは可能
+    }
     if(p.target.region === 'library' && p.target.indexOfRegion !== (libraryCards.length - 1)) draggable = false; // 山札にあって、かつ一番上のカードでない場合はドラッグ不可
 
     return (

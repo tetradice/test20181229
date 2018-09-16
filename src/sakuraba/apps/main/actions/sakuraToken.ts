@@ -31,14 +31,10 @@ export default {
      * カードを指定領域から別の領域に移動させる
      */
     moveSakuraToken: (p: {
-        /** 移動元のサイド */
-        fromSide: PlayerSide;
-        /** 移動元の領域 */
-        from: SakuraTokenRegion;
-        /** 移動先のサイド */
-        toSide: PlayerSide;
-        /** 移動先の領域 */
-        to: SakuraTokenRegion;
+        /** 移動元 */
+        from: [PlayerSide, SakuraTokenRegion];
+        /** 移動先 */
+        to: [PlayerSide, SakuraTokenRegion];
         /** 移動数 */
         moveNumber?: number;
     }) => (state: state.State) => {
@@ -47,14 +43,15 @@ export default {
 
         // 桜花結晶数を指定枚数移動 (省略時は0枚)
         let num = (p.moveNumber === undefined ? 1 : p.moveNumber);
-        let fromRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.fromSide, p.from).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
-        let toRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.toSide, p.to).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+        let fromRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.from[0], p.from[1]).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+        let toRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.to[0], p.to[1]).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
         let indexes = toRegionSakuraTokens.map(c => c.indexOfRegion);
         let maxIndex = Math.max(...indexes);
 
         let targetSakuraTokens = fromRegionSakuraTokens.slice(0, num);
         targetSakuraTokens.forEach(c => {
-            c.region = p.to;
+            c.side = p.to[0];
+            c.region = p.to[1];
             // 領域インデックスは最大値+1
             c.indexOfRegion = maxIndex + 1;
             maxIndex++;

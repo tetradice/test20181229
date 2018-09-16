@@ -67,8 +67,8 @@ export class Board implements state.Board {
     /** カード移動時などの領域情報一括更新 */
     updateRegionInfo(){
         let cards = this.getCards();
-        let sideAndRegions = _.uniq(cards.map(c => [c.side, c.region])) as [PlayerSide, CardRegion][];
-        sideAndRegions.forEach(r => {
+        let sideAndCardRegions = _.uniq(cards.map(c => [c.side, c.region])) as [PlayerSide, CardRegion][];
+        sideAndCardRegions.forEach(r => {
             let [side, region] = r;
 
             let regionCards = this.getRegionCards(side, region).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
@@ -84,6 +84,22 @@ export class Board implements state.Board {
                 // 回転状態更新
                 c.rotated = (region === 'hidden-used');
 
+            });
+        });
+
+        let tokens = this.getSakuraTokens();
+        let sideAndSakuraTokenRegions = _.uniq(tokens.map(c => [c.side, c.region])) as [PlayerSide, SakuraTokenRegion][];
+        console.log(tokens);
+        console.log(sideAndSakuraTokenRegions);
+        sideAndSakuraTokenRegions.forEach(r => {
+            let [side, region] = r;
+
+            let regionSakuraTokens = this.getRegionSakuraTokens(side, region).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+            let index = 0;
+            regionSakuraTokens.forEach(c => {
+                // インデックス更新
+                c.indexOfRegion = index;
+                index++;
             });
         });
     }

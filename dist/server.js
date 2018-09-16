@@ -479,7 +479,7 @@ function getDescriptionHtml(cardId) {
     return html;
 }
 exports.getDescriptionHtml = getDescriptionHtml;
-/** リージョン名を取得 */
+/** カードのリージョン名を取得 */
 function getCardRegionTitle(selfSide, side, region) {
     var titleBase = "";
     if (region === 'hand') {
@@ -506,6 +506,36 @@ function getCardRegionTitle(selfSide, side, region) {
     }
 }
 exports.getCardRegionTitle = getCardRegionTitle;
+/** 桜花結晶のリージョン名を取得 */
+function getSakuraTokenRegionTitle(selfSide, side, region) {
+    var titleBase = "";
+    if (region === 'aura') {
+        titleBase = "オーラ";
+    }
+    if (region === 'life') {
+        titleBase = "ライフ";
+    }
+    if (region === 'flair') {
+        titleBase = "フレア";
+    }
+    if (region === 'distance') {
+        titleBase = "間合";
+    }
+    if (region === 'dust') {
+        titleBase = "ダスト";
+    }
+    if (region === 'on-card') {
+        titleBase = "カード上";
+    }
+    // 相手側に移動した場合は、「相手の」をつける
+    if (selfSide !== side) {
+        return "\u76F8\u624B\u306E" + titleBase;
+    }
+    else {
+        return titleBase;
+    }
+}
+exports.getSakuraTokenRegionTitle = getSakuraTokenRegionTitle;
 
 
 /***/ }),

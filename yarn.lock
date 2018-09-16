@@ -2200,9 +2200,13 @@ hyperapp-types@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/hyperapp-types/-/hyperapp-types-0.3.0.tgz#a3ecb565abd75b99c663ae2b3aac4a8f4036bd2c"
 
-hyperapp@^1.1.2, hyperapp@^1.2.5, hyperapp@^1.2.6:
+hyperapp@^1.1.2, hyperapp@^1.2.5:
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/hyperapp/-/hyperapp-1.2.6.tgz#fa3b42dad88e50f962b9d9f922dfa7bef3c8ebc8"
+
+hyperapp@^1.2.6:
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/hyperapp/-/hyperapp-1.2.9.tgz#a17ec09634968a5fa5f6b7d649e7a03d9680fcf2"
 
 iconv-lite@0.4.19:
   version "0.4.19"

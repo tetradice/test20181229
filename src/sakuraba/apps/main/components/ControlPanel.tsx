@@ -244,6 +244,22 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     let board = state.board;
     let deckBuilded = boardModel.getSideCards(state.side).length >= 1;
 
+    // 基本動作
+    let basicAction = (from: [PlayerSide, SakuraTokenRegion], to: [PlayerSide, SakuraTokenRegion], title: string) => {
+        let logs: {text: string, visibility?: LogVisibility}[] = [];
+        logs.push({text: `${title}を行いました`});
+        
+        actions.operate({
+            log: logs,
+            proc: () => {
+                actions.moveSakuraToken({
+                  from: from
+                , to: to
+                , moveNumber: 1
+                });
+            }
+        });
+    }
 
     // コマンドボタンの決定
     let commandButtons: Children = null;
@@ -252,6 +268,13 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         commandButtons = (
             <div class={css.commandButtons}>
             <div class={css.currentPhase}>- 桜花決闘 -</div>
+            <div class="ui basic buttons" style="margin-right: 1em; margin-left: 1em;">
+            <button style="padding-left: 1em; padding-right: 1em;" class={`ui basic button ${boardModel.getRegionSakuraTokens(null, 'distance').length >= 1 ? '' : 'disabled'}`} onclick={() => basicAction([null, 'distance'], [state.side, 'aura'], '前進')}>前進</button>
+            <button style="padding-left: 1em; padding-right: 1em;" class={`ui basic button ${boardModel.getRegionSakuraTokens(null, 'dust').length >= 1 ? '' : 'disabled'}`} onclick={() => basicAction([null, 'dust'], [null, 'distance'], '離脱')}>離脱</button>
+            </div>
+            <button style="margin-right: 1em; margin-left: 1em;padding-left: 1em; padding-right: 1em;" class={`ui basic button ${boardModel.getRegionSakuraTokens(state.side, 'aura').length >= 1 ? '' : 'disabled'}`} onclick={() => basicAction([state.side, 'aura'], [null, 'distance'], '後退')}>後退</button>
+            <button style="margin-right: 1em; margin-left: 1em;padding-left: 1em; padding-right: 1em;" class={`ui basic button ${boardModel.getRegionSakuraTokens(null, 'dust').length >= 1 ? '' : 'disabled'}`} onclick={() => basicAction([null, 'dust'], [state.side, 'aura'], '纏い')}>纏い</button>
+            <button style="margin-right: 1em; margin-left: 1em;padding-left: 1em; padding-right: 1em;" class={`ui basic button ${boardModel.getRegionSakuraTokens(state.side, 'aura').length >= 1 ? '' : 'disabled'}`} onclick={() => basicAction([state.side, 'aura'], [state.side, 'flair'], '宿し')}>宿し</button>
             </div>
         );
     } else if(state.board.megamiOpenFlags[state.side]){
@@ -335,7 +358,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             <div class="ui icon basic buttons">
                 <button class={`ui button ${state.boardHistoryPast.length === 0 ? 'disabled' : ''}`} onclick={() => actions.undoBoard()}><i class="undo alternate icon"></i></button>
                 <button class={`ui button ${state.boardHistoryFuture.length === 0 ? 'disabled' : ''}`}  onclick={() => actions.redoBoard()}><i class="redo alternate icon"></i></button>
-            </div>
+            </div>&nbsp;
             <button class="ui basic button dropdown" oncreate={dropdownCreate}>
                 メニュー
                 <i class="dropdown icon"></i>

@@ -153,7 +153,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            log: (p.value ? `[${CARD_DATA[card.cardId].name}]を表向きにしました` : `[${CARD_DATA[card.cardId].name}]を裏返しました`),
+            log: (p.value ? `切札[${CARD_DATA[card.cardId].name}]を表向きにしました` : `切札[${CARD_DATA[card.cardId].name}]を裏返しました`),
             proc: () => {
                 actions.setSpecialUsed(p);
             }

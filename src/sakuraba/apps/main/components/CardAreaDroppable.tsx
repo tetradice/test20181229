@@ -82,7 +82,7 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
 
     return (
         <div
-         class="area droppable"
+         class="area droppable card-region"
          style={styles}
          data-side={p.side}
          data-region={p.region}

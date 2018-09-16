@@ -24,7 +24,7 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
 
     return (
         <div
-         class="area droppable"
+         class="area droppable sakura-token-region"
          style={styles}
          data-side={p.side}
          data-region={p.region}
