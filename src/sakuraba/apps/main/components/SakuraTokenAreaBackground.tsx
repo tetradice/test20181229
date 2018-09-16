@@ -31,8 +31,7 @@ export const SakuraTokenAreaBackground = (p: Param) => (state: state.State) => {
             data-region={p.region}
             key={`SakuraTokenAreaBackground_${p.side}_${p.region}`}
         >
-            <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`, right: `24px`}}>{p.title}:</div>
-            <div class="card-count" style={{fontSize: `${(16 * state.zoom)}px`, bottom: `2px`}}>{p.tokenCount}</div>
+            <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`}}>{p.title}</div>
             
         </div>
     );

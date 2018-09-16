@@ -48655,10 +48655,7 @@ exports.SakuraTokenAreaBackground = function (p) { return function (state) {
         height: p.height * state.zoom + "px"
     };
     return (hyperapp_1.h("div", { class: "area background sakura-token-region ui segment ", style: styles, "data-side": p.side, "data-region": p.region, key: "SakuraTokenAreaBackground_" + p.side + "_" + p.region },
-        hyperapp_1.h("div", { class: "area-title", style: { fontSize: (15 * state.zoom) + "px", right: "24px" } },
-            p.title,
-            ":"),
-        hyperapp_1.h("div", { class: "card-count", style: { fontSize: (16 * state.zoom) + "px", bottom: "2px" } }, p.tokenCount)));
+        hyperapp_1.h("div", { class: "area-title", style: { fontSize: (15 * state.zoom) + "px" } }, p.title)));
 }; };
 
 
@@ -48930,14 +48927,14 @@ var view = function (state, actions) {
         }
     });
     var sakuraTokenAreaData = [
-        { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 200, width: 230, tokenWidth: 140, height: 30 },
-        { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 240, width: 370, tokenWidth: 280, height: 30 },
-        { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10, top: 280, width: 370, tokenWidth: 280, height: 30 },
-        { region: 'distance', side: null, title: "間合", layoutType: 'horizontal', left: 10, top: 380, width: 370, tokenWidth: 280, height: 30 },
-        { region: 'dust', side: null, title: "ダスト", layoutType: 'horizontal', left: 380, top: 380, width: 370, tokenWidth: 280, height: 30 },
-        { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 430, width: 230, tokenWidth: 140, height: 30 },
-        { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 470, width: 370, tokenWidth: 280, height: 30 },
-        { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 510, width: 370, tokenWidth: 280, height: 30 }
+        { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 200, width: 210, tokenWidth: 140, height: 30 },
+        { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 240, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10, top: 280, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'distance', side: null, title: "間合", layoutType: 'horizontal', left: 10, top: 380, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'dust', side: null, title: "ダスト", layoutType: 'horizontal', left: 380, top: 380, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 430, width: 210, tokenWidth: 140, height: 30 },
+        { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 470, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 280, height: 30 }
     ];
     var frameNodes = [];
     var objectNodes = [];
