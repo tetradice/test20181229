@@ -261,12 +261,56 @@ $(function(){
 
     let contextMenuShowingAfterDrop: boolean = false;    
 
+    // 前進ボタンの上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '#FORWARD-BUTTON', function(e){
+        // 間合いの右端をフォーカス
+        $(`.sakura-token[data-region=distance][data-dragging-count=1]`).addClass('focused');
+        // 自オーラ領域をフォーカス
+        $(`.area.background[data-side=${params.side}][data-region=aura]`).addClass('over');
+    });
+    // 離脱ボタンの上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '#LEAVE-BUTTON', function(e){
+        // ダストの右端をフォーカス
+        $(`.sakura-token[data-region=dust][data-dragging-count=1]`).addClass('focused');
+        // 間合い領域をフォーカス
+        $(`.area.background[data-region=distance]`).addClass('over');
+    });
+    // 後退ボタンの上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '#BACK-BUTTON', function(e){
+        // 自オーラの右端をフォーカス
+        $(`.sakura-token[data-side=${params.side}][data-region=aura][data-dragging-count=1]`).addClass('focused');
+        // 間合い領域をフォーカス
+        $(`.area.background[data-region=distance]`).addClass('over');
+    });
+    // 纏いボタンの上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '#WEAR-BUTTON', function(e){
+        // ダストの右端をフォーカス
+        $(`.sakura-token[data-region=dust][data-dragging-count=1]`).addClass('focused');
+        // 自オーラ領域をフォーカス
+        $(`.area.background[data-side=${params.side}][data-region=aura]`).addClass('over');
+    });
+    // 宿しボタンの上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '#CHARGE-BUTTON', function(e){
+        // 自オーラの右端をフォーカス
+        $(`.sakura-token[data-side=${params.side}][data-region=aura][data-dragging-count=1]`).addClass('focused');
+        // 自フレア領域をフォーカス
+        $(`.area.background[data-side=${params.side}][data-region=flair]`).addClass('over');
+    });
+    $('#BOARD').on('mouseleave', '#FORWARD-BUTTON, #BACK-BUTTON, #CHARGE-BUTTON, #LEAVE-BUTTON, #WEAR-BUTTON', function(e){
+        $(`.sakura-token`).removeClass('focused');
+        $(`.area.background`).removeClass('over');
+    });
+
     // 桜花結晶の上にカーソルを置いたときの処理
     $('#BOARD').on('mouseenter', '.sakura-token', function(e){
-        // 自分と同じ領域で、インデックスが自分以下の要素をすべて選択扱いにする
+        // 自分と同じ領域で、インデックスが自分以上の要素をすべて選択扱いにする
         let $this = $(this);
-        let index = parseInt($this.attr('data-region-index')) + 1;
-        $(`.sakura-token[data-side=${$this.attr('data-side')}][data-region=${$this.attr('data-region')}]:lt(${index})`).addClass('focused');
+        let index = parseInt($this.attr('data-region-index'));
+        if(index === 0){
+            $(`.sakura-token[data-side=${$this.attr('data-side')}][data-region=${$this.attr('data-region')}]`).addClass('focused');
+        } else {
+            $(`.sakura-token[data-side=${$this.attr('data-side')}][data-region=${$this.attr('data-region')}]:gt(${index-1})`).addClass('focused');
+        }
     });
     $('#BOARD').on('mouseleave', '.sakura-token', function(e){
         $(`.sakura-token`).removeClass('focused');
@@ -301,11 +345,19 @@ $(function(){
             $(`.fbs-card.droppable`).css('z-index', 10000);
             dragInfo.draggingFrom = object;
 
-            // 自分と同じ領域で、インデックスが自分以下の要素をすべて半透明にする
             let $this = $(this);
             let index = parseInt($this.attr('data-region-index'));
-            $(`.sakura-token[data-side=${$this.attr('data-side')}][data-region=${$this.attr('data-region')}]:lt(${index + 1})`).css('opacity', '0.4');
+            let draggingCount = parseInt($this.attr('data-dragging-count'));
 
+            // 移動数を記憶
+            dragInfo.sakuraTokenMoveCount = draggingCount;
+
+            // 自分と同じ領域で、インデックスが自分以上の要素をすべて半透明にする
+            if(index === 0){
+                $(`.sakura-token[data-side=${$this.attr('data-side')}][data-region=${$this.attr('data-region')}]`).css('opacity', '0.4');
+            } else {
+                $(`.sakura-token[data-side=${$this.attr('data-side')}][data-region=${$this.attr('data-region')}]:gt(${index-1})`).css('opacity', '0.4');
+            }
 
             if(object.region === 'aura' || object.region === 'dust'){
                 // オーラやダストからの移動で、場に出ている付与札があれば、それも移動対象
@@ -313,8 +365,8 @@ $(function(){
             }
 
             // ドラッグゴースト画像を設定
-            $('#sakura-token-ghost-many .count').text(index+1);
-            let ghost = (index >= 5 ? $('#sakura-token-ghost-many')[0] : $(`#sakura-token-ghost-${index+1}`)[0]);
+            $('#sakura-token-ghost-many .count').text(draggingCount);
+            let ghost = (draggingCount >= 6 ? $('#sakura-token-ghost-many')[0] : $(`#sakura-token-ghost-${draggingCount}`)[0]);
             //let ghost = $('<img src="/furuyoni_commons/others/sakura_token_ghost3.png" width="30" height="30">')[0];
             (e.originalEvent as DragEvent).dataTransfer.setDragImage(ghost, 0, 0);
 
@@ -475,7 +527,6 @@ $(function(){
                 let sakuraToken = dragInfo.draggingFrom;
                 let toSide = $this.attr('data-side') as PlayerSide;
                 let toRegion = $this.attr('data-region') as SakuraTokenRegion;
-                let moveCount = dragInfo.draggingFrom.indexOfRegion + 1;
 
                 // 移動ログを決定
                 let logs: {text: string, visibility?: LogVisibility}[] = [];
@@ -483,7 +534,7 @@ $(function(){
                 let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion);
 
                 // ログ内容を決定
-                logs.push({text: `桜花結晶を${moveCount}つ移動しました：${fromRegionTitle} → ${toRegionTitle}`});
+                logs.push({text: `桜花結晶を${dragInfo.sakuraTokenMoveCount}つ移動しました：${fromRegionTitle} → ${toRegionTitle}`});
                 
                 appActions.operate({
                     log: logs,
@@ -491,7 +542,7 @@ $(function(){
                         appActions.moveSakuraToken({
                           from: [sakuraToken.side, sakuraToken.region]
                         , to: [toSide, toRegion]
-                        , moveNumber: moveCount
+                        , moveNumber: dragInfo.sakuraTokenMoveCount
                         });
                     }
                 });

@@ -133,14 +133,14 @@ const view: View<state.State, ActionsType> = (state, actions) => {
       , tokenWidth: number
       , height: number
   }[] = [
-            { region: 'aura',     side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10,   top: 200,  width: 350, tokenWidth: 280, height: 30 }
+            { region: 'aura',     side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10,   top: 200,  width: 210, tokenWidth: 140, height: 30 }
           , { region: 'life',     side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10,   top: 240,  width: 350, tokenWidth: 280, height: 30 }
           , { region: 'flair',    side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10,   top: 280,  width: 350, tokenWidth: 280, height: 30 }
 
           , { region: 'distance', side: null, title: "間合",   layoutType: 'horizontal', left: 10,    top: 380,  width: 350, tokenWidth: 280, height: 30 }
           , { region: 'dust',     side: null, title: "ダスト", layoutType: 'horizontal', left: 380,   top: 380,  width: 350, tokenWidth: 280, height: 30 }
 
-          , { region: 'aura',     side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850,   top: 430,  width: 350, tokenWidth: 280, height: 30 }
+          , { region: 'aura',     side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850,   top: 430,  width: 210, tokenWidth: 140, height: 30 }
           , { region: 'life',     side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850,   top: 470,  width: 350, tokenWidth: 280, height: 30 }
           , { region: 'flair',    side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850,   top: 510,  width: 350, tokenWidth: 280, height: 30 }
           
@@ -184,7 +184,9 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let token = ret[0] as state.SakuraToken;
             let left = area.left + ret[1];
             let top = area.top + ret[2];
-            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} />);
+            let draggingCount = tokens.length - token.indexOfRegion;
+
+            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} draggingCount={draggingCount} />);
         });
 
         // フレームを追加

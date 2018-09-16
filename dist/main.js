@@ -46636,12 +46636,56 @@ $(function () {
         }
     });
     var contextMenuShowingAfterDrop = false;
+    // 前進ボタンの上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '#FORWARD-BUTTON', function (e) {
+        // 間合いの右端をフォーカス
+        $(".sakura-token[data-region=distance][data-dragging-count=1]").addClass('focused');
+        // 自オーラ領域をフォーカス
+        $(".area.background[data-side=" + params.side + "][data-region=aura]").addClass('over');
+    });
+    // 離脱ボタンの上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '#LEAVE-BUTTON', function (e) {
+        // ダストの右端をフォーカス
+        $(".sakura-token[data-region=dust][data-dragging-count=1]").addClass('focused');
+        // 間合い領域をフォーカス
+        $(".area.background[data-region=distance]").addClass('over');
+    });
+    // 後退ボタンの上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '#BACK-BUTTON', function (e) {
+        // 自オーラの右端をフォーカス
+        $(".sakura-token[data-side=" + params.side + "][data-region=aura][data-dragging-count=1]").addClass('focused');
+        // 間合い領域をフォーカス
+        $(".area.background[data-region=distance]").addClass('over');
+    });
+    // 纏いボタンの上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '#WEAR-BUTTON', function (e) {
+        // ダストの右端をフォーカス
+        $(".sakura-token[data-region=dust][data-dragging-count=1]").addClass('focused');
+        // 自オーラ領域をフォーカス
+        $(".area.background[data-side=" + params.side + "][data-region=aura]").addClass('over');
+    });
+    // 宿しボタンの上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '#CHARGE-BUTTON', function (e) {
+        // 自オーラの右端をフォーカス
+        $(".sakura-token[data-side=" + params.side + "][data-region=aura][data-dragging-count=1]").addClass('focused');
+        // 自フレア領域をフォーカス
+        $(".area.background[data-side=" + params.side + "][data-region=flair]").addClass('over');
+    });
+    $('#BOARD').on('mouseleave', '#FORWARD-BUTTON, #BACK-BUTTON, #CHARGE-BUTTON, #LEAVE-BUTTON, #WEAR-BUTTON', function (e) {
+        $(".sakura-token").removeClass('focused');
+        $(".area.background").removeClass('over');
+    });
     // 桜花結晶の上にカーソルを置いたときの処理
     $('#BOARD').on('mouseenter', '.sakura-token', function (e) {
-        // 自分と同じ領域で、インデックスが自分以下の要素をすべて選択扱いにする
+        // 自分と同じ領域で、インデックスが自分以上の要素をすべて選択扱いにする
         var $this = $(this);
-        var index = parseInt($this.attr('data-region-index')) + 1;
-        $(".sakura-token[data-side=" + $this.attr('data-side') + "][data-region=" + $this.attr('data-region') + "]:lt(" + index + ")").addClass('focused');
+        var index = parseInt($this.attr('data-region-index'));
+        if (index === 0) {
+            $(".sakura-token[data-side=" + $this.attr('data-side') + "][data-region=" + $this.attr('data-region') + "]").addClass('focused');
+        }
+        else {
+            $(".sakura-token[data-side=" + $this.attr('data-side') + "][data-region=" + $this.attr('data-region') + "]:gt(" + (index - 1) + ")").addClass('focused');
+        }
     });
     $('#BOARD').on('mouseleave', '.sakura-token', function (e) {
         $(".sakura-token").removeClass('focused');
@@ -46669,17 +46713,25 @@ $(function () {
             $(".area.sakura-token-region.droppable:not([data-side=" + object.side + "][data-region=" + object.region + "])").css('z-index', 9999);
             $(".fbs-card.droppable").css('z-index', 10000);
             dragInfo_1.default.draggingFrom = object;
-            // 自分と同じ領域で、インデックスが自分以下の要素をすべて半透明にする
             var $this = $(this);
             var index = parseInt($this.attr('data-region-index'));
-            $(".sakura-token[data-side=" + $this.attr('data-side') + "][data-region=" + $this.attr('data-region') + "]:lt(" + (index + 1) + ")").css('opacity', '0.4');
+            var draggingCount = parseInt($this.attr('data-dragging-count'));
+            // 移動数を記憶
+            dragInfo_1.default.sakuraTokenMoveCount = draggingCount;
+            // 自分と同じ領域で、インデックスが自分以上の要素をすべて半透明にする
+            if (index === 0) {
+                $(".sakura-token[data-side=" + $this.attr('data-side') + "][data-region=" + $this.attr('data-region') + "]").css('opacity', '0.4');
+            }
+            else {
+                $(".sakura-token[data-side=" + $this.attr('data-side') + "][data-region=" + $this.attr('data-region') + "]:gt(" + (index - 1) + ")").css('opacity', '0.4');
+            }
             if (object.region === 'aura' || object.region === 'dust') {
                 // オーラやダストからの移動で、場に出ている付与札があれば、それも移動対象
                 $('.fbs-card[data-region=used]').addClass('droppable');
             }
             // ドラッグゴースト画像を設定
-            $('#sakura-token-ghost-many .count').text(index + 1);
-            var ghost = (index >= 5 ? $('#sakura-token-ghost-many')[0] : $("#sakura-token-ghost-" + (index + 1))[0]);
+            $('#sakura-token-ghost-many .count').text(draggingCount);
+            var ghost = (draggingCount >= 6 ? $('#sakura-token-ghost-many')[0] : $("#sakura-token-ghost-" + draggingCount)[0]);
             //let ghost = $('<img src="/furuyoni_commons/others/sakura_token_ghost3.png" width="30" height="30">')[0];
             e.originalEvent.dataTransfer.setDragImage(ghost, 0, 0);
             // 選択状態を解除
@@ -46821,20 +46873,19 @@ $(function () {
                 var sakuraToken_1 = dragInfo_1.default.draggingFrom;
                 var toSide_2 = $this.attr('data-side');
                 var toRegion_2 = $this.attr('data-region');
-                var moveCount_1 = dragInfo_1.default.draggingFrom.indexOfRegion + 1;
                 // 移動ログを決定
                 var logs = [];
                 var fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken_1.side, sakuraToken_1.region);
                 var toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide_2, toRegion_2);
                 // ログ内容を決定
-                logs.push({ text: "\u685C\u82B1\u7D50\u6676\u3092" + moveCount_1 + "\u3064\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
+                logs.push({ text: "\u685C\u82B1\u7D50\u6676\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
                 appActions.operate({
                     log: logs,
                     proc: function () {
                         appActions.moveSakuraToken({
                             from: [sakuraToken_1.side, sakuraToken_1.region],
                             to: [toSide_2, toRegion_2],
-                            moveNumber: moveCount_1
+                            moveNumber: dragInfo_1.default.sakuraTokenMoveCount
                         });
                     }
                 });
@@ -48318,15 +48369,18 @@ exports.ControlPanel = function () { return function (state, actions) {
     // コマンドボタンの決定
     var commandButtons = null;
     if (state.board.firstDrawFlags[state.side]) {
-        // 最初の手札を引いたあとの場合
+        // 最初の手札を引いたあとの場合 (桜花決闘)
+        var distanceCount = boardModel.getRegionSakuraTokens(null, 'distance').length;
+        var dustCount = boardModel.getRegionSakuraTokens(null, 'dust').length;
+        var myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura').length;
         commandButtons = (hyperapp_1.h("div", { class: css.commandButtons },
             hyperapp_1.h("div", { class: css.currentPhase }, "- \u685C\u82B1\u6C7A\u95D8 -"),
             hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 0.5em; margin-left: 0.5em; " },
-                hyperapp_1.h("button", { style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (boardModel.getRegionSakuraTokens(null, 'distance').length >= 1 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'distance'], [state.side, 'aura'], '前進'); } }, "\u524D\u9032"),
-                hyperapp_1.h("button", { style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (boardModel.getRegionSakuraTokens(null, 'dust').length >= 1 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'dust'], [null, 'distance'], '離脱'); } }, "\u96E2\u8131")),
-            hyperapp_1.h("button", { style: "margin-right: 0.5em; margin-left: 0.5em; padding-left: 1em; padding-right: 1em;", class: "ui basic button " + (boardModel.getRegionSakuraTokens(state.side, 'aura').length >= 1 ? '' : 'disabled'), onclick: function () { return basicAction([state.side, 'aura'], [null, 'distance'], '後退'); } }, "\u5F8C\u9000"),
-            hyperapp_1.h("button", { style: "margin-right: 0.5em; margin-left: 0.5em; padding-left: 1em; padding-right: 1em;", class: "ui basic button " + (boardModel.getRegionSakuraTokens(null, 'dust').length >= 1 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'dust'], [state.side, 'aura'], '纏い'); } }, "\u7E8F\u3044"),
-            hyperapp_1.h("button", { style: "margin-right: 0.5em; margin-left: 0.5em; padding-left: 1em; padding-right: 1em;", class: "ui basic button " + (boardModel.getRegionSakuraTokens(state.side, 'aura').length >= 1 ? '' : 'disabled'), onclick: function () { return basicAction([state.side, 'aura'], [state.side, 'flair'], '宿し'); } }, "\u5BBF\u3057")));
+                hyperapp_1.h("button", { id: "FORWARD-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (distanceCount >= 1 && myAuraCount < 5 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'distance'], [state.side, 'aura'], '前進'); } }, "\u524D\u9032"),
+                hyperapp_1.h("button", { id: "LEAVE-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (dustCount >= 1 && distanceCount < 10 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'dust'], [null, 'distance'], '離脱'); } }, "\u96E2\u8131")),
+            hyperapp_1.h("button", { id: "BACK-BUTTON", style: "margin-right: 0.5em; margin-left: 0.5em; padding-left: 1em; padding-right: 1em;", class: "ui basic button " + (myAuraCount >= 1 && distanceCount < 10 ? '' : 'disabled'), onclick: function () { return basicAction([state.side, 'aura'], [null, 'distance'], '後退'); } }, "\u5F8C\u9000"),
+            hyperapp_1.h("button", { id: "WEAR-BUTTON", style: "margin-right: 0.5em; margin-left: 0.5em; padding-left: 1em; padding-right: 1em;", class: "ui basic button " + (dustCount >= 1 && myAuraCount < 5 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'dust'], [state.side, 'aura'], '纏い'); } }, "\u7E8F\u3044"),
+            hyperapp_1.h("button", { id: "CHARGE-BUTTON", style: "margin-right: 0.5em; margin-left: 0.5em; padding-left: 1em; padding-right: 1em;", class: "ui basic button " + (myAuraCount >= 1 ? '' : 'disabled'), onclick: function () { return basicAction([state.side, 'aura'], [state.side, 'flair'], '宿し'); } }, "\u5BBF\u3057")));
     }
     else if (state.board.megamiOpenFlags[state.side]) {
         // 選択したメガミを公開済みの場合
@@ -48576,7 +48630,7 @@ exports.SakuraToken = function (p) { return function (state, actions) {
         height: 26 * state.zoom + "px"
     };
     var draggable = true;
-    return hyperapp_1.h("div", { class: "sakura-token", draggable: draggable, "data-object-id": p.target.id, "data-side": p.target.side, "data-region": p.target.region, "data-region-index": p.target.indexOfRegion, id: 'board-object-' + p.target.id, key: 'sakura-token-' + p.target.id, style: styles });
+    return hyperapp_1.h("div", { class: "sakura-token", draggable: draggable, "data-object-id": p.target.id, "data-side": p.target.side, "data-region": p.target.region, "data-region-index": p.target.indexOfRegion, "data-dragging-count": p.draggingCount, id: 'board-object-' + p.target.id, key: 'sakura-token-' + p.target.id, style: styles });
 }; };
 
 
@@ -48874,12 +48928,12 @@ var view = function (state, actions) {
         }
     });
     var sakuraTokenAreaData = [
-        { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 200, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 200, width: 210, tokenWidth: 140, height: 30 },
         { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 240, width: 350, tokenWidth: 280, height: 30 },
         { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10, top: 280, width: 350, tokenWidth: 280, height: 30 },
         { region: 'distance', side: null, title: "間合", layoutType: 'horizontal', left: 10, top: 380, width: 350, tokenWidth: 280, height: 30 },
         { region: 'dust', side: null, title: "ダスト", layoutType: 'horizontal', left: 380, top: 380, width: 350, tokenWidth: 280, height: 30 },
-        { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 430, width: 350, tokenWidth: 280, height: 30 },
+        { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 430, width: 210, tokenWidth: 140, height: 30 },
         { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 470, width: 350, tokenWidth: 280, height: 30 },
         { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 280, height: 30 }
     ];
@@ -48914,7 +48968,8 @@ var view = function (state, actions) {
             var token = ret[0];
             var left = area.left + ret[1];
             var top = area.top + ret[2];
-            objectNodes.push(hyperapp_1.h(components.SakuraToken, { target: token, left: left, top: top }));
+            var draggingCount = tokens.length - token.indexOfRegion;
+            objectNodes.push(hyperapp_1.h(components.SakuraToken, { target: token, left: left, top: top, draggingCount: draggingCount }));
         });
         // フレームを追加
         frameNodes.push(hyperapp_1.h(components.SakuraTokenAreaBackground, { side: area.side, region: area.region, title: area.title, left: area.left, top: area.top, width: area.width, height: area.height, tokenCount: tokens.length }));
@@ -49133,7 +49188,8 @@ exports.default = view;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var dragInfo = {
-    draggingFrom: null
+    draggingFrom: null,
+    sakuraTokenMoveCount: 0
 };
 exports.default = dragInfo;
 
