@@ -39,12 +39,12 @@ export default {
     moveCard: (p: {
         /**
          * 移動元。下記のいずれかで指定
-         * 1. プレイヤーサイドと領域の組み合わせ
+         * 1. プレイヤーサイドと領域と関連カードの組み合わせ
          * 2. objectId
          */
-        from: [PlayerSide, CardRegion] | string;
-        /** 移動先。プレイヤーサイドと領域の組み合わせで指定 */
-        to: [PlayerSide, CardRegion];
+        from: [PlayerSide, CardRegion, string | null] | string;
+        /** 移動先。プレイヤーサイドと領域と関連カードの組み合わせで指定 */
+        to: [PlayerSide, CardRegion, string | null];
         /** 移動枚数 */
         moveNumber?: number;
         /** カードをスタックの先頭から出すか末尾から出すか。オブジェクトID未指定時に適用。省略時は末尾 */
@@ -66,8 +66,8 @@ export default {
         if(typeof p.from === 'string'){
             fromCards = newBoard.objects.filter(o => o.type === 'card' && o.id === p.from) as state.Card[];
         } else {
-            let [side, region] = p.from;
-            let fromRegionCards = newBoard.getRegionCards(side, region).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+            let [side, region, linkedCardId] = p.from;
+            let fromRegionCards = newBoard.getRegionCards(side, region, linkedCardId).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
             if(p.fromPosition === 'first'){
                 fromCards = fromRegionCards.slice(0, num);
             } else {
@@ -82,7 +82,7 @@ export default {
             actions.appendActionLog({text: `${title}-> ${cardNames}`, visibility: 'ownerOnly'});
         }
 
-        let [toSide, toRegion] = p.to;
+        let [toSide, toRegion, toLinkedCardId] = p.to;
 
         if(p.toPosition === 'first'){
             let i = -1;
@@ -90,10 +90,11 @@ export default {
             fromCards.forEach(c => {
                 c.region = toRegion;
                 c.indexOfRegion = i;
+                c.linkedCardId = toLinkedCardId;
                 i--;
             });
         } else {
-            let toRegionCards = newBoard.getRegionCards(toSide, toRegion).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+            let toRegionCards = newBoard.getRegionCards(toSide, toRegion, toLinkedCardId).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
             let indexes = toRegionCards.map(c => c.indexOfRegion);
             let maxIndex = Math.max(...indexes);
     
@@ -101,6 +102,7 @@ export default {
                 c.region = toRegion;
                 // 領域インデックスは最大値+1
                 c.indexOfRegion = maxIndex + 1;
+                c.linkedCardId = toLinkedCardId;
                 maxIndex++;
             });
         }
@@ -116,8 +118,8 @@ export default {
     draw: (p: {number?: number, cardNameLogging?: boolean}) => (state: state.State, actions: ActionsType) => {
         if(p.number === undefined) p.number = 1;
         actions.moveCard({
-              from: [state.side, 'library']
-            , to: [state.side, 'hand']
+              from: [state.side, 'library', null]
+            , to: [state.side, 'hand', null]
             , moveNumber: p.number
             , cardNameLogging: p.cardNameLogging
         });
@@ -152,10 +154,17 @@ export default {
         let board = new models.Board(state.board);
         let card = board.getCard(p.objectId);
 
+        // 他のカードが封印されている切札を、変更しようとした場合はエラー
+        let sealedCards = board.getSealedCards(card.id);
+        if(sealedCards.length >= 1){
+            utils.messageModal("他のカードが封印されているため、裏向きにできません。");
+            return;
+        }
+
         // 桜花結晶が乗っている切札を、変更しようとした場合はエラー
         let onCardTokens = board.getRegionSakuraTokens(card.side, 'on-card', card.id);
         if(onCardTokens.length >= 1){
-            utils.messageModal("桜花結晶が上に乗っている切り札は裏向きにできません。");
+            utils.messageModal("桜花結晶が上に乗っている切札は、裏向きにできません。");
             return;
         }
 
@@ -198,7 +207,7 @@ export default {
 
         let newBoard = models.Board.clone(state.board);
         // 山札のカードをすべて取得
-        let cards = newBoard.getRegionCards(p.side, 'library');
+        let cards = newBoard.getRegionCards(p.side, 'library', null);
         // ランダムに整列し、その順番をインデックスに再設定
         let shuffledCards = _.shuffle(cards);
         shuffledCards.forEach((c, i) => {
@@ -211,18 +220,31 @@ export default {
 
     /** 再構成操作 */
     oprReshuffle: (p: {side: PlayerSide, lifeDecrease: boolean}) => (state: state.State, actions: ActionsType) => {
+        let boardModel = new models.Board(state.board);
+
+        // 使用済み札の下に封印されたカードが1枚でもあれば、再構成はできない
+        let usedCards = boardModel.getRegionCards(p.side, 'used', null);
+        if(usedCards.find(c => boardModel.getSealedCards(c.id).length >= 1)){
+            utils.messageModal('使用済み札の下に封印されているカードがあるため、再構成を行えません。<br>先に封印されているカードを取り除いてください。');
+            return;
+        }
+        
         actions.operate({
             undoType: 'notBack', // Undo不可
             log: (p.lifeDecrease ? `再構成しました (ライフ-1)` : `ライフ減少なしで再構成しました`),
             proc: () => {
-                // 使用済、伏せ札をすべて山札へ移動
+                // （桜花結晶が上に乗っていない）使用済札、伏せ札をすべて山札へ移動
                 let newBoard = models.Board.clone(state.board);
-                let usedCards = newBoard.getRegionCards(p.side, 'used');
-                actions.moveCard({from: [p.side, 'used'], to: [p.side, 'library'], moveNumber: usedCards.length});
+                let usedCards = newBoard.getRegionCards(p.side, 'used', null);
+                usedCards.forEach(card => {
+                    if(newBoard.getRegionSakuraTokens(p.side, 'on-card', card.id).length === 0){
+                        actions.moveCard({from: card.id, to: [p.side, 'library', null]});
+                    }
+                });
                 
                 newBoard = models.Board.clone(actions.getState().board);
-                let hiddenUsedCards = newBoard.getRegionCards(p.side, 'hidden-used');
-                actions.moveCard({from: [p.side, 'hidden-used'], to: [p.side, 'library'], moveNumber: hiddenUsedCards.length});
+                let hiddenUsedCards = newBoard.getRegionCards(p.side, 'hidden-used', null);
+                actions.moveCard({from: [p.side, 'hidden-used', null], to: [p.side, 'library', null], moveNumber: hiddenUsedCards.length});
 
                 // 山札を混ぜる
                 actions.shuffle({side: p.side});

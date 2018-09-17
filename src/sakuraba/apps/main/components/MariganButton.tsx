@@ -23,7 +23,7 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
         let board = new models.Board(state.board);
         
         let promise = new Promise<state.Card[]>((resolve, reject) => {
-            let cards = board.getRegionCards(state.side, 'hand');
+            let cards = board.getRegionCards(state.side, 'hand', null);
             let st = apps.mariganModal.State.create(state.side, cards, resolve, reject);
             apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));            
         }).then((selectedCards) => {
@@ -33,7 +33,7 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
                 proc: () => {
                     // 選択したカードを山札の底に移動
                     selectedCards.forEach(card => {
-                        actions.moveCard({from: card.id, to: [state.side, 'library'], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す'});
+                        actions.moveCard({from: card.id, to: [state.side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す'});
                     });
 
                     // 手札n枚を引く

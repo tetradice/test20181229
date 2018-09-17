@@ -46,7 +46,10 @@ export interface Board {
     firstDrawFlags: {p1: boolean, p2: boolean};
     /** 手札の引き直しを行ったかどうか */
     mariganFlags: {p1: boolean, p2: boolean};
-    
+    /** 手札を相手に公開しているかどうか */
+    handOpenFlags: {p1: boolean, p2: boolean};
+    /** 特定の手札を相手に公開しているかどうか */
+    handCardOpenFlags: {p1: {[id: string]: boolean | undefined}, p2: {[id: string]: boolean | undefined}};
 }
 
 /**
@@ -69,6 +72,7 @@ export interface Card extends BoardObjectBase {
     rotated: boolean;
     openState: CardOpenState;
     specialUsed: boolean;
+    linkedCardId: string;
 }
 
 export interface SakuraToken extends BoardObjectBase {

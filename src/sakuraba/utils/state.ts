@@ -12,6 +12,8 @@ export function createInitialState(): state.State{
             , megamiOpenFlags: {p1: false, p2: false}
             , firstDrawFlags: {p1: false, p2: false}
             , mariganFlags: {p1: false, p2: false}
+            , handOpenFlags: {p1: false, p2: false}
+            , handCardOpenFlags: {p1: {}, p2: {}}
           }
         , boardHistoryPast: []
         , boardHistoryFuture: []
@@ -35,6 +37,7 @@ export function createCard(id: string, cardId: string, region: CardRegion | null
     , rotated: false
     , openState: 'opened'
     , specialUsed: false
+    , linkedCardId: null
     , side: side
   };
 }

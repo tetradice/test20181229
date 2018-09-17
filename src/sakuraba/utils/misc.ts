@@ -24,6 +24,7 @@ export function logIsVisible(log: state.LogRecord, side: PlayerSide): boolean{
 /** カードの適切な公開状態を判定 */
 export function judgeCardOpenState(
       card: state.Card
+    , handOpenFlag: boolean
     , cardSide?: PlayerSide
     , cardRegion?: CardRegion
 ): CardOpenState{
@@ -31,14 +32,14 @@ export function judgeCardOpenState(
     if(cardRegion === undefined) cardRegion = card.region;
     let cardData = sakuraba.CARD_DATA[card.cardId];
 
-    if(cardRegion === 'used' || (cardData.baseType === 'special' && card.specialUsed)){
-        // カードが使用済み領域にある場合か、切り札で使用済みフラグがONの場合、公開済み
+    if(cardRegion === 'used' || cardRegion === 'on-card' || (cardData.baseType === 'special' && card.specialUsed)){
+        // カードが使用済み領域にある場合か、封印済みか、切り札で使用済みフラグがONの場合、公開済み
         return 'opened';
     } else if(cardRegion === 'hand'){
         // 手札にあれば、所有者のみ表示可能
-        return 'ownerOnly';
+        // ただし手札オープンフラグがONの場合は全体公開
+        return (handOpenFlag ? 'opened' : 'ownerOnly');
     }
-
     // 上記以外の場合は裏向き
     return 'hidden';
 }

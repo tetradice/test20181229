@@ -20,8 +20,14 @@ export const CardAreaBackground = (p: Param) => (state: state.State) => {
         , top: `${p.top * state.zoom}px`
         , width: `${p.width * state.zoom}px`
         , height: `${p.height * state.zoom}px`
-        , position: 'relative'
     };
+
+    // 自分の手札領域で、かつ公開済みの場合
+    let handOpened = false;
+    if(p.region === 'hand' && p.side === state.side && state.board.handOpenFlags[state.side]){
+        styles.border = '1px blue solid';
+        handOpened = true;
+    }
 
     return (
         <div
@@ -33,6 +39,7 @@ export const CardAreaBackground = (p: Param) => (state: state.State) => {
         >
             <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`}}>{p.title}</div>
             <div class="card-count">{p.cardCount}</div>
+            {handOpened ? <div style="color: blue; position: absolute; bottom: 4px; right: 4px;">【手札公開中】</div> : null}
         </div>
     );
 }

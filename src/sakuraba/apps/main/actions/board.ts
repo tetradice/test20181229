@@ -286,7 +286,45 @@ export default {
         return {board: newBoard};
     },
 
+    /** 手札公開したフラグをセット */
+    setHandOpenFlag: (p: {
+        /** どちら側のフラグか */
+        side: PlayerSide;
+        /** 新しいフラグの値 */
+        value: boolean;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        // 手札公開フラグを変更
+        newBoard.handOpenFlags[p.side] = p.value;
 
+        // OFFにした場合、カード個別の公開フラグは初期化
+        newBoard.handCardOpenFlags[p.side] = {};
+
+        // 領域情報を更新
+        newBoard.updateRegionInfo();
+
+        return {board: newBoard};
+    },
+
+    /** 手札の個別カード公開したフラグをセット */
+    setHandCardOpenFlag: (p: {
+        /** どちら側のフラグか */
+        side: PlayerSide;
+        /** カードのオブジェクトID */
+        cardId: string;
+        /** 新しいフラグの値 */
+        value: boolean;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        // 手札公開フラグを変更
+        newBoard.handCardOpenFlags[p.side][p.cardId] = p.value;
+
+        // 領域情報を更新
+        newBoard.updateRegionInfo();
+
+        return {board: newBoard};
+    },
+    
     /** 最初の手札を引き、桜花結晶などを配置する */
     oprBoardSetup: () => (state: state.State, actions: ActionsType) => {
         actions.operate({

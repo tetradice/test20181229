@@ -81,6 +81,7 @@ $(function(){
                 };
             }
 
+            
             // 集中力で右クリック
             if($elem.is('.fbs-vigor-card, .withered-token')){
                 let side = $elem.closest('[data-side]').attr('data-side') as PlayerSide;
@@ -92,13 +93,103 @@ $(function(){
                 }
             }
 
+            // 封印されたカードの場所で右クリック
+            let $sealedCard = $elem.closest(`.fbs-card[data-region=on-card]`);
+            if($sealedCard.length >= 1){
+                let id = $sealedCard.attr('data-object-id');
+                let card = board.getCard(id);
+                let cardData = CARD_DATA[card.cardId];
+                items = {};
+
+                items['close'] = {
+                    name: `[${cardData.name}]を相手の捨て札へ移動`, callback: () => {
+                        appActions.operate({
+                            log: `封印されていた[${cardData.name}]を相手の捨て札へ移動しました`,
+                            proc: () => {
+                            }
+                        });
+                    }
+                }
+            }
+
+
+            // 手札で右クリック
+            let $handArea = $elem.closest(`.area.background[data-side=${params.side}][data-region=hand]`);
+            let $handCard = $elem.closest(`.fbs-card[data-side=${params.side}][data-region=hand]`);
+            if($handArea.length >= 1 || $handCard.length >= 1){
+                items = {};
+
+                // 全手札を公開していない状態で、カードを個別に右クリックした場合、そのカードの公開/非公開操作も可能
+                if(!currentState.board.handOpenFlags[params.side] && $handCard.length >= 1){
+                    let id = $handCard.attr('data-object-id');
+                    let card = board.getCard(id);
+                    let cardData = CARD_DATA[card.cardId];
+
+                    if(currentState.board.handCardOpenFlags[params.side][id]){
+                        items['closeCard'] = {
+                            name: `[${cardData.name}]の公開を中止する`, callback: () => {
+                                appActions.operate({
+                                    log: `[${cardData.name}]の公開を中止しました`,
+                                    proc: () => {
+                                        appActions.setHandCardOpenFlag({side: params.side, cardId: id, value: false});
+                                    }
+                                });
+                            }
+                        }
+                    } else {
+                        items['openCard'] = {
+                            name: `[${cardData.name}]を相手に公開する`, callback: () => {
+                                appActions.operate({
+                                    log: `[${cardData.name}]を公開しました`,
+                                    proc: () => {
+                                        appActions.setHandCardOpenFlag({side: params.side, cardId: id, value: true});
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    items['sep1'] = '---------';
+                }
+
+                // 全体の公開/非公開操作
+                if(currentState.board.handOpenFlags[params.side]){
+                    items['close'] = {
+                        name: '全手札の公開を中止する', callback: () => {
+                            appActions.operate({
+                                log: `手札の公開を中止しました`,
+                                proc: () => {
+                                    appActions.setHandOpenFlag({side: params.side, value: false});
+                                }
+                            });
+                        }
+                    }
+                } else {
+                    items['open'] = {
+                        name: '全手札を相手に公開する', disabled: () => {
+                            let board = new models.Board(appActions.getState().board);
+            
+                            let cards = board.getRegionCards(params.side, 'hand', null);
+                            return cards.length === 0;
+                        }, callback: () => {
+                            appActions.operate({
+                                log: `手札を公開しました`,
+                                proc: () => {
+                                    appActions.setHandOpenFlag({side: params.side, value: true});
+                                }
+                            });
+                        }
+                    }
+                }
+
+
+            }
             // 山札で右クリック
             if($elem.is('.area.background[data-region=library], .fbs-card[data-region=library]')){
                 items = {
                     'draw': {name: '1枚引く', disabled: () => {
                         let board = new models.Board(appActions.getState().board);
         
-                        let cards = board.getRegionCards(appActions.getState().side, 'library');
+                        let cards = board.getRegionCards(appActions.getState().side, 'library', null);
                         return cards.length === 0;
                     }, callback: () => {
                         appActions.oprDraw();
@@ -328,6 +419,7 @@ $(function(){
 
     // ドラッグ開始
     $('#BOARD').on('dragstart', '.fbs-card,.sakura-token', function(e){
+        console.log('dragstart', this);
 
         let currentState = appActions.getState();
 
@@ -337,11 +429,19 @@ $(function(){
 
         // カードの場合
         if(object.type === 'card'){
+            // 封印されたカードのドラッグ移動はできない
+            if(object.region === 'on-card'){
+                utils.messageModal('封印されたカードをドラッグで移動することはできません。<br>右クリックより「相手の捨て札に送る」を選択してください。');
+                return;
+            }
+
+            let $this = $(this);
+            let linkedCardId = $this.attr('data-linked-card-id');
             this.style.opacity = '0.4';  // this / e.target is the source node.
             
             // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択したカードを記憶
-            // (同じ領域、もしくは切り札領域にはドラッグできない)
-            $(`.area.card-region.droppable:not([data-side=${object.side}][data-region=${object.region}])`).css('z-index', 9999);
+            // (同じ領域への移動、もしくは自分に自分を封印するような処理は行えない)
+            $(`.area.card-region.droppable:not([data-side=${object.side}][data-region=${object.region}][data-linked-card-id=${linkedCardId}]):not([data-region=on-card][data-linked-card-id=${object.id}])`).css('z-index', 9999);
             dragInfo.draggingFrom = object;
 
             // ポップアップを非表示にする
@@ -389,11 +489,11 @@ $(function(){
         }
         
         $('.area.droppable').css('z-index', -9999);
-        $('.fbs-card').css('z-index', 0);
         dragInfo.draggingFrom = null;
     }
 
     $('#BOARD').on('dragend', '.fbs-card,.sakura-token', function(e){
+        console.log('dragend', this);
         processOnDragEnd();
 
     });
@@ -410,6 +510,7 @@ $(function(){
     });
 
     $('#BOARD').on('dragenter', '.area.droppable', function(e){
+        console.log('dragenter', this);
         let side = $(this).attr('data-side') as (PlayerSide | 'none');
         let region = $(this).attr('data-region') as (CardRegion | SakuraTokenRegion);
         let linkedCardId = $(this).attr('data-linked-card-id');
@@ -429,6 +530,7 @@ $(function(){
         }
 
         if(region === 'on-card'){
+            console.log('overcard');
             $(`.fbs-card[data-object-id=${linkedCardId}]`).addClass('over');
         } else {
             $(`.area.background[data-side=${side}][data-region=${region}]`).addClass('over');
@@ -465,11 +567,19 @@ $(function(){
                 let card = dragInfo.draggingFrom;
                 let toSide = $this.attr('data-side') as PlayerSide;
                 let toRegion = $this.attr('data-region') as CardRegion;
+                let toLinkedCardIdValue = $this.attr('data-linked-card-id');
+                let toLinkedCardId = (toLinkedCardIdValue === 'none' ? null : toLinkedCardIdValue);
 
+                // 他のカードを封印しているカードを、動かそうとした場合はエラー
+                let sealedCards = boardModel.getSealedCards(card.id);
+                if(sealedCards.length >= 1){
+                    utils.messageModal("他のカードが封印されているため移動できません。");
+                    return false;
+                }
                 // 桜花結晶が乗っている札を、動かそうとした場合はエラー
                 let onCardTokens = boardModel.getRegionSakuraTokens(card.side, 'on-card', card.id);
                 if(onCardTokens.length >= 1){
-                    utils.messageModal("桜花結晶が上に乗っている札は移動できません。");
+                    utils.messageModal("桜花結晶が上に乗っているため移動できません。");
                     return false;
                 }
 
@@ -481,7 +591,7 @@ $(function(){
 
                 // 移動元での公開状態と、移動先での公開状態を判定
                 let oldOpenState = card.openState;
-                let newOpenState = utils.judgeCardOpenState(card, toSide, toRegion);
+                let newOpenState = utils.judgeCardOpenState(card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
 
                 // ログ内容を決定
                 console.log(`openState: ${oldOpenState} => ${newOpenState}`);
@@ -548,7 +658,7 @@ $(function(){
                     proc: () => {
                         appActions.moveCard({
                             from: card.id
-                        , to: [toSide, toRegion] 
+                        , to: [toSide, toRegion, toLinkedCardId] 
                         , cardNameLogging: cardNameLogging
                         });
                     }

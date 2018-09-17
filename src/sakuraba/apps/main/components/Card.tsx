@@ -17,6 +17,19 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
         , width: `${100 * state.zoom}px`
         , height: `${140 * state.zoom}px`
     };
+
+    let handOpened = false;
+    if(state.side === p.target.side && state.board.handCardOpenFlags[p.target.side][p.target.id]){
+        styles.border = 'blue 1px solid';
+        handOpened = true;
+    }
+
+    if(p.target.region === 'on-card'){
+        styles.zIndex = `${90 - p.target.indexOfRegion}`;
+    } else {
+        styles.zIndex = `${100}`;
+    }
+
     let cardData = sakuraba.CARD_DATA[p.target.cardId];
     let className = "fbs-card";
 
@@ -92,12 +105,14 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             data-object-id={p.target.id}
             data-side={p.target.side}
             data-region={p.target.region}
+            data-linked-card-id={p.target.linkedCardId || 'none'}
             ondblclick={ondblclick}
             oncreate={oncreate}
             onupdate={onupdate}
             data-html={utils.getDescriptionHtml(p.target.cardId)}            
         >
             <div class="card-name">{(opened ? cardData.name : '')}</div>
+            {handOpened ? <div style="white-space: nowrap; color: blue; position: absolute; bottom: 4px; right: 0;">【公開中】</div> : null}
         </div>
     );
 }

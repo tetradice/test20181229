@@ -11,6 +11,8 @@ export class Board implements state.Board {
     megamiOpenFlags: {p1: boolean, p2: boolean};
     firstDrawFlags: {p1: boolean, p2: boolean};
     mariganFlags: {p1: boolean, p2: boolean};
+    handOpenFlags: {p1: boolean, p2: boolean};
+    handCardOpenFlags: {p1: {[id: string]: boolean | undefined}, p2: {[id: string]: boolean | undefined}};
 
     actionLog: state.LogRecord[];
     chatLog: state.LogRecord[];
@@ -45,8 +47,14 @@ export class Board implements state.Board {
     }
 
     /** 指定した領域にあるカードを一括取得 */
-    getRegionCards(side: PlayerSide, region: CardRegion): state.Card[] {
-        return this.objects.filter(v => v.type === 'card' && v.side === side && v.region === region) as state.Card[];
+    getRegionCards(side: PlayerSide, region: CardRegion, linkedCardId: string | null): state.Card[] {
+        return this.objects.filter(v => v.type === 'card' && v.side === side && v.region === region && v.linkedCardId === linkedCardId) as state.Card[];
+    }
+
+    /** 指定したカードの下に封印されているカードを一括取得 */
+    getSealedCards(baseCardId: string): state.Card[]{
+        let sealedCards = this.objects.filter(o => o.type === 'card' && o.region === 'on-card' && o.linkedCardId === baseCardId) as state.Card[];
+        return sealedCards;
     }
 
     /** すべての桜花結晶を取得 */
@@ -67,23 +75,28 @@ export class Board implements state.Board {
     /** カード移動時などの領域情報一括更新 */
     updateRegionInfo(){
         let cards = this.getCards();
-        let sideAndCardRegions = _.uniq(cards.map(c => [c.side, c.region])) as [PlayerSide, CardRegion][];
+        let sideAndCardRegions = _.uniq(cards.map(c => [c.side, c.region, c.linkedCardId])) as [PlayerSide, CardRegion, string | null][];
         sideAndCardRegions.forEach(r => {
-            let [side, region] = r;
+            let [side, region, linkedCardId] = r;
 
-            let regionCards = this.getRegionCards(side, region).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+            let regionCards = this.getRegionCards(side, region, linkedCardId).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
             let index = 0;
             regionCards.forEach(c => {
                 // インデックス更新
                 c.indexOfRegion = index;
                 index++;
 
+                // 対象のカードが手札にない場合、手札から公開しているフラグを強制的にOFF
+                if(region !== 'hand' && this.handCardOpenFlags[c.side][c.id]){
+                    this.handCardOpenFlags[c.side][c.id] = false;
+                }
+
                 // 開閉状態更新
-                c.openState = utils.judgeCardOpenState(c);
+                let handOpenFlag = this.handOpenFlags[c.side] || this.handCardOpenFlags[c.side][c.id];
+                c.openState = utils.judgeCardOpenState(c, handOpenFlag);
 
                 // 回転状態更新
                 c.rotated = (region === 'hidden-used');
-
             });
         });
 

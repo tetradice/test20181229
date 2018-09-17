@@ -151,9 +151,10 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     let objectNodes: hyperapp.Children[] = [];
     let cardLocations: {[id: string]: [number, number]} = {};
 
+    // 通常カードを配置
     cardAreaData.forEach((area) => {
         // 指定された領域のカードをすべてインデックス順に取得
-        let cards = boardModel.getRegionCards(area.side, area.region);
+        let cards = boardModel.getRegionCards(area.side, area.region, null);
 
         // 指定されたレイアウト情報に応じて、カードをレイアウトし、各カードの座標を決定
         let layoutResults = layoutObjects(cards, area.cardLayoutType, area.width, 100, 8, 6);
@@ -177,6 +178,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         }
     });
 
+    // 通常桜花結晶を配置
     sakuraTokenAreaData.forEach((area) => {
         // 指定された領域の桜花結晶をすべてインデックス順に取得
         let tokens = boardModel.getRegionSakuraTokens(area.side, area.region, null);
@@ -198,12 +200,33 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         frameNodes.push(<components.SakuraTokenAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} tokenCount={tokens.length} />);
         frameNodes.push(<components.SakuraTokenAreaDroppable side={area.side} region={area.region} linkedCardId={null} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
+    
+    // カード下に封印されているカードは別扱い
+    let sealedCards = state.board.objects.filter(o => o.type === 'card' && o.region === 'on-card') as state.Card[];
+    let sealedCardsLinkedCardIds = _.uniq(sealedCards.map(token => token.linkedCardId));
+    
+    sealedCardsLinkedCardIds.forEach((linkedCardId) => {
+        // そのカードに封印されている全カードを取得
+        let sealdCards = sealedCards.filter(o => o.linkedCardId === linkedCardId);
+        let baseCard = state.board.objects.find(o => o.id === linkedCardId) as state.Card;
+        let cardLocation = cardLocations[baseCard.id];
+
+        // 封印されたカードをレイアウトし、各カードの座標を決定
+        let layoutResults = layoutObjects(sealdCards, 'stacked', 0, 100, 0, 0);
+
+        layoutResults.forEach((ret) => {
+            let card = ret[0];
+            let left = cardLocation[0] + 8 + ret[1];
+            let top = cardLocation[1] + 8 + ret[2];
+            objectNodes.push(<components.Card target={card} left={left} top={top} />);
+        });
+    });
 
     // カード上にある桜花結晶は別扱い
     let onCardTokens = state.board.objects.filter(o => o.type === 'sakura-token' && o.region === 'on-card') as state.SakuraToken[];
-    let linkedCardIds = _.uniq(onCardTokens.map(token => token.linkedCardId));
+    let tokenLinkedCardIds = _.uniq(onCardTokens.map(token => token.linkedCardId));
     
-    linkedCardIds.forEach((linkedCardId) => {
+    tokenLinkedCardIds.forEach((linkedCardId) => {
         // そのカードにひも付いている全桜花結晶を取得
         let tokens = onCardTokens.filter(o => o.linkedCardId === linkedCardId);
         let card = state.board.objects.find(o => o.id === linkedCardId) as state.Card;
@@ -221,15 +244,16 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         });
     });
 
+
     // カードを封印することが可能な全カードについて、ドロップ領域を配置
-    let sealableCards = state.board.objects.filter(o => o.type === 'card' && CARD_DATA[o.cardId].sealable && o.openState === 'opened') as state.Card[];
+    let sealableCards = state.board.objects.filter(o => o.type === 'card' && (o.region === 'used' || o.region === 'special') && CARD_DATA[o.cardId].sealable && o.openState === 'opened') as state.Card[];
     sealableCards.forEach(card => {
         let cardLocation = cardLocations[card.id];
         frameNodes.push(<components.CardAreaDroppable side={card.side} region="on-card" linkedCardId={card.id} left={cardLocation[0]} top={cardLocation[1]} width={100} height={140} />);
     });
 
     // 桜花結晶を載せることが可能な全カードについて、ドロップ領域を配置
-    let tokenDroppableCards = state.board.objects.filter(o => o.type === 'card' && CARD_DATA[o.cardId].types.find(t => t === 'enhance') && o.openState === 'opened') as state.Card[];
+    let tokenDroppableCards = state.board.objects.filter(o => o.type === 'card' && (o.region === 'used' || o.region === 'special') && CARD_DATA[o.cardId].types.find(t => t === 'enhance') && o.openState === 'opened') as state.Card[];
     tokenDroppableCards.forEach(card => {
         let cardLocation = cardLocations[card.id];
         frameNodes.push(<components.SakuraTokenAreaDroppable side={card.side} region="on-card" linkedCardId={card.id} left={cardLocation[0]} top={cardLocation[1]} width={100} height={140} />);
