@@ -298,7 +298,7 @@ export default {
                 actions.shuffle({side: state.side});
 
                 // 山札を3枚引く
-                actions.draw(3);
+                actions.draw({number: 3});
 
                 // 桜花結晶を作り、同時に集中力をセット
                 actions.addSakuraToken({side: state.side, region: 'aura', number: 3});
@@ -307,7 +307,7 @@ export default {
                 actions.appendActionLog({text: '桜花結晶と集中力を配置', visibility: 'shown'});
 
                 // まだ間合が置かれていなければセット
-                if(board.getRegionSakuraTokens(null, 'distance').length === 0){
+                if(board.getRegionSakuraTokens(null, 'distance', null).length === 0){
                     actions.addSakuraToken({side: null, region: 'distance', number: 10});
                 };
 

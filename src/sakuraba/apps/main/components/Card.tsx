@@ -33,7 +33,11 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
 
     // 対象のカードが他のカードを封印可能で、かつ公開状態である場合に限り、他のカードをドロップ可能
     if(cardData.sealable && p.target.openState === 'opened'){
-        className += " droppable";
+        className += " card-droppable";
+    }
+    // 対象のカードが付与で、かつ使用済み領域か切札領域に表向きである場合に限り、桜花結晶をドロップ可能
+    if(cardData.types.find(t => t === 'enhance') && p.target.openState === 'opened'){
+        className += " sakura-token-droppable";
     }
 
     const setPopup = (element) => {
@@ -95,6 +99,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             style={styles}
             draggable={draggable}
             data-object-id={p.target.id}
+            data-side={p.target.side}
             data-region={p.target.region}
             ondblclick={ondblclick}
             oncreate={oncreate}

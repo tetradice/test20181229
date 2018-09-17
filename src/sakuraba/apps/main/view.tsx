@@ -3,6 +3,7 @@ import * as components from "./components";
 import { actions, ActionsType } from "./actions";
 import * as utils from "sakuraba/utils";
 import * as models from "sakuraba/models";
+import _ from "lodash";
 
 /** レイアウト種別 */
 type LayoutType = 'horizontal' | 'stacked';
@@ -17,18 +18,18 @@ type Params = {
     cardLayoutType?: LayoutType;
 }
 
-type LayoutResult = [state.BoardObject, number, number][];
+type LayoutResult<T extends state.BoardObject> = [T, number, number][];
 
 /** オブジェクトの配置(座標の決定)を行う */
-function layoutObjects(
-    objects: state.BoardObject[]
+function layoutObjects<T extends state.BoardObject>(
+      objects: T[]
     , layoutType: LayoutType
     , areaWidth: number
     , objectWidth: number
     , padding: number
     , spacing: number
-): LayoutResult {
-    let ret: LayoutResult = [];
+): LayoutResult<T> {
+    let ret: LayoutResult<T> = [];
     let cx = padding;
     let cy = padding;
 
@@ -143,11 +144,11 @@ const view: View<state.State, ActionsType> = (state, actions) => {
           , { region: 'aura',     side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850,   top: 430,  width: 210, tokenWidth: 140, height: 30 }
           , { region: 'life',     side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850,   top: 470,  width: 350, tokenWidth: 280, height: 30 }
           , { region: 'flair',    side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850,   top: 510,  width: 350, tokenWidth: 280, height: 30 }
-          
       ];
 
     let frameNodes: hyperapp.Children[] = [];
     let objectNodes: hyperapp.Children[] = [];
+    let cardLocations: {[id: string]: [number, number]} = {};
 
     cardAreaData.forEach((area) => {
         // 指定された領域のカードをすべてインデックス順に取得
@@ -158,10 +159,13 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
         // カードを領域の子オブジェクトとして追加
         layoutResults.forEach((ret) => {
-            let card = ret[0] as state.Card;
+            let card = ret[0];
             let left = area.left + ret[1];
             let top = area.top + ret[2];
             objectNodes.push(<components.Card target={card} left={left} top={top} />);
+
+            // 座標を記憶しておく
+            cardLocations[card.id] = [left, top];
         });
 
         // フレームを追加
@@ -174,14 +178,14 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
     sakuraTokenAreaData.forEach((area) => {
         // 指定された領域の桜花結晶をすべてインデックス順に取得
-        let tokens = boardModel.getRegionSakuraTokens(area.side, area.region);
+        let tokens = boardModel.getRegionSakuraTokens(area.side, area.region, null);
 
         // 指定されたレイアウト情報に応じて、桜花結晶をレイアウトし、各桜花結晶の座標を決定
         let layoutResults = layoutObjects(tokens, area.layoutType, area.tokenWidth, 20, 2, 8);
 
         // 桜花結晶を領域の子オブジェクトとして追加
         layoutResults.forEach((ret) => {
-            let token = ret[0] as state.SakuraToken;
+            let token = ret[0];
             let left = area.left + ret[1];
             let top = area.top + ret[2];
             let draggingCount = tokens.length - token.indexOfRegion;
@@ -193,6 +197,30 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         frameNodes.push(<components.SakuraTokenAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} tokenCount={tokens.length} />);
         frameNodes.push(<components.SakuraTokenAreaDroppable side={area.side} region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
+
+    // カード上にある桜花結晶は別扱い
+    let onCardTokens = state.board.objects.filter(o => o.type === 'sakura-token' && o.region === 'on-card') as state.SakuraToken[];
+    let linkedCardIds = _.uniq(onCardTokens.map(token => token.linkedCardId));
+    
+    linkedCardIds.forEach((linkedCardId) => {
+        // そのカードにひも付いている全桜花結晶を取得
+        let tokens = onCardTokens.filter(o => o.linkedCardId === linkedCardId);
+        let card = state.board.objects.find(o => o.id === linkedCardId) as state.Card;
+        let cardLocation = cardLocations[card.id];
+
+        // 桜花結晶をレイアウトし、各桜花結晶の座標を決定
+        let layoutResults = layoutObjects(tokens, 'horizontal', 100 - 12, 26, 0, 0);
+
+        layoutResults.forEach((ret) => {
+            let token = ret[0];
+            let draggingCount = tokens.length - token.indexOfRegion;
+            let left = cardLocation[0] + ret[1];
+            let top = cardLocation[1] + 24;
+            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} draggingCount={draggingCount} />);
+        });
+
+    });
+
 
     return (
         <div style={{ position: 'relative', zIndex: 100 }}>

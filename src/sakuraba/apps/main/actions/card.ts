@@ -113,22 +113,22 @@ export default {
     },
 
     /** 山札からカードを引く */
-    draw: (num?: number) => (state: state.State, actions: ActionsType) => {
-        if(num === undefined) num = 1;
-        actions.appendActionLog({text: `カードを${num}枚引きました`});
+    draw: (p: {number?: number, cardNameLogging?: boolean}) => (state: state.State, actions: ActionsType) => {
+        if(p.number === undefined) p.number = 1;
         actions.moveCard({
               from: [state.side, 'library']
             , to: [state.side, 'hand']
-            , moveNumber: num
-            , cardNameLogging: true
+            , moveNumber: p.number
+            , cardNameLogging: p.cardNameLogging
         });
     },
 
     /** 山札からカードを引く操作実行 */
-    oprDraw: (num?: number) => (state: state.State, actions: ActionsType) => {
+    oprDraw: (p: {number?: number, cardNameLogging?: boolean}) => (state: state.State, actions: ActionsType) => {
         actions.operate({
+            log: `カードを${p.number}枚引きました`,
             proc: () => {
-                actions.draw(num);
+                actions.draw(p);
             }
         });
     },

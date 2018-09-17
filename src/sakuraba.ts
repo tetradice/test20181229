@@ -8,6 +8,17 @@ export type RegionName = SakuraTokenArea | CardArea | "vigor";
 export type CardType = "attack" | "reaction" | "action" | "fullpower" | "enhance" | "variable";
 export type CardBaseType = 'normal' | 'special' | 'extra';
 
+// 領域ごとの桜花結晶最大数
+export const SAKURA_TOKEN_MAX: {[P in SakuraTokenArea]: number} = {
+      aura: 5
+    , life: 99
+    , flair: 99
+    , distance: 10
+    , dust: 99
+    , 'on-card': 99
+};
+
+
 // メガミ情報
 interface MegamiDataItem {
     name: string;

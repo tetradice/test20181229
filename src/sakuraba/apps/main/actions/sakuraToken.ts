@@ -32,9 +32,9 @@ export default {
      */
     moveSakuraToken: (p: {
         /** 移動元 */
-        from: [PlayerSide, SakuraTokenRegion];
+        from: [PlayerSide, SakuraTokenRegion, string];
         /** 移動先 */
-        to: [PlayerSide, SakuraTokenRegion];
+        to: [PlayerSide, SakuraTokenRegion, string];
         /** 移動数 */
         moveNumber?: number;
     }) => (state: state.State) => {
@@ -43,8 +43,8 @@ export default {
 
         // 桜花結晶数を指定枚数移動 (省略時は0枚)
         let num = (p.moveNumber === undefined ? 1 : p.moveNumber);
-        let fromRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.from[0], p.from[1]).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
-        let toRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.to[0], p.to[1]).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+        let fromRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.from[0], p.from[1], p.from[2]).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+        let toRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.to[0], p.to[1], p.to[2]).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
         let indexes = toRegionSakuraTokens.map(c => c.indexOfRegion);
         let maxIndex = Math.max(...indexes);
 
@@ -52,6 +52,7 @@ export default {
         targetSakuraTokens.forEach(c => {
             c.side = p.to[0];
             c.region = p.to[1];
+            c.linkedCardId = p.to[2];
             // 領域インデックスは最大値+1
             c.indexOfRegion = maxIndex + 1;
             maxIndex++;

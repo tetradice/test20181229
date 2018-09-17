@@ -96,6 +96,15 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+// 領域ごとの桜花結晶最大数
+exports.SAKURA_TOKEN_MAX = {
+    aura: 5,
+    life: 99,
+    flair: 99,
+    distance: 10,
+    dust: 99,
+    'on-card': 99
+};
 exports.MEGAMI_DATA = {
     'yurina': { name: 'ユリナ', symbol: '刀' }
     //, 'yurina-a': {name: '第一章ユリナ', symbol: '古刀', base: 'yurina'}
@@ -634,7 +643,7 @@ function createSakuraToken(id, region, side) {
         region: region,
         indexOfRegion: 0,
         side: side,
-        onCardId: null
+        linkedCardId: null
     };
 }
 exports.createSakuraToken = createSakuraToken;

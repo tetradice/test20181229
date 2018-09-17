@@ -48,6 +48,6 @@ export function createSakuraToken(id: string, region: SakuraTokenRegion | null, 
     , region: region
     , indexOfRegion: 0
     , side: side
-    , onCardId: null
+    , linkedCardId: null
   };
 }

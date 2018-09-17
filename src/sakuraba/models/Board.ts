@@ -60,8 +60,8 @@ export class Board implements state.Board {
     }
 
     /** 指定した領域にある桜花結晶を一括取得 */
-    getRegionSakuraTokens(side: PlayerSide, region: SakuraTokenRegion): state.SakuraToken[] {
-        return this.objects.filter(v => v.type === 'sakura-token' && v.side === side && v.region == region) as state.SakuraToken[];
+    getRegionSakuraTokens(side: PlayerSide, region: SakuraTokenRegion, linkedCardId: string): state.SakuraToken[] {
+        return this.objects.filter(v => v.type === 'sakura-token' && v.side === side && v.region == region && v.linkedCardId == linkedCardId) as state.SakuraToken[];
     }
 
     /** カード移動時などの領域情報一括更新 */
@@ -88,13 +88,11 @@ export class Board implements state.Board {
         });
 
         let tokens = this.getSakuraTokens();
-        let sideAndSakuraTokenRegions = _.uniq(tokens.map(c => [c.side, c.region])) as [PlayerSide, SakuraTokenRegion][];
-        console.log(tokens);
-        console.log(sideAndSakuraTokenRegions);
+        let sideAndSakuraTokenRegions = _.uniq(tokens.map(c => [c.side, c.region, c.linkedCardId])) as [PlayerSide, SakuraTokenRegion, string][];
         sideAndSakuraTokenRegions.forEach(r => {
-            let [side, region] = r;
+            let [side, region, linkedCardId] = r;
 
-            let regionSakuraTokens = this.getRegionSakuraTokens(side, region).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+            let regionSakuraTokens = this.getRegionSakuraTokens(side, region, linkedCardId).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
             let index = 0;
             regionSakuraTokens.forEach(c => {
                 // インデックス更新

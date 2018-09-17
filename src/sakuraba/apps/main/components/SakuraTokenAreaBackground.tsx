@@ -27,7 +27,7 @@ export const SakuraTokenAreaBackground = (p: Param) => (state: state.State) => {
         <div
             class={"area background sakura-token-region ui segment "}
             style={styles}
-            data-side={p.side}
+            data-side={p.side || 'none'}
             data-region={p.region}
             key={`SakuraTokenAreaBackground_${p.side}_${p.region}`}
         >

@@ -52,7 +52,8 @@
         }
         
         .fbs-card[draggable]:hover,
-        .fbs-card.droppable.over,
+        .fbs-card.card-droppable.over,
+        .fbs-card.sakura-token-droppable.over,
         .clickable:hover,
         .focused{
             filter: drop-shadow(0 0 3px #7098ff);
@@ -156,6 +157,9 @@
 
         .area.background.over {
             background: rgb(239, 249, 252);
+        }
+        .area.background.over-forbidden {
+            background: rgb(255, 230, 230);
         }
         
         .area.used {

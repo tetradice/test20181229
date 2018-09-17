@@ -76,7 +76,7 @@ export interface SakuraToken extends BoardObjectBase {
 
     region: SakuraTokenRegion;
     indexOfRegion: number;
-    onCardId: string;
+    linkedCardId: string;
 }
 
 /** ログ1行分のデータ */
