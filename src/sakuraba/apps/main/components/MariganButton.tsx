@@ -37,7 +37,7 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
                     });
 
                     // 手札n枚を引く
-                    actions.draw(selectedCards.length);
+                    actions.draw({number: selectedCards.length});
         
                     // マリガンフラグON
                     actions.setMariganFlag({side: state.side, value: true});

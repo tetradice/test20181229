@@ -137,7 +137,7 @@ export function getCardRegionTitle(selfSide: PlayerSide, side: PlayerSide, regio
 }
 
 /** 桜花結晶のリージョン名を取得 */
-export function getSakuraTokenRegionTitle(selfSide: PlayerSide, side: PlayerSide, region: SakuraTokenRegion){
+export function getSakuraTokenRegionTitle(selfSide: PlayerSide, side: PlayerSide, region: SakuraTokenRegion, linkedCard?: state.Card){
     let titleBase = ``;
     if(region === 'aura'){
         titleBase = "オーラ";
@@ -155,11 +155,12 @@ export function getSakuraTokenRegionTitle(selfSide: PlayerSide, side: PlayerSide
         titleBase = "ダスト";
     }
     if(region === 'on-card'){
-        titleBase = "カード上";
+        let cardData = sakuraba.CARD_DATA[linkedCard.cardId];
+        titleBase = `[${cardData.name}]上`;
     }
 
     // 相手側に移動した場合は、「相手の」をつける
-    if(selfSide !== side){
+    if(selfSide !== side && side !== null){
         return `相手の${titleBase}`
     } else {
         return titleBase;

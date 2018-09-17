@@ -268,11 +268,12 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         let distanceCount = boardModel.getRegionSakuraTokens(null, 'distance', null).length;
         let dustCount = boardModel.getRegionSakuraTokens(null, 'dust', null).length;
         let myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
+        let onCardTokenFound = (state.board.objects.find(o => o.type === 'sakura-token' && o.region === 'on-card') ? true : false);
 
         commandButtons = (
             <div class={css.commandButtons}>
             <div class={css.currentPhase}>- 桜花決闘 -</div>
-            <div class="ui basic buttons" style="margin-right: 0.5em; margin-left: 0.5em; ">
+            <div class="ui basic buttons" style="margin-right: 10px;">
                 <button
                  id="FORWARD-BUTTON"
                  style="padding-left: 1em; padding-right: 1em;"
@@ -284,21 +285,34 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                  class={`ui button ${dustCount >= 1 && distanceCount < 10 ? '' : 'disabled'}`}
                  onclick={() => basicAction([null, 'dust', null], [null, 'distance', null], '離脱')}>離脱</button>
             </div>
+            <div class="ui basic buttons" style="margin-right: 10px;">
+                <button
+                id="BACK-BUTTON" 
+                style="padding-left: 1em; padding-right: 1em;"
+                class={`ui button ${myAuraCount >= 1 && distanceCount < 10 ? '' : 'disabled'}`}
+                onclick={() => basicAction([state.side, 'aura', null], [null, 'distance', null], '後退')}>後退</button>
+            </div>
+            <div class="ui basic buttons" style="margin-right: 10px;">
+                <button
+                id="WEAR-BUTTON" 
+                style="padding-left: 1em; padding-right: 1em;"
+                class={`ui button ${dustCount >= 1 && myAuraCount < 5 ? '' : 'disabled'}`}
+                onclick={() => basicAction([null, 'dust', null], [state.side, 'aura', null], '纏い')}>纏い</button>
+            </div>
+            <div class="ui basic buttons" style="margin-right: 10px;">
+                <button
+                id="CHARGE-BUTTON" 
+                style="padding-left: 1em; padding-right: 1em;"
+                class={`ui button ${myAuraCount >= 1 ? '' : 'disabled'}`}
+                onclick={() => basicAction([state.side, 'aura', null], [state.side, 'flair', null], '宿し')}>宿し</button>
+            </div>
+            <br />
             <button
-             id="BACK-BUTTON" 
-             style="margin-right: 0.5em; margin-left: 0.5em; padding-left: 1em; padding-right: 1em;"
-             class={`ui basic button ${myAuraCount >= 1 && distanceCount < 10 ? '' : 'disabled'}`}
-             onclick={() => basicAction([state.side, 'aura', null], [null, 'distance', null], '後退')}>後退</button>
-            <button
-             id="WEAR-BUTTON" 
-             style="margin-right: 0.5em; margin-left: 0.5em; padding-left: 1em; padding-right: 1em;"
-             class={`ui basic button ${dustCount >= 1 && myAuraCount < 5 ? '' : 'disabled'}`}
-             onclick={() => basicAction([null, 'dust', null], [state.side, 'aura', null], '纏い')}>纏い</button>
-            <button
-             id="CHARGE-BUTTON" 
-             style="margin-right: 0.5em; margin-left: 0.5em; padding-left: 1em; padding-right: 1em;"
-             class={`ui basic button ${myAuraCount >= 1 ? '' : 'disabled'}`}
-             onclick={() => basicAction([state.side, 'aura', null], [state.side, 'flair', null], '宿し')}>宿し</button>
+                 id="ALL-ENHANCE-DECREASE-BUTTON"
+                 class={`ui basic button ${onCardTokenFound ? '' : 'disabled'}`}
+                 style="margin-top: 5px;"
+                 onclick={() => actions.oprRemoveSakuraTokenfromAllEnhanceCard()}>全付与札の桜花結晶-1</button>
+
             </div>
         );
     } else if(state.board.megamiOpenFlags[state.side]){

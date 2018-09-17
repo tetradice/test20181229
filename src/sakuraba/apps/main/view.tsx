@@ -4,6 +4,7 @@ import { actions, ActionsType } from "./actions";
 import * as utils from "sakuraba/utils";
 import * as models from "sakuraba/models";
 import _ from "lodash";
+import { CARD_DATA } from "sakuraba";
 
 /** レイアウト種別 */
 type LayoutType = 'horizontal' | 'stacked';
@@ -172,7 +173,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         frameNodes.push(<components.CardAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
         if(area.region !== 'special'){
             // 切り札領域でない場合のみドロップ可
-            frameNodes.push(<components.CardAreaDroppable side={area.side} region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
+            frameNodes.push(<components.CardAreaDroppable side={area.side} region={area.region} linkedCardId={null} left={area.left} top={area.top} width={area.width} height={area.height} />);
         }
     });
 
@@ -195,7 +196,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
         // フレームを追加
         frameNodes.push(<components.SakuraTokenAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} tokenCount={tokens.length} />);
-        frameNodes.push(<components.SakuraTokenAreaDroppable side={area.side} region={area.region} left={area.left} top={area.top} width={area.width} height={area.height} />);
+        frameNodes.push(<components.SakuraTokenAreaDroppable side={area.side} region={area.region} linkedCardId={null} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
 
     // カード上にある桜花結晶は別扱い
@@ -215,10 +216,23 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let token = ret[0];
             let draggingCount = tokens.length - token.indexOfRegion;
             let left = cardLocation[0] + ret[1];
-            let top = cardLocation[1] + 24;
+            let top = cardLocation[1] + (card.side === selfSide ? 24 : (140 - 24 - 26));
             objectNodes.push(<components.SakuraToken target={token} left={left} top={top} draggingCount={draggingCount} />);
         });
+    });
 
+    // カードを封印することが可能な全カードについて、ドロップ領域を配置
+    let sealableCards = state.board.objects.filter(o => o.type === 'card' && CARD_DATA[o.cardId].sealable && o.openState === 'opened') as state.Card[];
+    sealableCards.forEach(card => {
+        let cardLocation = cardLocations[card.id];
+        frameNodes.push(<components.CardAreaDroppable side={card.side} region="on-card" linkedCardId={card.id} left={cardLocation[0]} top={cardLocation[1]} width={100} height={140} />);
+    });
+
+    // 桜花結晶を載せることが可能な全カードについて、ドロップ領域を配置
+    let tokenDroppableCards = state.board.objects.filter(o => o.type === 'card' && CARD_DATA[o.cardId].types.find(t => t === 'enhance') && o.openState === 'opened') as state.Card[];
+    tokenDroppableCards.forEach(card => {
+        let cardLocation = cardLocations[card.id];
+        frameNodes.push(<components.SakuraTokenAreaDroppable side={card.side} region="on-card" linkedCardId={card.id} left={cardLocation[0]} top={cardLocation[1]} width={100} height={140} />);
     });
 
 

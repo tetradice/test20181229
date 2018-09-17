@@ -265,38 +265,46 @@ $(function(){
     $('#BOARD').on('mouseenter', '#FORWARD-BUTTON', function(e){
         // 間合いの右端をフォーカス
         $(`.sakura-token[data-region=distance][data-dragging-count=1]`).addClass('focused');
-        // 自オーラ領域をフォーカス
+        // 自オーラ領域をハイライト
         $(`.area.background[data-side=${params.side}][data-region=aura]`).addClass('over');
     });
     // 離脱ボタンの上にカーソルを置いたときの処理
     $('#BOARD').on('mouseenter', '#LEAVE-BUTTON', function(e){
         // ダストの右端をフォーカス
         $(`.sakura-token[data-region=dust][data-dragging-count=1]`).addClass('focused');
-        // 間合い領域をフォーカス
+        // 間合い領域をハイライト
         $(`.area.background[data-region=distance]`).addClass('over');
     });
     // 後退ボタンの上にカーソルを置いたときの処理
     $('#BOARD').on('mouseenter', '#BACK-BUTTON', function(e){
         // 自オーラの右端をフォーカス
         $(`.sakura-token[data-side=${params.side}][data-region=aura][data-dragging-count=1]`).addClass('focused');
-        // 間合い領域をフォーカス
+        // 間合い領域をハイライト
         $(`.area.background[data-region=distance]`).addClass('over');
     });
     // 纏いボタンの上にカーソルを置いたときの処理
     $('#BOARD').on('mouseenter', '#WEAR-BUTTON', function(e){
         // ダストの右端をフォーカス
         $(`.sakura-token[data-region=dust][data-dragging-count=1]`).addClass('focused');
-        // 自オーラ領域をフォーカス
+        // 自オーラ領域をハイライト
         $(`.area.background[data-side=${params.side}][data-region=aura]`).addClass('over');
     });
     // 宿しボタンの上にカーソルを置いたときの処理
     $('#BOARD').on('mouseenter', '#CHARGE-BUTTON', function(e){
         // 自オーラの右端をフォーカス
         $(`.sakura-token[data-side=${params.side}][data-region=aura][data-dragging-count=1]`).addClass('focused');
-        // 自フレア領域をフォーカス
+        // 自フレア領域をハイライト
         $(`.area.background[data-side=${params.side}][data-region=flair]`).addClass('over');
     });
-    $('#BOARD').on('mouseleave', '#FORWARD-BUTTON, #BACK-BUTTON, #CHARGE-BUTTON, #LEAVE-BUTTON, #WEAR-BUTTON', function(e){
+    // 全付与札の桜花結晶-1ボタンの上にカーソルを置いたときの処理
+    $('#BOARD').on('mouseenter', '#ALL-ENHANCE-DECREASE-BUTTON', function(e){
+        // カード上桜花結晶の右端をフォーカス
+        $(`.sakura-token[data-region=on-card][data-dragging-count=1]`).addClass('focused');
+        // ダスト領域をハイライト
+        $(`.area.background[data-region=dust]`).addClass('over');
+    });
+
+    $('#BOARD').on('mouseleave', '#FORWARD-BUTTON, #BACK-BUTTON, #CHARGE-BUTTON, #LEAVE-BUTTON, #WEAR-BUTTON, #ALL-ENHANCE-DECREASE-BUTTON', function(e){
         $(`.sakura-token`).removeClass('focused');
         $(`.area.background`).removeClass('over');
     });
@@ -320,7 +328,6 @@ $(function(){
 
     // ドラッグ開始
     $('#BOARD').on('dragstart', '.fbs-card,.sakura-token', function(e){
-        console.log('★dragstart');
 
         let currentState = appActions.getState();
 
@@ -335,7 +342,6 @@ $(function(){
             // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択したカードを記憶
             // (同じ領域、もしくは切り札領域にはドラッグできない)
             $(`.area.card-region.droppable:not([data-side=${object.side}][data-region=${object.region}])`).css('z-index', 9999);
-            $(`.fbs-card.card-droppable`).css('z-index', 10000);
             dragInfo.draggingFrom = object;
 
             // ポップアップを非表示にする
@@ -346,15 +352,12 @@ $(function(){
         if(object.type === 'sakura-token'){
             let $this = $(this);
             let side = $this.attr('data-side') as (PlayerSide | 'none');
+            let linkedCardId = $this.attr('data-linked-card-id');
             let index = parseInt($this.attr('data-region-index'));
             let draggingCount = parseInt($this.attr('data-dragging-count'));
 
             // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択した桜花結晶を記憶
-            if(object.region === 'on-card'){
-            } else {
-                $(`.area.sakura-token-region.droppable:not([data-side=${side}][data-region=${object.region}])`).css('z-index', 9999);
-                //$(`.fbs-card.sakura-token-droppable`).css('z-index', 10000);
-            }
+            $(`.area.sakura-token-region.droppable:not([data-side=${side}][data-region=${object.region}][data-linked-card-id=${linkedCardId}])`).css('z-index', 9999);
             dragInfo.draggingFrom = object;
 
             // 移動数を記憶
@@ -391,12 +394,10 @@ $(function(){
     }
 
     $('#BOARD').on('dragend', '.fbs-card,.sakura-token', function(e){
-        console.log('★dragend');
         processOnDragEnd();
 
     });
-    $('#BOARD').on('dragover', '.droppable, .sakura-token-droppable, .card-droppable', function(e){
-        console.log('★dragover');
+    $('#BOARD').on('dragover', '.droppable', function(e){
         if($(this).hasClass('over-forbidden')){
             ((e.originalEvent as any) as DragEvent).dataTransfer.dropEffect = 'none';  // See the section on the DataTransfer object.
             return false;
@@ -405,13 +406,12 @@ $(function(){
             e.preventDefault(); // Necessary. Allows us to drop.
         }
 
-
         return false;
     });
 
     $('#BOARD').on('dragenter', '.area.droppable', function(e){
         let side = $(this).attr('data-side') as (PlayerSide | 'none');
-        let region = $(this).attr('data-region');
+        let region = $(this).attr('data-region') as (CardRegion | SakuraTokenRegion);
         let linkedCardId = $(this).attr('data-linked-card-id');
 
         // 桜花結晶の移動で、かつ移動先の最大値を超える場合は表示を変える
@@ -427,7 +427,12 @@ $(function(){
                 return true;
             }
         }
-        $(`.area.background[data-side=${side}][data-region=${region}]`).addClass('over');
+
+        if(region === 'on-card'){
+            $(`.fbs-card[data-object-id=${linkedCardId}]`).addClass('over');
+        } else {
+            $(`.area.background[data-side=${side}][data-region=${region}]`).addClass('over');
+        }
         return true;
     });
 
@@ -435,18 +440,13 @@ $(function(){
         console.log('dragleave', this);
         let side = $(this).attr('data-side') as (PlayerSide | 'none');
         let region = $(this).attr('data-region');
-        $(`.area.background[data-side=${side}][data-region=${region}]`).removeClass('over').removeClass('over-forbidden');  // this / e.target is previous target element.
-        $(`.area.droppable[data-side=${side}][data-region=${region}]`).removeClass('over').removeClass('over-forbidden');  // this / e.target is previous target element.
-    });
-    $('#BOARD').on('dragenter', '.fbs-card.card-droppable, .fbs-card.sakura-token-droppable', function(e){
-        $($(this)).addClass('over');
-    });
-    $('#BOARD').on('dragleave', '.fbs-card.card-droppable, .fbs-card.sakura-token-droppable', function(e){
-        $($(this)).removeClass('over');  // this / e.target is previous target element.
+        $(`.area.background`).removeClass('over').removeClass('over-forbidden');
+        $(`.area.droppable`).removeClass('over').removeClass('over-forbidden');
+        $(`.fbs-card`).removeClass('over').removeClass('over-forbidden');
     });
 
     let lastDraggingFrom: state.BoardObject = null; 
-    $('#BOARD').on('drop', '.area, .fbs-card.card-droppable, .fbs-card.sakura-token-droppable', function(e){
+    $('#BOARD').on('drop', '.area', function(e){
         // this / e.target is current target element.
         console.log('drop', this);
         let $this = $(this);
@@ -458,12 +458,20 @@ $(function(){
         if(dragInfo.draggingFrom !== null){
             // 現在のステートを取得
             let currentState = appActions.getState();
+            let boardModel = new models.Board(currentState.board);
 
             // カードを別領域に移動した場合
             if(dragInfo.draggingFrom.type === 'card'){
                 let card = dragInfo.draggingFrom;
                 let toSide = $this.attr('data-side') as PlayerSide;
                 let toRegion = $this.attr('data-region') as CardRegion;
+
+                // 桜花結晶が乗っている札を、動かそうとした場合はエラー
+                let onCardTokens = boardModel.getRegionSakuraTokens(card.side, 'on-card', card.id);
+                if(onCardTokens.length >= 1){
+                    utils.messageModal("桜花結晶が上に乗っている札は移動できません。");
+                    return false;
+                }
 
                 // 移動ログを決定
                 let logs: {text: string, visibility?: LogVisibility}[] = [];
@@ -474,7 +482,6 @@ $(function(){
                 // 移動元での公開状態と、移動先での公開状態を判定
                 let oldOpenState = card.openState;
                 let newOpenState = utils.judgeCardOpenState(card, toSide, toRegion);
-
 
                 // ログ内容を決定
                 console.log(`openState: ${oldOpenState} => ${newOpenState}`);
@@ -494,7 +501,7 @@ $(function(){
                     if(oldMyKnown || newMyKnown){
                         // 自分は知っている
                         if(oldOpponentKnown || newOpponentKnown){
-                            // 対戦相手も知っている (仮実装)
+                            // 対戦相手も知っている (観戦者対応が必要)
                             logs.push({text: `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}`});
                         } else {
                             // 対戦相手は知らない
@@ -504,7 +511,7 @@ $(function(){
                     } else {
                         // 自分は知らない
                         if(oldOpponentKnown || newOpponentKnown){
-                            // 対戦相手は知っている (仮実装)
+                            // 対戦相手は知っている (観戦者対応が必要)
                             logs.push({text: `カードを1枚移動しました：${fromRegionTitle} → ${toRegionTitle}`});
                         } else {
                             // 対戦相手も知らない
@@ -548,23 +555,21 @@ $(function(){
                 });
             }
 
-            // // 桜花結晶を別領域に移動した場合
+            // 桜花結晶を別領域に移動した場合
             if(dragInfo.draggingFrom.type === 'sakura-token'){
                 let sakuraToken = dragInfo.draggingFrom;
+
                 let toSideValue = $this.attr('data-side') as (PlayerSide | 'none');
                 let toSide = (toSideValue === 'none' ? null : toSideValue);
                 let toRegion = $this.attr('data-region') as SakuraTokenRegion;
-                let toLinkedCardId: string = null;
-
-                // カードの上に移動した場合
-                if($(this).hasClass('fbs-card')){
-                    toRegion = 'on-card';
-                    toLinkedCardId = $(this).attr('data-object-id');
-                }
+                let toLinkedCardIdValue = $(this).attr('data-linked-card-id');
+                let toLinkedCardId = (toLinkedCardIdValue === 'none' ? null : toLinkedCardIdValue);
+                let fromLinkedCard = (dragInfo.draggingFrom.linkedCardId === null ? undefined :  boardModel.getCard(dragInfo.draggingFrom.linkedCardId));
+                let toLinkedCard = (toLinkedCardId === null ? undefined : boardModel.getCard(toLinkedCardId));
 
                 let logs: {text: string, visibility?: LogVisibility}[] = [];
-                let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region);
-                let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion);
+                let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region, fromLinkedCard);
+                let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion, toLinkedCard);
 
                 // ログ内容を決定
                 logs.push({text: `桜花結晶を${dragInfo.sakuraTokenMoveCount}つ移動しました：${fromRegionTitle} → ${toRegionTitle}`});

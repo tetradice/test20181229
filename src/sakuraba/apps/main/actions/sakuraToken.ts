@@ -2,6 +2,7 @@ import * as  _ from "lodash";
 import * as models from "sakuraba/models";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from ".";
+import { CARD_DATA } from "sakuraba";
 
 export default {
     /** 桜花結晶を指定数追加する */
@@ -47,6 +48,7 @@ export default {
         let toRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.to[0], p.to[1], p.to[2]).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
         let indexes = toRegionSakuraTokens.map(c => c.indexOfRegion);
         let maxIndex = Math.max(...indexes);
+        if(indexes.length === 0) maxIndex = 0;
 
         let targetSakuraTokens = fromRegionSakuraTokens.slice(0, num);
         targetSakuraTokens.forEach(c => {
@@ -64,4 +66,37 @@ export default {
         // 新しい盤を返す
         return {board: newBoard};
     },
+
+    /**
+     * 全付与札の上から桜花結晶を1つ取り除く操作
+     */
+    oprRemoveSakuraTokenfromAllEnhanceCard: () => (state: state.State, actions: ActionsType) => {
+        actions.operate({
+            log: `全付与札の桜花結晶を-1しました`,
+            proc: () => {
+                let boardModel = new models.Board(state.board);
+
+                // 桜花結晶が乗っているすべての付与札を取得
+                let tokensOnCard = state.board.objects.filter(o => o.type === 'sakura-token' && o.region === 'on-card') as state.SakuraToken[];
+                let cardIds = _.uniq(tokensOnCard.map(t => t.linkedCardId));
+
+                // 付与札1つごとに、桜花結晶をダストへ移動
+                cardIds.forEach(cardId => {
+                    let card = boardModel.getCard(cardId);
+                    let tokens = boardModel.getRegionSakuraTokens(card.side, 'on-card', cardId);
+                    actions.moveSakuraToken({
+                        from: [card.side, 'on-card', cardId]
+                        , to: [null, 'dust', null]
+                    });
+
+                    // 桜花結晶が0になる付与札があれば、カード名を出力
+                    console.log(tokens);
+                    if(tokens.length === 1){
+                        let cardData = CARD_DATA[card.cardId];
+                        actions.appendActionLog({text: `-> [${cardData.name}]の上の桜花結晶数が0になりました`});
+                    }
+                });
+            }
+        });
+    }
 }

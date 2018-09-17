@@ -152,6 +152,13 @@ export default {
         let board = new models.Board(state.board);
         let card = board.getCard(p.objectId);
 
+        // 桜花結晶が乗っている切札を、変更しようとした場合はエラー
+        let onCardTokens = board.getRegionSakuraTokens(card.side, 'on-card', card.id);
+        if(onCardTokens.length >= 1){
+            utils.messageModal("桜花結晶が上に乗っている切り札は裏向きにできません。");
+            return;
+        }
+
         actions.operate({
             log: (p.value ? `切札[${CARD_DATA[card.cardId].name}]を表向きにしました` : `切札[${CARD_DATA[card.cardId].name}]を裏返しました`),
             proc: () => {

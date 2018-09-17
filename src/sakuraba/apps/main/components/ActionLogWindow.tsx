@@ -20,7 +20,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
 
             // 今日のログか昨日以前のログかで形式を変更
             let logTime = moment(log.time);
-            let timeStr = (logTime.isSame(now, 'date') ? logTime.format('h:mm') : logTime.format('YYYY/M/D h:mm'));
+            let timeStr = (logTime.isSame(now, 'date') ? logTime.format('H:mm') : logTime.format('YYYY/M/D H:mm'));
             let bodyStyle = (log.visibility === 'ownerOnly' ? {color: 'green'} : null);
             logElements.push(
                 <div>

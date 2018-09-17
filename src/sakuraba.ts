@@ -2,14 +2,11 @@ import {Serializable, Serialize, SerializeProperty} from "ts-serializer";
 import * as moment from 'moment';
 
 // 独自型
-export type SakuraTokenArea = "aura" | "life" | "flair" | "distance" | "dust" | "on-card";
-export type CardArea = "library" | "hand" | "used" | "hidden-used" | "special";
-export type RegionName = SakuraTokenArea | CardArea | "vigor";
 export type CardType = "attack" | "reaction" | "action" | "fullpower" | "enhance" | "variable";
 export type CardBaseType = 'normal' | 'special' | 'extra';
 
 // 領域ごとの桜花結晶最大数
-export const SAKURA_TOKEN_MAX: {[P in SakuraTokenArea]: number} = {
+export const SAKURA_TOKEN_MAX: {[P in SakuraTokenRegion]: number} = {
       aura: 5
     , life: 99
     , flair: 99

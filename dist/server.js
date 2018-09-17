@@ -516,7 +516,7 @@ function getCardRegionTitle(selfSide, side, region) {
 }
 exports.getCardRegionTitle = getCardRegionTitle;
 /** 桜花結晶のリージョン名を取得 */
-function getSakuraTokenRegionTitle(selfSide, side, region) {
+function getSakuraTokenRegionTitle(selfSide, side, region, linkedCard) {
     var titleBase = "";
     if (region === 'aura') {
         titleBase = "オーラ";
@@ -534,10 +534,11 @@ function getSakuraTokenRegionTitle(selfSide, side, region) {
         titleBase = "ダスト";
     }
     if (region === 'on-card') {
-        titleBase = "カード上";
+        var cardData = sakuraba.CARD_DATA[linkedCard.cardId];
+        titleBase = "[" + cardData.name + "]\u4E0A";
     }
     // 相手側に移動した場合は、「相手の」をつける
-    if (selfSide !== side) {
+    if (selfSide !== side && side !== null) {
         return "\u76F8\u624B\u306E" + titleBase;
     }
     else {
@@ -560,6 +561,8 @@ exports.getSakuraTokenRegionTitle = getSakuraTokenRegionTitle;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 function confirmModal(desc, yesCallback) {
+    // すべてのポップアップを非表示にする
+    $('.fbs-card').popup('hide all');
     $('#CONFIRM-MODAL .description').html(desc);
     $('#CONFIRM-MODAL')
         .modal({ closable: false, onApprove: yesCallback })
@@ -568,6 +571,8 @@ function confirmModal(desc, yesCallback) {
 exports.confirmModal = confirmModal;
 /** メッセージを表示する */
 function messageModal(desc) {
+    // すべてのポップアップを非表示にする
+    $('.fbs-card').popup('hide all');
     $('#MESSAGE-MODAL .description').html(desc);
     $('#MESSAGE-MODAL')
         .modal({ closable: false })
@@ -576,6 +581,8 @@ function messageModal(desc) {
 exports.messageModal = messageModal;
 /** 入力ボックスを表示する */
 function userInputModal(desc, decideCallback) {
+    // すべてのポップアップを非表示にする
+    $('.fbs-card').popup('hide all');
     $('#INPUT-MODAL .description-body').html(desc);
     $('#INPUT-MODAL')
         .modal({ closable: false, onApprove: decideCallback })

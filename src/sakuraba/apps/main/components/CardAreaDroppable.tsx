@@ -7,6 +7,7 @@ import * as utils from "sakuraba/utils";
 interface Param {
     region: CardRegion;
     side: PlayerSide;
+    linkedCardId: string;
     
     left: number;
     top: number;
@@ -86,7 +87,8 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
          style={styles}
          data-side={p.side}
          data-region={p.region}
-         key={`CardAreaDroppable_${p.side}_${p.region}`}
+         data-linked-card-id={p.linkedCardId || 'none'}
+         key={`CardAreaDroppable_${p.side}_${p.region}_${p.linkedCardId}`}
          ></div>
     );
 }

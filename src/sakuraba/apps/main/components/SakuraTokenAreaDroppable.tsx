@@ -5,7 +5,8 @@ import * as utils from "sakuraba/utils";
 /** 領域枠 */
 interface Param {
     region: SakuraTokenRegion;
-    side?: PlayerSide;
+    side: PlayerSide;
+    linkedCardId: string;
     
     left: number;
     top: number;
@@ -19,7 +20,6 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
         , top: `${p.top * state.zoom}px`
         , width: `${p.width * state.zoom}px`
         , height: `${p.height * state.zoom}px`
-        , position: 'relative'
     };
 
     return (
@@ -28,7 +28,8 @@ export const SakuraTokenAreaDroppable = (p: Param) => (state: state.State, actio
          style={styles}
          data-side={p.side || 'none'}
          data-region={p.region}
-         key={`SakuraTokenAreaDroppable_${p.side}_${p.region}`}
+         data-linked-card-id={p.linkedCardId || 'none'}
+         key={`SakuraTokenAreaDroppable_${p.side}_${p.region}_${p.linkedCardId}`}
          ></div>
     );
 }
