@@ -298,13 +298,15 @@ var ServerSocket = /** @class */ (function () {
     function ServerSocket(ioSocket) {
         this.ioSocket = ioSocket;
     }
+    // クライアントに送信
     ServerSocket.prototype.emit = function (event, props) {
         console.log("[socket] emit " + event + " server -> client", props);
         this.ioSocket.emit(event, props);
     };
-    ServerSocket.prototype.broadcastEmit = function (event, props) {
+    // 他ユーザーに送信
+    ServerSocket.prototype.broadcastEmit = function (tableId, event, props) {
         console.log("[socket] broadcastEmit " + event + " server -> client", props);
-        this.ioSocket.broadcast.emit(event, props);
+        this.ioSocket.broadcast.to(tableId).emit(event, props);
     };
     ServerSocket.prototype.on = function (event, fn) {
         this.ioSocket.on(event, function (props) {
@@ -798,6 +800,8 @@ io.on('connection', function (ioSocket) {
     ioSocket.on('disconnect', function () { return console.log('Client disconnected'); });
     // ボード情報のリクエスト
     socket.on('requestFirstBoard', function (p) {
+        // roomにjoin
+        socket.ioSocket.join(p.tableId);
         // ボード情報を取得
         getStoredBoard(p.tableId, function (board) {
             socket.emit('onFirstBoardReceived', { board: board });
@@ -810,7 +814,7 @@ io.on('connection', function (ioSocket) {
             // 送信されたボード情報を上書き
             saveBoard(p.tableId, p.board, function () {
                 // ボードが更新されたイベントを他ユーザーに配信
-                socket.broadcastEmit('onBoardReceived', { board: p.board, appendedActionLogs: p.appendedActionLogs });
+                socket.broadcastEmit(p.tableId, 'onBoardReceived', { board: p.board, appendedActionLogs: p.appendedActionLogs });
             });
         });
         // ログがあればサーバー側DBにログを追加
@@ -830,7 +834,7 @@ io.on('connection', function (ioSocket) {
     // 通知送信
     socket.on('notify', function (p) {
         // ログが追加されたイベントを他ユーザーに配信
-        socket.broadcastEmit('onNotifyReceived', { senderSide: p.senderSide, message: p.message });
+        socket.broadcastEmit(p.tableId, 'onNotifyReceived', { senderSide: p.senderSide, message: p.message });
     });
     // 名前の入力
     ioSocket.on('player_name_input', function (data) {

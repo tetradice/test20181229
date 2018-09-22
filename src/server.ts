@@ -138,6 +138,9 @@ io.on('connection', (ioSocket) => {
   
   // ボード情報のリクエスト
   socket.on('requestFirstBoard', (p) => {
+    // roomにjoin
+    socket.ioSocket.join(p.tableId);
+
     // ボード情報を取得
     getStoredBoard(p.tableId, (board) => {
       socket.emit('onFirstBoardReceived', {board});
@@ -151,7 +154,7 @@ io.on('connection', (ioSocket) => {
       // 送信されたボード情報を上書き
       saveBoard(p.tableId, p.board, () => {
         // ボードが更新されたイベントを他ユーザーに配信
-        socket.broadcastEmit('onBoardReceived', {board: p.board, appendedActionLogs: p.appendedActionLogs});
+        socket.broadcastEmit(p.tableId, 'onBoardReceived', {board: p.board, appendedActionLogs: p.appendedActionLogs});
       });
     });
     // ログがあればサーバー側DBにログを追加
@@ -174,7 +177,7 @@ io.on('connection', (ioSocket) => {
   // 通知送信
   socket.on('notify', (p) => {
       // ログが追加されたイベントを他ユーザーに配信
-      socket.broadcastEmit('onNotifyReceived', {senderSide: p.senderSide, message: p.message});
+      socket.broadcastEmit(p.tableId, 'onNotifyReceived', {senderSide: p.senderSide, message: p.message});
   });
 
   // 名前の入力

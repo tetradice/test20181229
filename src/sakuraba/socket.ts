@@ -25,14 +25,16 @@ export class ServerSocket {
         this.ioSocket = ioSocket;
     }
 
+    // クライアントに送信
     emit<E extends ServerToClientEventName>(event: E, props?: ServerToClientEventProps[E]){
         console.log(`[socket] emit ${event} server -> client`, props);
         this.ioSocket.emit(event, props);
     }
 
-    broadcastEmit<E extends ServerToClientEventName>(event: E, props?: ServerToClientEventProps[E]){
+    // 他ユーザーに送信
+    broadcastEmit<E extends ServerToClientEventName>(tableId: string, event: E, props?: ServerToClientEventProps[E]){
         console.log(`[socket] broadcastEmit ${event} server -> client`, props);
-        this.ioSocket.broadcast.emit(event, props);
+        this.ioSocket.broadcast.to(tableId).emit(event, props);
     }
 
     on<E extends ClientToServerEventName>(event: E, fn: (props: ClientToServerEventProps[E]) => any){

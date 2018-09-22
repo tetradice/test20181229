@@ -49721,13 +49721,15 @@ var ServerSocket = /** @class */ (function () {
     function ServerSocket(ioSocket) {
         this.ioSocket = ioSocket;
     }
+    // クライアントに送信
     ServerSocket.prototype.emit = function (event, props) {
         console.log("[socket] emit " + event + " server -> client", props);
         this.ioSocket.emit(event, props);
     };
-    ServerSocket.prototype.broadcastEmit = function (event, props) {
+    // 他ユーザーに送信
+    ServerSocket.prototype.broadcastEmit = function (tableId, event, props) {
         console.log("[socket] broadcastEmit " + event + " server -> client", props);
-        this.ioSocket.broadcast.emit(event, props);
+        this.ioSocket.broadcast.to(tableId).emit(event, props);
     };
     ServerSocket.prototype.on = function (event, fn) {
         this.ioSocket.on(event, function (props) {
