@@ -68,7 +68,7 @@
       // });
 
       $('#NEW-BOARD-BUTTON').click(function(e){
-        $.post('/boards.create', function(data, textStatus){
+        $.post('/tables.create', function(data, textStatus){
           console.log(data);
           $('#P1-URL').text(data.p1Url).attr('href', data.p1Url);
           $('#P2-URL').text(data.p2Url).attr('href', data.p2Url);

@@ -10,11 +10,11 @@ interface ServerToClientEventProps {
 type ServerToClientEventName = keyof ServerToClientEventProps;
 
 interface ClientToServerEventProps {
-    requestFirstBoard: {boardId: string}; 
-    requestFirstActionLogs: {boardId: string}; 
-    updateBoard: {boardId: string, side: SheetSide, board: state.Board, appendedActionLogs: state.LogRecord[] | null};
+    requestFirstBoard: {tableId: string}; 
+    requestFirstActionLogs: {tableId: string}; 
+    updateBoard: {tableId: string, side: SheetSide, board: state.Board, appendedActionLogs: state.LogRecord[] | null};
     
-    notify: {boardId: string, senderSide: PlayerSide, message: string};
+    notify: {tableId: string, senderSide: PlayerSide, message: string};
 }
 type ClientToServerEventName = keyof ClientToServerEventProps;
 

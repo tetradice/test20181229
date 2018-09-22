@@ -13,7 +13,7 @@ export interface State {
 
     zoom: number;
     socket?: ClientSocket;
-    boardId?: string;
+    tableId?: string;
     
     /** 自分の席位置 (p1/p2/観戦者) */
     side?: SheetSide;

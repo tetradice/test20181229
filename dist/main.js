@@ -46439,7 +46439,7 @@ $(function () {
     // 初期ステートを生成
     var st = utils.createInitialState();
     st.socket = socket;
-    st.boardId = params.boardId;
+    st.tableId = params.tableId;
     st.side = params.side;
     st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
     // ズーム設定を調整
@@ -46668,7 +46668,7 @@ $(function () {
     //     }
     // });
     // ボード情報をリクエスト
-    socket.emit('requestFirstBoard', { boardId: params.boardId });
+    socket.emit('requestFirstBoard', { tableId: params.tableId });
     // ボード情報を受信した場合、メイン処理をスタート
     socket.on('onFirstBoardReceived', function (p) {
         appActions.setBoard(p.board);
@@ -46712,7 +46712,7 @@ $(function () {
         }
     });
     // アクションログ情報をリクエスト
-    socket.emit('requestFirstActionLogs', { boardId: params.boardId });
+    socket.emit('requestFirstActionLogs', { tableId: params.tableId });
     // アクションログ情報を受け取った場合、ステートに設定
     socket.on('onFirstActionLogsReceived', function (p) {
         appActions.setActionLogs(p.logs);
@@ -47457,7 +47457,7 @@ exports.default = {
         appendLogs = newState.actionLog.slice(oldLength);
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         if (newState.socket) {
-            newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board, appendedActionLogs: appendLogs });
+            newState.socket.emit('updateBoard', { tableId: newState.tableId, side: newState.side, board: newState.board, appendedActionLogs: appendLogs });
         }
         // 履歴を忘れるモードの場合は、ボード履歴を削除し、元に戻せないようにする
         if (p.undoType === 'notBack') {
@@ -47493,7 +47493,7 @@ exports.default = {
         var newActionLogs = actions.appendActionLog({ text: "\u76F4\u524D\u306E\u64CD\u4F5C\u3092\u53D6\u308A\u6D88\u3057\u307E\u3057\u305F" }).actionLog;
         var appendedLogs = [newActionLogs[newActionLogs.length - 1]];
         if (state.socket) {
-            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: appendedLogs });
+            state.socket.emit('updateBoard', { tableId: state.tableId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: appendedLogs });
         }
         return { boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board };
     }; },
@@ -47506,7 +47506,7 @@ exports.default = {
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         recoveredHistItem.appendedLogs.forEach(function (log) { return actions.appendActionLog({ text: log.body, visibility: log.visibility }); });
         if (state.socket) {
-            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: recoveredHistItem.appendedLogs });
+            state.socket.emit('updateBoard', { tableId: state.tableId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: recoveredHistItem.appendedLogs });
         }
         return { boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board };
     }; },
@@ -48742,13 +48742,13 @@ exports.ControlPanel = function () { return function (state, actions) {
         var opponentName = state.board.playerNames[utils.flipSide(state.side)];
         var notifyType = $('[name=notifyType]').val();
         if (notifyType === 'ready') {
-            state.socket.emit('notify', { boardId: state.boardId, senderSide: state.side, message: "\u6E96\u5099\u3067\u304D\u307E\u3057\u305F" });
+            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u6E96\u5099\u3067\u304D\u307E\u3057\u305F" });
         }
         if (notifyType === 'turnEnd') {
-            state.socket.emit('notify', { boardId: state.boardId, senderSide: state.side, message: "\u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F" });
+            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F" });
         }
         if (notifyType === 'reaction') {
-            state.socket.emit('notify', { boardId: state.boardId, senderSide: state.side, message: "\u5BFE\u5FDC\u3057\u307E\u3059" });
+            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u5BFE\u5FDC\u3057\u307E\u3059" });
         }
         // 送信完了
         toastr_1.default.success(opponentName + "\u3078\u901A\u77E5\u3057\u307E\u3057\u305F\u3002", '', { timeOut: 5000 });

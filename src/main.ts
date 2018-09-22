@@ -8,7 +8,7 @@ import { CARD_DATA, SAKURA_TOKEN_MAX } from "./sakuraba";
 import dragInfo from "sakuraba/dragInfo";
 
 declare var params: {
-    boardId: string;
+    tableId: string;
     side: SheetSide;
 }
 
@@ -34,7 +34,7 @@ $(function(){
     // 初期ステートを生成
     const st: state.State = utils.createInitialState();
     st.socket = socket;
-    st.boardId = params.boardId;
+    st.tableId = params.tableId;
     st.side = params.side;
     st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
 
@@ -288,7 +288,7 @@ $(function(){
 
 
     // ボード情報をリクエスト
-    socket.emit('requestFirstBoard', {boardId: params.boardId});
+    socket.emit('requestFirstBoard', {tableId: params.tableId});
 
     // ボード情報を受信した場合、メイン処理をスタート
     socket.on('onFirstBoardReceived', (p: {board: state.Board}) => {
@@ -336,7 +336,7 @@ $(function(){
     });
 
     // アクションログ情報をリクエスト
-    socket.emit('requestFirstActionLogs', {boardId: params.boardId});
+    socket.emit('requestFirstActionLogs', {tableId: params.tableId});
 
     // アクションログ情報を受け取った場合、ステートに設定
     socket.on('onFirstActionLogsReceived', (p: {logs: state.LogRecord[]}) => {

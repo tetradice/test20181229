@@ -53,7 +53,7 @@ export default {
 
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         if(newState.socket){
-            newState.socket.emit('updateBoard', { boardId: newState.boardId, side: newState.side, board: newState.board, appendedActionLogs: appendLogs });
+            newState.socket.emit('updateBoard', { tableId: newState.tableId, side: newState.side, board: newState.board, appendedActionLogs: appendLogs });
         }
 
         // 履歴を忘れるモードの場合は、ボード履歴を削除し、元に戻せないようにする
@@ -97,7 +97,7 @@ export default {
         let appendedLogs = [newActionLogs[newActionLogs.length - 1]];
 
         if(state.socket){
-            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: appendedLogs});
+            state.socket.emit('updateBoard', { tableId: state.tableId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: appendedLogs});
         }
         return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board};
     },
@@ -114,7 +114,7 @@ export default {
         recoveredHistItem.appendedLogs.forEach(log => actions.appendActionLog({text: log.body, visibility: log.visibility}));
 
         if(state.socket){
-            state.socket.emit('updateBoard', { boardId: state.boardId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: recoveredHistItem.appendedLogs});
+            state.socket.emit('updateBoard', { tableId: state.tableId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: recoveredHistItem.appendedLogs});
         }
         return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board};
     },

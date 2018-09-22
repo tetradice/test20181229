@@ -387,13 +387,13 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
         let notifyType = $('[name=notifyType]').val();
         if(notifyType === 'ready'){
-            state.socket.emit('notify', {boardId: state.boardId, senderSide: state.side, message: `準備できました`});
+            state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: `準備できました`});
         }
         if(notifyType === 'turnEnd'){
-            state.socket.emit('notify', {boardId: state.boardId, senderSide: state.side, message: `ターンを終了しました`});
+            state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: `ターンを終了しました`});
         }
         if(notifyType === 'reaction'){
-            state.socket.emit('notify', {boardId: state.boardId, senderSide: state.side, message: `対応します`});
+            state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: `対応します`});
         }
 
         // 送信完了

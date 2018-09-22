@@ -26,34 +26,68 @@ const server = express()
   .get('/dist/main.js', (req, res) => res.sendFile(MAIN_JS) )
   .get('/dist/main.js.map', (req, res) => res.sendFile(MAIN_JS_MAP) )
   .get('/', (req, res) => res.sendFile(INDEX) )
-  .get('/b/:boardId/:side', (req, res) => res.render('board', {boardId: req.params.boardId, side: req.params.side}) )
-  .post('/boards.create', (req, res) => {
-    // 新しい卓IDを生成
-    let boardId = randomstring.generate({
-        length: 10
-      , readable: true
+
+  .get('/play/:key', (req, res) => {
+    // キーに対応する情報の取得を試みる
+    RedisClient.HGET(`sakuraba:player-key-map`, req.params.key, (err, dataJson) => {
+      if(dataJson !== null){
+        let data = JSON.parse(dataJson);
+        res.render('board', {tableId: data.tableId, side: data.side})
+      } else {
+        res.status(404);
+        res.end('NotFound : ' + req.path);
+      }
     });
+  })
+  .get('/watch/:tableId', (req, res) => {
+    res.render('board', {tableId: req.params.tableId, side: 'watcher'})
+  })
 
-    // 卓を追加
-    let state = utils.createInitialState();
-    RedisClient.HSET('boards', boardId, JSON.stringify(state.board));
+  .post('/tables.create', (req, res) => {
+    // 新しい卓番号を採番
+    RedisClient.INCR(`sakuraba:currentTableNo`, (err, newTableNo) => {
+      // トランザクションを張る
+      var multiClient = RedisClient.multi();
 
-    // 卓にアクセスするためのURLを生成
-    let urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
-    let p1Url = `${urlBase}/b/${boardId}/p1`;
-    let p2Url = `${urlBase}/b/${boardId}/p2`;
-    let watchUrl = `${urlBase}/b/${boardId}/watcher`;
+      // 卓を追加
+      let state = utils.createInitialState();
+      multiClient.SET(`sakuraba:tables:${newTableNo}:board`, JSON.stringify(state.board));
 
-    res.json({p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl});
+      // 卓へアクセスするための、プレイヤー1用アクセスキー、プレイヤー2用アクセスキーを生成
+      let p1Key = randomstring.generate({
+          length: 12
+        , readable: true
+      });
+      let p2Key = randomstring.generate({
+          length: 12
+        , readable: true
+      });
+
+      multiClient.HSET(`sakuraba:player-key-map`, p1Key, JSON.stringify({tableId: newTableNo, side: 'p1'}));
+      multiClient.HSET(`sakuraba:player-key-map`, p2Key, JSON.stringify({tableId: newTableNo, side: 'p2'}));
+
+      multiClient.EXEC((err, replies) => {
+        console.log(JSON.stringify(err));
+        console.log(JSON.stringify(replies));
+
+        // 卓にアクセスするためのURLを生成
+        let urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
+        let p1Url = `${urlBase}/play/${p1Key}`;
+        let p2Url = `${urlBase}/play/${p2Key}`;
+        let watchUrl = `${urlBase}/watch/${newTableNo}`;
+
+        res.json({p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl});
+      });
+    });
   })
   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 const io = socketIO(server);
 
 /** Redis上に保存されたボードデータを取得 */
-function getStoredBoard(boardId: string, callback: (board: state.Board) => void){
+function getStoredBoard(tableId: string, callback: (board: state.Board) => void){
   // ボード情報を取得
-  RedisClient.HGET('boards', boardId, (err, json) => {
+  RedisClient.GET(`sakuraba:tables:${tableId}:board`, (err, json) => {
     let boardData = JSON.parse(json) as state.Board;
 
     // コールバックを実行
@@ -62,18 +96,18 @@ function getStoredBoard(boardId: string, callback: (board: state.Board) => void)
 }
 
 /** Redisへボードデータを保存 */
-function saveBoard(boardId: string, board: state.Board, callback: () => void){
+function saveBoard(tableId: string, board: state.Board, callback: () => void){
   // ボード情報を保存
-  RedisClient.HSET('boards', boardId, JSON.stringify(board), (err, success) => {
+  RedisClient.SET(`sakuraba:tables:${tableId}:board`, JSON.stringify(board), (err, success) => {
     // コールバックを実行
     callback();
   });
 }
 
 /** Redis上に保存されたアクションログを取得 */
-function getStoredActionLogs(boardId: string, callback: (logs: state.LogRecord[]) => void){
+function getStoredActionLogs(tableId: string, callback: (logs: state.LogRecord[]) => void){
   // ログを取得
-  RedisClient.LRANGE(`actionLogs:${boardId}`, 0, -1, (err, jsons) => {
+  RedisClient.LRANGE(`sakuraba:tables:${tableId}:actionLogs`, 0, -1, (err, jsons) => {
 
     let logs = jsons.map((json) => JSON.parse(json) as state.LogRecord); 
 
@@ -83,11 +117,11 @@ function getStoredActionLogs(boardId: string, callback: (logs: state.LogRecord[]
 }
 
 /** Redisへアクションログデータを追加 */
-function appendActionLogs(boardId: string, logs: state.LogRecord[], callback: (logs: state.LogRecord[]) => void){
+function appendActionLogs(tableId: string, logs: state.LogRecord[], callback: (logs: state.LogRecord[]) => void){
   // ログをトランザクションで追加
   let commands: string[][] = [];
   logs.forEach((log) => {
-    commands.push(['RPUSH', `actionLogs:${boardId}`, JSON.stringify(log)]);
+    commands.push(['RPUSH', `sakuraba:tables:${tableId}:actionLogs`, JSON.stringify(log)]);
   });
   RedisClient.multi(commands).exec((err, success) => {
     // コールバックを実行
@@ -105,7 +139,7 @@ io.on('connection', (ioSocket) => {
   // ボード情報のリクエスト
   socket.on('requestFirstBoard', (p) => {
     // ボード情報を取得
-    getStoredBoard(p.boardId, (board) => {
+    getStoredBoard(p.tableId, (board) => {
       socket.emit('onFirstBoardReceived', {board});
     });
   });
@@ -113,16 +147,16 @@ io.on('connection', (ioSocket) => {
   // ボード状態の更新
   socket.on('updateBoard', (p) => {
     // ボード情報を取得
-    getStoredBoard(p.boardId, (board) => {
+    getStoredBoard(p.tableId, (board) => {
       // 送信されたボード情報を上書き
-      saveBoard(p.boardId, p.board, () => {
+      saveBoard(p.tableId, p.board, () => {
         // ボードが更新されたイベントを他ユーザーに配信
         socket.broadcastEmit('onBoardReceived', {board: p.board, appendedActionLogs: p.appendedActionLogs});
       });
     });
     // ログがあればサーバー側DBにログを追加
     if(p.appendedActionLogs !== null){
-      appendActionLogs(p.boardId, p.appendedActionLogs, (logs) => {
+      appendActionLogs(p.tableId, p.appendedActionLogs, (logs) => {
         // 送信成功後は何もしない
       });
     }
@@ -131,7 +165,7 @@ io.on('connection', (ioSocket) => {
   // アクションログ情報のリクエスト
   socket.on('requestFirstActionLogs', (p) => {
     // アクションログ情報を取得
-    getStoredActionLogs(p.boardId, (logs) => {
+    getStoredActionLogs(p.tableId, (logs) => {
       socket.emit('onFirstActionLogsReceived', {logs: logs});
     });
   });
@@ -144,13 +178,13 @@ io.on('connection', (ioSocket) => {
   });
 
   // 名前の入力
-  ioSocket.on('player_name_input', (data: {boardId: string, side: PlayerSide, name: string}) => {
+  ioSocket.on('player_name_input', (data: {tableId: string, side: PlayerSide, name: string}) => {
     console.log('on player_name_input: ', data);
     // ボード情報を取得
-    getStoredBoard(data.boardId, (board) => {
+    getStoredBoard(data.tableId, (board) => {
       // 名前をアップデートして保存
       board.playerNames[data.side] = data.name;
-      saveBoard(data.boardId, board, () => {
+      saveBoard(data.tableId, board, () => {
         // プレイヤー名が入力されたイベントを他ユーザーに配信
         ioSocket.broadcast.emit('on_player_name_input', board);
       });
@@ -158,13 +192,13 @@ io.on('connection', (ioSocket) => {
   });
   
   // メガミの選択
-  ioSocket.on('megami_select', (data: {boardId: string, side: PlayerSide, megamis: sakuraba.Megami[]}) => {
+  ioSocket.on('megami_select', (data: {tableId: string, side: PlayerSide, megamis: sakuraba.Megami[]}) => {
     console.log('on megami_select: ', data);
     // ボード情報を取得
-    getStoredBoard(data.boardId, (board) => {
+    getStoredBoard(data.tableId, (board) => {
       // メガミをアップデートして保存
       board.megamis[data.side] = data.megamis;
-      saveBoard(data.boardId, board, () => {
+      saveBoard(data.tableId, board, () => {
         // メガミが選択されたイベントを他ユーザーに配信
         ioSocket.broadcast.emit('on_megami_select', board);
       });
@@ -172,13 +206,13 @@ io.on('connection', (ioSocket) => {
   });
 
   // デッキの構築
-  ioSocket.on('deck_build', (data: {boardId: string, side: PlayerSide, addObjects: state.BoardObject[]}) => {
+  ioSocket.on('deck_build', (data: {tableId: string, side: PlayerSide, addObjects: state.BoardObject[]}) => {
     console.log('on deck_build: ', data);
 
     // ボード情報を取得
-    getStoredBoard(data.boardId, (board) => {
+    getStoredBoard(data.tableId, (board) => {
       board.objects = board.objects.concat(data.addObjects);
-      saveBoard(data.boardId, board, () => {
+      saveBoard(data.tableId, board, () => {
         // デッキが構築されたイベントを他ユーザーに配信
         ioSocket.broadcast.emit('on_deck_build', board);
       });
@@ -186,12 +220,12 @@ io.on('connection', (ioSocket) => {
   });
 
   // ボードオブジェクトの状態を更新
-  ioSocket.on('board_object_set', (data: {boardId: string, side: PlayerSide, objects: state.BoardObject[]}) => {
+  ioSocket.on('board_object_set', (data: {tableId: string, side: PlayerSide, objects: state.BoardObject[]}) => {
     console.log('on board_object_set: ', data);
     // ボード情報を取得
-    getStoredBoard(data.boardId, (board) => {
+    getStoredBoard(data.tableId, (board) => {
       board.objects = data.objects;
-      saveBoard(data.boardId, board, () => {
+      saveBoard(data.tableId, board, () => {
         // ボードオブジェクトの状態が更新されたイベントを他ユーザーに配信
         ioSocket.broadcast.emit('on_board_object_set', board);
       });
