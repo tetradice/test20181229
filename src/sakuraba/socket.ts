@@ -12,7 +12,7 @@ type ServerToClientEventName = keyof ServerToClientEventProps;
 interface ClientToServerEventProps {
     requestFirstBoard: {boardId: string}; 
     requestFirstActionLogs: {boardId: string}; 
-    updateBoard: {boardId: string, side: PlayerSide, board: state.Board, appendedActionLogs: state.LogRecord[] | null};
+    updateBoard: {boardId: string, side: SheetSide, board: state.Board, appendedActionLogs: state.LogRecord[] | null};
     
     notify: {boardId: string, senderSide: PlayerSide, message: string};
 }

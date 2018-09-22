@@ -407,8 +407,8 @@ function judgeCardOpenState(card, handOpenFlag, cardSide, cardRegion) {
     if (cardRegion === undefined)
         cardRegion = card.region;
     var cardData = sakuraba.CARD_DATA[card.cardId];
-    if (cardRegion === 'used' || cardRegion === 'on-card' || (cardData.baseType === 'special' && card.specialUsed)) {
-        // カードが使用済み領域にある場合か、封印済みか、切り札で使用済みフラグがONの場合、公開済み
+    if (cardRegion === 'used' || cardRegion === 'on-card' || cardRegion === 'extra' || (cardData.baseType === 'special' && card.specialUsed)) {
+        // カードが使用済み領域にある場合か、封印済みか、追加札か、切り札で使用済みフラグがONの場合、公開済み
         return 'opened';
     }
     else if (cardRegion === 'hand') {
@@ -431,17 +431,17 @@ function getDescriptionHtml(cardId) {
     }
     var typeCaptions = [];
     if (cardData.types.indexOf('attack') >= 0)
-        typeCaptions.push("<span style='color: red; font-weight: bold;'>攻撃</span>");
+        typeCaptions.push("<span class='card-type-attack'>攻撃</span>");
     if (cardData.types.indexOf('action') >= 0)
-        typeCaptions.push("<span style='color: blue; font-weight: bold;'>行動</span>");
+        typeCaptions.push("<span class='card-type-action'>行動</span>");
     if (cardData.types.indexOf('enhance') >= 0)
-        typeCaptions.push("<span style='color: green; font-weight: bold;'>付与</span>");
+        typeCaptions.push("<span class='card-type-enhance'>付与</span>");
     if (cardData.types.indexOf('variable') >= 0)
-        typeCaptions.push("<span style='color: gray; font-weight: bold;'>不定</span>");
+        typeCaptions.push("<span class='card-type-variable'>不定</span>");
     if (cardData.types.indexOf('reaction') >= 0)
-        typeCaptions.push("<span style='color: purple; font-weight: bold;'>対応</span>");
+        typeCaptions.push("<span class='card-type-reaction'>対応</span>");
     if (cardData.types.indexOf('fullpower') >= 0)
-        typeCaptions.push("<span style='color: #E0C000; font-weight: bold;'>全力</span>");
+        typeCaptions.push("<span class='card-type-fullpower'>全力</span>");
     html += "" + typeCaptions.join('/');
     if (cardData.range !== undefined) {
         if (cardData.rangeOpened !== undefined) {
@@ -478,11 +478,11 @@ function getDescriptionHtml(cardId) {
     html += "</div>";
     if (cardData.megami === 'kururu') {
         html = html.replace(/<([攻行付対全]+)>/g, function (str, arg) {
-            var replaced = arg.replace(/攻+/, function (str2) { return "<span style='color: red; font-weight: bold;'>" + str2 + "</span>"; })
-                .replace(/行+/, function (str2) { return "<span style='color: blue; font-weight: bold;'>" + str2 + "</span>"; })
-                .replace(/付+/, function (str2) { return "<span style='color: green; font-weight: bold;'>" + str2 + "</span>"; })
-                .replace(/対+/, function (str2) { return "<span style='color: purple; font-weight: bold;'>" + str2 + "</span>"; })
-                .replace(/全+/, function (str2) { return "<span style='color: #E0C000; font-weight: bold;'>" + str2 + "</span>"; });
+            var replaced = arg.replace(/攻+/, function (str2) { return "<span class='card-type-attack'>" + str2 + "</span>"; })
+                .replace(/行+/, function (str2) { return "<span class='card-type-action'>" + str2 + "</span>"; })
+                .replace(/付+/, function (str2) { return "<span class='card-type-enhance'>" + str2 + "</span>"; })
+                .replace(/対+/, function (str2) { return "<span class='card-type-reaction'>" + str2 + "</span>"; })
+                .replace(/全+/, function (str2) { return "<span class='card-type-fullpower'>" + str2 + "</span>"; });
             return "<" + replaced + ">";
         });
     }
@@ -611,6 +611,7 @@ function createInitialState() {
         board: {
             objects: [],
             playerNames: { p1: null, p2: null },
+            watcherNames: {},
             megamis: { p1: null, p2: null },
             vigors: { p1: null, p2: null },
             witherFlags: { p1: false, p2: false },
@@ -717,7 +718,7 @@ var server = express()
     var urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
     var p1Url = urlBase + "/b/" + boardId + "/p1";
     var p2Url = urlBase + "/b/" + boardId + "/p2";
-    var watchUrl = urlBase + "/b/" + boardId + "/watch";
+    var watchUrl = urlBase + "/b/" + boardId + "/watcher";
     res.json({ p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl });
 })
     .listen(PORT, function () { return console.log("Listening on " + PORT); });

@@ -88,6 +88,7 @@ export default {
             let i = -1;
     
             fromCards.forEach(c => {
+                c.side = toSide;
                 c.region = toRegion;
                 c.indexOfRegion = i;
                 c.linkedCardId = toLinkedCardId;
@@ -99,6 +100,7 @@ export default {
             let maxIndex = Math.max(...indexes);
     
             fromCards.forEach(c => {
+                c.side = toSide;
                 c.region = toRegion;
                 // 領域インデックスは最大値+1
                 c.indexOfRegion = maxIndex + 1;
@@ -116,6 +118,8 @@ export default {
 
     /** 山札からカードを引く */
     draw: (p: {number?: number, cardNameLogging?: boolean}) => (state: state.State, actions: ActionsType) => {
+        if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は呼び出し不可能な操作
+
         if(p.number === undefined) p.number = 1;
         actions.moveCard({
               from: [state.side, 'library', null]
@@ -248,6 +252,11 @@ export default {
 
                 // 山札を混ぜる
                 actions.shuffle({side: p.side});
+
+                // ライフ-1
+                if(p.lifeDecrease){
+                    actions.moveSakuraToken({from: [p.side, 'life', null], to: [p.side, 'flair', null]});
+                }
             }
         });
     },

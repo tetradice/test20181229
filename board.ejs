@@ -44,7 +44,6 @@
 
         #CONTROL-PANEL {
             top: 2vh;
-            right: 2vw;
             position: absolute;
         }
         .area, .fbs-card, .sakura-token, .fbs-vigor-card, .withered-token {
@@ -126,6 +125,7 @@
             background-repeat: no-repeat;
             background-position: center;
             background-image: url(/furuyoni_commons/others/sakura_token_ghost1.png);
+            z-index: 200;
         }
 
         .fbs-card.open-normal, .fbs-card.open-special {
@@ -301,8 +301,6 @@
             font-size: medium;
             color: silver;
             z-index: 5000;
-            right: 8px;
-            top: 8px;
         }
         .card-count {
             position: absolute;
@@ -350,6 +348,13 @@
         #toast-container>div{
             width: 400px;
         }
+
+        .card-type-attack { color: red; font-weight: bold; }
+        .card-type-action { color: blue; font-weight: bold; }
+        .card-type-enhance { color: green; font-weight: bold; }
+        .card-type-variable { color: gray; font-weight: bold; }
+        .card-type-reaction { color: purple; font-weight: bold; }
+        .card-type-fullpower { color: #E0C000; font-weight: bold; }
     </style>
 </head>
 <body>

@@ -21,7 +21,6 @@ export const CardAreaDroppable = (p: Param) => (state: state.State, actions: Act
         , top: `${p.top * state.zoom}px`
         , width: `${p.width * state.zoom}px`
         , height: `${p.height * state.zoom}px`
-        , border: "green 2px dashed"
     };
 
     return (

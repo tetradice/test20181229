@@ -78,8 +78,8 @@ function layoutObjects<T extends state.BoardObject>(
 const view: View<state.State, ActionsType> = (state, actions) => {
     let boardModel = new models.Board(state.board);
 
-    let selfSide = state.side;
-    let opponentSide: PlayerSide = (state.side === 'p1' ? 'p2' : 'p1');
+    let selfSide = state.viewingSide;
+    let opponentSide: PlayerSide = (state.viewingSide === 'p1' ? 'p2' : 'p1');
 
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     let cardAreaData: {
@@ -172,10 +172,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
         // フレームを追加
         frameNodes.push(<components.CardAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
-        if(area.region !== 'special'){
-            // 切り札領域でない場合のみドロップ可
-            frameNodes.push(<components.CardAreaDroppable side={area.side} region={area.region} linkedCardId={null} left={area.left} top={area.top} width={area.width} height={area.height} />);
-        }
+        frameNodes.push(<components.CardAreaDroppable side={area.side} region={area.region} linkedCardId={null} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
 
     // 通常桜花結晶を配置
@@ -271,8 +268,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.ControlPanel />
             <components.MariganButton left={10} top={770} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
-            <components.PlayerNameDisplay left={10} top={10} width={1200} side={utils.flipSide(state.side)} />
-            <components.PlayerNameDisplay left={10} top={770} width={1200} side={state.side} />
+            <components.PlayerNameDisplay left={10} top={10} width={1200} side={utils.flipSide(selfSide)} />
+            <components.PlayerNameDisplay left={10} top={770} width={1200} side={selfSide} />
         </div>
     );
 }

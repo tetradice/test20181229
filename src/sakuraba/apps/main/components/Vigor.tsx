@@ -18,11 +18,11 @@ export const Vigor = (p: {side: PlayerSide, left: number, top: number}) => (stat
     let className = "fbs-vigor-card";
     if(vigor === 0) className += " rotated";
     if(vigor === 2) className += " reverse-rotated";
-    if(p.side === utils.flipSide(state.side)) className += " opponent-side"; 
+    if(p.side === utils.flipSide(state.viewingSide)) className += " opponent-side"; 
 
     return <div class={className} style={styles} data-side={p.side}>
-        <div class={"vigor0" + (vigor !== 0 ? " clickable" : "")} onclick={() => actions.oprSetVigor({value: 0, side: p.side})}></div>
-        <div class={"vigor1" + (vigor !== 1 ? " clickable" : "")} onclick={() => actions.oprSetVigor({value: 1, side: p.side})}></div>
-        <div class={"vigor2" + (vigor !== 2 ? " clickable" : "")} onclick={() => actions.oprSetVigor({value: 2, side: p.side})}></div>
+        <div class={"vigor0" + (vigor !== 0 && state.side !== 'watcher' ? " clickable" : "")} onclick={() => actions.oprSetVigor({value: 0, side: p.side})}></div>
+        <div class={"vigor1" + (vigor !== 1 && state.side !== 'watcher' ? " clickable" : "")} onclick={() => actions.oprSetVigor({value: 1, side: p.side})}></div>
+        <div class={"vigor2" + (vigor !== 2 && state.side !== 'watcher' ? " clickable" : "")} onclick={() => actions.oprSetVigor({value: 2, side: p.side})}></div>
     </div>;
 }

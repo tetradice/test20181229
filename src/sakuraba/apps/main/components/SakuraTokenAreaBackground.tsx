@@ -20,6 +20,7 @@ export const SakuraTokenAreaBackground = (p: Param) => (state: state.State) => {
         , top: `${p.top * state.zoom}px`
         , width: `${p.width * state.zoom}px`
         , height: `${p.height * state.zoom}px`
+        , padding: `0`
     };
 
 
@@ -31,7 +32,7 @@ export const SakuraTokenAreaBackground = (p: Param) => (state: state.State) => {
             data-region={p.region}
             key={`SakuraTokenAreaBackground_${p.side}_${p.region}`}
         >
-            <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`}}>{p.title}</div>
+            <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`, right: `${8 * state.zoom}px`, top: `${4 * state.zoom}px`}}>{p.title}</div>
             
         </div>
     );

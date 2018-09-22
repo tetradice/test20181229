@@ -42,13 +42,13 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
         className += (cardData.baseType === 'special' ? " back-special" : " back-normal");
     }
     if(p.target.rotated) className += " rotated";
-    if(p.target.side === utils.flipSide(state.side)) className += " opponent-side"; 
+    if(p.target.side === utils.flipSide(state.viewingSide)) className += " opponent-side"; 
 
     const setPopup = (element) => {
         // SemanticUI ポップアップ初期化
         $(element).popup({
             hoverable: true,
-            delay: {show: 500, hide: 500},
+            delay: {show: 500, hide: 0},
             onShow: function(): false | void{
                 // 表向きであるか、自分の伏せ札であるか、自分の切り札であれば説明を見ることができる
                 let known = (
@@ -73,6 +73,11 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
         setPopup(element);
     }
     const ondblclick = (element) => {
+        if(!state.board.firstDrawFlags[state.side]){
+            utils.messageModal('決闘を開始するまでは、カードや桜花結晶の操作は行えません。');
+            return false;
+        };
+
         const data = sakuraba.CARD_DATA[p.target.cardId];
 
         // 切札なら裏返す
@@ -84,17 +89,32 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
         if(data.baseType === 'normal' && p.target.region === 'library'){
             actions.oprDraw();
         }
+        return true;
     }
 
     // ドラッグ可否判定
     let libraryCards = state.board.objects.filter(o => o.type === 'card' && o.side === p.target.side && o.region === p.target.region);
     let draggable = true;
-    if(p.target.region === 'special'){
-        draggable = false; // 切り札はドラッグ不可
-        className += " clickable" // クリックは可能
-    }
-    if(p.target.region === 'library' && p.target.indexOfRegion !== (libraryCards.length - 1)) draggable = false; // 山札にあって、かつ一番上のカードでない場合はドラッグ不可
 
+    if(state.side === 'watcher'){
+        // 観戦者はドラッグもクリックも不可能
+        draggable = false;
+    } else {
+        if(p.target.region === 'library' && p.target.indexOfRegion !== (libraryCards.length - 1)) draggable = false; // 山札にあって、かつ一番上のカードでない場合はドラッグ不可
+    }
+
+    // 自分側のメガミにクルルが含まれる場合、自分側の表向きカードにはタイプ表示を追加
+    let typeCaptions = [];
+    if(opened && p.target.side === state.viewingSide && state.board.megamis[state.viewingSide].find(m => m === 'kururu')){
+        
+        if(cardData.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>攻</span>);
+        if(cardData.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>行</span>);
+        if(cardData.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>付</span>);
+        if(cardData.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>不</span>);
+        if(cardData.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>対</span>);
+        if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>全</span>);
+    }
+    
     return (
         <div
             key={p.target.id}
@@ -112,6 +132,7 @@ export const Card = (p: Param) => (state: state.State, actions: ActionsType) => 
             data-html={utils.getDescriptionHtml(p.target.cardId)}            
         >
             <div class="card-name">{(opened ? cardData.name : '')}</div>
+            <div style="position: absolute; bottom: 4px; left: 4px;">{typeCaptions}</div>
             {handOpened ? <div style="white-space: nowrap; color: blue; position: absolute; bottom: 4px; right: 0;">【公開中】</div> : null}
         </div>
     );

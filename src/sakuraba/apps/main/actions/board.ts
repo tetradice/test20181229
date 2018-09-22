@@ -132,6 +132,14 @@ export default {
         return {board: newBoard};
     },
 
+    /** 観戦者名を設定する */
+    setWatcherName: (p: {socketId: string, name: string}) => (state: state.State) => {
+        let newBoard = _.merge({}, state.board);
+        newBoard.watcherNames[p.socketId] = p.name;
+        
+        return {board: newBoard};
+    },
+
     /** 指定したサイドのメガミを設定する */
     setMegamis: (p: {side: PlayerSide, megami1: Megami, megami2: Megami}) => (state: state.State, actions: ActionsType) => {
         let newBoard = _.merge({}, state.board);
@@ -232,6 +240,9 @@ export default {
 
     /** デッキのカードを設定する */
     setDeckCards: (p: {cardIds: string[]}) => (state: state.State, actions: ActionsType) => {
+        if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
+        let side = state.side;
+
         // 自分の側のカードをすべて削除
         actions.clearDeckCards();
 
@@ -239,10 +250,10 @@ export default {
         p.cardIds.forEach((id) => {
             const data = CARD_DATA[id];
             if(data.baseType === 'normal'){
-                actions.addCard({side: state.side, region: 'library', cardId: id});
+                actions.addCard({side: side, region: 'library', cardId: id});
             }
             if(data.baseType === 'special'){
-                actions.addCard({side: state.side, region: 'special', cardId: id});
+                actions.addCard({side: side, region: 'special', cardId: id});
             }           
         });
     },
@@ -330,19 +341,22 @@ export default {
         actions.operate({
             undoType: 'notBack',
             proc: () => {
+                if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
+        
                 let board = new models.Board(state.board);
 
                 // 山札をシャッフル
                 actions.shuffle({side: state.side});
 
                 // 山札を3枚引く
-                actions.draw({number: 3});
+                actions.appendActionLog({text: `最初の手札3枚を引きました`});
+                actions.draw({number: 3, cardNameLogging: true});
 
                 // 桜花結晶を作り、同時に集中力をセット
                 actions.addSakuraToken({side: state.side, region: 'aura', number: 3});
                 actions.addSakuraToken({side: state.side, region: 'life', number: 10});
                 actions.setVigor({side: state.side, value: 0});
-                actions.appendActionLog({text: '桜花結晶と集中力を配置', visibility: 'shown'});
+                actions.appendActionLog({text: '桜花結晶と集中力を配置しました', visibility: 'shown'});
 
                 // まだ間合が置かれていなければセット
                 if(board.getRegionSakuraTokens(null, 'distance', null).length === 0){

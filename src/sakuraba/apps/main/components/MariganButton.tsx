@@ -6,6 +6,9 @@ import { resolve } from "url";
 
 /** 手札の引き直しボタン */
 export const MariganButton = (p: {left: number, top: number}) => (state: state.State, actions: ActionsType) => {
+    if(state.side === 'watcher') return null; // 観戦者は表示しない
+    let side = state.side;
+
     // まだ最初の手札を引いてない場合か、すでに引き直し済みの場合は表示しない
     if(!state.board.firstDrawFlags[state.side] || state.board.mariganFlags[state.side]){
         return null;
@@ -23,8 +26,8 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
         let board = new models.Board(state.board);
         
         let promise = new Promise<state.Card[]>((resolve, reject) => {
-            let cards = board.getRegionCards(state.side, 'hand', null);
-            let st = apps.mariganModal.State.create(state.side, cards, resolve, reject);
+            let cards = board.getRegionCards(side, 'hand', null);
+            let st = apps.mariganModal.State.create(side, cards, resolve, reject);
             apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));            
         }).then((selectedCards) => {
             // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
@@ -33,14 +36,14 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
                 proc: () => {
                     // 選択したカードを山札の底に移動
                     selectedCards.forEach(card => {
-                        actions.moveCard({from: card.id, to: [state.side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す'});
+                        actions.moveCard({from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す'});
                     });
 
                     // 手札n枚を引く
                     actions.draw({number: selectedCards.length});
         
                     // マリガンフラグON
-                    actions.setMariganFlag({side: state.side, value: true});
+                    actions.setMariganFlag({side: side, value: true});
                 }
             })
         });

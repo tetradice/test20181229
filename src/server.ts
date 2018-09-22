@@ -42,7 +42,7 @@ const server = express()
     let urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
     let p1Url = `${urlBase}/b/${boardId}/p1`;
     let p2Url = `${urlBase}/b/${boardId}/p2`;
-    let watchUrl = `${urlBase}/b/${boardId}/watch`;
+    let watchUrl = `${urlBase}/b/${boardId}/watcher`;
 
     res.json({p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl});
   })

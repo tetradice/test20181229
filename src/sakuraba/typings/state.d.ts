@@ -14,7 +14,11 @@ export interface State {
     zoom: number;
     socket?: ClientSocket;
     boardId?: string;
-    side?: PlayerSide;
+    
+    /** 自分の席位置 (p1/p2/観戦者) */
+    side?: SheetSide;
+    /** 自分がいまp1/p2どちら側の席から卓を見ているか */
+    viewingSide?: PlayerSide;
 
     actionLog: LogRecord[];
     messageLog: LogRecord[];
@@ -32,6 +36,7 @@ export interface BoardHistoryItem {
 export interface Board {
     objects: BoardObject[];
     playerNames: {p1: string, p2: string};
+    watcherNames: {[socketId: string]: string}; // ソケットIDに対して観戦者名を割り当てる
     megamis: {p1: Megami[], p2: Megami[]};
 
     /** 集中力 */

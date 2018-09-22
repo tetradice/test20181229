@@ -5,6 +5,7 @@ export function createInitialState(): state.State{
         , board: {
               objects: []
             , playerNames: {p1: null, p2: null}
+            , watcherNames: {}
             , megamis: {p1: null, p2: null}
             , vigors: {p1: null, p2: null}
             , witherFlags: {p1: false, p2: false}
