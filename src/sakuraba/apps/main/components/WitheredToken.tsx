@@ -12,7 +12,7 @@ export const WitheredToken = (p: {side: PlayerSide, left: number, top: number}) 
         , height: `${89 * state.zoom}px`
     };
     let className = "withered-token";
-    if(p.side === utils.flipSide(state.side)) className += " opponent-side"; 
+    if(p.side === utils.flipSide(state.viewingSide)) className += " opponent-side"; 
 
     if(state.board.witherFlags[p.side]){
         return <div data-side={p.side} class={className} style={styles}></div>;

@@ -265,6 +265,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.Vigor side={selfSide} left={680} top={630} />
             <components.WitheredToken side={opponentSide} left={390} top={60} />
             <components.WitheredToken side={selfSide} left={680} top={630} />
+            {(state.board.planStatus[selfSide] ? <components.PlanToken side={selfSide} planState={state.board.planStatus[selfSide]} left={850} top={545} /> : null)}
+            {(state.board.planStatus[opponentSide] ? <components.PlanToken side={opponentSide} planState={state.board.planStatus[opponentSide]} left={10} top={315} /> : null)}
             <components.ControlPanel />
             <components.MariganButton left={10} top={770} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />

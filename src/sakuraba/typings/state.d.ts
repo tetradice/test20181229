@@ -55,6 +55,8 @@ export interface Board {
     handOpenFlags: {p1: boolean, p2: boolean};
     /** 特定の手札を相手に公開しているかどうか */
     handCardOpenFlags: {p1: {[id: string]: boolean | undefined}, p2: {[id: string]: boolean | undefined}};
+    /** 計略の状態 */
+    planStatus: {p1: PlanState, p2: PlanState};
 }
 
 /**

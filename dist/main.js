@@ -46456,7 +46456,51 @@ $(function () {
         st.zoom = 0.5;
     // アプリケーション起動
     var appActions = apps.main.run(st, document.getElementById('BOARD'));
-    // 山札ドラッグメニュー
+    // 計略トークンクリックメニュー
+    $('#BOARD').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
+    $.contextMenu({
+        zIndex: 9999,
+        trigger: 'none',
+        selector: '#CONTEXT-PLAN-TOKEN-CLICK',
+        build: function ($elem, event) {
+            var currentState = appActions.getState();
+            var side = currentState.side;
+            var board = new models.Board(currentState.board);
+            var items = {};
+            var planState = board.planStatus[currentState.side];
+            if (planState === 'back-blue' || planState === 'back-red') {
+                items['open'] = { name: '計略を公開する', callback: function () {
+                        appActions.operate({
+                            log: "\u8A08\u7565\u3092\u516C\u958B\u3057\u307E\u3057\u305F -> " + (planState === 'back-blue' ? '神算' : '鬼謀'),
+                            proc: function () {
+                                appActions.setPlanState({ side: side, value: (planState === 'back-blue' ? 'blue' : 'red') });
+                            }
+                        });
+                    } };
+            }
+            else {
+                items['blue'] = { name: '次の計略を「神算」で準備する', callback: function () {
+                        appActions.operate({
+                            log: "\u6B21\u306E\u8A08\u7565\u3092\u6E96\u5099\u3057\u307E\u3057\u305F",
+                            proc: function () {
+                                appActions.setPlanState({ side: side, value: 'back-blue' });
+                            }
+                        });
+                    } };
+                items['red'] = { name: '次の計略を「鬼謀」で準備する', callback: function () {
+                        appActions.operate({
+                            log: "\u6B21\u306E\u8A08\u7565\u3092\u6E96\u5099\u3057\u307E\u3057\u305F",
+                            proc: function () {
+                                appActions.setPlanState({ side: side, value: 'back-red' });
+                            }
+                        });
+                    } };
+            }
+            items['sep'] = '----';
+            items['cancel'] = { name: 'キャンセル', callback: function () { } };
+            return { items: items };
+        }
+    });
     // 右クリックメニュー
     $.contextMenu({
         selector: '#BOARD *',
@@ -47706,6 +47750,13 @@ exports.default = {
         newBoard.updateRegionInfo();
         return { board: newBoard };
     }; },
+    /** 計略の状態をセット */
+    setPlanState: function (p) { return function (state, actions) {
+        var newBoard = models.Board.clone(state.board);
+        // 計略の状態をセット
+        newBoard.planStatus[p.side] = p.value;
+        return { board: newBoard };
+    }; },
     /** 最初の手札を引き、桜花結晶などを配置する */
     oprBoardSetup: function () { return function (state, actions) {
         actions.operate({
@@ -47731,6 +47782,10 @@ exports.default = {
                 ;
                 // 最初の手札を引いたフラグをセット
                 actions.setFirstDrawFlag({ side: state.side, value: true });
+                // シンラがいれば計略トークンをセット
+                if (board.megamis[state.side].find(function (m) { return m === 'shinra'; })) {
+                    actions.setPlanState({ side: state.side, value: 'back-blue' });
+                }
             }
         });
     }; },
@@ -48908,6 +48963,61 @@ exports.MariganButton = function (p) { return function (state, actions) {
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/main/components/PlanToken.tsx":
+/*!*********************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/PlanToken.tsx ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var dragInfo_1 = __importDefault(__webpack_require__(/*! sakuraba/dragInfo */ "./src/sakuraba/dragInfo.ts"));
+/** 計略 */
+exports.PlanToken = function (p) { return function (state, actions) {
+    // DOMを返す
+    var styles = {
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: 100 * 0.45 * state.zoom + "px",
+        height: 116 * 0.45 * state.zoom + "px",
+        position: 'absolute'
+    };
+    var onclick = function (e) { return $('#CONTEXT-PLAN-TOKEN-CLICK').contextMenu({ x: e.pageX, y: e.pageY }); };
+    var imageName = p.planState;
+    if (p.planState === 'back-blue' || p.planState === 'back-red')
+        imageName = 'back';
+    var setPopup = function (element) {
+        // SemanticUI ポップアップ初期化
+        $(element).popup({
+            hoverable: true,
+            delay: { show: 500, hide: 0 },
+            onShow: function () {
+                if (dragInfo_1.default.draggingFrom !== null)
+                    return false;
+            },
+        });
+    };
+    var oncreate = function (element) {
+        //if(state.draggingFromCard !== null) return;
+        setPopup(element);
+    };
+    var popupTitle = null;
+    if (p.planState === 'back-blue')
+        popupTitle = '神算';
+    if (p.planState === 'back-red')
+        popupTitle = '鬼謀';
+    return hyperapp_1.h("img", { class: "clickable", "data-title": popupTitle, src: "/furuyoni_commons/furuyoni_na/board_token/plan_" + imageName + ".png", oncreate: oncreate, style: styles, onclick: onclick });
+}; };
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx":
 /*!*****************************************************************!*\
   !*** ./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx ***!
@@ -49092,7 +49202,7 @@ exports.WitheredToken = function (p) { return function (state, actions) {
         height: 89 * state.zoom + "px"
     };
     var className = "withered-token";
-    if (p.side === utils.flipSide(state.side))
+    if (p.side === utils.flipSide(state.viewingSide))
         className += " opponent-side";
     if (state.board.witherFlags[p.side]) {
         return hyperapp_1.h("div", { "data-side": p.side, class: className, style: styles });
@@ -49122,6 +49232,7 @@ __export(__webpack_require__(/*! ./BoardCard */ "./src/sakuraba/apps/main/compon
 __export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/apps/main/components/SakuraToken.tsx"));
 __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/apps/main/components/Vigor.tsx"));
 __export(__webpack_require__(/*! ./WitheredToken */ "./src/sakuraba/apps/main/components/WitheredToken.tsx"));
+__export(__webpack_require__(/*! ./PlanToken */ "./src/sakuraba/apps/main/components/PlanToken.tsx"));
 __export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/apps/main/components/ControlPanel.tsx"));
 __export(__webpack_require__(/*! ./CardAreaBackground */ "./src/sakuraba/apps/main/components/CardAreaBackground.tsx"));
 __export(__webpack_require__(/*! ./CardAreaDroppable */ "./src/sakuraba/apps/main/components/CardAreaDroppable.tsx"));
@@ -49365,6 +49476,8 @@ var view = function (state, actions) {
         hyperapp_1.h(components.Vigor, { side: selfSide, left: 680, top: 630 }),
         hyperapp_1.h(components.WitheredToken, { side: opponentSide, left: 390, top: 60 }),
         hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680, top: 630 }),
+        (state.board.planStatus[selfSide] ? hyperapp_1.h(components.PlanToken, { side: selfSide, planState: state.board.planStatus[selfSide], left: 850, top: 545 }) : null),
+        (state.board.planStatus[opponentSide] ? hyperapp_1.h(components.PlanToken, { side: opponentSide, planState: state.board.planStatus[opponentSide], left: 10, top: 315 }) : null),
         hyperapp_1.h(components.ControlPanel, null),
         hyperapp_1.h(components.MariganButton, { left: 10, top: 770 }),
         hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),
@@ -50045,7 +50158,8 @@ function createInitialState() {
             firstDrawFlags: { p1: false, p2: false },
             mariganFlags: { p1: false, p2: false },
             handOpenFlags: { p1: false, p2: false },
-            handCardOpenFlags: { p1: {}, p2: {} }
+            handCardOpenFlags: { p1: {}, p2: {} },
+            planStatus: { p1: null, p2: null }
         },
         boardHistoryPast: [],
         boardHistoryFuture: [],

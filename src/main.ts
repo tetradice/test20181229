@@ -49,7 +49,54 @@ $(function(){
     // アプリケーション起動
     let appActions = apps.main.run(st, document.getElementById('BOARD'));
 
-    // 山札ドラッグメニュー
+    // 計略トークンクリックメニュー
+    $('#BOARD').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
+    $.contextMenu({
+        zIndex: 9999,
+        trigger: 'none',
+        selector: '#CONTEXT-PLAN-TOKEN-CLICK',
+        build: function($elem: JQuery, event: JQueryEventObject){
+            let currentState = appActions.getState();
+            let side = currentState.side as PlayerSide;
+            let board = new models.Board(currentState.board);
+            let items: Object = {};
+
+            let planState = board.planStatus[currentState.side];
+            if(planState === 'back-blue' || planState === 'back-red'){
+                items['open'] = {name: '計略を公開する', callback: () => {
+                    appActions.operate({
+                        log: `計略を公開しました -> ${planState === 'back-blue' ? '神算' : '鬼謀'}`,
+                        proc: () => {
+                            appActions.setPlanState({side: side, value: (planState === 'back-blue' ? 'blue' : 'red')});
+                        }
+                    });
+                }};
+            } else {
+                items['blue'] = {name: '次の計略を「神算」で準備する', callback: () => {
+                    appActions.operate({
+                        log: `次の計略を準備しました`,
+                        proc: () => {
+                            appActions.setPlanState({side: side, value: 'back-blue'});
+                        }
+                    });
+                }};
+                items['red'] = {name: '次の計略を「鬼謀」で準備する', callback: () => {
+                    appActions.operate({
+                        log: `次の計略を準備しました`,
+                        proc: () => {
+                            appActions.setPlanState({side: side, value: 'back-red'});
+                        }
+                    });
+                }};
+            }
+
+            items['sep'] = '----';
+            items['cancel'] = {name: 'キャンセル', callback: () => {}};
+
+            return {items: items};
+
+        }
+    });
 
     // 右クリックメニュー
     $.contextMenu({

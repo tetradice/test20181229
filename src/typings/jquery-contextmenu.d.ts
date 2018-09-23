@@ -5,11 +5,14 @@ interface JQueryStatic {
         callback?: Function,
         items?: Object,
         trigger?: string,
+        zIndex?: number | (() => number),
         events?: {show?: Function, hide?: Function, activated?: Function},
     }): any;
 
     contextMenu(options: {
         selector?: string,
+        trigger?: string,
+        zIndex?: number | (() => number),
         build?: ($triggerElement: JQuery, event: JQueryEventObject) => Object,
     }): any;
 }

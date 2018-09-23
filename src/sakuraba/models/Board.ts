@@ -5,6 +5,7 @@ import * as utils from "sakuraba/utils";
 export class Board implements state.Board {
     objects: state.BoardObject[];
     playerNames: {p1: string, p2: string};
+    watcherNames: state.Board['watcherNames'];
     megamis: {p1: Megami[], p2: Megami[]};
     vigors: {p1: VigorValue, p2: VigorValue};
     witherFlags: {p1: boolean, p2: boolean};
@@ -13,6 +14,7 @@ export class Board implements state.Board {
     mariganFlags: {p1: boolean, p2: boolean};
     handOpenFlags: {p1: boolean, p2: boolean};
     handCardOpenFlags: {p1: {[id: string]: boolean | undefined}, p2: {[id: string]: boolean | undefined}};
+    planStatus: state.Board['planStatus'];
 
     actionLog: state.LogRecord[];
     chatLog: state.LogRecord[];

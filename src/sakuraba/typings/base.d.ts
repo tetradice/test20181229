@@ -6,6 +6,7 @@ type SheetSide = PlayerSide | "watcher";
 
 type LogVisibility = 'ownerOnly' | 'outerOnly' | 'shown';
 type CardOpenState = 'opened' | 'ownerOnly' | 'hidden';
+type PlanState = null | 'back-blue' | 'back-red' | 'blue' | 'red';
 
 type VigorValue = 0 | 1 | 2;
 

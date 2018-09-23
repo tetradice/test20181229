@@ -335,6 +335,20 @@ export default {
 
         return {board: newBoard};
     },
+
+    /** 計略の状態をセット */
+    setPlanState: (p: {
+        /** どちら側の計略か */
+        side: PlayerSide;
+        /** 新しい値 */
+        value: PlanState;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        // 計略の状態をセット
+        newBoard.planStatus[p.side] = p.value;
+
+        return {board: newBoard};
+    },
     
     /** 最初の手札を引き、桜花結晶などを配置する */
     oprBoardSetup: () => (state: state.State, actions: ActionsType) => {
@@ -365,6 +379,11 @@ export default {
 
                 // 最初の手札を引いたフラグをセット
                 actions.setFirstDrawFlag({side: state.side, value: true});
+
+                // シンラがいれば計略トークンをセット
+                if(board.megamis[state.side].find(m => m === 'shinra')){
+                    actions.setPlanState({side: state.side, value: 'back-blue'});
+                }
             }
         });
     },
