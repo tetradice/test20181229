@@ -1,4 +1,4 @@
-export * from './Card';
+export * from './BoardCard';
 export * from './SakuraToken';
 export * from './Vigor';
 export * from './WitheredToken';

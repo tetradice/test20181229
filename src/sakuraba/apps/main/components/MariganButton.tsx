@@ -27,7 +27,7 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
         
         let promise = new Promise<state.Card[]>((resolve, reject) => {
             let cards = board.getRegionCards(side, 'hand', null);
-            let st = apps.mariganModal.State.create(side, cards, resolve, reject);
+            let st = apps.mariganModal.State.create(side, cards, state.zoom, resolve, reject);
             apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));            
         }).then((selectedCards) => {
             // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す

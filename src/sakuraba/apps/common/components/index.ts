@@ -1,1 +1,1 @@
-export * from './DeckBuildCard';
+export * from './Card';

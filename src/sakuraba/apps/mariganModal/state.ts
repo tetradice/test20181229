@@ -3,6 +3,7 @@ export interface State {
     side: PlayerSide;
     cards: state.Card[];
     selectedCards: state.Card[];
+    zoom: number;
 
     promiseResolve: (selectedCards: state.Card[]) => void;
     promiseReject: Function;
@@ -13,6 +14,7 @@ export namespace State {
     export function create(
           side: PlayerSide
         , cards: state.Card[]
+        , zoom: number
         , promiseResolve: (selectedCards: state.Card[]) => void
         , promiseReject: Function
     ): State{
@@ -21,6 +23,7 @@ export namespace State {
             , side: side
             , cards: cards
             , selectedCards: []
+            , zoom: zoom
             
             , promiseResolve: promiseResolve
             , promiseReject: promiseReject

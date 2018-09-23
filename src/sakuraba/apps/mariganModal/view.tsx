@@ -1,9 +1,9 @@
 import { h, app, View } from "hyperapp";
-import { DeckBuildCard } from "../common/components";
 import { actions, ActionsType } from "./actions";
 import { State } from "./state";
 import * as utils from "sakuraba/utils";
 import * as sakuraba from "sakuraba";
+import { Card } from "sakuraba/apps/common/components";
 
 import * as css from "./view.css"
 
@@ -29,7 +29,7 @@ const view: View<State, ActionsType> = (state, actions) => {
         let left = 4 + c * (100 + 8);
         let selected = state.selectedCards.indexOf(card) >= 0;
         
-        cardElements.push(<DeckBuildCard target={card} left={left} top={top} selected={selected} onclick={() => actions.selectCard(card)} zoom={1.0}></DeckBuildCard>);
+        cardElements.push(<Card target={card} opened={true} descriptionViewable={true} left={left} top={top} selected={selected} onclick={() => actions.selectCard(card)} zoom={state.zoom}></Card>);
     });
 
     let selectedCount = state.selectedCards.filter(card => sakuraba.CARD_DATA[card.cardId].baseType === 'normal').length;

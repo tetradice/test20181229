@@ -4,9 +4,9 @@ import * as sakuraba from "sakuraba";
 import * as utils from "sakuraba/utils";
 import * as css from "./ControlPanel.css"
 import { withLogger } from "@hyperapp/logger"
-import { DeckBuildCard } from "../../common/components";
 import * as models from "sakuraba/models";
 import toastr from "toastr";
+import { Card } from "sakuraba/apps/common/components";
 
 
 // ルール編集メモ
@@ -174,7 +174,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                         let left = 4 + c * (100 + 8);
                         let selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
                         
-                        cardElements.push(<DeckBuildCard target={card} left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={state.zoom}></DeckBuildCard>);
+                        cardElements.push(<Card target={card} opened={true} descriptionViewable={true} left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={state.zoom}></Card>);
                     });
                 });
 

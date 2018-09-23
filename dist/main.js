@@ -47317,10 +47317,10 @@ exports.CARD_DATA = {
 
 /***/ }),
 
-/***/ "./src/sakuraba/apps/common/components/DeckBuildCard.tsx":
-/*!***************************************************************!*\
-  !*** ./src/sakuraba/apps/common/components/DeckBuildCard.tsx ***!
-  \***************************************************************/
+/***/ "./src/sakuraba/apps/common/components/Card.tsx":
+/*!******************************************************!*\
+  !*** ./src/sakuraba/apps/common/components/Card.tsx ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -47333,35 +47333,90 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
-exports.DeckBuildCard = function (p) {
+var dragInfo_1 = __importDefault(__webpack_require__(/*! sakuraba/dragInfo */ "./src/sakuraba/dragInfo.ts"));
+exports.Card = function (p) {
+    // スタイル決定
+    // 選択済みカードの場合、罫線が1px大きくなるため、leftとtopから1を引く
     var styles = {
-        left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * p.zoom + "px",
-        top: (p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) * p.zoom + "px",
+        left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * p.zoom - (p.selected || p.handOpened ? 1 : 0) + "px",
+        top: (p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) * p.zoom - (p.selected || p.handOpened ? 1 : 0) + "px",
         width: 100 * p.zoom + "px",
         height: 140 * p.zoom + "px"
     };
+    if (p.target.region === 'on-card') {
+        styles.zIndex = "" + (90 - p.target.indexOfRegion);
+    }
+    else {
+        styles.zIndex = "" + 100;
+    }
     var cardData = sakuraba.CARD_DATA[p.target.cardId];
-    var className = "fbs-card open-normal clickable";
-    if (p.selected)
+    var className = "fbs-card";
+    // 選択済み、もしくは手札公開中の場合は、選択済みスタイルを付与
+    if (p.selected || p.handOpened)
         className += " selected";
+    // 公開判定
+    if (p.opened) {
+        className += " open-normal";
+    }
+    else {
+        className += (cardData.baseType === 'special' ? " back-special" : " back-normal");
+    }
+    if (p.target.rotated)
+        className += " rotated";
+    if (p.reversed)
+        className += " opponent-side";
     var setPopup = function (element) {
         // SemanticUI ポップアップ初期化
         $(element).popup({
             hoverable: true,
             delay: { show: 500, hide: 0 },
+            onShow: function () {
+                if (!p.descriptionViewable)
+                    return false;
+                if (dragInfo_1.default.draggingFrom !== null)
+                    return false;
+            },
         });
     };
     var oncreate = function (element) {
+        //if(state.draggingFromCard !== null) return;
         setPopup(element);
     };
     var onupdate = function (element) {
+        //if(state.draggingFromCard !== null) return;
         setPopup(element);
     };
-    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, "data-object-id": p.target.id, "data-region": p.target.region, onclick: p.onclick, ondblclick: ondblclick, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) }, cardData.name));
+    var typeCaptions = [];
+    if (p.opened) {
+        if (cardData.types.indexOf('attack') >= 0)
+            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-attack' }, "\u653B"));
+        if (cardData.types.indexOf('action') >= 0)
+            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-action' }, "\u884C"));
+        if (cardData.types.indexOf('enhance') >= 0)
+            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-enhance' }, "\u4ED8"));
+        if (cardData.types.indexOf('variable') >= 0)
+            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-variable' }, "\u4E0D"));
+        if (cardData.types.indexOf('reaction') >= 0)
+            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-reaction' }, "\u5BFE"));
+        if (cardData.types.indexOf('fullpower') >= 0)
+            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-fullpower' }, "\u5168"));
+    }
+    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: p.draggable, "data-object-id": p.target.id, "data-side": p.target.side, "data-region": p.target.region, "data-linked-card-id": p.target.linkedCardId || 'none', onclick: p.onclick, ondblclick: p.ondblclick, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) },
+        hyperapp_1.h("div", { class: "card-name" }, (p.opened ? cardData.name : '')),
+        p.opened ?
+            hyperapp_1.h("div", null,
+                hyperapp_1.h("div", { style: { position: 'absolute', top: (p.reversed ? 24 * p.zoom + "px" : null), bottom: (p.reversed ? null : 24 * p.zoom + "px"), left: (p.reversed ? null : 4 * p.zoom + "px"), right: (p.reversed ? 4 * p.zoom + "px" : null) } }, typeCaptions),
+                hyperapp_1.h("div", { style: { position: 'absolute', top: (p.reversed ? 4 * p.zoom + "px" : null), bottom: (p.reversed ? null : 4 * p.zoom + "px"), left: (p.reversed ? null : 4 * p.zoom + "px"), right: (p.reversed ? 4 * p.zoom + "px" : null) } }, (cardData.types[0] === 'enhance' ? "\u7D0D" + cardData.capacity : cardData.range)),
+                hyperapp_1.h("div", { style: { position: 'absolute', top: (p.reversed ? 4 * p.zoom + "px" : null), bottom: (p.reversed ? null : 4 * p.zoom + "px"), left: (p.reversed ? 4 * p.zoom + "px" : null), right: (p.reversed ? null : 4 * p.zoom + "px") } }, cardData.damage))
+            : null,
+        p.handOpened ? hyperapp_1.h("div", { style: "white-space: nowrap; color: blue; position: absolute; bottom: 4px; right: 0;" }, "\u3010\u516C\u958B\u4E2D\u3011") : null));
 };
 
 
@@ -47380,7 +47435,7 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./DeckBuildCard */ "./src/sakuraba/apps/common/components/DeckBuildCard.tsx"));
+__export(__webpack_require__(/*! ./Card */ "./src/sakuraba/apps/common/components/Card.tsx"));
 
 
 /***/ }),
@@ -48191,15 +48246,23 @@ exports.ActionLogWindow = function (p) { return function (state, actions) {
 
 /***/ }),
 
-/***/ "./src/sakuraba/apps/main/components/Card.tsx":
-/*!****************************************************!*\
-  !*** ./src/sakuraba/apps/main/components/Card.tsx ***!
-  \****************************************************/
+/***/ "./src/sakuraba/apps/main/components/BoardCard.tsx":
+/*!*********************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/BoardCard.tsx ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -48207,73 +48270,40 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
-var dragInfo_1 = __importDefault(__webpack_require__(/*! sakuraba/dragInfo */ "./src/sakuraba/dragInfo.ts"));
-exports.Card = function (p) { return function (state, actions) {
-    var styles = {
-        left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * state.zoom + "px",
-        top: (p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) * state.zoom + "px",
-        width: 100 * state.zoom + "px",
-        height: 140 * state.zoom + "px"
-    };
+var components_1 = __webpack_require__(/*! sakuraba/apps/common/components */ "./src/sakuraba/apps/common/components/index.ts");
+exports.BoardCard = function (p) { return function (state, actions) {
+    // 手札公開判定
     var handOpened = false;
     if (state.side === p.target.side && state.board.handCardOpenFlags[p.target.side][p.target.id]) {
-        styles.border = 'blue 1px solid';
         handOpened = true;
     }
-    if (p.target.region === 'on-card') {
-        styles.zIndex = "" + (90 - p.target.indexOfRegion);
-    }
-    else {
-        styles.zIndex = "" + 100;
-    }
-    var cardData = sakuraba.CARD_DATA[p.target.cardId];
-    var className = "fbs-card";
     // 公開判定
     var opened = (p.target.openState === 'opened' || (p.target.openState === 'ownerOnly' && p.target.side === state.side));
-    if (opened) {
-        className += " open-normal";
+    // リバース表示判定
+    var reversed = p.target.side === utils.flipSide(state.viewingSide);
+    // 説明表示判定
+    // 表向きであるか、自分の伏せ札であるか、自分の切り札であれば説明を見ることができる
+    var known = (p.target.openState === 'opened'
+        || (p.target.openState === 'ownerOnly' && p.target.side === state.side)
+        || (p.target.region === 'hidden-used' && p.target.side === state.side)
+        || (p.target.region === 'special' && p.target.side === state.side));
+    // ドラッグ可否判定
+    var libraryCards = state.board.objects.filter(function (o) { return o.type === 'card' && o.side === p.target.side && o.region === p.target.region; });
+    var draggable = true;
+    if (state.side === 'watcher') {
+        // 観戦者はドラッグもクリックも不可能
+        draggable = false;
     }
     else {
-        className += (cardData.baseType === 'special' ? " back-special" : " back-normal");
+        if (p.target.region === 'library' && p.target.indexOfRegion !== (libraryCards.length - 1))
+            draggable = false; // 山札にあって、かつ一番上のカードでない場合はドラッグ不可
     }
-    if (p.target.rotated)
-        className += " rotated";
-    if (p.target.side === utils.flipSide(state.viewingSide))
-        className += " opponent-side";
-    var setPopup = function (element) {
-        // SemanticUI ポップアップ初期化
-        $(element).popup({
-            hoverable: true,
-            delay: { show: 500, hide: 0 },
-            onShow: function () {
-                // 表向きであるか、自分の伏せ札であるか、自分の切り札であれば説明を見ることができる
-                var known = (p.target.openState === 'opened'
-                    || (p.target.openState === 'ownerOnly' && p.target.side === state.side)
-                    || (p.target.region === 'hidden-used' && p.target.side === state.side)
-                    || (p.target.region === 'special' && p.target.side === state.side));
-                if (!known)
-                    return false;
-                if (dragInfo_1.default.draggingFrom !== null)
-                    return false;
-            },
-        });
-    };
-    var oncreate = function (element) {
-        //if(state.draggingFromCard !== null) return;
-        setPopup(element);
-    };
-    var onupdate = function (element) {
-        //if(state.draggingFromCard !== null) return;
-        setPopup(element);
-    };
-    var ondblclick = function (element) {
+    // ボード上のカードをダブルクリックした場合の処理
+    var onDoubleClickAtBoard = function (element) {
         if (!state.board.firstDrawFlags[state.side]) {
             utils.messageModal('決闘を開始するまでは、カードや桜花結晶の操作は行えません。');
             return false;
@@ -48290,37 +48320,7 @@ exports.Card = function (p) { return function (state, actions) {
         }
         return true;
     };
-    // ドラッグ可否判定
-    var libraryCards = state.board.objects.filter(function (o) { return o.type === 'card' && o.side === p.target.side && o.region === p.target.region; });
-    var draggable = true;
-    if (state.side === 'watcher') {
-        // 観戦者はドラッグもクリックも不可能
-        draggable = false;
-    }
-    else {
-        if (p.target.region === 'library' && p.target.indexOfRegion !== (libraryCards.length - 1))
-            draggable = false; // 山札にあって、かつ一番上のカードでない場合はドラッグ不可
-    }
-    // 自分側のメガミにクルルが含まれる場合、自分側の表向きカードにはタイプ表示を追加
-    var typeCaptions = [];
-    if (opened && p.target.side === state.viewingSide && state.board.megamis[state.viewingSide].find(function (m) { return m === 'kururu'; })) {
-        if (cardData.types.indexOf('attack') >= 0)
-            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-attack' }, "\u653B"));
-        if (cardData.types.indexOf('action') >= 0)
-            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-action' }, "\u884C"));
-        if (cardData.types.indexOf('enhance') >= 0)
-            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-enhance' }, "\u4ED8"));
-        if (cardData.types.indexOf('variable') >= 0)
-            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-variable' }, "\u4E0D"));
-        if (cardData.types.indexOf('reaction') >= 0)
-            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-reaction' }, "\u5BFE"));
-        if (cardData.types.indexOf('fullpower') >= 0)
-            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-fullpower' }, "\u5168"));
-    }
-    return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: draggable, "data-object-id": p.target.id, "data-side": p.target.side, "data-region": p.target.region, "data-linked-card-id": p.target.linkedCardId || 'none', ondblclick: ondblclick, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) },
-        hyperapp_1.h("div", { class: "card-name" }, (opened ? cardData.name : '')),
-        hyperapp_1.h("div", { style: "position: absolute; bottom: 4px; left: 4px;" }, typeCaptions),
-        handOpened ? hyperapp_1.h("div", { style: "white-space: nowrap; color: blue; position: absolute; bottom: 4px; right: 0;" }, "\u3010\u516C\u958B\u4E2D\u3011") : null));
+    return (hyperapp_1.h(components_1.Card, __assign({ opened: opened, handOpened: handOpened, reversed: reversed, descriptionViewable: known, ondblclick: onDoubleClickAtBoard, draggable: draggable, zoom: state.zoom }, p)));
 }; };
 
 
@@ -48438,9 +48438,9 @@ var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/apps/main/components/ControlPanel.css"));
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
-var components_1 = __webpack_require__(/*! ../../common/components */ "./src/sakuraba/apps/common/components/index.ts");
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var toastr_1 = __importDefault(__webpack_require__(/*! toastr */ "./node_modules/toastr/toastr.js"));
+var components_1 = __webpack_require__(/*! sakuraba/apps/common/components */ "./src/sakuraba/apps/common/components/index.ts");
 // ルール編集メモ
 // 第二幕、新幕の選択
 // アンドゥ制約（山札を引いた後のUndoは可能か？）
@@ -48585,7 +48585,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                         var top = 4 + r * (160 + 8);
                         var left = 4 + c * (100 + 8);
                         var selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
-                        cardElements.push(hyperapp_1.h(components_1.DeckBuildCard, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); }, zoom: state.zoom }));
+                        cardElements.push(hyperapp_1.h(components_1.Card, { target: card, opened: true, descriptionViewable: true, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); }, zoom: state.zoom }));
                     });
                 });
                 var normalCardCount = deckBuildState.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'normal'; }).length;
@@ -48882,7 +48882,7 @@ exports.MariganButton = function (p) { return function (state, actions) {
         var board = new models.Board(state.board);
         var promise = new Promise(function (resolve, reject) {
             var cards = board.getRegionCards(side, 'hand', null);
-            var st = apps.mariganModal.State.create(side, cards, resolve, reject);
+            var st = apps.mariganModal.State.create(side, cards, state.zoom, resolve, reject);
             apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));
         }).then(function (selectedCards) {
             // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
@@ -49118,7 +49118,7 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./Card */ "./src/sakuraba/apps/main/components/Card.tsx"));
+__export(__webpack_require__(/*! ./BoardCard */ "./src/sakuraba/apps/main/components/BoardCard.tsx"));
 __export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/apps/main/components/SakuraToken.tsx"));
 __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/apps/main/components/Vigor.tsx"));
 __export(__webpack_require__(/*! ./WitheredToken */ "./src/sakuraba/apps/main/components/WitheredToken.tsx"));
@@ -49285,7 +49285,7 @@ var view = function (state, actions) {
             var card = ret[0];
             var left = area.left + ret[1];
             var top = area.top + ret[2];
-            objectNodes.push(hyperapp_1.h(components.Card, { target: card, left: left, top: top }));
+            objectNodes.push(hyperapp_1.h(components.BoardCard, { target: card, left: left, top: top }));
             // 座標を記憶しておく
             cardLocations[card.id] = [left, top];
         });
@@ -49325,7 +49325,7 @@ var view = function (state, actions) {
             var card = ret[0];
             var left = cardLocation[0] + 8 + ret[1];
             var top = cardLocation[1] + 8 + ret[2];
-            objectNodes.push(hyperapp_1.h(components.Card, { target: card, left: left, top: top }));
+            objectNodes.push(hyperapp_1.h(components.BoardCard, { target: card, left: left, top: top }));
         });
     });
     // カード上にある桜花結晶は別扱い
@@ -49447,12 +49447,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var State;
 (function (State) {
     /** 新しいstateの生成 */
-    function create(side, cards, promiseResolve, promiseReject) {
+    function create(side, cards, zoom, promiseResolve, promiseReject) {
         return {
             shown: true,
             side: side,
             cards: cards,
             selectedCards: [],
+            zoom: zoom,
             promiseResolve: promiseResolve,
             promiseReject: promiseReject
         };
@@ -49511,9 +49512,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var components_1 = __webpack_require__(/*! ../common/components */ "./src/sakuraba/apps/common/components/index.ts");
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
+var components_1 = __webpack_require__(/*! sakuraba/apps/common/components */ "./src/sakuraba/apps/common/components/index.ts");
 var css = __importStar(__webpack_require__(/*! ./view.css */ "./src/sakuraba/apps/mariganModal/view.css"));
 /** ポップアップ初期化 */
 function setPopup() {
@@ -49536,7 +49537,7 @@ var view = function (state, actions) {
         var top = 4;
         var left = 4 + c * (100 + 8);
         var selected = state.selectedCards.indexOf(card) >= 0;
-        cardElements.push(hyperapp_1.h(components_1.DeckBuildCard, { target: card, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(card); }, zoom: 1.0 }));
+        cardElements.push(hyperapp_1.h(components_1.Card, { target: card, opened: true, descriptionViewable: true, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(card); }, zoom: state.zoom }));
     });
     var selectedCount = state.selectedCards.filter(function (card) { return sakuraba.CARD_DATA[card.cardId].baseType === 'normal'; }).length;
     var okButtonClass = "ui positive labeled icon button";

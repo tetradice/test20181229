@@ -49,10 +49,13 @@
         .area, .fbs-card, .sakura-token, .fbs-vigor-card, .withered-token {
             position: absolute !important;
         }
+
+        .fbs-card{
+            box-sizing: content-box;
+        }
         
-        .fbs-card[draggable]:hover,
+        .fbs-card:hover,
         .fbs-card.over,
-        .clickable:hover,
         .focused{
             filter: drop-shadow(0 0 3px #7098ff);
         }

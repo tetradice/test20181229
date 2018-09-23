@@ -164,7 +164,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let card = ret[0];
             let left = area.left + ret[1];
             let top = area.top + ret[2];
-            objectNodes.push(<components.Card target={card} left={left} top={top} />);
+            objectNodes.push(<components.BoardCard target={card} left={left} top={top} />);
 
             // 座標を記憶しておく
             cardLocations[card.id] = [left, top];
@@ -215,7 +215,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let card = ret[0];
             let left = cardLocation[0] + 8 + ret[1];
             let top = cardLocation[1] + 8 + ret[2];
-            objectNodes.push(<components.Card target={card} left={left} top={top} />);
+            objectNodes.push(<components.BoardCard target={card} left={left} top={top} />);
         });
     });
 
