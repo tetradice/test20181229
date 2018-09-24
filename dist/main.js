@@ -47001,7 +47001,7 @@ $(function () {
             var side = $(this).attr('data-side');
             var region = $(this).attr('data-region');
             var linkedCardId = $(this).attr('data-linked-card-id');
-            // 毒カードの移動で、かつ移動先が伏せ札の場合は表示を変える
+            // 毒カードの移動で、かつ移動先が伏せ札の場合は移動不可
             if (dragInfo_1.default.draggingFrom.type === 'card') {
                 var toRegion = region;
                 if (sakuraba_1.CARD_DATA[dragInfo_1.default.draggingFrom.cardId].poison && toRegion === 'hidden-used') {
@@ -47010,7 +47010,7 @@ $(function () {
                     return true;
                 }
             }
-            // 桜花結晶の移動で、かつ移動先の最大値を超える場合は表示を変える
+            // 桜花結晶の移動で、かつ移動先の最大値を超える場合は移動不可
             if (dragInfo_1.default.draggingFrom.type === 'sakura-token') {
                 var tokenRegion = region;
                 var state_1 = appActions.getState();
@@ -47818,11 +47818,36 @@ exports.default = {
         newBoard.umbrellaStatus[p.side] = p.value;
         return { board: newBoard };
     }; },
-    /** 風雷ゲージを初期化 */
-    resetWindAndThunderGauge: function (p) { return function (state, actions) {
+    /** 風神ゲージを初期化 */
+    resetWindGauge: function (p) { return function (state, actions) {
         var newBoard = models.Board.clone(state.board);
         newBoard.windGuage[p.side] = 0;
+        return { board: newBoard };
+    }; },
+    /** 雷神ゲージを初期化 */
+    resetThunderGauge: function (p) { return function (state, actions) {
+        var newBoard = models.Board.clone(state.board);
         newBoard.thunderGuage[p.side] = 0;
+        return { board: newBoard };
+    }; },
+    /** 風ゲージ+1 */
+    incrementWindGuage: function (p) { return function (state, actions) {
+        var newBoard = models.Board.clone(state.board);
+        newBoard.windGuage[p.side] += 1;
+        return { board: newBoard };
+    }; },
+    /** 雷ゲージ+1 */
+    incrementThunderGuage: function (p) { return function (state, actions) {
+        var newBoard = models.Board.clone(state.board);
+        newBoard.thunderGuage[p.side] += 1;
+        return { board: newBoard };
+    }; },
+    /** 雷ゲージ2倍 */
+    doubleThunderGuage: function (p) { return function (state, actions) {
+        var newBoard = models.Board.clone(state.board);
+        newBoard.thunderGuage[p.side] *= 2;
+        if (newBoard.thunderGuage[p.side] > 20)
+            newBoard.thunderGuage[p.side] = 20;
         return { board: newBoard };
     }; },
     /** 最初の手札を引き、桜花結晶などを配置する */
@@ -47872,9 +47897,13 @@ exports.default = {
                     actions.addCard({ side: state.side, region: 'extra', cardId: '10-kururu-o-s-3-ex1' });
                     actions.addCard({ side: state.side, region: 'extra', cardId: '10-kururu-o-s-3-ex1' });
                 }
-                // ライラがいれば風雷ゲージをセット
+                // ライラがいれば追加切札と、風雷ゲージをセット
                 if (board.megamis[state.side].find(function (m) { return m === 'raira'; })) {
-                    actions.resetWindAndThunderGauge({ side: state.side });
+                    actions.addCard({ side: state.side, region: 'extra', cardId: '12-raira-o-s-3-ex1' });
+                    actions.addCard({ side: state.side, region: 'extra', cardId: '12-raira-o-s-3-ex2' });
+                    actions.addCard({ side: state.side, region: 'extra', cardId: '12-raira-o-s-3-ex3' });
+                    actions.resetWindGauge({ side: state.side });
+                    actions.resetThunderGauge({ side: state.side });
                 }
             }
         });
@@ -48070,12 +48099,21 @@ exports.default = {
     shuffle: function (p) { return function (state, actions) {
         var ret = {};
         var newBoard = models.Board.clone(state.board);
-        // 山札のカードをすべて取得
+        // 山札のカードをすべて取得し、毒と毒以外のカードに分ける
         var cards = newBoard.getRegionCards(p.side, 'library', null);
+        var normalCards = cards.filter(function (c) { return !sakuraba_1.CARD_DATA[c.cardId].poison; });
+        var poisonCards = cards.filter(function (c) { return sakuraba_1.CARD_DATA[c.cardId].poison; });
         // ランダムに整列し、その順番をインデックスに再設定
-        var shuffledCards = _.shuffle(cards);
-        shuffledCards.forEach(function (c, i) {
+        var shuffledNormalCards = _.shuffle(normalCards);
+        var shuffledPoisonCards = _.shuffle(poisonCards);
+        // 通常カードを下、毒カードを上に並べる
+        var lastNormalCardIndex = 0;
+        shuffledNormalCards.forEach(function (c, i) {
             c.indexOfRegion = i;
+            lastNormalCardIndex = i;
+        });
+        shuffledPoisonCards.forEach(function (c, i) {
+            c.indexOfRegion = lastNormalCardIndex + 1 + i;
         });
         // 新しいボードを返す
         return { board: newBoard };
@@ -49301,6 +49339,114 @@ exports.Vigor = function (p) { return function (state, actions) {
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/main/components/WindAndThunderGuage.tsx":
+/*!*******************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/WindAndThunderGuage.tsx ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var lodash_1 = __importDefault(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
+/** 風雷ゲージ */
+exports.WindAndThunderGuage = function (p) { return function (state, actions) {
+    // DOMを返す
+    var styles = {
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        height: 50 * state.zoom + "px",
+        position: 'absolute'
+    };
+    var captionStyles = {
+        fontSize: 16 * state.zoom + "px",
+        position: 'absolute'
+    };
+    var numberStyles = {
+        fontSize: 20 * state.zoom + "px",
+        fontWeight: 'bold',
+        color: 'silver',
+        textAlign: 'right',
+        position: 'absolute',
+        left: 18 * state.zoom + "px",
+        width: 24 * state.zoom + "px"
+    };
+    var buttonSectionStyles = {
+        position: 'absolute',
+        left: 45 * state.zoom + "px",
+        width: 150 * state.zoom + "px"
+    };
+    var buttonStyles = {
+        padding: 2 * state.zoom + "px " + 8 * state.zoom + "px",
+        height: '100%'
+    };
+    var leftButtonStyles = lodash_1.default.assign({}, buttonStyles, {
+        marginLeft: 6 * state.zoom + "px"
+    });
+    var incrementWind = function () {
+        actions.operate({
+            log: "\u98A8\u795E\u30B2\u30FC\u30B8\u30921\u4E0A\u3052\u307E\u3057\u305F",
+            proc: function () {
+                actions.incrementWindGuage({ side: p.side });
+            }
+        });
+    };
+    var incrementThunder = function () {
+        actions.operate({
+            log: "\u96F7\u795E\u30B2\u30FC\u30B8\u30921\u4E0A\u3052\u307E\u3057\u305F",
+            proc: function () {
+                actions.incrementThunderGuage({ side: p.side });
+            }
+        });
+    };
+    var doubleThunder = function () {
+        actions.operate({
+            log: "\u96F7\u795E\u30B2\u30FC\u30B8\u30922\u500D\u306B\u3057\u307E\u3057\u305F",
+            proc: function () {
+                actions.doubleThunderGuage({ side: p.side });
+            }
+        });
+    };
+    var resetWind = function () {
+        actions.operate({
+            log: "\u98A8\u795E\u30B2\u30FC\u30B8\u30920\u306B\u623B\u3057\u307E\u3057\u305F",
+            proc: function () {
+                actions.resetWindGauge({ side: p.side });
+            }
+        });
+    };
+    var resetThunder = function () {
+        actions.operate({
+            log: "\u96F7\u795E\u30B2\u30FC\u30B8\u30920\u306B\u623B\u3057\u307E\u3057\u305F",
+            proc: function () {
+                actions.resetThunderGauge({ side: p.side });
+            }
+        });
+    };
+    return (hyperapp_1.h("div", { style: styles },
+        hyperapp_1.h("div", { style: { height: 23 * state.zoom + "px" } },
+            hyperapp_1.h("div", { style: captionStyles }, "\u98A8"),
+            hyperapp_1.h("div", { style: numberStyles }, p.wind),
+            hyperapp_1.h("div", { style: buttonSectionStyles },
+                hyperapp_1.h("button", { class: "mini ui basic button" + (p.wind >= 20 ? ' disabled' : ''), style: leftButtonStyles, onclick: incrementWind }, "+1"),
+                hyperapp_1.h("button", { class: "mini ui basic button" + (p.wind === 0 ? ' disabled' : ''), style: buttonStyles, onclick: resetWind }, "0\u306B\u623B\u3059"))),
+        hyperapp_1.h("div", { style: { height: 23 * state.zoom + "px" } },
+            hyperapp_1.h("div", { style: captionStyles }, "\u96F7"),
+            hyperapp_1.h("div", { style: numberStyles }, p.thunder),
+            hyperapp_1.h("div", { style: buttonSectionStyles },
+                hyperapp_1.h("button", { class: "mini ui basic button" + (p.thunder >= 20 ? ' disabled' : ''), style: leftButtonStyles, onclick: incrementThunder }, "+1"),
+                hyperapp_1.h("button", { class: "mini ui basic button" + (p.thunder >= 20 ? ' disabled' : ''), style: buttonStyles, onclick: doubleThunder }, "2\u500D"),
+                hyperapp_1.h("button", { class: "mini ui basic button" + (p.thunder === 0 ? ' disabled' : ''), style: buttonStyles, onclick: resetThunder }, "0\u306B\u623B\u3059")))));
+}; };
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/main/components/WitheredToken.tsx":
 /*!*************************************************************!*\
   !*** ./src/sakuraba/apps/main/components/WitheredToken.tsx ***!
@@ -49362,6 +49508,7 @@ __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/apps/main/components
 __export(__webpack_require__(/*! ./WitheredToken */ "./src/sakuraba/apps/main/components/WitheredToken.tsx"));
 __export(__webpack_require__(/*! ./PlanToken */ "./src/sakuraba/apps/main/components/PlanToken.tsx"));
 __export(__webpack_require__(/*! ./UmbrellaToken */ "./src/sakuraba/apps/main/components/UmbrellaToken.tsx"));
+__export(__webpack_require__(/*! ./WindAndThunderGuage */ "./src/sakuraba/apps/main/components/WindAndThunderGuage.tsx"));
 __export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/apps/main/components/ControlPanel.tsx"));
 __export(__webpack_require__(/*! ./CardAreaBackground */ "./src/sakuraba/apps/main/components/CardAreaBackground.tsx"));
 __export(__webpack_require__(/*! ./CardAreaDroppable */ "./src/sakuraba/apps/main/components/CardAreaDroppable.tsx"));
@@ -49609,17 +49756,23 @@ var view = function (state, actions) {
     var addExtraToken = function (tokens, side, left, top) {
         var cx = left;
         // メガミ未選択時はスキップ
-        if (state.board.megamis[side] === null)
+        var megamis = state.board.megamis[side];
+        if (megamis === null)
             return;
         for (var megamiIndex = 0; megamiIndex <= 1; megamiIndex++) {
-            // 傘の状態を初期化済みであれば表示
-            if (state.board.umbrellaStatus[side] !== null) {
+            // ユキヒを選択しており、傘の状態を初期化済みであれば表示
+            if (megamis[megamiIndex] === 'yukihi' && state.board.umbrellaStatus[side] !== null) {
                 tokens.push(hyperapp_1.h(components.UmbrellaToken, { side: side, umbrellaState: state.board.umbrellaStatus[side], left: cx, top: top }));
                 cx += 60;
             }
-            // 計略の状態を初期化済みであれば表示
-            if (state.board.planStatus[side] !== null) {
+            // シンラを選択しており、計略の状態を初期化済みであれば表示
+            if (megamis[megamiIndex] === 'shinra' && state.board.planStatus[side] !== null) {
                 tokens.push(hyperapp_1.h(components.PlanToken, { side: side, planState: state.board.planStatus[side], left: cx, top: top }));
+                cx += 50;
+            }
+            // ライラを選択しており、風雷ゲージの状態を初期化済みであれば表示
+            if (megamis[megamiIndex] === 'raira' && state.board.windGuage[side] !== null) {
+                tokens.push(hyperapp_1.h(components.WindAndThunderGuage, { side: side, wind: state.board.windGuage[side], thunder: state.board.thunderGuage[side], left: cx, top: top }));
                 cx += 50;
             }
         }

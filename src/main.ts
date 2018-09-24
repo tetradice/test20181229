@@ -666,7 +666,7 @@ $(function(){
             let region = $(this).attr('data-region') as (CardRegion | SakuraTokenRegion);
             let linkedCardId = $(this).attr('data-linked-card-id');
 
-            // 毒カードの移動で、かつ移動先が伏せ札の場合は表示を変える
+            // 毒カードの移動で、かつ移動先が伏せ札の場合は移動不可
             if(dragInfo.draggingFrom.type === 'card'){
                 let toRegion = region as CardRegion;
 
@@ -677,7 +677,7 @@ $(function(){
                 }
             }
 
-            // 桜花結晶の移動で、かつ移動先の最大値を超える場合は表示を変える
+            // 桜花結晶の移動で、かつ移動先の最大値を超える場合は移動不可
             if(dragInfo.draggingFrom.type === 'sakura-token'){
                 let tokenRegion = region as SakuraTokenRegion;
                 let state = appActions.getState();

@@ -364,14 +364,58 @@ export default {
         return {board: newBoard};
     },
 
-    /** 風雷ゲージを初期化 */
-    resetWindAndThunderGauge: (p: {
+    /** 風神ゲージを初期化 */
+    resetWindGauge: (p: {
         /** どちら側の風雷ゲージか */
         side: PlayerSide;
     }) => (state: state.State, actions: ActionsType) => {
         let newBoard = models.Board.clone(state.board);
         newBoard.windGuage[p.side] = 0;
+
+        return {board: newBoard};
+    },
+
+    /** 雷神ゲージを初期化 */
+    resetThunderGauge: (p: {
+        /** どちら側の風雷ゲージか */
+        side: PlayerSide;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
         newBoard.thunderGuage[p.side] = 0;
+
+        return {board: newBoard};
+    },
+
+    /** 風ゲージ+1 */
+    incrementWindGuage: (p: {
+        /** どちら側の風ゲージか */
+        side: PlayerSide;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        newBoard.windGuage[p.side] += 1;
+
+        return {board: newBoard};
+    },
+
+    /** 雷ゲージ+1 */
+    incrementThunderGuage: (p: {
+        /** どちら側の雷ゲージか */
+        side: PlayerSide;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        newBoard.thunderGuage[p.side] += 1;
+
+        return {board: newBoard};
+    },
+
+    /** 雷ゲージ2倍 */
+    doubleThunderGuage: (p: {
+        /** どちら側の雷ゲージか */
+        side: PlayerSide;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        newBoard.thunderGuage[p.side] *= 2;
+        if(newBoard.thunderGuage[p.side] > 20) newBoard.thunderGuage[p.side] = 20;
 
         return {board: newBoard};
     },
@@ -428,9 +472,13 @@ export default {
                     actions.addCard({side: state.side, region: 'extra', cardId: '10-kururu-o-s-3-ex1'});
                     actions.addCard({side: state.side, region: 'extra', cardId: '10-kururu-o-s-3-ex1'});
                 }
-                // ライラがいれば風雷ゲージをセット
+                // ライラがいれば追加切札と、風雷ゲージをセット
                 if(board.megamis[state.side].find(m => m === 'raira')){
-                    actions.resetWindAndThunderGauge({side: state.side});
+                    actions.addCard({side: state.side, region: 'extra', cardId: '12-raira-o-s-3-ex1'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: '12-raira-o-s-3-ex2'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: '12-raira-o-s-3-ex3'});
+                    actions.resetWindGauge({side: state.side});
+                    actions.resetThunderGauge({side: state.side});
                 }
             }
         });

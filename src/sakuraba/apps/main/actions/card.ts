@@ -210,12 +210,21 @@ export default {
         let ret: Partial<state.State> = {};
 
         let newBoard = models.Board.clone(state.board);
-        // 山札のカードをすべて取得
+        // 山札のカードをすべて取得し、毒と毒以外のカードに分ける
         let cards = newBoard.getRegionCards(p.side, 'library', null);
+        let normalCards = cards.filter(c => !CARD_DATA[c.cardId].poison);
+        let poisonCards = cards.filter(c => CARD_DATA[c.cardId].poison);
         // ランダムに整列し、その順番をインデックスに再設定
-        let shuffledCards = _.shuffle(cards);
-        shuffledCards.forEach((c, i) => {
+        let shuffledNormalCards = _.shuffle(normalCards);
+        let shuffledPoisonCards = _.shuffle(poisonCards);
+        // 通常カードを下、毒カードを上に並べる
+        let lastNormalCardIndex = 0;
+        shuffledNormalCards.forEach((c, i) => {
             c.indexOfRegion = i;
+            lastNormalCardIndex = i;
+        });
+        shuffledPoisonCards.forEach((c, i) => {
+            c.indexOfRegion = lastNormalCardIndex + 1 + i;
         });
 
         // 新しいボードを返す
@@ -245,7 +254,7 @@ export default {
                         actions.moveCard({from: card.id, to: [p.side, 'library', null]});
                     }
                 });
-                
+
                 newBoard = models.Board.clone(actions.getState().board);
                 let hiddenUsedCards = newBoard.getRegionCards(p.side, 'hidden-used', null);
                 actions.moveCard({from: [p.side, 'hidden-used', null], to: [p.side, 'library', null], moveNumber: hiddenUsedCards.length});

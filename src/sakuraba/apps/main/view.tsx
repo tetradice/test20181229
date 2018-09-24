@@ -268,18 +268,25 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         let cx = left;
 
         // メガミ未選択時はスキップ
-        if(state.board.megamis[side] === null) return;
+        let megamis = state.board.megamis[side];
+        if(megamis === null) return;
 
         for(let megamiIndex = 0; megamiIndex <= 1; megamiIndex++){
-            // 傘の状態を初期化済みであれば表示
-            if(state.board.umbrellaStatus[side] !== null){
+            // ユキヒを選択しており、傘の状態を初期化済みであれば表示
+            if(megamis[megamiIndex] === 'yukihi' && state.board.umbrellaStatus[side] !== null){
                 tokens.push(<components.UmbrellaToken side={side} umbrellaState={state.board.umbrellaStatus[side]} left={cx} top={top} />);
                 cx += 60;
             }
 
-            // 計略の状態を初期化済みであれば表示
-            if(state.board.planStatus[side] !== null){
+            // シンラを選択しており、計略の状態を初期化済みであれば表示
+            if(megamis[megamiIndex] === 'shinra' && state.board.planStatus[side] !== null){
                 tokens.push(<components.PlanToken side={side} planState={state.board.planStatus[side]} left={cx} top={top} />);
+                cx += 50;
+            }
+
+            // ライラを選択しており、風雷ゲージの状態を初期化済みであれば表示
+            if(megamis[megamiIndex] === 'raira' && state.board.windGuage[side] !== null){
+                tokens.push(<components.WindAndThunderGuage side={side} wind={state.board.windGuage[side]} thunder={state.board.thunderGuage[side]} left={cx} top={top} />);
                 cx += 50;
             }
         }
