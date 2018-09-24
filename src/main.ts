@@ -666,6 +666,17 @@ $(function(){
             let region = $(this).attr('data-region') as (CardRegion | SakuraTokenRegion);
             let linkedCardId = $(this).attr('data-linked-card-id');
 
+            // 毒カードの移動で、かつ移動先が伏せ札の場合は表示を変える
+            if(dragInfo.draggingFrom.type === 'card'){
+                let toRegion = region as CardRegion;
+
+                if(CARD_DATA[dragInfo.draggingFrom.cardId].poison && toRegion === 'hidden-used'){
+                    $(`.area.droppable[data-side=${side}][data-region=${region}]`).addClass('over-forbidden');
+                    $(`.area.background[data-side=${side}][data-region=${region}]`).addClass('over-forbidden');
+                    return true;
+                }
+            }
+
             // 桜花結晶の移動で、かつ移動先の最大値を超える場合は表示を変える
             if(dragInfo.draggingFrom.type === 'sakura-token'){
                 let tokenRegion = region as SakuraTokenRegion;

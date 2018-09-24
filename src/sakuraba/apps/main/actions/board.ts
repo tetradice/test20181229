@@ -363,6 +363,18 @@ export default {
 
         return {board: newBoard};
     },
+
+    /** 風雷ゲージを初期化 */
+    resetWindAndThunderGauge: (p: {
+        /** どちら側の風雷ゲージか */
+        side: PlayerSide;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        newBoard.windGuage[p.side] = 0;
+        newBoard.thunderGuage[p.side] = 0;
+
+        return {board: newBoard};
+    },
     
     /** 最初の手札を引き、桜花結晶などを配置する */
     oprBoardSetup: () => (state: state.State, actions: ActionsType) => {
@@ -401,6 +413,24 @@ export default {
                 // ユキヒがいれば傘カードをセット
                 if(board.megamis[state.side].find(m => m === 'yukihi')){
                     actions.setUmbrellaState({side: state.side, value: 'closed'});
+                }
+                // チカゲがいれば毒カードをセット
+                if(board.megamis[state.side].find(m => m === 'chikage')){
+                    actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-1'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-2'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-3'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-4'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-4'});
+                }
+                // クルルがいればでゅーぷりぎあを3枚セット
+                if(board.megamis[state.side].find(m => m === 'kururu')){
+                    actions.addCard({side: state.side, region: 'extra', cardId: '10-kururu-o-s-3-ex1'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: '10-kururu-o-s-3-ex1'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: '10-kururu-o-s-3-ex1'});
+                }
+                // ライラがいれば風雷ゲージをセット
+                if(board.megamis[state.side].find(m => m === 'raira')){
+                    actions.resetWindAndThunderGauge({side: state.side});
                 }
             }
         });

@@ -59,6 +59,10 @@ export interface Board {
     planStatus: {p1: PlanState, p2: PlanState};
     /** 傘の状態 */
     umbrellaStatus: {p1: UmbrellaState, p2: UmbrellaState};
+    /** 風ゲージ */
+    windGuage: {p1: number | null, p2: number | null};
+    /** 雷ゲージ */
+    thunderGuage: {p1: number | null, p2: number | null};
 }
 
 /**

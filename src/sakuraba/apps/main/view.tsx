@@ -7,7 +7,7 @@ import _ from "lodash";
 import { CARD_DATA } from "sakuraba";
 
 /** レイアウト種別 */
-type LayoutType = 'horizontal' | 'stacked';
+type LayoutType = 'horizontal' | 'vertical' | 'stacked';
 
 /** 各種オブジェクトを配置する領域 */
 type Params = {
@@ -61,8 +61,15 @@ function layoutObjects<T extends state.BoardObject>(
             });        
         }
     }
+    // 垂直に配置する場合 (padding, spacingは無視)
+    if(layoutType === 'vertical'){
+        objects.forEach((child, i) => {
+            ret.push([child, cx, cy]);
+            cy += 24;
+        });
+    }
 
-    // 積み重ねる場合
+    // 積み重ねる場合 (padding, spacingは無視)
     if(layoutType === 'stacked'){
         objects.forEach((child, i) => {
             ret.push([child, cx, cy]);
@@ -115,7 +122,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
                   region: 'extra'
                 , side: side
                 , title: (side === state.side ? '追加札' : null)
-                , cardLayoutType: 'horizontal'
+                , cardLayoutType: 'vertical'
                 , left: 1220
                 , top: (side === state.side ? 430 : 30)
                 , width: 120
@@ -259,15 +266,19 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     // メガミによっては追加トークン類を並べる
     const addExtraToken = (tokens: JSX.Element[], side: PlayerSide, left: number, top: number) => {
         let cx = left;
+
+        // メガミ未選択時はスキップ
+        if(state.board.megamis[side] === null) return;
+
         for(let megamiIndex = 0; megamiIndex <= 1; megamiIndex++){
-            // ユキヒを選択していて、かつ傘の状態を初期化済みであれば表示
-            if(state.board.megamis[side][megamiIndex] === 'yukihi' && state.board.umbrellaStatus[side] !== null){
+            // 傘の状態を初期化済みであれば表示
+            if(state.board.umbrellaStatus[side] !== null){
                 tokens.push(<components.UmbrellaToken side={side} umbrellaState={state.board.umbrellaStatus[side]} left={cx} top={top} />);
                 cx += 60;
             }
 
-            // ユキヒを選択していて、かつ計略の状態を初期化済みであれば表示
-            if(state.board.megamis[side][megamiIndex] === 'shinra' && state.board.planStatus[side] !== null){
+            // 計略の状態を初期化済みであれば表示
+            if(state.board.planStatus[side] !== null){
                 tokens.push(<components.PlanToken side={side} planState={state.board.planStatus[side]} left={cx} top={top} />);
                 cx += 50;
             }

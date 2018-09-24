@@ -45,7 +45,14 @@ export const Card = (p: Param) => {
   if(p.opened){
       className += " open-normal";
   } else {
-      className += (cardData.baseType === 'special' ? " back-special" : " back-normal");
+      if(cardData.poison){
+        className += " back-poison";
+      } else if(cardData.baseType === 'special'){
+        className += " back-special";
+      } else {
+        className += " back-normal";
+      }
+      
   }
   if(p.target.rotated) className += " rotated";
   if(p.reversed) className += " opponent-side"; 

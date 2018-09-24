@@ -16,6 +16,8 @@ export class Board implements state.Board {
     handCardOpenFlags: state.Board['handCardOpenFlags'];
     planStatus: state.Board['planStatus'];
     umbrellaStatus: state.Board['umbrellaStatus'];
+    windGuage: state.Board['windGuage'];
+    thunderGuage: state.Board['thunderGuage'];
 
     actionLog: state.LogRecord[];
     chatLog: state.LogRecord[];
