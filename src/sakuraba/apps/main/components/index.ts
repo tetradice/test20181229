@@ -3,6 +3,7 @@ export * from './SakuraToken';
 export * from './Vigor';
 export * from './WitheredToken';
 export * from './PlanToken';
+export * from './UmbrellaToken';
 export * from './ControlPanel';
 export * from './CardAreaBackground';
 export * from './CardAreaDroppable';

@@ -46501,6 +46501,43 @@ $(function () {
             return { items: items };
         }
     });
+    // 傘トークンクリックメニュー
+    $('#BOARD').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
+    $.contextMenu({
+        zIndex: 9999,
+        trigger: 'none',
+        selector: '#CONTEXT-UMBRELLA-TOKEN-CLICK',
+        build: function ($elem, event) {
+            var currentState = appActions.getState();
+            var side = currentState.side;
+            var board = new models.Board(currentState.board);
+            var items = {};
+            var umbrellaState = board.umbrellaStatus[currentState.side];
+            if (umbrellaState === 'closed') {
+                items['open'] = { name: '傘を開く', callback: function () {
+                        appActions.operate({
+                            log: "\u5098\u3092\u958B\u304D\u307E\u3057\u305F",
+                            proc: function () {
+                                appActions.setUmbrellaState({ side: side, value: 'opened' });
+                            }
+                        });
+                    } };
+            }
+            else {
+                items['close'] = { name: '傘を閉じる', callback: function () {
+                        appActions.operate({
+                            log: "\u5098\u3092\u9589\u3058\u307E\u3057\u305F",
+                            proc: function () {
+                                appActions.setUmbrellaState({ side: side, value: 'closed' });
+                            }
+                        });
+                    } };
+            }
+            items['sep'] = '----';
+            items['cancel'] = { name: 'キャンセル', callback: function () { } };
+            return { items: items };
+        }
+    });
     // 右クリックメニュー
     $.contextMenu({
         selector: '#BOARD *',
@@ -47757,6 +47794,13 @@ exports.default = {
         newBoard.planStatus[p.side] = p.value;
         return { board: newBoard };
     }; },
+    /** 傘の状態をセット */
+    setUmbrellaState: function (p) { return function (state, actions) {
+        var newBoard = models.Board.clone(state.board);
+        // 計略の状態をセット
+        newBoard.umbrellaStatus[p.side] = p.value;
+        return { board: newBoard };
+    }; },
     /** 最初の手札を引き、桜花結晶などを配置する */
     oprBoardSetup: function () { return function (state, actions) {
         actions.operate({
@@ -47785,6 +47829,10 @@ exports.default = {
                 // シンラがいれば計略トークンをセット
                 if (board.megamis[state.side].find(function (m) { return m === 'shinra'; })) {
                     actions.setPlanState({ side: state.side, value: 'back-blue' });
+                }
+                // ユキヒがいれば傘カードをセット
+                if (board.megamis[state.side].find(function (m) { return m === 'yukihi'; })) {
+                    actions.setUmbrellaState({ side: state.side, value: 'closed' });
                 }
             }
         });
@@ -48988,7 +49036,11 @@ exports.PlanToken = function (p) { return function (state, actions) {
         height: 116 * 0.45 * state.zoom + "px",
         position: 'absolute'
     };
-    var onclick = function (e) { return $('#CONTEXT-PLAN-TOKEN-CLICK').contextMenu({ x: e.pageX, y: e.pageY }); };
+    var onclick = function (e) {
+        if (p.side === state.side) {
+            $('#CONTEXT-PLAN-TOKEN-CLICK').contextMenu({ x: e.pageX, y: e.pageY });
+        }
+    };
     var imageName = p.planState;
     if (p.planState === 'back-blue' || p.planState === 'back-red')
         imageName = 'back';
@@ -49012,7 +49064,7 @@ exports.PlanToken = function (p) { return function (state, actions) {
         popupTitle = '神算';
     if (p.planState === 'back-red')
         popupTitle = '鬼謀';
-    return hyperapp_1.h("img", { class: "clickable", "data-title": popupTitle, src: "/furuyoni_commons/furuyoni_na/board_token/plan_" + imageName + ".png", oncreate: oncreate, style: styles, onclick: onclick });
+    return hyperapp_1.h("img", { class: "plan-token " + (p.side === state.side ? 'clickable' : ''), "data-title": popupTitle, src: "/furuyoni_commons/furuyoni_na/board_token/plan_" + imageName + ".png", oncreate: oncreate, style: styles, onclick: onclick });
 }; };
 
 
@@ -49126,6 +49178,40 @@ exports.SakuraTokenAreaDroppable = function (p) { return function (state, action
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/main/components/UmbrellaToken.tsx":
+/*!*************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/UmbrellaToken.tsx ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+/** 傘 */
+exports.UmbrellaToken = function (p) { return function (state, actions) {
+    // DOMを返す
+    var styles = {
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: 50 * state.zoom + "px",
+        height: 50 * state.zoom + "px",
+        border: "1px silver solid",
+        borderRadius: "4px",
+        position: 'absolute'
+    };
+    var onclick = function (e) {
+        if (p.side === state.side) {
+            $('#CONTEXT-UMBRELLA-TOKEN-CLICK').contextMenu({ x: e.pageX, y: e.pageY });
+        }
+    };
+    return hyperapp_1.h("img", { class: (p.side === state.side ? 'clickable' : ''), src: "/furuyoni_commons/furuyoni_na/cards/umbrella_" + (p.umbrellaState === 'closed' ? 'a' : 'b') + "_cut.png", style: styles, onclick: onclick });
+}; };
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/main/components/Vigor.tsx":
 /*!*****************************************************!*\
   !*** ./src/sakuraba/apps/main/components/Vigor.tsx ***!
@@ -49233,6 +49319,7 @@ __export(__webpack_require__(/*! ./SakuraToken */ "./src/sakuraba/apps/main/comp
 __export(__webpack_require__(/*! ./Vigor */ "./src/sakuraba/apps/main/components/Vigor.tsx"));
 __export(__webpack_require__(/*! ./WitheredToken */ "./src/sakuraba/apps/main/components/WitheredToken.tsx"));
 __export(__webpack_require__(/*! ./PlanToken */ "./src/sakuraba/apps/main/components/PlanToken.tsx"));
+__export(__webpack_require__(/*! ./UmbrellaToken */ "./src/sakuraba/apps/main/components/UmbrellaToken.tsx"));
 __export(__webpack_require__(/*! ./ControlPanel */ "./src/sakuraba/apps/main/components/ControlPanel.tsx"));
 __export(__webpack_require__(/*! ./CardAreaBackground */ "./src/sakuraba/apps/main/components/CardAreaBackground.tsx"));
 __export(__webpack_require__(/*! ./CardAreaDroppable */ "./src/sakuraba/apps/main/components/CardAreaDroppable.tsx"));
@@ -49469,6 +49556,25 @@ var view = function (state, actions) {
         var cardLocation = cardLocations[card.id];
         frameNodes.push(hyperapp_1.h(components.SakuraTokenAreaDroppable, { side: card.side, region: "on-card", linkedCardId: card.id, left: cardLocation[0], top: cardLocation[1], width: 100, height: 140 }));
     });
+    // メガミによっては追加トークン類を並べる
+    var addExtraToken = function (tokens, side, left, top) {
+        var cx = left;
+        for (var megamiIndex = 0; megamiIndex <= 1; megamiIndex++) {
+            // ユキヒを選択していて、かつ傘の状態を初期化済みであれば表示
+            if (state.board.megamis[side][megamiIndex] === 'yukihi' && state.board.umbrellaStatus[side] !== null) {
+                tokens.push(hyperapp_1.h(components.UmbrellaToken, { side: side, umbrellaState: state.board.umbrellaStatus[side], left: cx, top: top }));
+                cx += 60;
+            }
+            // ユキヒを選択していて、かつ計略の状態を初期化済みであれば表示
+            if (state.board.megamis[side][megamiIndex] === 'shinra' && state.board.planStatus[side] !== null) {
+                tokens.push(hyperapp_1.h(components.PlanToken, { side: side, planState: state.board.planStatus[side], left: cx, top: top }));
+                cx += 50;
+            }
+        }
+    };
+    var extraTokens = [];
+    addExtraToken(extraTokens, selfSide, 850, 545);
+    addExtraToken(extraTokens, opponentSide, 10, 315);
     return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
         objectNodes,
         frameNodes,
@@ -49476,11 +49582,10 @@ var view = function (state, actions) {
         hyperapp_1.h(components.Vigor, { side: selfSide, left: 680, top: 630 }),
         hyperapp_1.h(components.WitheredToken, { side: opponentSide, left: 390, top: 60 }),
         hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680, top: 630 }),
-        (state.board.planStatus[selfSide] ? hyperapp_1.h(components.PlanToken, { side: selfSide, planState: state.board.planStatus[selfSide], left: 850, top: 545 }) : null),
-        (state.board.planStatus[opponentSide] ? hyperapp_1.h(components.PlanToken, { side: opponentSide, planState: state.board.planStatus[opponentSide], left: 10, top: 315 }) : null),
         hyperapp_1.h(components.ControlPanel, null),
         hyperapp_1.h(components.MariganButton, { left: 10, top: 770 }),
         hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),
+        extraTokens,
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 10, width: 1200, side: utils.flipSide(selfSide) }),
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: selfSide })));
 };
@@ -50159,7 +50264,8 @@ function createInitialState() {
             mariganFlags: { p1: false, p2: false },
             handOpenFlags: { p1: false, p2: false },
             handCardOpenFlags: { p1: {}, p2: {} },
-            planStatus: { p1: null, p2: null }
+            planStatus: { p1: null, p2: null },
+            umbrellaStatus: { p1: null, p2: null }
         },
         boardHistoryPast: [],
         boardHistoryFuture: [],

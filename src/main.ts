@@ -98,6 +98,47 @@ $(function(){
         }
     });
 
+    // 傘トークンクリックメニュー
+    $('#BOARD').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
+    $.contextMenu({
+        zIndex: 9999,
+        trigger: 'none',
+        selector: '#CONTEXT-UMBRELLA-TOKEN-CLICK',
+        build: function($elem: JQuery, event: JQueryEventObject){
+            let currentState = appActions.getState();
+            let side = currentState.side as PlayerSide;
+            let board = new models.Board(currentState.board);
+            let items: Object = {};
+
+            let umbrellaState = board.umbrellaStatus[currentState.side];
+            if(umbrellaState === 'closed'){
+                items['open'] = {name: '傘を開く', callback: () => {
+                    appActions.operate({
+                        log: `傘を開きました`,
+                        proc: () => {
+                            appActions.setUmbrellaState({side: side, value: 'opened'});
+                        }
+                    });
+                }};
+            } else {
+                items['close'] = {name: '傘を閉じる', callback: () => {
+                    appActions.operate({
+                        log: `傘を閉じました`,
+                        proc: () => {
+                            appActions.setUmbrellaState({side: side, value: 'closed'});
+                        }
+                    });
+                }};
+            }
+
+            items['sep'] = '----';
+            items['cancel'] = {name: 'キャンセル', callback: () => {}};
+
+            return {items: items};
+
+        }
+    });
+
     // 右クリックメニュー
     $.contextMenu({
         selector: '#BOARD *',

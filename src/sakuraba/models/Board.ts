@@ -3,18 +3,19 @@ import { Megami } from "sakuraba";
 import * as utils from "sakuraba/utils";
 
 export class Board implements state.Board {
-    objects: state.BoardObject[];
-    playerNames: {p1: string, p2: string};
+    objects: state.Board['objects'];
+    playerNames: state.Board['playerNames'];
     watcherNames: state.Board['watcherNames'];
-    megamis: {p1: Megami[], p2: Megami[]};
-    vigors: {p1: VigorValue, p2: VigorValue};
-    witherFlags: {p1: boolean, p2: boolean};
-    megamiOpenFlags: {p1: boolean, p2: boolean};
-    firstDrawFlags: {p1: boolean, p2: boolean};
-    mariganFlags: {p1: boolean, p2: boolean};
-    handOpenFlags: {p1: boolean, p2: boolean};
-    handCardOpenFlags: {p1: {[id: string]: boolean | undefined}, p2: {[id: string]: boolean | undefined}};
+    megamis: state.Board['megamis'];
+    vigors: state.Board['vigors'];
+    witherFlags: state.Board['witherFlags'];
+    megamiOpenFlags: state.Board['megamiOpenFlags'];
+    firstDrawFlags: state.Board['firstDrawFlags'];
+    mariganFlags: state.Board['mariganFlags'];
+    handOpenFlags: state.Board['handOpenFlags'];
+    handCardOpenFlags: state.Board['handCardOpenFlags'];
     planStatus: state.Board['planStatus'];
+    umbrellaStatus: state.Board['umbrellaStatus'];
 
     actionLog: state.LogRecord[];
     chatLog: state.LogRecord[];

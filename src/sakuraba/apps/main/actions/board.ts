@@ -349,6 +349,20 @@ export default {
 
         return {board: newBoard};
     },
+
+    /** 傘の状態をセット */
+    setUmbrellaState: (p: {
+        /** どちら側の傘か */
+        side: PlayerSide;
+        /** 新しい値 */
+        value: UmbrellaState;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        // 計略の状態をセット
+        newBoard.umbrellaStatus[p.side] = p.value;
+
+        return {board: newBoard};
+    },
     
     /** 最初の手札を引き、桜花結晶などを配置する */
     oprBoardSetup: () => (state: state.State, actions: ActionsType) => {
@@ -383,6 +397,10 @@ export default {
                 // シンラがいれば計略トークンをセット
                 if(board.megamis[state.side].find(m => m === 'shinra')){
                     actions.setPlanState({side: state.side, value: 'back-blue'});
+                }
+                // ユキヒがいれば傘カードをセット
+                if(board.megamis[state.side].find(m => m === 'yukihi')){
+                    actions.setUmbrellaState({side: state.side, value: 'closed'});
                 }
             }
         });

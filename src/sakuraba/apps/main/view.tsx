@@ -256,6 +256,27 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         frameNodes.push(<components.SakuraTokenAreaDroppable side={card.side} region="on-card" linkedCardId={card.id} left={cardLocation[0]} top={cardLocation[1]} width={100} height={140} />);
     });
 
+    // メガミによっては追加トークン類を並べる
+    const addExtraToken = (tokens: JSX.Element[], side: PlayerSide, left: number, top: number) => {
+        let cx = left;
+        for(let megamiIndex = 0; megamiIndex <= 1; megamiIndex++){
+            // ユキヒを選択していて、かつ傘の状態を初期化済みであれば表示
+            if(state.board.megamis[side][megamiIndex] === 'yukihi' && state.board.umbrellaStatus[side] !== null){
+                tokens.push(<components.UmbrellaToken side={side} umbrellaState={state.board.umbrellaStatus[side]} left={cx} top={top} />);
+                cx += 60;
+            }
+
+            // ユキヒを選択していて、かつ計略の状態を初期化済みであれば表示
+            if(state.board.megamis[side][megamiIndex] === 'shinra' && state.board.planStatus[side] !== null){
+                tokens.push(<components.PlanToken side={side} planState={state.board.planStatus[side]} left={cx} top={top} />);
+                cx += 50;
+            }
+        }
+    }
+
+    let extraTokens = [];
+    addExtraToken(extraTokens, selfSide, 850, 545);
+    addExtraToken(extraTokens, opponentSide, 10, 315);
 
     return (
         <div style={{ position: 'relative', zIndex: 100 }}>
@@ -265,11 +286,10 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.Vigor side={selfSide} left={680} top={630} />
             <components.WitheredToken side={opponentSide} left={390} top={60} />
             <components.WitheredToken side={selfSide} left={680} top={630} />
-            {(state.board.planStatus[selfSide] ? <components.PlanToken side={selfSide} planState={state.board.planStatus[selfSide]} left={850} top={545} /> : null)}
-            {(state.board.planStatus[opponentSide] ? <components.PlanToken side={opponentSide} planState={state.board.planStatus[opponentSide]} left={10} top={315} /> : null)}
             <components.ControlPanel />
             <components.MariganButton left={10} top={770} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
+            {extraTokens}
             <components.PlayerNameDisplay left={10} top={10} width={1200} side={utils.flipSide(selfSide)} />
             <components.PlayerNameDisplay left={10} top={770} width={1200} side={selfSide} />
         </div>

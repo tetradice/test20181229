@@ -57,6 +57,8 @@ export interface Board {
     handCardOpenFlags: {p1: {[id: string]: boolean | undefined}, p2: {[id: string]: boolean | undefined}};
     /** 計略の状態 */
     planStatus: {p1: PlanState, p2: PlanState};
+    /** 傘の状態 */
+    umbrellaStatus: {p1: UmbrellaState, p2: UmbrellaState};
 }
 
 /**

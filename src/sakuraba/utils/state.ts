@@ -16,6 +16,7 @@ export function createInitialState(): state.State{
             , handOpenFlags: {p1: false, p2: false}
             , handCardOpenFlags: {p1: {}, p2: {}}
             , planStatus: {p1: null, p2: null}
+            , umbrellaStatus: {p1: null, p2: null}
           }
         , boardHistoryPast: []
         , boardHistoryFuture: []
