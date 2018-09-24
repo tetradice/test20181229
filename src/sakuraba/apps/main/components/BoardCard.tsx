@@ -60,7 +60,7 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
 
         // 山札なら1枚引く
         if(data.baseType === 'normal' && p.target.region === 'library'){
-            actions.oprDraw();
+            actions.oprDraw({});
         }
         return true;
     }

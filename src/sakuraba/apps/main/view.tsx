@@ -42,8 +42,8 @@ function layoutObjects<T extends state.BoardObject>(
         let innerWidth = areaWidth - (padding * 2);
         let requiredWidth = objectWidth * objects.length + spacing * (objects.length - 1);
         
-        if(requiredWidth <= innerWidth){
-            // 領域の幅に収まる場合は、spacing分の間隔をあけて配置
+        if(requiredWidth <= innerWidth || objects.length <= 1){
+            // 領域の幅に収まる場合か、オブジェクトが1つ以下の場合は、spacing分の間隔をあけて配置
             objects.forEach((child, i) => {
                 ret.push([child, cx, cy]);
 
@@ -52,7 +52,10 @@ function layoutObjects<T extends state.BoardObject>(
             });
         } else {
             // 領域の幅に収まらない場合は、収まるように均等に詰めて並べる
-            let overlapWidth = ((objectWidth * objects.length) - innerWidth) / objects.length;
+            let overlapWidth = ((objectWidth * objects.length) - innerWidth) / (objects.length - 1);
+            if(objects.length >= 1 && objects[0].type === 'card' && objects[0].region === 'used' && objects[0].side === 'p1'){
+                console.log(`★innerWidth = ${innerWidth}, requiredWidth = ${requiredWidth}, over = ${(objectWidth * objects.length) - innerWidth}, overlapWidth = ${overlapWidth}`);
+            }
             objects.forEach((child, i) => {
                 ret.push([child, cx, cy]);
 
@@ -287,7 +290,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             // ライラを選択しており、風雷ゲージの状態を初期化済みであれば表示
             if(megamis[megamiIndex] === 'raira' && state.board.windGuage[side] !== null){
                 tokens.push(<components.WindAndThunderGuage side={side} wind={state.board.windGuage[side]} thunder={state.board.thunderGuage[side]} left={cx} top={top} />);
-                cx += 50;
+                cx += 190;
             }
         }
     }

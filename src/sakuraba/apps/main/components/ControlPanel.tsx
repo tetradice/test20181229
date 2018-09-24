@@ -129,16 +129,16 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         let promise = new Promise(function(resolve, reject){
             let cardIds: string[][] = [[], [], []];
 
-            // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート
+            // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート。ただし追加札は除外
             for(let key in sakuraba.CARD_DATA){
                 let data = sakuraba.CARD_DATA[key];
-                if(data.megami === state.board.megamis[state.side][0] && data.baseType === 'normal'){
+                if(data.megami === state.board.megamis[state.side][0] && data.baseType === 'normal' && !data.extra){
                     cardIds[0].push(key);
                 }
-                if(data.megami === state.board.megamis[state.side][1] && data.baseType === 'normal'){
+                if(data.megami === state.board.megamis[state.side][1] && data.baseType === 'normal' && !data.extra){
                     cardIds[1].push(key);
                 }
-                if(state.board.megamis[state.side].indexOf(data.megami) >= 0 && data.baseType === 'special'){
+                if(state.board.megamis[state.side].indexOf(data.megami) >= 0 && data.baseType === 'special' && !data.extra){
                     cardIds[2].push(key);
                 }
             }

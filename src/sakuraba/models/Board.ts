@@ -96,12 +96,17 @@ export class Board implements state.Board {
                     this.handCardOpenFlags[c.side][c.id] = false;
                 }
 
+                // 対象のカードが使用済みでも切札でもない場合、帯電解除フラグを強制的にOFF
+                if(region !== 'used' && region !== 'special' && c.discharged){
+                    c.discharged = false;
+                }
+
                 // 開閉状態更新
                 let handOpenFlag = this.handOpenFlags[c.side] || this.handCardOpenFlags[c.side][c.id];
                 c.openState = utils.judgeCardOpenState(c, handOpenFlag);
 
                 // 回転状態更新
-                c.rotated = (region === 'hidden-used');
+                c.rotated = (region === 'hidden-used') || c.discharged;
             });
         });
 

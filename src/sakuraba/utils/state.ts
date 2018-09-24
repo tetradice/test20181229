@@ -44,6 +44,8 @@ export function createCard(id: string, cardId: string, region: CardRegion | null
     , specialUsed: false
     , linkedCardId: null
     , side: side
+    , discharged: false
+    , ownerSide: side
   };
 }
 

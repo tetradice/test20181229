@@ -49,6 +49,32 @@ $(function(){
     // アプリケーション起動
     let appActions = apps.main.run(st, document.getElementById('BOARD'));
 
+    // 萎縮トークンクリックメニュー
+    $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
+    $.contextMenu({
+        zIndex: 9999,
+        trigger: 'none',
+        selector: '#CONTEXT-WITHERED-TOKEN-CLICK',
+        build: function($elem: JQuery, event: JQueryEventObject){
+            let currentState = appActions.getState();
+            let side = currentState.side as PlayerSide;
+            let board = new models.Board(currentState.board);
+            let items: Object = {};
+
+            items['remove'] = {name: '萎縮を解除', callback: () => {
+                appActions.oprSetWitherFlag({
+                      side: side
+                    , value: false
+                });
+            }};
+            items['sep'] = '----';
+            items['cancel'] = {name: 'キャンセル', callback: () => {}};
+
+            return {items: items};
+
+        }
+    });
+
     // 計略トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
     $.contextMenu({
@@ -158,6 +184,42 @@ $(function(){
                 return false;
             };
 
+            // 帯電解除コマンドの追加
+            const addDischargeCommand = (items: any, card: state.Card, addSeparator?: boolean) => {
+                // プレイヤーがライラを宿しており、かつ対象のカードが公開状態の場合、帯電解除を行える
+                if(board.megamis[playerSide][0] === 'raira' || board.megamis[playerSide][1] === 'raira'){
+                    if(addSeparator){
+                        items['sepDischarge'] = '---';
+                    }
+
+                    items['dischargeAndIncrementWind'] =  {
+                        name: "帯電を解除し、風神ゲージを1上げる"
+                        , disabled: (card.openState !== 'opened' || card.discharged)
+                        , callback: function() {
+                            appActions.oprDischarge({objectId: card.id, guageType: 'wind'});
+                        }
+                    }
+                    items['dischargeAndIncrementThunder'] =  {
+                        name: "帯電を解除し、雷神ゲージを1上げる"
+                        , disabled: (card.openState !== 'opened' || card.discharged)
+                        , callback: function() {
+                            appActions.oprDischarge({objectId: card.id, guageType: 'thunder'});
+                        }
+                    }
+                }
+            };
+
+            // 使用済み札で右クリック
+            if($elem.is('.fbs-card[data-region=used]')){
+                let id = $elem.attr('data-object-id');
+                let card = board.getCard(id);
+                items = {};
+
+                // 条件を満たしていれば、帯電解除コマンドを追加
+                addDischargeCommand(items, card);
+            }
+
+
             // 切り札で右クリック
             if($elem.is('.fbs-card[data-region=special]')){
                 let id = $elem.attr('data-object-id');
@@ -171,8 +233,12 @@ $(function(){
                   }
                 }
 
+                // 条件を満たしていれば、帯電解除コマンドを追加
+                addDischargeCommand(items, card, true);
+
                 // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
                 if(CARD_DATA[card.cardId].removable){
+                    items['sep2'] = '---';
                     items['remove'] =  {
                         name: "ボード上から取り除く"
                         , callback: function() {
@@ -215,7 +281,6 @@ $(function(){
                     }
                 }
             }
-
 
             // 手札で右クリック
             let $handArea = $elem.closest(`.area.background[data-side=${playerSide}][data-region=hand]`);
@@ -284,8 +349,6 @@ $(function(){
                         }
                     }
                 }
-
-
             }
             // 山札で右クリック
             if($elem.is('.area.background[data-region=library], .fbs-card[data-region=library]')){
@@ -297,7 +360,7 @@ $(function(){
                         let cards = board.getRegionCards(playerSide, 'library', null);
                         return cards.length === 0;
                     }, callback: () => {
-                        appActions.oprDraw();
+                        appActions.oprDraw({});
                     }},
                     'sep1': '---------',
                     'reshuffle': {name: '再構成する', callback: () => {

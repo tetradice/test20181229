@@ -11,11 +11,15 @@ export const WitheredToken = (p: {side: PlayerSide, left: number, top: number}) 
         , width: `${80 * state.zoom}px`
         , height: `${89 * state.zoom}px`
     };
-    let className = "withered-token";
+    let className = "withered-token clickable";
     if(p.side === utils.flipSide(state.viewingSide)) className += " opponent-side"; 
-
+    const onclick = (e) => {
+        if(p.side === state.side){
+            $('#CONTEXT-WITHERED-TOKEN-CLICK').contextMenu({x: e.pageX, y: e.pageY});
+        }
+    };
     if(state.board.witherFlags[p.side]){
-        return <div data-side={p.side} class={className} style={styles}></div>;
+        return <div data-side={p.side} class={className} style={styles} onclick={onclick}></div>;
     } else {
         return null;
     }

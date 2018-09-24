@@ -393,6 +393,7 @@ export default {
     }) => (state: state.State, actions: ActionsType) => {
         let newBoard = models.Board.clone(state.board);
         newBoard.windGuage[p.side] += 1;
+        if(newBoard.windGuage[p.side] > 20) newBoard.windGuage[p.side] = 20;
 
         return {board: newBoard};
     },
@@ -404,6 +405,7 @@ export default {
     }) => (state: state.State, actions: ActionsType) => {
         let newBoard = models.Board.clone(state.board);
         newBoard.thunderGuage[p.side] += 1;
+        if(newBoard.thunderGuage[p.side] > 20) newBoard.thunderGuage[p.side] = 20;
 
         return {board: newBoard};
     },

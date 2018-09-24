@@ -99,7 +99,8 @@
         .opponent-side {
             transform: rotate(180deg);
         }
-        .opponent-side.rotated {
+        .opponent-side.rotated,
+        .opponent-side.open-normal.rotated {
             transform: rotate(270deg);
         }
         .opponent-side.reverse-rotated {
@@ -109,7 +110,7 @@
         .opponent-side.open-normal {
             transform: none;
         }
-
+        
         /* カード名 */
         .fbs-card.open-normal .card-name,
         .fbs-card.open-special .card-name {

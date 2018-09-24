@@ -77,25 +77,42 @@ export const WindAndThunderGuage = (p: {side: PlayerSide, wind: number, thunder:
             }
         });
     };
-    return (
-        <div style={styles}>
-            <div style={{height: `${23 * state.zoom}px`}}>
-                <div style={captionStyles}>風</div>
-                <div style={numberStyles}>{p.wind}</div>
+
+    // ボタン類は、自分側の風雷ゲージである場合のみ表示
+    let windButtons = (
+        p.side === state.side ?
+            (
                 <div style={buttonSectionStyles}>
                     <button class={`mini ui basic button${p.wind >= 20 ? ' disabled' : ''}`} style={leftButtonStyles} onclick={incrementWind}>+1</button>
                     <button class={`mini ui basic button${p.wind === 0 ? ' disabled' : ''}`} style={buttonStyles} onclick={resetWind}>0に戻す</button>
                 </div>
-                
-            </div>
-            <div style={{height: `${23 * state.zoom}px`}}>
-                <div style={captionStyles}>雷</div>
-                <div style={numberStyles}>{p.thunder}</div>
+            )
+            : null
+    );
+    let thunderButtons = (
+        p.side === state.side ?
+            (
                 <div style={buttonSectionStyles}>
                     <button class={`mini ui basic button${p.thunder >= 20 ? ' disabled' : ''}`} style={leftButtonStyles} onclick={incrementThunder}>+1</button>
                     <button class={`mini ui basic button${p.thunder >= 20 ? ' disabled' : ''}`} style={buttonStyles} onclick={doubleThunder}>2倍</button>
                     <button class={`mini ui basic button${p.thunder === 0 ? ' disabled' : ''}`} style={buttonStyles} onclick={resetThunder}>0に戻す</button>
                 </div>
+            )
+            : null
+    );
+    
+
+    return (
+        <div style={styles}>
+            <div style={{height: `${23 * state.zoom}px`}}>
+                <div style={captionStyles}>風</div>
+                <div style={numberStyles}>{p.wind}</div>
+                {windButtons}
+            </div>
+            <div style={{height: `${23 * state.zoom}px`}}>
+                <div style={captionStyles}>雷</div>
+                <div style={numberStyles}>{p.thunder}</div>
+                {thunderButtons}
             </div>
         </div>
     );

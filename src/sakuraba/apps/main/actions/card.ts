@@ -132,7 +132,7 @@ export default {
     /** 山札からカードを引く操作実行 */
     oprDraw: (p: {number?: number, cardNameLogging?: boolean}) => (state: state.State, actions: ActionsType) => {
         actions.operate({
-            log: `カードを${p.number}枚引きました`,
+            log: `カードを${(p.number === undefined ? 1 : p.number)}枚引きました`,
             proc: () => {
                 actions.draw(p);
             }
@@ -202,6 +202,38 @@ export default {
             log: `[${CARD_DATA[card.cardId].name}]をボード上から取り除きました`,
             proc: () => {
                 actions.removeCard(p);
+            }
+        });
+    },
+
+    /** 帯電解除 */
+    discharge: (p: {objectId: string}) => (state: state.State, actions: ActionsType) => {
+        let ret: Partial<state.State> = {};
+        let newBoard = models.Board.clone(state.board);
+
+        let card = newBoard.getCard(p.objectId);
+        card.discharged = true;
+
+        // 領域情報を更新
+        newBoard.updateRegionInfo();
+
+        return {board: newBoard};
+    },
+
+    /** 帯電解除＋ゲージ増加操作を実行 */
+    oprDischarge: (p: {objectId: string, guageType: 'wind' | 'thunder'}) => (state: state.State, actions: ActionsType) => {
+        let board = new models.Board(state.board);
+        let card = board.getCard(p.objectId);
+
+        actions.operate({
+            log: `[${CARD_DATA[card.cardId].name}]の帯電を解除し、${p.guageType === 'wind' ? '風神' : '雷神'}ゲージを1上げました`,
+            proc: () => {
+                // 帯電解除
+                actions.discharge(p);
+
+                // ゲージ増加
+                if(p.guageType === 'wind') actions.incrementWindGuage({side: card.side});
+                if(p.guageType === 'thunder') actions.incrementThunderGuage({side: card.side});
             }
         });
     },

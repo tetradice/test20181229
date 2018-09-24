@@ -29,11 +29,14 @@ export const Card = (p: Param) => {
       , height: `${140 * p.zoom}px`
   };
 
-  if(p.target.region === 'on-card'){
-      styles.zIndex = `${90 - p.target.indexOfRegion}`;
-  } else {
-      styles.zIndex = `${100}`;
-  }
+    if (p.target.region === 'on-card') {
+        styles.zIndex = `${90 - p.target.indexOfRegion}`;
+    } else if (p.target.discharged) {
+        // 帯電解除していれば表示順序を上げる (横向きになるため)
+        styles.zIndex = `${150 - p.target.indexOfRegion}`;
+    } else {
+        styles.zIndex = `${100}`;
+    }
 
   let cardData = sakuraba.CARD_DATA[p.target.cardId];
   let className = "fbs-card";

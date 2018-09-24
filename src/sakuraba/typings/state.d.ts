@@ -86,6 +86,12 @@ export interface Card extends BoardObjectBase {
     openState: CardOpenState;
     specialUsed: boolean;
     linkedCardId: string;
+
+    /** 帯電が解除されたか */
+    discharged: boolean;
+
+    /** 所有者 */
+    ownerSide: PlayerSide;
 }
 
 export interface SakuraToken extends BoardObjectBase {

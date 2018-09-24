@@ -46456,6 +46456,28 @@ $(function () {
         st.zoom = 0.5;
     // アプリケーション起動
     var appActions = apps.main.run(st, document.getElementById('BOARD'));
+    // 萎縮トークンクリックメニュー
+    $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
+    $.contextMenu({
+        zIndex: 9999,
+        trigger: 'none',
+        selector: '#CONTEXT-WITHERED-TOKEN-CLICK',
+        build: function ($elem, event) {
+            var currentState = appActions.getState();
+            var side = currentState.side;
+            var board = new models.Board(currentState.board);
+            var items = {};
+            items['remove'] = { name: '萎縮を解除', callback: function () {
+                    appActions.oprSetWitherFlag({
+                        side: side,
+                        value: false
+                    });
+                } };
+            items['sep'] = '----';
+            items['cancel'] = { name: 'キャンセル', callback: function () { } };
+            return { items: items };
+        }
+    });
     // 計略トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
     $.contextMenu({
@@ -46555,6 +46577,37 @@ $(function () {
                 return false;
             }
             ;
+            // 帯電解除コマンドの追加
+            var addDischargeCommand = function (items, card, addSeparator) {
+                // プレイヤーがライラを宿しており、かつ対象のカードが公開状態の場合、帯電解除を行える
+                if (board.megamis[playerSide][0] === 'raira' || board.megamis[playerSide][1] === 'raira') {
+                    if (addSeparator) {
+                        items['sepDischarge'] = '---';
+                    }
+                    items['dischargeAndIncrementWind'] = {
+                        name: "帯電を解除し、風神ゲージを1上げる",
+                        disabled: (card.openState !== 'opened' || card.discharged),
+                        callback: function () {
+                            appActions.oprDischarge({ objectId: card.id, guageType: 'wind' });
+                        }
+                    };
+                    items['dischargeAndIncrementThunder'] = {
+                        name: "帯電を解除し、雷神ゲージを1上げる",
+                        disabled: (card.openState !== 'opened' || card.discharged),
+                        callback: function () {
+                            appActions.oprDischarge({ objectId: card.id, guageType: 'thunder' });
+                        }
+                    };
+                }
+            };
+            // 使用済み札で右クリック
+            if ($elem.is('.fbs-card[data-region=used]')) {
+                var id = $elem.attr('data-object-id');
+                var card = board.getCard(id);
+                items = {};
+                // 条件を満たしていれば、帯電解除コマンドを追加
+                addDischargeCommand(items, card);
+            }
             // 切り札で右クリック
             if ($elem.is('.fbs-card[data-region=special]')) {
                 var id_1 = $elem.attr('data-object-id');
@@ -46566,8 +46619,11 @@ $(function () {
                         appActions.oprSetSpecialUsed({ objectId: id_1, value: !card_1.specialUsed });
                     }
                 };
+                // 条件を満たしていれば、帯電解除コマンドを追加
+                addDischargeCommand(items, card_1, true);
                 // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
                 if (sakuraba_1.CARD_DATA[card_1.cardId].removable) {
+                    items['sep2'] = '---';
                     items['remove'] = {
                         name: "ボード上から取り除く",
                         callback: function () {
@@ -46680,7 +46736,7 @@ $(function () {
                             var cards = board.getRegionCards(playerSide, 'library', null);
                             return cards.length === 0;
                         }, callback: function () {
-                            appActions.oprDraw();
+                            appActions.oprDraw({});
                         } },
                     'sep1': '---------',
                     'reshuffle': { name: '再構成する', callback: function () {
@@ -47351,10 +47407,10 @@ exports.CARD_DATA = {
     '09-chikage-o-s-2': { megami: 'chikage', name: '叛旗の纏毒', ruby: 'はんきのまといどく', baseType: 'special', types: ['enhance', 'reaction'], capacity: '5', cost: '2', text: '【展開中】相手によるオーラへのダメージかライフへのダメージのどちらかが「-」である《攻撃》は打ち消される。' },
     '09-chikage-o-s-3': { megami: 'chikage', name: '流転の霞毒', ruby: 'るてんのかすみどく', baseType: 'special', types: ['attack'], range: '3-7', damage: '1/2', cost: '1', text: '【再起】相手の手札が2枚以上ある。' },
     '09-chikage-o-s-4': { megami: 'chikage', name: '闇昏千影の生きる道', ruby: 'やみくらちかげのいきるみち', baseType: 'special', types: ['enhance', 'fullpower'], capacity: '4', cost: '5', text: '【展開中】あなたが1以上のライフへのダメージを受けた時、このカードの上の桜花結晶は全てダストに送られ、このカードは未使用に戻る。 \n(破棄時効果は失敗する) \n【破棄時】あなたの他の切札が全て使用済ならば、あなたは勝利する。' },
-    '09-chikage-o-p-1': { megami: 'chikage', name: '麻痺毒', ruby: 'まひどく', poison: true, baseType: 'normal', types: ['action'], text: '毒（このカードは伏せ札にできない） \n【常時】このターン中にあなたが基本動作を行ったならば、このカードは使用できない。 \nこのカードを相手の毒袋に戻す。その後、このフェイズを終了する。' },
-    '09-chikage-o-p-2': { megami: 'chikage', name: '幻覚毒', ruby: 'げんかくどく', poison: true, baseType: 'normal', types: ['action'], text: '毒（このカードは伏せ札にできない） \nこのカードを相手の毒袋に戻す。 \n自フレア→ダスト：2' },
-    '09-chikage-o-p-3': { megami: 'chikage', name: '弛緩毒', ruby: 'しかんどく', poison: true, baseType: 'normal', types: ['enhance'], capacity: '3', text: '毒（このカードは伏せ札にできない） \n【展開中】あなたは《攻撃》カードを使用できない。 \n【破棄時】このカードを相手の毒袋に戻す。' },
-    '09-chikage-o-p-4': { megami: 'chikage', name: '滅灯毒', ruby: 'ほろびどく', poison: true, baseType: 'normal', types: ['action'], text: '毒（このカードは伏せ札にできない） \n自オーラ→ダスト：3' },
+    '09-chikage-o-p-1': { megami: 'chikage', name: '麻痺毒', ruby: 'まひどく', extra: true, poison: true, baseType: 'normal', types: ['action'], text: '毒（このカードは伏せ札にできない） \n【常時】このターン中にあなたが基本動作を行ったならば、このカードは使用できない。 \nこのカードを相手の毒袋に戻す。その後、このフェイズを終了する。' },
+    '09-chikage-o-p-2': { megami: 'chikage', name: '幻覚毒', ruby: 'げんかくどく', extra: true, poison: true, baseType: 'normal', types: ['action'], text: '毒（このカードは伏せ札にできない） \nこのカードを相手の毒袋に戻す。 \n自フレア→ダスト：2' },
+    '09-chikage-o-p-3': { megami: 'chikage', name: '弛緩毒', ruby: 'しかんどく', extra: true, poison: true, baseType: 'normal', types: ['enhance'], capacity: '3', text: '毒（このカードは伏せ札にできない） \n【展開中】あなたは《攻撃》カードを使用できない。 \n【破棄時】このカードを相手の毒袋に戻す。' },
+    '09-chikage-o-p-4': { megami: 'chikage', name: '滅灯毒', ruby: 'ほろびどく', extra: true, poison: true, baseType: 'normal', types: ['action'], text: '毒（このカードは伏せ札にできない） \n自オーラ→ダスト：3' },
     '10-kururu-o-n-1': { megami: 'kururu', name: 'えれきてる', ruby: '', baseType: 'normal', types: ['action'], text: '----\n<行行行対対> 相手のライフに1ダメージを与える。 ' },
     '10-kururu-o-n-2': { megami: 'kururu', name: 'あくせらー', ruby: '', baseType: 'normal', types: ['action'], text: '----\n<行行付> あなたの手札から《全力》カードを1枚選び、そのカードを使用してもよい。 \n(フェイズは終了しない) ' },
     '10-kururu-o-n-3': { megami: 'kururu', name: 'くるるーん', ruby: '', baseType: 'normal', types: ['action', 'reaction'], text: '【常時】このカードは対応でしか使用できない。 \n以下から2つまでを選び、任意の順に行う。 \n(同じものを2回選ぶことはできない)\n・カードを1枚引く。\n・伏せ札1枚を山札の底に置く。\n・相手は手札を1枚捨て札にする。' },
@@ -47366,7 +47422,7 @@ exports.CARD_DATA = {
     '10-kururu-o-s-2': { megami: 'kururu', name: 'びっぐごーれむ', ruby: '', baseType: 'special', types: ['action'], cost: '4', text: '----\n<対全全> 【使用済】あなたの終了フェイズに相手のライフに1ダメージを与えてもよい。そうした場合、山札を再構成する。 \n----\n【使用済】あなたが《全力》カードを使用した時、その解決後に基本動作を1回行ってもよい。\n' },
     '10-kururu-o-s-3': { megami: 'kururu', name: 'いんだすとりあ', ruby: '', baseType: 'special', types: ['action'], cost: '1', text: 'このカードにカードが封印されていないならば、あなたの手札から《付与》でないカードを1枚選び、そのカードをこのカードの下に表向きで封印してもよい。 \nあなたの追加札から「でゅーぷりぎあ」を山札の底に1枚置く(最大で合計3枚)。 \n----\n【即再起】あなたが山札を再構成する(再構成の後に未使用に戻る)。', sealable: true },
     '10-kururu-o-s-4': { megami: 'kururu', name: '神渉装置:枢式', ruby: 'かんしょうそうち　くるるしき', baseType: 'special', types: ['action'], cost: '3', text: '----\n<攻攻行行行付付> 相手の切札を見て、その中から1枚選び、それを使用済にしてもよい。\n----\n相手の使用済の切札1枚を選んでもよい。そのカードを消費を支払わずに使用する(《全力》カードでもよい)。その後、このカードを取り除く。', removable: true },
-    '10-kururu-o-s-3-ex1': { megami: 'kururu', name: 'でゅーぷりぎあ', ruby: '', baseType: 'normal', types: ['variable'], text: '(カードタイプが不定のカードは使用できない) \n【常時】このカードはあなたの「いんだすとりあ」に封印されたカードの複製となる。但し、名前は変更されない。 \n(「いんだすとりあ」が未使用なら複製とならないので、使用できない)' },
+    '10-kururu-o-s-3-ex1': { megami: 'kururu', name: 'でゅーぷりぎあ', ruby: '', extra: true, baseType: 'normal', types: ['variable'], text: '(カードタイプが不定のカードは使用できない) \n【常時】このカードはあなたの「いんだすとりあ」に封印されたカードの複製となる。但し、名前は変更されない。 \n(「いんだすとりあ」が未使用なら複製とならないので、使用できない)' },
     '11-thallya-o-n-1': { megami: 'thallya', name: 'Burning Steam', ruby: 'バーニングスチーム', baseType: 'normal', types: ['attack'], range: '3-5', damage: '2/1', text: '【攻撃後】騎動を行う。' },
     '11-thallya-o-n-2': { megami: 'thallya', name: 'Waving Edge', ruby: 'ウェービングエッジ', baseType: 'normal', types: ['attack'], range: '1-3', damage: '3/1', text: '燃焼 \n【攻撃後】騎動を行う。' },
     '11-thallya-o-n-3': { megami: 'thallya', name: 'Shield Charge', ruby: 'シールドチャージ', baseType: 'normal', types: ['attack'], range: '1', damage: '3/2', text: '燃焼 \n【常時】この《攻撃》のダメージにより移動する桜花結晶は、ダストやフレアでなく間合に動かす。' },
@@ -47388,9 +47444,9 @@ exports.CARD_DATA = {
     '12-raira-o-s-2': { megami: 'raira', name: '天雷召喚陣', ruby: 'てんらいしょうかんじん', baseType: 'special', types: ['action', 'fullpower'], cost: '6', text: '攻撃『適正距離0-10、1/1』をX回行う。Xは雷神ゲージの半分(切り上げ)に等しい。' },
     '12-raira-o-s-3': { megami: 'raira', name: '風魔招来孔', ruby: 'ふうましょうらいこう', baseType: 'special', types: ['action'], cost: '0', text: '現在の風神ゲージに応じて、以下の切札を追加札から未使用で得る(条件を満たしたものは全て得る)。その後、このカードを取り除く。 \n3以上……風魔旋風 \n6以上……風魔纏廻 \n10以上……風魔天狗道', removable: true },
     '12-raira-o-s-4': { megami: 'raira', name: '円環輪廻旋', ruby: 'えんかんりんかいせん', baseType: 'special', types: ['enhance', 'fullpower'], capacity: '5', cost: '3', text: '【展開中】あなたが《付与》でない通常札を使用した場合、それを捨て札にする代わりに山札の底に置く。' },
-    '12-raira-o-s-3-ex1': { megami: 'raira', name: '風魔旋風', ruby: 'ふうませんぷう', baseType: 'special', types: ['attack'], range: '1-3', damage: '1/2', cost: '1', text: '' },
-    '12-raira-o-s-3-ex2': { megami: 'raira', name: '風魔纏廻', ruby: 'ふうまてんかい', baseType: 'special', types: ['action'], cost: '1', text: 'あなたの使用済の切札を1枚選び、それを未使用に戻す。 \n【使用済】あなたの切札の消費は1少なくなる(0未満にはならない)。' },
-    '12-raira-o-s-3-ex3': { megami: 'raira', name: '風魔天狗道', ruby: 'ふうまてんぐどう', baseType: 'special', types: ['action', 'reaction'], cost: '4', text: 'ダスト⇔間合：5 \nあなたはこの効果で本来より少ない個数の桜花結晶を動かしてもよい。その後、このカードを取り除く。', removable: true },
+    '12-raira-o-s-3-ex1': { megami: 'raira', name: '風魔旋風', ruby: 'ふうませんぷう', extra: true, baseType: 'special', types: ['attack'], range: '1-3', damage: '1/2', cost: '1', text: '' },
+    '12-raira-o-s-3-ex2': { megami: 'raira', name: '風魔纏廻', ruby: 'ふうまてんかい', extra: true, baseType: 'special', types: ['action'], cost: '1', text: 'あなたの使用済の切札を1枚選び、それを未使用に戻す。 \n【使用済】あなたの切札の消費は1少なくなる(0未満にはならない)。' },
+    '12-raira-o-s-3-ex3': { megami: 'raira', name: '風魔天狗道', ruby: 'ふうまてんぐどう', extra: true, baseType: 'special', types: ['action', 'reaction'], cost: '4', text: 'ダスト⇔間合：5 \nあなたはこの効果で本来より少ない個数の桜花結晶を動かしてもよい。その後、このカードを取り除く。', removable: true },
     '12-utsuro-o-n-1': { megami: 'utsuro', name: '円月', ruby: 'えんげつ', baseType: 'normal', types: ['attack'], range: '6-7', damage: '2/2', text: '【常時】灰塵-ダストが12以上ならば、この《攻撃》のオーラへのダメージは「-」になる。' },
     '12-utsuro-o-n-2': { megami: 'utsuro', name: '黒き波動', ruby: 'くろきはどう', baseType: 'normal', types: ['attack'], range: '4-7', damage: '1/2', text: '【攻撃後】相手が<オーラ>へのダメージを選んだならば、相手の手札を見てその中から1枚を選び、それを捨て札にする。' },
     '12-utsuro-o-n-3': { megami: 'utsuro', name: '刈取り', ruby: 'かりとり', baseType: 'normal', types: ['attack'], range: '4', damage: '-/0', text: '【攻撃後】相手は相手の<オーラ>、<フレア>、<ライフ>のいずれかから桜花結晶を合計2つ<ダスト>へ移動させる。 \n【攻撃後】相手の付与札を1枚選んでもよい。そうした場合、その付与札の上から桜花結晶を2つ<ダスト>へ送る。' },
@@ -47442,6 +47498,10 @@ exports.Card = function (p) {
     };
     if (p.target.region === 'on-card') {
         styles.zIndex = "" + (90 - p.target.indexOfRegion);
+    }
+    else if (p.target.discharged) {
+        // 帯電解除していれば表示順序を上げる (横向きになるため)
+        styles.zIndex = "" + (150 - p.target.indexOfRegion);
     }
     else {
         styles.zIndex = "" + 100;
@@ -47834,12 +47894,16 @@ exports.default = {
     incrementWindGuage: function (p) { return function (state, actions) {
         var newBoard = models.Board.clone(state.board);
         newBoard.windGuage[p.side] += 1;
+        if (newBoard.windGuage[p.side] > 20)
+            newBoard.windGuage[p.side] = 20;
         return { board: newBoard };
     }; },
     /** 雷ゲージ+1 */
     incrementThunderGuage: function (p) { return function (state, actions) {
         var newBoard = models.Board.clone(state.board);
         newBoard.thunderGuage[p.side] += 1;
+        if (newBoard.thunderGuage[p.side] > 20)
+            newBoard.thunderGuage[p.side] = 20;
         return { board: newBoard };
     }; },
     /** 雷ゲージ2倍 */
@@ -48037,7 +48101,7 @@ exports.default = {
     /** 山札からカードを引く操作実行 */
     oprDraw: function (p) { return function (state, actions) {
         actions.operate({
-            log: "\u30AB\u30FC\u30C9\u3092" + p.number + "\u679A\u5F15\u304D\u307E\u3057\u305F",
+            log: "\u30AB\u30FC\u30C9\u3092" + (p.number === undefined ? 1 : p.number) + "\u679A\u5F15\u304D\u307E\u3057\u305F",
             proc: function () {
                 actions.draw(p);
             }
@@ -48093,6 +48157,33 @@ exports.default = {
             log: "[" + sakuraba_1.CARD_DATA[card.cardId].name + "]\u3092\u30DC\u30FC\u30C9\u4E0A\u304B\u3089\u53D6\u308A\u9664\u304D\u307E\u3057\u305F",
             proc: function () {
                 actions.removeCard(p);
+            }
+        });
+    }; },
+    /** 帯電解除 */
+    discharge: function (p) { return function (state, actions) {
+        var ret = {};
+        var newBoard = models.Board.clone(state.board);
+        var card = newBoard.getCard(p.objectId);
+        card.discharged = true;
+        // 領域情報を更新
+        newBoard.updateRegionInfo();
+        return { board: newBoard };
+    }; },
+    /** 帯電解除＋ゲージ増加操作を実行 */
+    oprDischarge: function (p) { return function (state, actions) {
+        var board = new models.Board(state.board);
+        var card = board.getCard(p.objectId);
+        actions.operate({
+            log: "[" + sakuraba_1.CARD_DATA[card.cardId].name + "]\u306E\u5E2F\u96FB\u3092\u89E3\u9664\u3057\u3001" + (p.guageType === 'wind' ? '風神' : '雷神') + "\u30B2\u30FC\u30B8\u30921\u4E0A\u3052\u307E\u3057\u305F",
+            proc: function () {
+                // 帯電解除
+                actions.discharge(p);
+                // ゲージ増加
+                if (p.guageType === 'wind')
+                    actions.incrementWindGuage({ side: card.side });
+                if (p.guageType === 'thunder')
+                    actions.incrementThunderGuage({ side: card.side });
             }
         });
     }; },
@@ -48499,7 +48590,7 @@ exports.BoardCard = function (p) { return function (state, actions) {
         }
         // 山札なら1枚引く
         if (data.baseType === 'normal' && p.target.region === 'library') {
-            actions.oprDraw();
+            actions.oprDraw({});
         }
         return true;
     };
@@ -48726,16 +48817,16 @@ exports.ControlPanel = function () { return function (state, actions) {
         // モーダル表示処理
         var promise = new Promise(function (resolve, reject) {
             var cardIds = [[], [], []];
-            // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート
+            // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート。ただし追加札は除外
             for (var key in sakuraba.CARD_DATA) {
                 var data = sakuraba.CARD_DATA[key];
-                if (data.megami === state.board.megamis[state.side][0] && data.baseType === 'normal') {
+                if (data.megami === state.board.megamis[state.side][0] && data.baseType === 'normal' && !data.extra) {
                     cardIds[0].push(key);
                 }
-                if (data.megami === state.board.megamis[state.side][1] && data.baseType === 'normal') {
+                if (data.megami === state.board.megamis[state.side][1] && data.baseType === 'normal' && !data.extra) {
                     cardIds[1].push(key);
                 }
-                if (state.board.megamis[state.side].indexOf(data.megami) >= 0 && data.baseType === 'special') {
+                if (state.board.megamis[state.side].indexOf(data.megami) >= 0 && data.baseType === 'special' && !data.extra) {
                     cardIds[2].push(key);
                 }
             }
@@ -49428,20 +49519,27 @@ exports.WindAndThunderGuage = function (p) { return function (state, actions) {
             }
         });
     };
+    // ボタン類は、自分側の風雷ゲージである場合のみ表示
+    var windButtons = (p.side === state.side ?
+        (hyperapp_1.h("div", { style: buttonSectionStyles },
+            hyperapp_1.h("button", { class: "mini ui basic button" + (p.wind >= 20 ? ' disabled' : ''), style: leftButtonStyles, onclick: incrementWind }, "+1"),
+            hyperapp_1.h("button", { class: "mini ui basic button" + (p.wind === 0 ? ' disabled' : ''), style: buttonStyles, onclick: resetWind }, "0\u306B\u623B\u3059")))
+        : null);
+    var thunderButtons = (p.side === state.side ?
+        (hyperapp_1.h("div", { style: buttonSectionStyles },
+            hyperapp_1.h("button", { class: "mini ui basic button" + (p.thunder >= 20 ? ' disabled' : ''), style: leftButtonStyles, onclick: incrementThunder }, "+1"),
+            hyperapp_1.h("button", { class: "mini ui basic button" + (p.thunder >= 20 ? ' disabled' : ''), style: buttonStyles, onclick: doubleThunder }, "2\u500D"),
+            hyperapp_1.h("button", { class: "mini ui basic button" + (p.thunder === 0 ? ' disabled' : ''), style: buttonStyles, onclick: resetThunder }, "0\u306B\u623B\u3059")))
+        : null);
     return (hyperapp_1.h("div", { style: styles },
         hyperapp_1.h("div", { style: { height: 23 * state.zoom + "px" } },
             hyperapp_1.h("div", { style: captionStyles }, "\u98A8"),
             hyperapp_1.h("div", { style: numberStyles }, p.wind),
-            hyperapp_1.h("div", { style: buttonSectionStyles },
-                hyperapp_1.h("button", { class: "mini ui basic button" + (p.wind >= 20 ? ' disabled' : ''), style: leftButtonStyles, onclick: incrementWind }, "+1"),
-                hyperapp_1.h("button", { class: "mini ui basic button" + (p.wind === 0 ? ' disabled' : ''), style: buttonStyles, onclick: resetWind }, "0\u306B\u623B\u3059"))),
+            windButtons),
         hyperapp_1.h("div", { style: { height: 23 * state.zoom + "px" } },
             hyperapp_1.h("div", { style: captionStyles }, "\u96F7"),
             hyperapp_1.h("div", { style: numberStyles }, p.thunder),
-            hyperapp_1.h("div", { style: buttonSectionStyles },
-                hyperapp_1.h("button", { class: "mini ui basic button" + (p.thunder >= 20 ? ' disabled' : ''), style: leftButtonStyles, onclick: incrementThunder }, "+1"),
-                hyperapp_1.h("button", { class: "mini ui basic button" + (p.thunder >= 20 ? ' disabled' : ''), style: buttonStyles, onclick: doubleThunder }, "2\u500D"),
-                hyperapp_1.h("button", { class: "mini ui basic button" + (p.thunder === 0 ? ' disabled' : ''), style: buttonStyles, onclick: resetThunder }, "0\u306B\u623B\u3059")))));
+            thunderButtons)));
 }; };
 
 
@@ -49475,11 +49573,16 @@ exports.WitheredToken = function (p) { return function (state, actions) {
         width: 80 * state.zoom + "px",
         height: 89 * state.zoom + "px"
     };
-    var className = "withered-token";
+    var className = "withered-token clickable";
     if (p.side === utils.flipSide(state.viewingSide))
         className += " opponent-side";
+    var onclick = function (e) {
+        if (p.side === state.side) {
+            $('#CONTEXT-WITHERED-TOKEN-CLICK').contextMenu({ x: e.pageX, y: e.pageY });
+        }
+    };
     if (state.board.witherFlags[p.side]) {
-        return hyperapp_1.h("div", { "data-side": p.side, class: className, style: styles });
+        return hyperapp_1.h("div", { "data-side": p.side, class: className, style: styles, onclick: onclick });
     }
     else {
         return null;
@@ -49583,8 +49686,8 @@ function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spa
     if (layoutType === 'horizontal') {
         var innerWidth_1 = areaWidth - (padding * 2);
         var requiredWidth = objectWidth * objects.length + spacing * (objects.length - 1);
-        if (requiredWidth <= innerWidth_1) {
-            // 領域の幅に収まる場合は、spacing分の間隔をあけて配置
+        if (requiredWidth <= innerWidth_1 || objects.length <= 1) {
+            // 領域の幅に収まる場合か、オブジェクトが1つ以下の場合は、spacing分の間隔をあけて配置
             objects.forEach(function (child, i) {
                 ret.push([child, cx, cy]);
                 cx += objectWidth;
@@ -49593,7 +49696,10 @@ function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spa
         }
         else {
             // 領域の幅に収まらない場合は、収まるように均等に詰めて並べる
-            var overlapWidth_1 = ((objectWidth * objects.length) - innerWidth_1) / objects.length;
+            var overlapWidth_1 = ((objectWidth * objects.length) - innerWidth_1) / (objects.length - 1);
+            if (objects.length >= 1 && objects[0].type === 'card' && objects[0].region === 'used' && objects[0].side === 'p1') {
+                console.log("\u2605innerWidth = " + innerWidth_1 + ", requiredWidth = " + requiredWidth + ", over = " + ((objectWidth * objects.length) - innerWidth_1) + ", overlapWidth = " + overlapWidth_1);
+            }
             objects.forEach(function (child, i) {
                 ret.push([child, cx, cy]);
                 cx += objectWidth;
@@ -49773,7 +49879,7 @@ var view = function (state, actions) {
             // ライラを選択しており、風雷ゲージの状態を初期化済みであれば表示
             if (megamis[megamiIndex] === 'raira' && state.board.windGuage[side] !== null) {
                 tokens.push(hyperapp_1.h(components.WindAndThunderGuage, { side: side, wind: state.board.windGuage[side], thunder: state.board.thunderGuage[side], left: cx, top: top }));
-                cx += 50;
+                cx += 190;
             }
         }
     };
@@ -50086,11 +50192,15 @@ var Board = /** @class */ (function () {
                 if (region !== 'hand' && _this.handCardOpenFlags[c.side][c.id]) {
                     _this.handCardOpenFlags[c.side][c.id] = false;
                 }
+                // 対象のカードが使用済みでも切札でもない場合、帯電解除フラグを強制的にOFF
+                if (region !== 'used' && region !== 'special' && c.discharged) {
+                    c.discharged = false;
+                }
                 // 開閉状態更新
                 var handOpenFlag = _this.handOpenFlags[c.side] || _this.handCardOpenFlags[c.side][c.id];
                 c.openState = utils.judgeCardOpenState(c, handOpenFlag);
                 // 回転状態更新
-                c.rotated = (region === 'hidden-used');
+                c.rotated = (region === 'hidden-used') || c.discharged;
             });
         });
         var tokens = this.getSakuraTokens();
@@ -50496,7 +50606,9 @@ function createCard(id, cardId, region, side) {
         openState: 'opened',
         specialUsed: false,
         linkedCardId: null,
-        side: side
+        side: side,
+        discharged: false,
+        ownerSide: side
     };
 }
 exports.createCard = createCard;
