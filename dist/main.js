@@ -47580,6 +47580,100 @@ exports.Card = function (p) {
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/common/components/MegamiTarots.tsx":
+/*!**************************************************************!*\
+  !*** ./src/sakuraba/apps/common/components/MegamiTarots.tsx ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+/** メガミタロット */
+exports.MegamiTarots = function (p) {
+    // ベーススタイル決定
+    var styles = {
+        width: 94 * p.zoom + "px",
+        height: 185 * p.zoom + "px",
+        position: 'absolute'
+    };
+    // 1枚ずつ積み重ねて表示
+    var tarots = [];
+    var cx = p.left;
+    var cy = p.top;
+    for (var i = 0; i < p.stackedCount; i++) {
+        tarots.push(hyperapp_1.h("img", { src: "/furuyoni_commons/furuyoni_na/tarots/tarotback_emboss.png", style: Object.assign({}, styles, { left: cx * p.zoom + "px", top: cy * p.zoom + "px" }) }));
+        cx += 3;
+        cy += 3;
+    }
+    return tarots;
+};
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/common/components/ProcessButton.tsx":
+/*!***************************************************************!*\
+  !*** ./src/sakuraba/apps/common/components/ProcessButton.tsx ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+exports.ProcessButton = function (p, children) {
+    // DOMを返す
+    var styles = {
+        left: p.left * p.zoom + "px",
+        top: p.top * p.zoom + "px",
+        width: 240 * p.zoom + "px",
+        height: 50 * p.zoom + "px",
+        position: 'absolute'
+    };
+    return hyperapp_1.h("button", { class: "ui button" + (p.disabled ? ' disabled' : '') + (p.primary ? ' primary' : ''), style: styles, onclick: p.onclick }, children);
+};
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/common/components/StackedCards.tsx":
+/*!**************************************************************!*\
+  !*** ./src/sakuraba/apps/common/components/StackedCards.tsx ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+/** 積み重ねたカード */
+exports.StackedCards = function (p) {
+    // ベーススタイル決定
+    var styles = {
+        width: 100 * p.zoom + "px",
+        height: 140 * p.zoom + "px",
+        position: 'absolute'
+    };
+    // 1枚ずつ積み重ねて表示
+    var cards = [];
+    var cx = p.left;
+    var cy = p.top;
+    for (var i = 0; i < p.stackedCount; i++) {
+        cards.push(hyperapp_1.h("div", { class: "fbs-card " + p.baseClass, style: Object.assign({}, styles, { left: cx * p.zoom + "px", top: cy * p.zoom + "px" }) }));
+        cx += 2;
+        cy += 4;
+    }
+    return cards;
+};
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/common/components/index.ts":
 /*!******************************************************!*\
   !*** ./src/sakuraba/apps/common/components/index.ts ***!
@@ -47594,6 +47688,8 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(/*! ./Card */ "./src/sakuraba/apps/common/components/Card.tsx"));
+__export(__webpack_require__(/*! ./ProcessButton */ "./src/sakuraba/apps/common/components/ProcessButton.tsx"));
+__export(__webpack_require__(/*! ./MegamiTarots */ "./src/sakuraba/apps/common/components/MegamiTarots.tsx"));
 
 
 /***/ }),
@@ -48708,13 +48804,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/apps/main/components/ControlPanel.css"));
-var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var toastr_1 = __importDefault(__webpack_require__(/*! toastr */ "./node_modules/toastr/toastr.js"));
-var components_1 = __webpack_require__(/*! sakuraba/apps/common/components */ "./src/sakuraba/apps/common/components/index.ts");
 // ルール編集メモ
 // 第二幕、新幕の選択
 // アンドゥ制約（山札を引いた後のUndoは可能か？）
@@ -48748,6 +48841,209 @@ exports.ControlPanel = function () { return function (state, actions) {
             });
         });
     };
+    var board = state.board;
+    var boardModel = new models.Board(board);
+    var deckBuilded = (state.side !== 'watcher' && boardModel.getSideCards(state.side).length >= 1);
+    // 基本動作
+    var basicAction = function (from, to, title) {
+        var logs = [];
+        logs.push({ text: title + "\u3092\u884C\u3044\u307E\u3057\u305F" });
+        actions.operate({
+            log: logs,
+            proc: function () {
+                actions.moveSakuraToken({
+                    from: from,
+                    to: to,
+                    moveNumber: 1
+                });
+            }
+        });
+    };
+    // コマンドボタンの決定
+    var commandButtons = null;
+    if (state.side === 'watcher') {
+        // 観戦者である場合の処理 (何も表示しない)
+    }
+    else {
+        // プレイヤーである場合の処理
+        if (state.board.firstDrawFlags[state.side]) {
+            // 最初の手札を引いたあとの場合 (桜花決闘)
+            var distanceCount = boardModel.getRegionSakuraTokens(null, 'distance', null).length;
+            var dustCount = boardModel.getRegionSakuraTokens(null, 'dust', null).length;
+            var myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
+            var onCardTokenFound = (state.board.objects.find(function (o) { return o.type === 'sakura-token' && o.region === 'on-card'; }) ? true : false);
+            var side_1 = state.side;
+            commandButtons = (hyperapp_1.h("div", { class: css.commandButtons },
+                hyperapp_1.h("div", { class: css.currentPhase }, "- \u685C\u82B1\u6C7A\u95D8 -"),
+                hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
+                    hyperapp_1.h("button", { id: "FORWARD-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (distanceCount >= 1 && myAuraCount < 5 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'distance', null], [side_1, 'aura', null], '前進'); } }, "\u524D\u9032"),
+                    hyperapp_1.h("button", { id: "LEAVE-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (dustCount >= 1 && distanceCount < 10 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'dust', null], [null, 'distance', null], '離脱'); } }, "\u96E2\u8131")),
+                hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
+                    hyperapp_1.h("button", { id: "BACK-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (myAuraCount >= 1 && distanceCount < 10 ? '' : 'disabled'), onclick: function () { return basicAction([side_1, 'aura', null], [null, 'distance', null], '後退'); } }, "\u5F8C\u9000")),
+                hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
+                    hyperapp_1.h("button", { id: "WEAR-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (dustCount >= 1 && myAuraCount < 5 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'dust', null], [side_1, 'aura', null], '纏い'); } }, "\u7E8F\u3044")),
+                hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
+                    hyperapp_1.h("button", { id: "CHARGE-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (myAuraCount >= 1 ? '' : 'disabled'), onclick: function () { return basicAction([side_1, 'aura', null], [side_1, 'flair', null], '宿し'); } }, "\u5BBF\u3057")),
+                hyperapp_1.h("br", null),
+                hyperapp_1.h("button", { id: "ALL-ENHANCE-DECREASE-BUTTON", class: "ui basic button " + (onCardTokenFound ? '' : 'disabled'), style: "margin-top: 5px;", onclick: function () { return actions.oprRemoveSakuraTokenfromAllEnhanceCard(); } }, "\u5168\u4ED8\u4E0E\u672D\u306E\u685C\u82B1\u7D50\u6676-1")));
+        }
+    }
+    // メガミ表示の決定
+    var megamiCaptionP1 = "";
+    var megamiCaptionP2 = "";
+    if (board.megamis.p1 !== null) {
+        if (state.side === 'p1' || board.megamiOpenFlags.p1) {
+            // プレイヤー1のメガミ名を表示可能な場合 (自分がプレイヤー1である or プレイヤー1のメガミが公開されている)
+            megamiCaptionP1 = " - " + utils.getMegamiDispName(board.megamis.p1[0]) + "\u3001" + utils.getMegamiDispName(board.megamis.p1[1]);
+        }
+        else {
+            // プレイヤー1のメガミ名を表示不可能な場合
+            megamiCaptionP1 = " - \uFF1F\uFF1F\uFF1F\u3001\uFF1F\uFF1F\uFF1F";
+        }
+    }
+    if (board.megamis.p2 !== null) {
+        if (state.side === 'p2' || board.megamiOpenFlags.p2) {
+            // プレイヤー2のメガミ名を表示可能な場合 (自分がプレイヤー2である or プレイヤー2のメガミが公開されている)
+            megamiCaptionP2 = " - " + utils.getMegamiDispName(board.megamis.p2[0]) + "\u3001" + utils.getMegamiDispName(board.megamis.p2[1]);
+        }
+        else {
+            // プレイヤー2のメガミ名を表示不可能な場合
+            megamiCaptionP2 = " - \uFF1F\uFF1F\uFF1F\u3001\uFF1F\uFF1F\uFF1F";
+        }
+    }
+    var notify = function () {
+        if (state.side === 'watcher')
+            throw "Forbidden operation for watcher"; // 観戦者は実行不可能な操作
+        var side = state.side;
+        var opponentName = state.board.playerNames[utils.flipSide(state.side)];
+        var notifyType = $('[name=notifyType]').val();
+        if (notifyType === 'ready') {
+            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u6E96\u5099\u3067\u304D\u307E\u3057\u305F" });
+        }
+        if (notifyType === 'turnEnd') {
+            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F" });
+        }
+        if (notifyType === 'reaction') {
+            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u5BFE\u5FDC\u3057\u307E\u3059" });
+        }
+        // 送信完了
+        toastr_1.default.success(opponentName + "\u3078\u901A\u77E5\u3057\u307E\u3057\u305F\u3002", '', { timeOut: 5000 });
+        // ドロップダウンを元に戻す
+        $('[name=notifyType]').closest('.dropdown').dropdown('set selected', '-');
+    };
+    var dropdownCreate = function (e) {
+        $(e).dropdown({ action: 'hide' });
+    };
+    var audioPlay = function () {
+        var bgm = new Audio('/audio/sword_dance.mp3');
+        bgm.volume = 0.5;
+        bgm.loop = true;
+        bgm.play();
+    };
+    var menu = (hyperapp_1.h("button", { class: "ui basic button dropdown", oncreate: dropdownCreate },
+        "\u30E1\u30CB\u30E5\u30FC",
+        hyperapp_1.h("i", { class: "dropdown icon" }),
+        hyperapp_1.h("div", { class: "menu" },
+            state.side === 'watcher' ? null : hyperapp_1.h("div", { class: "item", onclick: playerNameChange }, "\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\u306E\u5909\u66F4"),
+            state.side === 'watcher' ? null : hyperapp_1.h("div", { class: "item", onclick: reset }, "\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8 (\u521D\u671F\u5316)"),
+            hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleActionLogVisible(); } },
+                (state.actionLogVisible ? hyperapp_1.h("i", { class: "check icon" }) : null),
+                "\u64CD\u4F5C\u30ED\u30B0\u3092\u8868\u793A"),
+            hyperapp_1.h("div", { class: "item", onclick: audioPlay }, "BGM\u518D\u751F"),
+            hyperapp_1.h("div", { class: "item" }, "\u5353\u60C5\u5831"),
+            hyperapp_1.h("div", { class: "divider" }),
+            hyperapp_1.h("div", { class: "item" }, "\u3053\u306E\u30B5\u30A4\u30C8\u306B\u3064\u3044\u3066 (\u30D0\u30FC\u30B8\u30E7\u30F3\u3001\u8457\u4F5C\u6A29\u60C5\u5831)"))));
+    var undoPanel = (hyperapp_1.h("div", { class: "ui icon basic buttons" },
+        hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.undoBoard(); } },
+            hyperapp_1.h("i", { class: "undo alternate icon" })),
+        hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryFuture.length === 0 ? 'disabled' : ''), onclick: function () { return actions.redoBoard(); } },
+            hyperapp_1.h("i", { class: "redo alternate icon" }))));
+    var notifyPanel = (hyperapp_1.h("div", null,
+        hyperapp_1.h("div", { class: "ui sub header" }, "\u76F8\u624B\u30D7\u30EC\u30A4\u30E4\u30FC\u3078\u901A\u77E5"),
+        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', '-'); } },
+            hyperapp_1.h("input", { type: "hidden", name: "notifyType" }),
+            hyperapp_1.h("i", { class: "dropdown icon" }),
+            hyperapp_1.h("div", { class: "default text" }),
+            hyperapp_1.h("div", { class: "menu" },
+                hyperapp_1.h("div", { class: "item", "data-value": "-" }),
+                hyperapp_1.h("div", { class: "item", "data-value": "ready" }, "\u6E96\u5099\u3067\u304D\u307E\u3057\u305F"),
+                hyperapp_1.h("div", { class: "item", "data-value": "turnEnd" }, "\u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F"),
+                hyperapp_1.h("div", { class: "item", "data-value": "reaction" }, "\u5BFE\u5FDC\u3057\u307E\u3059"))),
+        hyperapp_1.h("button", { class: "ui basic button", onclick: notify }, "\u9001\u4FE1")));
+    // 観戦者の場合元に戻すボタン、通知パネルの表示はなし
+    // またメニューも簡易版にする
+    if (state.side === 'watcher') {
+        notifyPanel = null;
+        undoPanel = null;
+    }
+    return (hyperapp_1.h("div", { id: "CONTROL-PANEL", style: { left: 1340 * state.zoom + 20 + "px" } },
+        undoPanel,
+        "\u00A0",
+        menu,
+        hyperapp_1.h("br", null),
+        commandButtons,
+        hyperapp_1.h("table", { class: "ui definition table", style: { width: '25em' } },
+            hyperapp_1.h("tbody", null,
+                hyperapp_1.h("tr", null,
+                    hyperapp_1.h("td", { class: "collapsing" }, "\u30D7\u30EC\u30A4\u30E4\u30FC1"),
+                    hyperapp_1.h("td", null,
+                        board.playerNames.p1,
+                        " ",
+                        megamiCaptionP1)),
+                hyperapp_1.h("tr", null,
+                    hyperapp_1.h("td", null, "\u30D7\u30EC\u30A4\u30E4\u30FC2"),
+                    hyperapp_1.h("td", null,
+                        board.playerNames.p2,
+                        " ",
+                        megamiCaptionP2)),
+                hyperapp_1.h("tr", null,
+                    hyperapp_1.h("td", null, "\u89B3\u6226\u8005"),
+                    hyperapp_1.h("td", null)))),
+        notifyPanel,
+        hyperapp_1.h("div", { class: "ui sub header" }, "\u30DC\u30FC\u30C9\u30B5\u30A4\u30BA"),
+        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', state.zoom * 10); } },
+            hyperapp_1.h("input", { type: "hidden", name: "boardSize", onchange: function (e) { return actions.setZoom(Number($(e.target).val()) * 0.1); } }),
+            hyperapp_1.h("i", { class: "dropdown icon" }),
+            hyperapp_1.h("div", { class: "default text" }),
+            hyperapp_1.h("div", { class: "menu" },
+                hyperapp_1.h("div", { class: "item", "data-value": "6" }, "6"),
+                hyperapp_1.h("div", { class: "item", "data-value": "7" }, "7"),
+                hyperapp_1.h("div", { class: "item", "data-value": "8" }, "8"),
+                hyperapp_1.h("div", { class: "item", "data-value": "9" }, "9"),
+                hyperapp_1.h("div", { class: "item", "data-value": "10" }, "10"),
+                hyperapp_1.h("div", { class: "item", "data-value": "11" }, "11"),
+                hyperapp_1.h("div", { class: "item", "data-value": "12" }, "12")))));
+}; };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/main/components/MainProcessButtons.tsx":
+/*!******************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/MainProcessButtons.tsx ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
+var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/apps/main/components/ControlPanel.css"));
+var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
+var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
+var components_1 = __webpack_require__(/*! sakuraba/apps/common/components */ "./src/sakuraba/apps/common/components/index.ts");
+/** 処理を進めるためのボタンを表示 */
+exports.MainProcessButtons = function (p) { return function (state, actions) {
     /** メガミ選択処理 */
     var megamiSelect = function () {
         if (state.side === 'watcher')
@@ -48927,190 +49223,33 @@ exports.ControlPanel = function () { return function (state, actions) {
     };
     var board = state.board;
     var deckBuilded = (state.side !== 'watcher' && boardModel.getSideCards(state.side).length >= 1);
-    // 基本動作
-    var basicAction = function (from, to, title) {
-        var logs = [];
-        logs.push({ text: title + "\u3092\u884C\u3044\u307E\u3057\u305F" });
-        actions.operate({
-            log: logs,
-            proc: function () {
-                actions.moveSakuraToken({
-                    from: from,
-                    to: to,
-                    moveNumber: 1
-                });
-            }
-        });
-    };
     // コマンドボタンの決定
-    var commandButtons = null;
+    var processButtons = null;
+    var top1 = 500;
+    var top2 = 600;
     if (state.side === 'watcher') {
         // 観戦者である場合の処理 (何も表示しない)
     }
     else {
         // プレイヤーである場合の処理
         if (state.board.firstDrawFlags[state.side]) {
-            // 最初の手札を引いたあとの場合 (桜花決闘)
-            var distanceCount = boardModel.getRegionSakuraTokens(null, 'distance', null).length;
-            var dustCount = boardModel.getRegionSakuraTokens(null, 'dust', null).length;
-            var myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
-            var onCardTokenFound = (state.board.objects.find(function (o) { return o.type === 'sakura-token' && o.region === 'on-card'; }) ? true : false);
-            var side_1 = state.side;
-            commandButtons = (hyperapp_1.h("div", { class: css.commandButtons },
-                hyperapp_1.h("div", { class: css.currentPhase }, "- \u685C\u82B1\u6C7A\u95D8 -"),
-                hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
-                    hyperapp_1.h("button", { id: "FORWARD-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (distanceCount >= 1 && myAuraCount < 5 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'distance', null], [side_1, 'aura', null], '前進'); } }, "\u524D\u9032"),
-                    hyperapp_1.h("button", { id: "LEAVE-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (dustCount >= 1 && distanceCount < 10 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'dust', null], [null, 'distance', null], '離脱'); } }, "\u96E2\u8131")),
-                hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
-                    hyperapp_1.h("button", { id: "BACK-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (myAuraCount >= 1 && distanceCount < 10 ? '' : 'disabled'), onclick: function () { return basicAction([side_1, 'aura', null], [null, 'distance', null], '後退'); } }, "\u5F8C\u9000")),
-                hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
-                    hyperapp_1.h("button", { id: "WEAR-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (dustCount >= 1 && myAuraCount < 5 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'dust', null], [side_1, 'aura', null], '纏い'); } }, "\u7E8F\u3044")),
-                hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
-                    hyperapp_1.h("button", { id: "CHARGE-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (myAuraCount >= 1 ? '' : 'disabled'), onclick: function () { return basicAction([side_1, 'aura', null], [side_1, 'flair', null], '宿し'); } }, "\u5BBF\u3057")),
-                hyperapp_1.h("br", null),
-                hyperapp_1.h("button", { id: "ALL-ENHANCE-DECREASE-BUTTON", class: "ui basic button " + (onCardTokenFound ? '' : 'disabled'), style: "margin-top: 5px;", onclick: function () { return actions.oprRemoveSakuraTokenfromAllEnhanceCard(); } }, "\u5168\u4ED8\u4E0E\u672D\u306E\u685C\u82B1\u7D50\u6676-1")));
+            // 最初の手札を引いたあとは表示無し
         }
         else if (state.board.megamiOpenFlags[state.side]) {
             // 選択したメガミを公開済みの場合
-            commandButtons = (hyperapp_1.h("div", { class: css.commandButtons },
-                hyperapp_1.h("div", { class: css.currentPhase }, "- \u773C\u524D\u69CB\u7BC9 -"),
-                hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? '' : 'focused-button'), onclick: deckBuild }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
-                hyperapp_1.h("button", { class: "ui basic button " + (deckBuilded ? 'focused-button' : 'disabled'), onclick: firstHandSet }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F")));
+            processButtons = (hyperapp_1.h("div", null,
+                hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top1, zoom: state.zoom, onclick: deckBuild, primary: !deckBuilded }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
+                deckBuilded ? hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top2, zoom: state.zoom, onclick: firstHandSet, primary: true, disabled: !deckBuilded }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F") : null));
         }
         else {
             // まだメガミを公開済みでない場合
             var megamiSelected = state.board.megamis[state.side] !== null;
-            commandButtons = (hyperapp_1.h("div", { class: css.commandButtons },
-                hyperapp_1.h("div", { class: css.currentPhase }, "- \u53CC\u638C\u7E5A\u4E71 -"),
-                hyperapp_1.h("button", { class: "ui basic button " + (megamiSelected ? '' : 'focused-button'), onclick: megamiSelect }, "\u30E1\u30AC\u30DF\u9078\u629E"),
-                hyperapp_1.h("button", { class: "ui basic button " + (megamiSelected ? 'focused-button' : 'disabled'), onclick: megamiOpen }, "\u9078\u629E\u3057\u305F\u30E1\u30AC\u30DF\u3092\u516C\u958B")));
+            processButtons = (hyperapp_1.h("div", null,
+                hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top1, zoom: state.zoom, onclick: megamiSelect, primary: !megamiSelected }, "\u30E1\u30AC\u30DF\u9078\u629E"),
+                megamiSelected ? hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top2, zoom: state.zoom, onclick: megamiOpen, primary: true, disabled: !megamiSelected }, "\u9078\u629E\u3057\u305F\u30E1\u30AC\u30DF\u3092\u516C\u958B") : null));
         }
     }
-    // メガミ表示の決定
-    var megamiCaptionP1 = "";
-    var megamiCaptionP2 = "";
-    if (board.megamis.p1 !== null) {
-        if (state.side === 'p1' || board.megamiOpenFlags.p1) {
-            // プレイヤー1のメガミ名を表示可能な場合 (自分がプレイヤー1である or プレイヤー1のメガミが公開されている)
-            megamiCaptionP1 = " - " + utils.getMegamiDispName(board.megamis.p1[0]) + "\u3001" + utils.getMegamiDispName(board.megamis.p1[1]);
-        }
-        else {
-            // プレイヤー1のメガミ名を表示不可能な場合
-            megamiCaptionP1 = " - \uFF1F\uFF1F\uFF1F\u3001\uFF1F\uFF1F\uFF1F";
-        }
-    }
-    if (board.megamis.p2 !== null) {
-        if (state.side === 'p2' || board.megamiOpenFlags.p2) {
-            // プレイヤー2のメガミ名を表示可能な場合 (自分がプレイヤー2である or プレイヤー2のメガミが公開されている)
-            megamiCaptionP2 = " - " + utils.getMegamiDispName(board.megamis.p2[0]) + "\u3001" + utils.getMegamiDispName(board.megamis.p2[1]);
-        }
-        else {
-            // プレイヤー2のメガミ名を表示不可能な場合
-            megamiCaptionP2 = " - \uFF1F\uFF1F\uFF1F\u3001\uFF1F\uFF1F\uFF1F";
-        }
-    }
-    var notify = function () {
-        if (state.side === 'watcher')
-            throw "Forbidden operation for watcher"; // 観戦者は実行不可能な操作
-        var side = state.side;
-        var opponentName = state.board.playerNames[utils.flipSide(state.side)];
-        var notifyType = $('[name=notifyType]').val();
-        if (notifyType === 'ready') {
-            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u6E96\u5099\u3067\u304D\u307E\u3057\u305F" });
-        }
-        if (notifyType === 'turnEnd') {
-            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F" });
-        }
-        if (notifyType === 'reaction') {
-            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u5BFE\u5FDC\u3057\u307E\u3059" });
-        }
-        // 送信完了
-        toastr_1.default.success(opponentName + "\u3078\u901A\u77E5\u3057\u307E\u3057\u305F\u3002", '', { timeOut: 5000 });
-        // ドロップダウンを元に戻す
-        $('[name=notifyType]').closest('.dropdown').dropdown('set selected', '-');
-    };
-    var dropdownCreate = function (e) {
-        $(e).dropdown({ action: 'hide' });
-    };
-    var audioPlay = function () {
-        var bgm = new Audio('/audio/sword_dance.mp3');
-        bgm.volume = 0.5;
-        bgm.loop = true;
-        bgm.play();
-    };
-    var menu = (hyperapp_1.h("button", { class: "ui basic button dropdown", oncreate: dropdownCreate },
-        "\u30E1\u30CB\u30E5\u30FC",
-        hyperapp_1.h("i", { class: "dropdown icon" }),
-        hyperapp_1.h("div", { class: "menu" },
-            state.side === 'watcher' ? null : hyperapp_1.h("div", { class: "item", onclick: playerNameChange }, "\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\u306E\u5909\u66F4"),
-            state.side === 'watcher' ? null : hyperapp_1.h("div", { class: "item", onclick: reset }, "\u30DC\u30FC\u30C9\u30EA\u30BB\u30C3\u30C8 (\u521D\u671F\u5316)"),
-            hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleActionLogVisible(); } },
-                (state.actionLogVisible ? hyperapp_1.h("i", { class: "check icon" }) : null),
-                "\u64CD\u4F5C\u30ED\u30B0\u3092\u8868\u793A"),
-            hyperapp_1.h("div", { class: "item", onclick: audioPlay }, "BGM\u518D\u751F"),
-            hyperapp_1.h("div", { class: "item" }, "\u5353\u60C5\u5831"),
-            hyperapp_1.h("div", { class: "divider" }),
-            hyperapp_1.h("div", { class: "item" }, "\u3053\u306E\u30B5\u30A4\u30C8\u306B\u3064\u3044\u3066 (\u30D0\u30FC\u30B8\u30E7\u30F3\u3001\u8457\u4F5C\u6A29\u60C5\u5831)"))));
-    var undoPanel = (hyperapp_1.h("div", { class: "ui icon basic buttons" },
-        hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.undoBoard(); } },
-            hyperapp_1.h("i", { class: "undo alternate icon" })),
-        hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryFuture.length === 0 ? 'disabled' : ''), onclick: function () { return actions.redoBoard(); } },
-            hyperapp_1.h("i", { class: "redo alternate icon" }))));
-    var notifyPanel = (hyperapp_1.h("div", null,
-        hyperapp_1.h("div", { class: "ui sub header" }, "\u76F8\u624B\u30D7\u30EC\u30A4\u30E4\u30FC\u3078\u901A\u77E5"),
-        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', '-'); } },
-            hyperapp_1.h("input", { type: "hidden", name: "notifyType" }),
-            hyperapp_1.h("i", { class: "dropdown icon" }),
-            hyperapp_1.h("div", { class: "default text" }),
-            hyperapp_1.h("div", { class: "menu" },
-                hyperapp_1.h("div", { class: "item", "data-value": "-" }),
-                hyperapp_1.h("div", { class: "item", "data-value": "ready" }, "\u6E96\u5099\u3067\u304D\u307E\u3057\u305F"),
-                hyperapp_1.h("div", { class: "item", "data-value": "turnEnd" }, "\u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F"),
-                hyperapp_1.h("div", { class: "item", "data-value": "reaction" }, "\u5BFE\u5FDC\u3057\u307E\u3059"))),
-        hyperapp_1.h("button", { class: "ui basic button", onclick: notify }, "\u9001\u4FE1")));
-    // 観戦者の場合元に戻すボタン、通知パネルの表示はなし
-    // またメニューも簡易版にする
-    if (state.side === 'watcher') {
-        notifyPanel = null;
-        undoPanel = null;
-    }
-    return (hyperapp_1.h("div", { id: "CONTROL-PANEL", style: { left: 1340 * state.zoom + 20 + "px" } },
-        undoPanel,
-        "\u00A0",
-        menu,
-        hyperapp_1.h("br", null),
-        commandButtons,
-        hyperapp_1.h("table", { class: "ui definition table", style: { width: '25em' } },
-            hyperapp_1.h("tbody", null,
-                hyperapp_1.h("tr", null,
-                    hyperapp_1.h("td", { class: "collapsing" }, "\u30D7\u30EC\u30A4\u30E4\u30FC1"),
-                    hyperapp_1.h("td", null,
-                        board.playerNames.p1,
-                        " ",
-                        megamiCaptionP1)),
-                hyperapp_1.h("tr", null,
-                    hyperapp_1.h("td", null, "\u30D7\u30EC\u30A4\u30E4\u30FC2"),
-                    hyperapp_1.h("td", null,
-                        board.playerNames.p2,
-                        " ",
-                        megamiCaptionP2)),
-                hyperapp_1.h("tr", null,
-                    hyperapp_1.h("td", null, "\u89B3\u6226\u8005"),
-                    hyperapp_1.h("td", null)))),
-        notifyPanel,
-        hyperapp_1.h("div", { class: "ui sub header" }, "\u30DC\u30FC\u30C9\u30B5\u30A4\u30BA"),
-        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', state.zoom * 10); } },
-            hyperapp_1.h("input", { type: "hidden", name: "boardSize", onchange: function (e) { return actions.setZoom(Number($(e.target).val()) * 0.1); } }),
-            hyperapp_1.h("i", { class: "dropdown icon" }),
-            hyperapp_1.h("div", { class: "default text" }),
-            hyperapp_1.h("div", { class: "menu" },
-                hyperapp_1.h("div", { class: "item", "data-value": "6" }, "6"),
-                hyperapp_1.h("div", { class: "item", "data-value": "7" }, "7"),
-                hyperapp_1.h("div", { class: "item", "data-value": "8" }, "8"),
-                hyperapp_1.h("div", { class: "item", "data-value": "9" }, "9"),
-                hyperapp_1.h("div", { class: "item", "data-value": "10" }, "10"),
-                hyperapp_1.h("div", { class: "item", "data-value": "11" }, "11"),
-                hyperapp_1.h("div", { class: "item", "data-value": "12" }, "12")))));
+    return processButtons;
 }; };
 
 
@@ -49620,6 +49759,7 @@ __export(__webpack_require__(/*! ./SakuraTokenAreaDroppable */ "./src/sakuraba/a
 __export(__webpack_require__(/*! ./MariganButton */ "./src/sakuraba/apps/main/components/MariganButton.tsx"));
 __export(__webpack_require__(/*! ./ActionLogWindow */ "./src/sakuraba/apps/main/components/ActionLogWindow.tsx"));
 __export(__webpack_require__(/*! ./PlayerNameDisplay */ "./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx"));
+__export(__webpack_require__(/*! ./MainProcessButtons */ "./src/sakuraba/apps/main/components/MainProcessButtons.tsx"));
 
 
 /***/ }),
@@ -49675,6 +49815,8 @@ var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakura
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var lodash_1 = __importDefault(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
 var sakuraba_1 = __webpack_require__(/*! sakuraba */ "./src/sakuraba.ts");
+var components_1 = __webpack_require__(/*! sakuraba/apps/common/components */ "./src/sakuraba/apps/common/components/index.ts");
+var StackedCards_1 = __webpack_require__(/*! sakuraba/apps/common/components/StackedCards */ "./src/sakuraba/apps/common/components/StackedCards.tsx");
 /** オブジェクトの配置(座標の決定)を行う */
 function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spacing) {
     var ret = [];
@@ -49745,6 +49887,23 @@ var view = function (state, actions) {
         { region: 'hand', side: selfSide, title: "手札", cardLayoutType: 'horizontal', left: 10, top: 600, width: 640, height: 160 },
         { region: 'special', side: selfSide, title: "切札", cardLayoutType: 'horizontal', left: 850, top: 600, width: 330, height: 160 }
     ];
+    // 桜花決闘を開始していなければ、自陣営の全エリア非表示
+    // 代わりに全体枠1つだけを表示
+    ['p1', 'p2'].forEach(function (side) {
+        if (!state.board.firstDrawFlags[side]) {
+            lodash_1.default.remove(cardAreaData, function (a) { return a.side === side; });
+            cardAreaData.push({
+                region: null,
+                side: side,
+                title: null,
+                cardLayoutType: 'horizontal',
+                left: (side === 'p1' ? 10 : 380),
+                top: (side === 'p1' ? 430 : 30),
+                width: 820,
+                height: 330
+            });
+        }
+    });
     // 追加札を持つメガミを宿している場合のみ、追加札領域を追加
     ['p1', 'p2'].forEach(function (side) {
         if (state.board.megamis[side] &&
@@ -49886,6 +50045,32 @@ var view = function (state, actions) {
     var extraTokens = [];
     addExtraToken(extraTokens, selfSide, 850, 545);
     addExtraToken(extraTokens, opponentSide, 10, 315);
+    var megamiNumber = 0;
+    for (var key in sakuraba_1.MEGAMI_DATA) {
+        megamiNumber++;
+    }
+    // 準備中オブジェクトの配置
+    var readyObjects = [];
+    var mainProcessButtonLeft = 0;
+    if (!state.board.megamiOpenFlags[state.side]) {
+        // メガミ選択中の場合
+        readyObjects.push(hyperapp_1.h(components_1.MegamiTarots, { left: 50, top: 450, zoom: state.zoom, stackedCount: megamiNumber - (state.board.megamis[state.side] !== null ? 2 : 0) }));
+        if (state.board.megamis[state.side] !== null) {
+            readyObjects.push(hyperapp_1.h(components_1.MegamiTarots, { left: 580, top: 470, zoom: state.zoom, stackedCount: 1 }));
+            readyObjects.push(hyperapp_1.h(components_1.MegamiTarots, { left: 690, top: 470, zoom: state.zoom, stackedCount: 1 }));
+        }
+        mainProcessButtonLeft = 260;
+    }
+    else if (!state.board.firstDrawFlags[state.side]) {
+        var deckBuilded = boardModel.getSideCards(selfSide).length >= 1;
+        readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: 50, top: 450, zoom: state.zoom, stackedCount: 14 - (deckBuilded ? 7 : 0), baseClass: "back-normal" }));
+        readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: 180, top: 450, zoom: state.zoom, stackedCount: 8 - (deckBuilded ? 3 : 0), baseClass: "back-special" }));
+        if (deckBuilded) {
+            readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: 850, top: 560, zoom: state.zoom, stackedCount: 7, baseClass: "back-normal" }));
+            readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: 980, top: 560, zoom: state.zoom, stackedCount: 3, baseClass: "back-special" }));
+        }
+        mainProcessButtonLeft = 340;
+    }
     return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
         objectNodes,
         frameNodes,
@@ -49898,7 +50083,9 @@ var view = function (state, actions) {
         hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),
         extraTokens,
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 10, width: 1200, side: utils.flipSide(selfSide) }),
-        hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: selfSide })));
+        hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: selfSide }),
+        hyperapp_1.h(components.MainProcessButtons, { left: mainProcessButtonLeft }),
+        readyObjects));
 };
 exports.default = view;
 

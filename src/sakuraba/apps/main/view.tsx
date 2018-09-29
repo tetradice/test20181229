@@ -4,7 +4,9 @@ import { actions, ActionsType } from "./actions";
 import * as utils from "sakuraba/utils";
 import * as models from "sakuraba/models";
 import _ from "lodash";
-import { CARD_DATA } from "sakuraba";
+import { CARD_DATA, MEGAMI_DATA } from "sakuraba";
+import { MegamiTarots } from "sakuraba/apps/common/components";
+import { StackedCards } from "sakuraba/apps/common/components/StackedCards";
 
 /** レイアウト種別 */
 type LayoutType = 'horizontal' | 'vertical' | 'stacked';
@@ -117,6 +119,25 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             , { region: 'hand',        side: selfSide, title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 600, width: 640, height: 160 }
             , { region: 'special',     side: selfSide, title: "切札",     cardLayoutType: 'horizontal', left: 850,  top: 600, width: 330, height: 160 }
     ];
+
+    // 桜花決闘を開始していなければ、自陣営の全エリア非表示
+    // 代わりに全体枠1つだけを表示
+    ['p1', 'p2'].forEach((side: PlayerSide) => {
+        if(!state.board.firstDrawFlags[side]){
+            _.remove(cardAreaData, a => a.side === side);
+            cardAreaData.push({
+                  region: null
+                , side: side
+                , title: null
+                , cardLayoutType: 'horizontal'
+                , left: (side === 'p1' ? 10 : 380)
+                , top: (side === 'p1' ? 430 : 30)
+                , width: 820
+                , height: 330
+            });
+        }
+    });
+
     // 追加札を持つメガミを宿している場合のみ、追加札領域を追加
     ['p1', 'p2'].forEach((side: PlayerSide) => {
         if(state.board.megamis[side] &&
@@ -299,6 +320,34 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     addExtraToken(extraTokens, selfSide, 850, 545);
     addExtraToken(extraTokens, opponentSide, 10, 315);
 
+    let megamiNumber = 0;
+    for(let key in MEGAMI_DATA){
+        megamiNumber++;
+    }
+
+    // 準備中オブジェクトの配置
+    let readyObjects = [];
+    let mainProcessButtonLeft: number = 0;
+    if(!state.board.megamiOpenFlags[state.side]){
+        // メガミ選択中の場合
+        readyObjects.push(<MegamiTarots left={50} top={450} zoom={state.zoom} stackedCount={megamiNumber - (state.board.megamis[state.side] !== null ? 2 : 0)} />);
+        if(state.board.megamis[state.side] !== null){
+            readyObjects.push(<MegamiTarots left={580} top={470} zoom={state.zoom} stackedCount={1} />);
+            readyObjects.push(<MegamiTarots left={690} top={470} zoom={state.zoom} stackedCount={1} />);
+        }
+        mainProcessButtonLeft = 260;
+    } else if(!state.board.firstDrawFlags[state.side]){
+        let deckBuilded = boardModel.getSideCards(selfSide).length >= 1;
+
+        readyObjects.push(<StackedCards left={50} top={450} zoom={state.zoom} stackedCount={14 - (deckBuilded ? 7 : 0)} baseClass="back-normal" />);
+        readyObjects.push(<StackedCards left={180} top={450} zoom={state.zoom} stackedCount={8 - (deckBuilded ? 3 : 0)}  baseClass="back-special" />);
+        if(deckBuilded){
+            readyObjects.push(<StackedCards left={850} top={560} zoom={state.zoom} stackedCount={7} baseClass="back-normal" />);
+            readyObjects.push(<StackedCards left={980} top={560} zoom={state.zoom} stackedCount={3}  baseClass="back-special" />);
+        }
+        mainProcessButtonLeft = 340;
+    }
+
     return (
         <div style={{ position: 'relative', zIndex: 100 }}>
             {objectNodes}
@@ -313,6 +362,9 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             {extraTokens}
             <components.PlayerNameDisplay left={10} top={10} width={1200} side={utils.flipSide(selfSide)} />
             <components.PlayerNameDisplay left={10} top={770} width={1200} side={selfSide} />
+
+            <components.MainProcessButtons left={mainProcessButtonLeft} />
+            {readyObjects}
         </div>
     );
 }
