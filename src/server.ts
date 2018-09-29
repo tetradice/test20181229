@@ -6,10 +6,9 @@ import * as path from 'path';
 import * as redis from 'redis';
 import * as randomstring from 'randomstring';
 import * as sakuraba from 'sakuraba';
-import browserSync = require('browser-sync');
-import connectBrowserSync = require('connect-browser-sync');
 import { ServerSocket } from 'sakuraba/socket';
 import * as utils from 'sakuraba/utils';
+import { EnvironmentPlugin } from 'webpack';
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
@@ -17,8 +16,17 @@ const INDEX = path.join(__dirname, '../index.html');
 const MAIN_JS = path.join(__dirname, 'main.js');
 const MAIN_JS_MAP = path.join(__dirname, 'main.js.map');
 const browserSyncConfigurations = { "files": ["**/*.js"] };
-const server = express()
-  .use(connectBrowserSync(browserSync(browserSyncConfigurations)))
+
+
+let app = express();
+
+if(process.env.ENVIRONMENT === 'development'){
+  const browserSync = require('browser-sync');
+  const connectBrowserSync = require('connect-browser-sync');
+  app.use(connectBrowserSync(browserSync(browserSyncConfigurations)));
+}
+
+app
   .set('views', __dirname + '/../')
   .set('view engine', 'ejs')
   .use(express.static('public'))
@@ -79,8 +87,10 @@ const server = express()
         res.json({p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl});
       });
     });
-  })
-  .listen(PORT, () => console.log(`Listening on ${ PORT }`));
+  });
+
+
+const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 const io = socketIO(server);
 

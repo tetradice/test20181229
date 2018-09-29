@@ -693,8 +693,6 @@ var socketIO = __webpack_require__(/*! socket.io */ "socket.io");
 var path = __importStar(__webpack_require__(/*! path */ "path"));
 var redis = __importStar(__webpack_require__(/*! redis */ "redis"));
 var randomstring = __importStar(__webpack_require__(/*! randomstring */ "randomstring"));
-var browserSync = __webpack_require__(/*! browser-sync */ "browser-sync");
-var connectBrowserSync = __webpack_require__(/*! connect-browser-sync */ "connect-browser-sync");
 var socket_1 = __webpack_require__(/*! sakuraba/socket */ "./src/sakuraba/socket.ts");
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var RedisClient = redis.createClient(process.env.REDIS_URL);
@@ -703,8 +701,13 @@ var INDEX = path.join(__dirname, '../index.html');
 var MAIN_JS = path.join(__dirname, 'main.js');
 var MAIN_JS_MAP = path.join(__dirname, 'main.js.map');
 var browserSyncConfigurations = { "files": ["**/*.js"] };
-var server = express()
-    .use(connectBrowserSync(browserSync(browserSyncConfigurations)))
+var app = express();
+if (process.env.ENVIRONMENT === 'development') {
+    var browserSync = __webpack_require__(/*! browser-sync */ "browser-sync");
+    var connectBrowserSync = __webpack_require__(/*! connect-browser-sync */ "connect-browser-sync");
+    app.use(connectBrowserSync(browserSync(browserSyncConfigurations)));
+}
+app
     .set('views', __dirname + '/../')
     .set('view engine', 'ejs')
     .use(express.static('public'))
@@ -758,8 +761,8 @@ var server = express()
             res.json({ p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl });
         });
     });
-})
-    .listen(PORT, function () { return console.log("Listening on " + PORT); });
+});
+var server = app.listen(PORT, function () { return console.log("Listening on " + PORT); });
 var io = socketIO(server);
 /** Redis上に保存されたボードデータを取得 */
 function getStoredBoard(tableId, callback) {
