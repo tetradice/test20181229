@@ -34,6 +34,7 @@
           </div>
         </div>
         <div class="ui main text container">
+          <div class="ui huge loader"></div>
             <button class="ui primary button" id="NEW-BOARD-BUTTON">新しい卓を作る</button>
             <p>新しい卓を作り、自分や他の人が参加できる状態にします。（ユーザー登録は不要です）</p>
 
@@ -56,9 +57,17 @@
               </tbody></table>
             </div>
 
+            <div class="ui segment" id="HISTORY-AREA" style="margin-top: 4em;">
+              <h4 class="ui header">これまでに作成した卓の履歴</h4>
+              <p id="HISTORY-NO-DATA-DESC" style="display: none;">作成した卓はありません。</p>
+              <div class="ui styled accordion" style="display: none;">
+              </div>
+            </div>
+
     <p id='server-time'></p>
-    <script src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <script type="text/javascript" src="/semantic/dist/semantic.js"></script>
     <script>
       // var socket = io();
       // var el = document.getElementById('server-time');
@@ -66,13 +75,44 @@
       //   el.innerHTML = 'Server time: ' + timeString;
       // });
 
-      $('#NEW-BOARD-BUTTON').click(function(e){
-        $.post('/tables.create', function(data, textStatus){
-          console.log(data);
-          $('#P1-URL').text(data.p1Url).attr('href', data.p1Url);
-          $('#P2-URL').text(data.p2Url).attr('href', data.p2Url);
-          $('#WATCH-URL').text(data.watchUrl).attr('href', data.watchUrl);
-          $('#RESULT-AREA').show();
+      $(function(){
+        var tableHistory = JSON.parse(localStorage.getItem('tableHistory'));
+        if(tableHistory === null) tableHistory = [];
+        $('.ui.accordion').accordion({duration: 100});
+
+        if(tableHistory.length >= 1){
+          tableHistory.forEach(function(data){
+            var dt = new Date(data.time);
+            $('.ui.accordion').append('<div class="title"><i class="dropdown icon"></i>' + moment(dt).format('YYYY/M/D HH:mm:ss') + 'に作成した卓</div>');
+            $('.ui.accordion').append('<div class="content">プレイヤー1の参加用URL: <a target="_blank" href="' + data.p1Url + '">' + data.p1Url + '</a><br />プレイヤー2の参加用URL: <a target="_blank" href="' + data.p2Url + '">' + data.p2Url + '</a><br />観戦用URL: <a target="_blank" href="' + data.watchUrl + '">' + data.watchUrl + '</a><br /></div>');
+          });
+          $('.ui.accordion').show();
+        } else {
+          $('#HISTORY-NO-DATA-DESC').show();
+        }
+
+
+        $('#NEW-BOARD-BUTTON').click(function(e){
+          $('.ui.loader').addClass('active');
+
+          $.post('/tables.create', function(data, textStatus){
+            console.log(data);
+            $('#P1-URL').text(data.p1Url).attr('href', data.p1Url);
+            $('#P2-URL').text(data.p2Url).attr('href', data.p2Url);
+            $('#WATCH-URL').text(data.watchUrl).attr('href', data.watchUrl);
+            $('#RESULT-AREA').show();
+
+            // 作った卓のURLをローカルストレージに記憶
+            var pushedData = Object.assign({}, data, {time: Date.now()});
+            tableHistory.push(pushedData);
+            localStorage.setItem("tableHistory", JSON.stringify(tableHistory));
+
+            $('.ui.accordion').append('<div class="title"><i class="dropdown icon"></i>' + moment(pushedData.time).format('YYYY/M/D HH:mm:ss') + 'に作成した卓</div>');
+            $('.ui.accordion').append('<div class="content">プレイヤー1の参加用URL: <a target="_blank" href="' + pushedData.p1Url + '">' + pushedData.p1Url + '</a><br />プレイヤー2の参加用URL: <a target="_blank" href="' + pushedData.p2Url + '">' + pushedData.p2Url + '</a><br />観戦用URL: <a target="_blank" href="' + pushedData.watchUrl + '">' + pushedData.watchUrl + '</a><br /></div>');
+
+            $('.ui.loader').removeClass('active');
+
+          });
         });
       });
     </script>
