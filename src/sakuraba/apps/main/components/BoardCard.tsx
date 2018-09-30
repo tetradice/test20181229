@@ -64,11 +64,21 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
         }
         return true;
     }
+
+
+
+    // そのカードが開いた状態での適性距離を持っていれば、カードの所有プレイヤーが傘を開いているかどうかを判定
+    let useOpenedData = false;
+    const cardData = sakuraba.CARD_DATA[p.target.cardId];
+    if(cardData.rangeOpened !== undefined && state.board.umbrellaStatus[p.target.ownerSide] === 'opened'){
+        useOpenedData = true;
+    }
     
     return (
         <Card
             opened={opened}
             handOpened={handOpened}
+            useOpenedCardData={useOpenedData}
             reversed={reversed}
             descriptionViewable={known}
             ondblclick={onDoubleClickAtBoard}

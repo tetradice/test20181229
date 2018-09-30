@@ -47571,8 +47571,8 @@ exports.Card = function (p) {
         p.opened ?
             hyperapp_1.h("div", null,
                 hyperapp_1.h("div", { style: { position: 'absolute', top: (p.reversed ? 24 * p.zoom + "px" : null), bottom: (p.reversed ? null : 24 * p.zoom + "px"), left: (p.reversed ? null : 4 * p.zoom + "px"), right: (p.reversed ? 4 * p.zoom + "px" : null) } }, typeCaptions),
-                hyperapp_1.h("div", { style: { position: 'absolute', top: (p.reversed ? 4 * p.zoom + "px" : null), bottom: (p.reversed ? null : 4 * p.zoom + "px"), left: (p.reversed ? null : 4 * p.zoom + "px"), right: (p.reversed ? 4 * p.zoom + "px" : null) } }, (cardData.types[0] === 'enhance' ? "\u7D0D" + cardData.capacity : cardData.range)),
-                hyperapp_1.h("div", { style: { position: 'absolute', top: (p.reversed ? 4 * p.zoom + "px" : null), bottom: (p.reversed ? null : 4 * p.zoom + "px"), left: (p.reversed ? 4 * p.zoom + "px" : null), right: (p.reversed ? null : 4 * p.zoom + "px") } }, cardData.damage))
+                hyperapp_1.h("div", { style: { position: 'absolute', top: (p.reversed ? 4 * p.zoom + "px" : null), bottom: (p.reversed ? null : 4 * p.zoom + "px"), left: (p.reversed ? null : 4 * p.zoom + "px"), right: (p.reversed ? 4 * p.zoom + "px" : null) } }, (cardData.types[0] === 'enhance' ? "\u7D0D" + cardData.capacity : (p.useOpenedCardData ? cardData.rangeOpened : cardData.range))),
+                hyperapp_1.h("div", { style: { position: 'absolute', top: (p.reversed ? 4 * p.zoom + "px" : null), bottom: (p.reversed ? null : 4 * p.zoom + "px"), left: (p.reversed ? 4 * p.zoom + "px" : null), right: (p.reversed ? null : 4 * p.zoom + "px") } }, (p.useOpenedCardData ? cardData.damageOpened : cardData.damage)))
             : null,
         p.handOpened ? hyperapp_1.h("div", { style: "white-space: nowrap; color: blue; position: absolute; bottom: 4px; right: 0;" }, "\u3010\u516C\u958B\u4E2D\u3011") : null));
 };
@@ -48690,7 +48690,13 @@ exports.BoardCard = function (p) { return function (state, actions) {
         }
         return true;
     };
-    return (hyperapp_1.h(components_1.Card, __assign({ opened: opened, handOpened: handOpened, reversed: reversed, descriptionViewable: known, ondblclick: onDoubleClickAtBoard, draggable: draggable, zoom: state.zoom }, p)));
+    // そのカードが開いた状態での適性距離を持っていれば、カードの所有プレイヤーが傘を開いているかどうかを判定
+    var useOpenedData = false;
+    var cardData = sakuraba.CARD_DATA[p.target.cardId];
+    if (cardData.rangeOpened !== undefined && state.board.umbrellaStatus[p.target.ownerSide] === 'opened') {
+        useOpenedData = true;
+    }
+    return (hyperapp_1.h(components_1.Card, __assign({ opened: opened, handOpened: handOpened, useOpenedCardData: useOpenedData, reversed: reversed, descriptionViewable: known, ondblclick: onDoubleClickAtBoard, draggable: draggable, zoom: state.zoom }, p)));
 }; };
 
 

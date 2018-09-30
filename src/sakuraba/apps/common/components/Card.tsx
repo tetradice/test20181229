@@ -13,6 +13,7 @@ interface Param {
     ondblclick?: Function;
     opened: boolean;
     reversed?: boolean;
+    useOpenedCardData?: boolean;
 
     zoom: number;
     descriptionViewable: boolean;
@@ -113,8 +114,8 @@ export const Card = (p: Param) => {
           {p.opened ?
           <div>
             <div style={{position: 'absolute', top: (p.reversed ? `${24 * p.zoom}px` : null), bottom: (p.reversed ? null : `${24 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{typeCaptions}</div>
-            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{(cardData.types[0] === 'enhance' ? `納${cardData.capacity}` : cardData.range)}</div>
-            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? `${4 * p.zoom}px` : null), right: (p.reversed ? null : `${4 * p.zoom}px`)}}>{cardData.damage}</div>
+            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{(cardData.types[0] === 'enhance' ? `納${cardData.capacity}` : (p.useOpenedCardData ? cardData.rangeOpened : cardData.range))}</div>
+            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? `${4 * p.zoom}px` : null), right: (p.reversed ? null : `${4 * p.zoom}px`)}}>{(p.useOpenedCardData ? cardData.damageOpened : cardData.damage)}</div>
           </div>
           : null}
           {p.handOpened ? <div style="white-space: nowrap; color: blue; position: absolute; bottom: 4px; right: 0;">【公開中】</div> : null}
