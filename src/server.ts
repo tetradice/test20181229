@@ -79,7 +79,14 @@ app
         console.log(JSON.stringify(replies));
 
         // 卓にアクセスするためのURLを生成
-        let urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
+        let urlBase: string;
+        if(process.env.BASE_URL){
+          urlBase = process.env.BASE_URL;
+        } else {
+          // for development
+          urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
+        }
+         
         let p1Url = `${urlBase}/play/${p1Key}`;
         let p2Url = `${urlBase}/play/${p2Key}`;
         let watchUrl = `${urlBase}/watch/${newTableNo}`;

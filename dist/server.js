@@ -754,7 +754,14 @@ app
             console.log(JSON.stringify(err));
             console.log(JSON.stringify(replies));
             // 卓にアクセスするためのURLを生成
-            var urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
+            var urlBase;
+            if (process.env.BASE_URL) {
+                urlBase = process.env.BASE_URL;
+            }
+            else {
+                // for development
+                urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
+            }
             var p1Url = urlBase + "/play/" + p1Key;
             var p2Url = urlBase + "/play/" + p2Key;
             var watchUrl = urlBase + "/watch/" + newTableNo;
