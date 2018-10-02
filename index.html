@@ -62,6 +62,8 @@
               <p id="HISTORY-NO-DATA-DESC" style="display: none;">作成した卓はありません。</p>
               <div class="ui styled accordion" style="display: none;">
               </div>
+              <div class="ui divider"></div>
+              <p style="font-size: small;">※履歴はPC（端末）ごとに記録されており、ほかの人には見えません。</p>
             </div>
 
     <p id='server-time'></p>
@@ -104,7 +106,7 @@
 
             // 作った卓のURLをローカルストレージに記憶
             var pushedData = Object.assign({}, data, {time: Date.now()});
-            tableHistory.push(pushedData);
+            tableHistory.unshift(pushedData);
             localStorage.setItem("tableHistory", JSON.stringify(tableHistory));
 
             $('.ui.accordion').append('<div class="title"><i class="dropdown icon"></i>' + moment(pushedData.time).format('YYYY/M/D HH:mm:ss') + 'に作成した卓</div>');
