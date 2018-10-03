@@ -109,4 +109,3 @@ export interface LogRecord {
     playerSide?: SheetSide;
     visibility: LogVisibility;
 }
-

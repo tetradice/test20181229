@@ -33,20 +33,20 @@ export function createInitialState(): state.State{
 
 /** カード1枚を作成 */
 export function createCard(id: string, cardId: string, region: CardRegion | null, side?: PlayerSide): state.Card{
-return {
-    type: 'card'
-  , id: id
-  , cardId: cardId
-  , region: region
-  , indexOfRegion: 0
-  , rotated: false
-  , openState: 'opened'
-  , specialUsed: false
-  , linkedCardId: null
-  , side: side
-  , discharged: false
-  , ownerSide: side
-};
+  return {
+      type: 'card'
+    , id: id
+    , cardId: cardId
+    , region: region
+    , indexOfRegion: 0
+    , rotated: false
+    , openState: 'opened'
+    , specialUsed: false
+    , linkedCardId: null
+    , side: side
+    , discharged: false
+    , ownerSide: side
+  };
 }
 
 

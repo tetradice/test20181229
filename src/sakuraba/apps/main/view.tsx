@@ -272,7 +272,6 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         });
     });
 
-
     // カードを封印することが可能な全カードについて、ドロップ領域を配置
     let sealableCards = state.board.objects.filter(o => o.type === 'card' && (o.region === 'used' || o.region === 'special') && CARD_DATA[o.cardId].sealable && o.openState === 'opened') as state.Card[];
     sealableCards.forEach(card => {
@@ -349,7 +348,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     }
 
     return (
-        <div style={{ position: 'relative', zIndex: 100 }}>
+        <div>
             {objectNodes}
             {frameNodes}
             <components.Vigor side={opponentSide} left={390} top={60} />
