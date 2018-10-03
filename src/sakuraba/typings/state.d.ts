@@ -21,7 +21,7 @@ export interface State {
     viewingSide?: PlayerSide;
 
     actionLog: LogRecord[];
-    messageLog: LogRecord[];
+    chatLog: LogRecord[];
 
     actionLogVisible: boolean;
 }
