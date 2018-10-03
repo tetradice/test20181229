@@ -11121,7 +11121,7 @@ return jQuery;
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.17.10';
+  var VERSION = '4.17.11';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
@@ -11385,7 +11385,7 @@ return jQuery;
   var reHasUnicode = RegExp('[' + rsZWJ + rsAstralRange  + rsComboRange + rsVarRange + ']');
 
   /** Used to detect strings that need a more robust regexp to match words. */
-  var reHasUnicodeWord = /[a-z][A-Z]|[A-Z]{2,}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/;
+  var reHasUnicodeWord = /[a-z][A-Z]|[A-Z]{2}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/;
 
   /** Used to assign default `context` object properties. */
   var contextProps = [
@@ -12331,20 +12331,6 @@ return jQuery;
       }
     }
     return result;
-  }
-
-  /**
-   * Gets the value at `key`, unless `key` is "__proto__".
-   *
-   * @private
-   * @param {Object} object The object to query.
-   * @param {string} key The key of the property to get.
-   * @returns {*} Returns the property value.
-   */
-  function safeGet(object, key) {
-    return key == '__proto__'
-      ? undefined
-      : object[key];
   }
 
   /**
@@ -14804,7 +14790,7 @@ return jQuery;
           if (isArguments(objValue)) {
             newValue = toPlainObject(objValue);
           }
-          else if (!isObject(objValue) || (srcIndex && isFunction(objValue))) {
+          else if (!isObject(objValue) || isFunction(objValue)) {
             newValue = initCloneObject(srcValue);
           }
         }
@@ -17725,6 +17711,22 @@ return jQuery;
         array[length] = isIndex(index, arrLength) ? oldArray[index] : undefined;
       }
       return array;
+    }
+
+    /**
+     * Gets the value at `key`, unless `key` is "__proto__".
+     *
+     * @private
+     * @param {Object} object The object to query.
+     * @param {string} key The key of the property to get.
+     * @returns {*} Returns the property value.
+     */
+    function safeGet(object, key) {
+      if (key == '__proto__') {
+        return;
+      }
+
+      return object[key];
     }
 
     /**
@@ -48759,6 +48761,66 @@ exports.CardAreaDroppable = function (p) { return function (state, actions) {
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/main/components/ChatLogArea.tsx":
+/*!***********************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/ChatLogArea.tsx ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/** チャット */
+exports.ChatLogArea = function (p) { return function (state, actions) {
+    //     let logElements: Children[] = [];
+    //     let now = moment();
+    //     p.logs.forEach((log) => {
+    //         // 表示対象外の場合はスキップ
+    //         if(!utils.logIsVisible(log, state.side)) return;
+    //         // 今日のログか昨日以前のログかで形式を変更
+    //         let logTime = moment(log.time);
+    //         let timeStr = (logTime.isSame(now, 'date') ? logTime.format('H:mm') : logTime.format('YYYY/M/D H:mm'));
+    //         let bodyStyle = (log.visibility === 'ownerOnly' ? {color: 'green'} : null);
+    //         logElements.push(
+    //             <div>
+    //             {state.board.playerNames[log.playerSide]}: <span style={bodyStyle}>{log.body}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
+    //             </div>
+    //         )
+    //     });
+    //     const oncreate = (e) => {
+    //         // スクロールバーを最下部までスクロール
+    //         let $logArea = $(e).find('#CHAT-LOG-AREA');
+    //         $logArea.scrollTop($logArea.get(0).scrollHeight);
+    //     };
+    //     const onupdate = (e) => {
+    //         // スクロールバーを最下部までスクロール
+    //         let $logArea = $(e).find('#CHAT-LOG-AREA');
+    //         $logArea.scrollTop($logArea.get(0).scrollHeight);
+    //     };
+    //     const onSend = (e) => {
+    //         let $text = $(e).closest('.ui.input').find('input[type=text]');
+    //         actions.appendChatLog({text: $text.val() as string});
+    //         $text.val('');
+    //     };
+    //     return (
+    //         <div id="CHAT-LOG-SEGMENT"  style={{left: `${1340 * state.zoom + 20}px`}}
+    //             class="ui segment"
+    //             oncreate={oncreate}
+    //             onupdate={onupdate}>
+    //             <div class="ui top attached label">チャットログ</div>
+    //             <div id="CHAT-LOG-AREA">{logElements}</div>
+    //             <div class="ui action fluid input">
+    //                 <input type="text" />
+    //                 <button class="ui button" onclick={onSend}>送信</button>
+    //             </div>
+    //         </div>
+    //     );
+}; };
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/main/components/ControlPanel.css":
 /*!************************************************************!*\
   !*** ./src/sakuraba/apps/main/components/ControlPanel.css ***!
@@ -48988,7 +49050,7 @@ exports.ControlPanel = function () { return function (state, actions) {
         menu,
         hyperapp_1.h("br", null),
         commandButtons,
-        hyperapp_1.h("table", { class: "ui definition table", style: { width: '25em' } },
+        hyperapp_1.h("table", { class: "ui definition table", style: { width: '100%', fontSize: 'small' } },
             hyperapp_1.h("tbody", null,
                 hyperapp_1.h("tr", null,
                     hyperapp_1.h("td", { class: "collapsing" }, "\u30D7\u30EC\u30A4\u30E4\u30FC1"),
@@ -49764,6 +49826,7 @@ __export(__webpack_require__(/*! ./SakuraTokenAreaBackground */ "./src/sakuraba/
 __export(__webpack_require__(/*! ./SakuraTokenAreaDroppable */ "./src/sakuraba/apps/main/components/SakuraTokenAreaDroppable.tsx"));
 __export(__webpack_require__(/*! ./MariganButton */ "./src/sakuraba/apps/main/components/MariganButton.tsx"));
 __export(__webpack_require__(/*! ./ActionLogWindow */ "./src/sakuraba/apps/main/components/ActionLogWindow.tsx"));
+__export(__webpack_require__(/*! ./ChatLogArea */ "./src/sakuraba/apps/main/components/ChatLogArea.tsx"));
 __export(__webpack_require__(/*! ./PlayerNameDisplay */ "./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx"));
 __export(__webpack_require__(/*! ./MainProcessButtons */ "./src/sakuraba/apps/main/components/MainProcessButtons.tsx"));
 
@@ -50077,7 +50140,7 @@ var view = function (state, actions) {
         }
         mainProcessButtonLeft = 340;
     }
-    return (hyperapp_1.h("div", { style: { position: 'relative', zIndex: 100 } },
+    return (hyperapp_1.h("div", null,
         objectNodes,
         frameNodes,
         hyperapp_1.h(components.Vigor, { side: opponentSide, left: 390, top: 60 }),
@@ -50780,7 +50843,7 @@ function createInitialState() {
         boardHistoryPast: [],
         boardHistoryFuture: [],
         actionLog: [],
-        messageLog: [],
+        chatLog: [],
         actionLogVisible: false,
         zoom: 1
     };

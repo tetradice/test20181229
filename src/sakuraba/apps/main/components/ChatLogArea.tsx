@@ -1,10 +1,10 @@
-// import { h, Children } from "hyperapp";
-// import moment from "moment";
-// import * as utils from "sakuraba/utils";
-// import { ActionsType } from "../actions";
+import { h, Children } from "hyperapp";
+import moment from "moment";
+import * as utils from "sakuraba/utils";
+import { ActionsType } from "../actions";
 
-// /** チャット */
-// export const ChatLogArea = (p: {logs: state.LogRecord[]}) => (state: state.State, actions: ActionsType) => {
+/** チャット */
+export const ChatLogArea = (p: {logs: state.LogRecord[]}) => (state: state.State, actions: ActionsType) => {
 
 //     let logElements: Children[] = [];
 //     let now = moment();
@@ -54,4 +54,4 @@
 //             </div>
 //         </div>
 //     );
-// }
+}
