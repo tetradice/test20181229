@@ -245,7 +245,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
 
 
-            <table class="ui definition table" style={{ width: '25em' }}>
+            <table class="ui definition table" style={{ width: '100%', fontSize: 'small' }}>
                 <tbody>
                     <tr>
                         <td class="collapsing">プレイヤー1</td>
@@ -280,7 +280,6 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     <div class="item" data-value="12">12</div>
   </div>
 </div>
-
 
 
 
