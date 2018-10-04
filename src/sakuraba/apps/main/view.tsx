@@ -356,6 +356,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.WitheredToken side={opponentSide} left={390} top={60} />
             <components.WitheredToken side={selfSide} left={680} top={630} />
             <components.ControlPanel />
+            <components.ChatLogArea logs={state.chatLog} />
             <components.MariganButton left={10} top={770} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
             {extraTokens}

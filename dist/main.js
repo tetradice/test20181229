@@ -48396,6 +48396,17 @@ exports.default = {
     setActionLogs: function (newLogs) { return function (state) {
         return { actionLog: newLogs };
     }; }
+    // appendChatLog: (p: {text: string}) => (state: state.State) => {
+    //     let append: state.LogRecord = {body: p.text, time: moment().format(), playerSide: state.side, visibility: 'shown'};
+    //     let newLogs = state.chatLog.concat([append]);
+    //     return {chatLog: newLogs};
+    // },
+    // appendReceivedChatLogs: (logs: state.LogRecord[]) => (state: state.State) => {
+    //     return {chatLog: state.chatLog.concat(logs)};
+    // },
+    // setChatLogs: (newLogs: state.LogRecord[]) => (state: state.State) => {
+    //     return {chatLog: newLogs};
+    // }
 };
 
 
@@ -48770,52 +48781,63 @@ exports.CardAreaDroppable = function (p) { return function (state, actions) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var moment_1 = __importDefault(__webpack_require__(/*! moment */ "./node_modules/moment/moment.js"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 /** チャット */
 exports.ChatLogArea = function (p) { return function (state, actions) {
-    //     let logElements: Children[] = [];
-    //     let now = moment();
-    //     p.logs.forEach((log) => {
-    //         // 表示対象外の場合はスキップ
-    //         if(!utils.logIsVisible(log, state.side)) return;
-    //         // 今日のログか昨日以前のログかで形式を変更
-    //         let logTime = moment(log.time);
-    //         let timeStr = (logTime.isSame(now, 'date') ? logTime.format('H:mm') : logTime.format('YYYY/M/D H:mm'));
-    //         let bodyStyle = (log.visibility === 'ownerOnly' ? {color: 'green'} : null);
-    //         logElements.push(
-    //             <div>
-    //             {state.board.playerNames[log.playerSide]}: <span style={bodyStyle}>{log.body}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
-    //             </div>
-    //         )
-    //     });
-    //     const oncreate = (e) => {
-    //         // スクロールバーを最下部までスクロール
-    //         let $logArea = $(e).find('#CHAT-LOG-AREA');
-    //         $logArea.scrollTop($logArea.get(0).scrollHeight);
-    //     };
-    //     const onupdate = (e) => {
-    //         // スクロールバーを最下部までスクロール
-    //         let $logArea = $(e).find('#CHAT-LOG-AREA');
-    //         $logArea.scrollTop($logArea.get(0).scrollHeight);
-    //     };
-    //     const onSend = (e) => {
-    //         let $text = $(e).closest('.ui.input').find('input[type=text]');
-    //         actions.appendChatLog({text: $text.val() as string});
-    //         $text.val('');
-    //     };
-    //     return (
-    //         <div id="CHAT-LOG-SEGMENT"  style={{left: `${1340 * state.zoom + 20}px`}}
-    //             class="ui segment"
-    //             oncreate={oncreate}
-    //             onupdate={onupdate}>
-    //             <div class="ui top attached label">チャットログ</div>
-    //             <div id="CHAT-LOG-AREA">{logElements}</div>
-    //             <div class="ui action fluid input">
-    //                 <input type="text" />
-    //                 <button class="ui button" onclick={onSend}>送信</button>
-    //             </div>
-    //         </div>
-    //     );
+    var logElements = [];
+    var now = moment_1.default();
+    p.logs.forEach(function (log) {
+        // 表示対象外の場合はスキップ
+        if (!utils.logIsVisible(log, state.side))
+            return;
+        // 今日のログか昨日以前のログかで形式を変更
+        var logTime = moment_1.default(log.time);
+        var timeStr = (logTime.isSame(now, 'date') ? logTime.format('H:mm') : logTime.format('YYYY/M/D H:mm'));
+        var bodyStyle = (log.visibility === 'ownerOnly' ? { color: 'green' } : null);
+        logElements.push(hyperapp_1.h("div", null,
+            state.board.playerNames[log.playerSide],
+            ": ",
+            hyperapp_1.h("span", { style: bodyStyle }, log.body),
+            " ",
+            hyperapp_1.h("span", { style: { fontSize: 'smaller', color: 'silver' } },
+                "(",
+                timeStr,
+                ")")));
+    });
+    var oncreate = function (e) {
+        // スクロールバーを最下部までスクロール
+        var $logArea = $(e).find('#CHAT-LOG-AREA');
+        $logArea.scrollTop($logArea.get(0).scrollHeight);
+    };
+    var onupdate = function (e) {
+        // スクロールバーを最下部までスクロール
+        var $logArea = $(e).find('#CHAT-LOG-AREA');
+        $logArea.scrollTop($logArea.get(0).scrollHeight);
+    };
+    var onSend = function (e) {
+        var $text = $(e).closest('.ui.input').find('input[type=text]');
+        //actions.appendChatLog({text: $text.val() as string});
+        $text.val('');
+    };
+    return (hyperapp_1.h("div", { id: "CHAT-LOG-SEGMENT", style: { left: 1340 * state.zoom + 20 + "px" }, class: "ui segment", oncreate: oncreate, onupdate: onupdate },
+        hyperapp_1.h("div", { class: "ui top attached label" }, "\u30C1\u30E3\u30C3\u30C8\u30ED\u30B0"),
+        hyperapp_1.h("div", { id: "CHAT-LOG-AREA" }, logElements),
+        hyperapp_1.h("div", { class: "ui action fluid input" },
+            hyperapp_1.h("input", { type: "text" }),
+            hyperapp_1.h("button", { class: "ui button", onclick: onSend }, "\u9001\u4FE1"))));
 }; };
 
 
@@ -50148,6 +50170,7 @@ var view = function (state, actions) {
         hyperapp_1.h(components.WitheredToken, { side: opponentSide, left: 390, top: 60 }),
         hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680, top: 630 }),
         hyperapp_1.h(components.ControlPanel, null),
+        hyperapp_1.h(components.ChatLogArea, { logs: state.chatLog }),
         hyperapp_1.h(components.MariganButton, { left: 10, top: 770 }),
         hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),
         extraTokens,
