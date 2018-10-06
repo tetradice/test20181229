@@ -31,7 +31,7 @@ export const ChatLogArea = (p: {logs: state.LogRecord[]}) => (state: state.State
         // Enterを押下した場合、ボタンを押下したものと扱う
         $(target).keydown(function(e){
             if(e.key === 'Enter'){
-                $(target).find('.ui.input input[type=text]').click();
+                $(target).find('button').click();
             }
         });
 

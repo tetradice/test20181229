@@ -48829,14 +48829,20 @@ exports.ChatLogArea = function (p) { return function (state, actions) {
                 timeStr,
                 ")")));
     });
-    var oncreate = function (e) {
+    var oncreate = function (target) {
         // スクロールバーを最下部までスクロール
-        var $logArea = $(e).find('#CHAT-LOG-AREA');
+        var $logArea = $(target).find('#CHAT-LOG-AREA');
         $logArea.scrollTop($logArea.get(0).scrollHeight);
+        // Enterを押下した場合、ボタンを押下したものと扱う
+        $(target).keydown(function (e) {
+            if (e.key === 'Enter') {
+                $(target).find('button').click();
+            }
+        });
     };
-    var onupdate = function (e) {
+    var onupdate = function (target) {
         // スクロールバーを最下部までスクロール
-        var $logArea = $(e).find('#CHAT-LOG-AREA');
+        var $logArea = $(target).find('#CHAT-LOG-AREA');
         $logArea.scrollTop($logArea.get(0).scrollHeight);
     };
     var onSend = function (e) {
