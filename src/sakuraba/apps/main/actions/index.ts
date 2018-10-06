@@ -5,8 +5,8 @@ import sakuraTokenActions from './sakuraToken';
 import miscActions from './misc';
 import { WiredActions } from 'hyperapp-types';
 
-let actionsTemp = Object.assign(logActions, cardActions, boardActions, sakuraTokenActions);
-let actionsTemp2 = Object.assign(actionsTemp, miscActions);
+let actionsTemp = Object.assign({}, logActions, cardActions, boardActions);
+let actionsTemp2 = Object.assign({}, actionsTemp, sakuraTokenActions, miscActions);
 
 export const actions = actionsTemp2;
 

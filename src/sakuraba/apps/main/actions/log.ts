@@ -1,5 +1,4 @@
 import moment = require('moment');
-import * as models from "sakuraba/models";
 
 
 export default {
@@ -22,8 +21,6 @@ export default {
         return {actionLog: newLogs};
     }
 
-    
-    
     // appendChatLog: (p: {text: string}) => (state: state.State) => {
     //     let append: state.LogRecord = {body: p.text, time: moment().format(), playerSide: state.side, visibility: 'shown'};
     //     let newLogs = state.chatLog.concat([append]);

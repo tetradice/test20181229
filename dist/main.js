@@ -48363,8 +48363,8 @@ var card_1 = __importDefault(__webpack_require__(/*! ./card */ "./src/sakuraba/a
 var board_1 = __importDefault(__webpack_require__(/*! ./board */ "./src/sakuraba/apps/main/actions/board.ts"));
 var sakuraToken_1 = __importDefault(__webpack_require__(/*! ./sakuraToken */ "./src/sakuraba/apps/main/actions/sakuraToken.ts"));
 var misc_1 = __importDefault(__webpack_require__(/*! ./misc */ "./src/sakuraba/apps/main/actions/misc.ts"));
-var actionsTemp = Object.assign(log_1.default, card_1.default, board_1.default, sakuraToken_1.default);
-var actionsTemp2 = Object.assign(actionsTemp, misc_1.default);
+var actionsTemp = Object.assign({}, log_1.default, card_1.default, board_1.default);
+var actionsTemp2 = Object.assign({}, actionsTemp, sakuraToken_1.default, misc_1.default);
 exports.actions = actionsTemp2;
 
 
@@ -48422,11 +48422,23 @@ exports.default = {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 exports.default = {
     /** ズーム倍率を変更する */
     setZoom: function (p) {
         return { zoom: p };
     },
+    appendChatLog: function (p) { return function (state) {
+        var append = { body: p.text, time: moment().format(), playerSide: state.side, visibility: 'shown' };
+        var newLogs = state.chatLog.concat([append]);
+        return { chatLog: newLogs };
+    }; },
+    appendReceivedChatLogs: function (logs) { return function (state) {
+        return { chatLog: state.chatLog.concat(logs) };
+    }; },
+    setChatLogs: function (newLogs) { return function (state) {
+        return { chatLog: newLogs };
+    }; }
 };
 
 
@@ -48828,12 +48840,12 @@ exports.ChatLogArea = function (p) { return function (state, actions) {
         $logArea.scrollTop($logArea.get(0).scrollHeight);
     };
     var onSend = function (e) {
-        var $text = $(e).closest('.ui.input').find('input[type=text]');
-        //actions.appendChatLog({text: $text.val() as string});
+        var $text = $(e.target).closest('.ui.input').find('input[type=text]');
+        actions.appendChatLog({ text: $text.val() });
         $text.val('');
     };
     return (hyperapp_1.h("div", { id: "CHAT-LOG-SEGMENT", style: { left: 1340 * state.zoom + 20 + "px" }, class: "ui segment", oncreate: oncreate, onupdate: onupdate },
-        hyperapp_1.h("div", { class: "ui top attached label" }, "\u30C1\u30E3\u30C3\u30C8\u30ED\u30B0"),
+        hyperapp_1.h("div", { class: "ui top attached label" }, "\u30C1\u30E3\u30C3\u30C8"),
         hyperapp_1.h("div", { id: "CHAT-LOG-AREA" }, logElements),
         hyperapp_1.h("div", { class: "ui action fluid input" },
             hyperapp_1.h("input", { type: "text" }),
