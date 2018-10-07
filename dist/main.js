@@ -46422,6 +46422,7 @@ var apps = __importStar(__webpack_require__(/*! sakuraba/apps */ "./src/sakuraba
 var socket_1 = __webpack_require__(/*! sakuraba/socket */ "./src/sakuraba/socket.ts");
 var sakuraba_1 = __webpack_require__(/*! ./sakuraba */ "./src/sakuraba.ts");
 var dragInfo_1 = __importDefault(__webpack_require__(/*! sakuraba/dragInfo */ "./src/sakuraba/dragInfo.ts"));
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
 function messageModal(desc) {
     $('#MESSAGE-MODAL .description').html(desc);
     $('#MESSAGE-MODAL')
@@ -46445,19 +46446,19 @@ $(function () {
     st.side = params.side;
     st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
     // ズーム設定を調整
-    var clientWidth = window.innerWidth - 350;
-    if (clientWidth < 1200)
+    // コントロールパネルとチャットエリアの幅を350pxぶんは確保できるように調整
+    var sideWidth = 350;
+    var innerWidth = window.innerWidth;
+    if (const_1.BOARD_BASE_WIDTH + sideWidth > innerWidth)
         st.zoom = 0.9;
-    if (clientWidth < 1200 - 120)
+    if (const_1.BOARD_BASE_WIDTH * 0.9 + sideWidth > innerWidth)
         st.zoom = 0.8;
-    if (clientWidth < 1200 - 120 * 2)
+    if (const_1.BOARD_BASE_WIDTH * 0.8 + sideWidth > innerWidth)
         st.zoom = 0.7;
-    if (clientWidth < 1200 - 120 * 3)
+    if (const_1.BOARD_BASE_WIDTH * 0.7 + sideWidth > innerWidth)
         st.zoom = 0.6;
-    if (clientWidth < 1200 - 120 * 4)
-        st.zoom = 0.5;
     // アプリケーション起動
-    var appActions = apps.main.run(st, document.getElementById('BOARD'));
+    var appActions = apps.main.run(st, document.getElementById('BOARD-CONTAINER'));
     // 萎縮トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
@@ -46564,7 +46565,7 @@ $(function () {
     });
     // 右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD *',
+        selector: '#BOARD, #BOARD *',
         build: function ($elem, event) {
             var currentState = appActions.getState();
             var board = new models.Board(currentState.board);
@@ -46806,11 +46807,15 @@ $(function () {
     //         'reshuffleWithoutDamage': {name: '再構成する (ライフ減少なし)'},
     //     }
     // });
-    // ボード情報をリクエスト
-    socket.emit('requestFirstBoard', { tableId: params.tableId });
+    // 初期情報をリクエスト
+    socket.emit('requestFirstTableData', { tableId: params.tableId });
     // ボード情報を受信した場合、メイン処理をスタート
-    socket.on('onFirstBoardReceived', function (p) {
+    socket.on('onFirstTableDataReceived', function (p) {
+        // ボード情報のセット
         appActions.setBoard(p.board);
+        // ログ情報のセット
+        appActions.setActionLogs(p.actionLogs);
+        appActions.setChatLogs(p.chatLogs);
         // まだ名前が決定していなければ、名前の決定処理
         // 観戦者かどうかで名前の処理を分ける
         if (params.side === 'watcher') {
@@ -46850,12 +46855,6 @@ $(function () {
             }
         }
     });
-    // アクションログ情報をリクエスト
-    socket.emit('requestFirstActionLogs', { tableId: params.tableId });
-    // アクションログ情報を受け取った場合、ステートに設定
-    socket.on('onFirstActionLogsReceived', function (p) {
-        appActions.setActionLogs(p.logs);
-    });
     // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
     socket.on('onBoardReceived', function (p) {
         appActions.setBoard(p.board);
@@ -46869,6 +46868,16 @@ $(function () {
             var msg = targetLogs.map(function (log) { return log.body; }).join('<br>');
             toastr_1.default.info(msg, st_1.board.playerNames[targetLogs[0].playerSide] + ":");
         }
+    });
+    // 他のプレイヤーがチャットログを追加した場合の処理
+    socket.on('onChatLogAppended', function (p) {
+        // ログ追加
+        appActions.appendReceivedChatLogs(p.appendedChatLogs);
+        // 受け取ったログをtoastrで表示
+        var st = appActions.getState();
+        var targetLogs = p.appendedChatLogs.filter(function (log) { return utils.logIsVisible(log, st.side); });
+        var msg = targetLogs.map(function (log) { return log.body; }).join('<br>');
+        toastr_1.default.info(msg, st.board.playerNames[targetLogs[0].playerSide] + ":");
     });
     // toastrの標準オプションを設定
     toastr_1.default.options = {
@@ -47721,6 +47730,37 @@ exports.mariganModal = mariganModal;
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/main/actions/actionLog.ts":
+/*!*****************************************************!*\
+  !*** ./src/sakuraba/apps/main/actions/actionLog.ts ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+exports.default = {
+    toggleActionLogVisible: function () { return function (state) {
+        return { actionLogVisible: !state.actionLogVisible };
+    }; },
+    appendActionLog: function (p) { return function (state) {
+        var append = { body: p.text, time: moment().format(), playerSide: state.side, visibility: (p.visibility ? p.visibility : 'shown') };
+        var newLogs = state.actionLog.concat([append]);
+        return { actionLog: newLogs };
+    }; },
+    appendReceivedActionLogs: function (logs) { return function (state) {
+        return { actionLog: state.actionLog.concat(logs) };
+    }; },
+    setActionLogs: function (newLogs) { return function (state) {
+        return { actionLog: newLogs };
+    }; }
+};
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/main/actions/board.ts":
 /*!*************************************************!*\
   !*** ./src/sakuraba/apps/main/actions/board.ts ***!
@@ -48345,6 +48385,34 @@ exports.default = {
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/main/actions/chatLog.ts":
+/*!***************************************************!*\
+  !*** ./src/sakuraba/apps/main/actions/chatLog.ts ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+exports.default = {
+    appendChatLog: function (p) { return function (state) {
+        var append = { body: p.text, time: moment().format(), playerSide: state.side, visibility: 'shown' };
+        var newLogs = state.chatLog.concat([append]);
+        return { chatLog: newLogs };
+    }; },
+    appendReceivedChatLogs: function (logs) { return function (state) {
+        return { chatLog: state.chatLog.concat(logs) };
+    }; },
+    setChatLogs: function (newLogs) { return function (state) {
+        return { chatLog: newLogs };
+    }; }
+};
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/main/actions/index.ts":
 /*!*************************************************!*\
   !*** ./src/sakuraba/apps/main/actions/index.ts ***!
@@ -48358,56 +48426,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var log_1 = __importDefault(__webpack_require__(/*! ./log */ "./src/sakuraba/apps/main/actions/log.ts"));
+var chatLog_1 = __importDefault(__webpack_require__(/*! ./chatLog */ "./src/sakuraba/apps/main/actions/chatLog.ts"));
+var actionsTemp1 = Object.assign({}, chatLog_1.default);
+var actionLog_1 = __importDefault(__webpack_require__(/*! ./actionLog */ "./src/sakuraba/apps/main/actions/actionLog.ts"));
+var actionsTemp2 = Object.assign({}, actionsTemp1, actionLog_1.default);
 var card_1 = __importDefault(__webpack_require__(/*! ./card */ "./src/sakuraba/apps/main/actions/card.ts"));
+var actionsTemp3 = Object.assign({}, actionsTemp2, card_1.default);
 var board_1 = __importDefault(__webpack_require__(/*! ./board */ "./src/sakuraba/apps/main/actions/board.ts"));
+var actionsTemp4 = Object.assign({}, actionsTemp3, board_1.default);
 var sakuraToken_1 = __importDefault(__webpack_require__(/*! ./sakuraToken */ "./src/sakuraba/apps/main/actions/sakuraToken.ts"));
+var actionsTemp5 = Object.assign({}, actionsTemp4, sakuraToken_1.default);
 var misc_1 = __importDefault(__webpack_require__(/*! ./misc */ "./src/sakuraba/apps/main/actions/misc.ts"));
-var actionsTemp = Object.assign({}, log_1.default, card_1.default, board_1.default);
-var actionsTemp2 = Object.assign({}, actionsTemp, sakuraToken_1.default, misc_1.default);
-exports.actions = actionsTemp2;
-
-
-/***/ }),
-
-/***/ "./src/sakuraba/apps/main/actions/log.ts":
-/*!***********************************************!*\
-  !*** ./src/sakuraba/apps/main/actions/log.ts ***!
-  \***********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
-exports.default = {
-    toggleActionLogVisible: function () { return function (state) {
-        return { actionLogVisible: !state.actionLogVisible };
-    }; },
-    appendActionLog: function (p) { return function (state) {
-        var append = { body: p.text, time: moment().format(), playerSide: state.side, visibility: (p.visibility ? p.visibility : 'shown') };
-        var newLogs = state.actionLog.concat([append]);
-        return { actionLog: newLogs };
-    }; },
-    appendReceivedActionLogs: function (logs) { return function (state) {
-        return { actionLog: state.actionLog.concat(logs) };
-    }; },
-    setActionLogs: function (newLogs) { return function (state) {
-        return { actionLog: newLogs };
-    }; }
-    // appendChatLog: (p: {text: string}) => (state: state.State) => {
-    //     let append: state.LogRecord = {body: p.text, time: moment().format(), playerSide: state.side, visibility: 'shown'};
-    //     let newLogs = state.chatLog.concat([append]);
-    //     return {chatLog: newLogs};
-    // },
-    // appendReceivedChatLogs: (logs: state.LogRecord[]) => (state: state.State) => {
-    //     return {chatLog: state.chatLog.concat(logs)};
-    // },
-    // setChatLogs: (newLogs: state.LogRecord[]) => (state: state.State) => {
-    //     return {chatLog: newLogs};
-    // }
-};
+var actionsTemp6 = Object.assign({}, actionsTemp5, misc_1.default);
+exports.actions = actionsTemp6;
 
 
 /***/ }),
@@ -48422,23 +48453,11 @@ exports.default = {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 exports.default = {
     /** ズーム倍率を変更する */
     setZoom: function (p) {
         return { zoom: p };
-    },
-    appendChatLog: function (p) { return function (state) {
-        var append = { body: p.text, time: moment().format(), playerSide: state.side, visibility: 'shown' };
-        var newLogs = state.chatLog.concat([append]);
-        return { chatLog: newLogs };
-    }; },
-    appendReceivedChatLogs: function (logs) { return function (state) {
-        return { chatLog: state.chatLog.concat(logs) };
-    }; },
-    setChatLogs: function (newLogs) { return function (state) {
-        return { chatLog: newLogs };
-    }; }
+    }
 };
 
 
@@ -48807,6 +48826,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var moment_1 = __importDefault(__webpack_require__(/*! moment */ "./node_modules/moment/moment.js"));
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
 /** チャット */
 exports.ChatLogArea = function (p) { return function (state, actions) {
     var logElements = [];
@@ -48847,15 +48867,21 @@ exports.ChatLogArea = function (p) { return function (state, actions) {
     };
     var onSend = function (e) {
         var $text = $(e.target).closest('.ui.input').find('input[type=text]');
-        actions.appendChatLog({ text: $text.val() });
+        var log = { text: $text.val() };
+        var newChatLogs = actions.appendChatLog(log);
         $text.val('');
+        // ソケットにチャットログの更新を通知
+        if (state.socket) {
+            state.socket.emit('appendChatLog', { tableId: state.tableId, appendedChatLog: newChatLogs.chatLog[newChatLogs.chatLog.length - 1] });
+        }
     };
-    return (hyperapp_1.h("div", { id: "CHAT-LOG-SEGMENT", style: { left: 1340 * state.zoom + 20 + "px" }, class: "ui segment", oncreate: oncreate, onupdate: onupdate },
+    return (hyperapp_1.h("div", { id: "CHAT-LOG-SEGMENT", style: { left: const_1.BOARD_BASE_WIDTH * state.zoom + 10 + "px" }, class: "ui segment", oncreate: oncreate, onupdate: onupdate },
         hyperapp_1.h("div", { class: "ui top attached label" }, "\u30C1\u30E3\u30C3\u30C8"),
         hyperapp_1.h("div", { id: "CHAT-LOG-AREA" }, logElements),
-        hyperapp_1.h("div", { class: "ui action fluid input" },
-            hyperapp_1.h("input", { type: "text" }),
-            hyperapp_1.h("button", { class: "ui button", onclick: onSend }, "\u9001\u4FE1"))));
+        hyperapp_1.h("div", { id: "CHAT-INPUT-AREA" },
+            hyperapp_1.h("div", { class: "ui action fluid input" },
+                hyperapp_1.h("input", { type: "text" }),
+                hyperapp_1.h("button", { class: "ui button", onclick: onSend }, "\u9001\u4FE1")))));
 }; };
 
 
@@ -48916,6 +48942,7 @@ var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakura
 var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/apps/main/components/ControlPanel.css"));
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var toastr_1 = __importDefault(__webpack_require__(/*! toastr */ "./node_modules/toastr/toastr.js"));
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
 // ルール編集メモ
 // 第二幕、新幕の選択
 // アンドゥ制約（山札を引いた後のUndoは可能か？）
@@ -49019,6 +49046,16 @@ exports.ControlPanel = function () { return function (state, actions) {
             megamiCaptionP2 = " - \uFF1F\uFF1F\uFF1F\u3001\uFF1F\uFF1F\uFF1F";
         }
     }
+    var notifyValueChanged = function (e) {
+        var val = $(e.target).val();
+        var $button = $('#NOTIFY-SEND-BUTTON');
+        if (val === '-') {
+            $button.addClass('disabled');
+        }
+        else {
+            $button.removeClass('disabled');
+        }
+    };
     var notify = function () {
         if (state.side === 'watcher')
             throw "Forbidden operation for watcher"; // 観戦者は実行不可能な操作
@@ -49069,7 +49106,7 @@ exports.ControlPanel = function () { return function (state, actions) {
     var notifyPanel = (hyperapp_1.h("div", null,
         hyperapp_1.h("div", { class: "ui sub header" }, "\u76F8\u624B\u30D7\u30EC\u30A4\u30E4\u30FC\u3078\u901A\u77E5"),
         hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', '-'); } },
-            hyperapp_1.h("input", { type: "hidden", name: "notifyType" }),
+            hyperapp_1.h("input", { type: "hidden", name: "notifyType", onchange: notifyValueChanged }),
             hyperapp_1.h("i", { class: "dropdown icon" }),
             hyperapp_1.h("div", { class: "default text" }),
             hyperapp_1.h("div", { class: "menu" },
@@ -49077,20 +49114,20 @@ exports.ControlPanel = function () { return function (state, actions) {
                 hyperapp_1.h("div", { class: "item", "data-value": "ready" }, "\u6E96\u5099\u3067\u304D\u307E\u3057\u305F"),
                 hyperapp_1.h("div", { class: "item", "data-value": "turnEnd" }, "\u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F"),
                 hyperapp_1.h("div", { class: "item", "data-value": "reaction" }, "\u5BFE\u5FDC\u3057\u307E\u3059"))),
-        hyperapp_1.h("button", { class: "ui basic button", onclick: notify }, "\u9001\u4FE1")));
+        hyperapp_1.h("button", { class: "ui basic button disabled", id: "NOTIFY-SEND-BUTTON", onclick: notify }, "\u9001\u4FE1")));
     // 観戦者の場合元に戻すボタン、通知パネルの表示はなし
     // またメニューも簡易版にする
     if (state.side === 'watcher') {
         notifyPanel = null;
         undoPanel = null;
     }
-    return (hyperapp_1.h("div", { id: "CONTROL-PANEL", style: { left: 1340 * state.zoom + 20 + "px" } },
+    return (hyperapp_1.h("div", { id: "CONTROL-PANEL", style: { left: const_1.BOARD_BASE_WIDTH * state.zoom + 10 + "px" } },
         undoPanel,
         "\u00A0",
         menu,
         hyperapp_1.h("br", null),
         commandButtons,
-        hyperapp_1.h("table", { class: "ui definition table", style: { width: '100%', fontSize: 'small' } },
+        hyperapp_1.h("table", { class: "ui definition table", style: { width: '95%', fontSize: 'small' } },
             hyperapp_1.h("tbody", null,
                 hyperapp_1.h("tr", null,
                     hyperapp_1.h("td", { class: "collapsing" }, "\u30D7\u30EC\u30A4\u30E4\u30FC1"),
@@ -49109,7 +49146,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                     hyperapp_1.h("td", null)))),
         notifyPanel,
         hyperapp_1.h("div", { class: "ui sub header" }, "\u30DC\u30FC\u30C9\u30B5\u30A4\u30BA"),
-        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', state.zoom * 10); } },
+        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', Math.round(state.zoom * 10)); } },
             hyperapp_1.h("input", { type: "hidden", name: "boardSize", onchange: function (e) { return actions.setZoom(Number($(e.target).val()) * 0.1); } }),
             hyperapp_1.h("i", { class: "dropdown icon" }),
             hyperapp_1.h("div", { class: "default text" }),
@@ -49926,6 +49963,7 @@ var lodash_1 = __importDefault(__webpack_require__(/*! lodash */ "./node_modules
 var sakuraba_1 = __webpack_require__(/*! sakuraba */ "./src/sakuraba.ts");
 var components_1 = __webpack_require__(/*! sakuraba/apps/common/components */ "./src/sakuraba/apps/common/components/index.ts");
 var StackedCards_1 = __webpack_require__(/*! sakuraba/apps/common/components/StackedCards */ "./src/sakuraba/apps/common/components/StackedCards.tsx");
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
 /** オブジェクトの配置(座標の決定)を行う */
 function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spacing) {
     var ret = [];
@@ -50006,8 +50044,8 @@ var view = function (state, actions) {
                 side: side,
                 title: null,
                 cardLayoutType: 'horizontal',
-                left: (side === 'p1' ? 10 : 380),
-                top: (side === 'p1' ? 430 : 30),
+                left: (side === state.side ? 10 : 380),
+                top: (side === state.side ? 430 : 30),
                 width: 820,
                 height: 330
             });
@@ -50180,7 +50218,7 @@ var view = function (state, actions) {
         }
         mainProcessButtonLeft = 340;
     }
-    return (hyperapp_1.h("div", null,
+    return (hyperapp_1.h("div", { id: "BOARD", style: { width: const_1.BOARD_BASE_WIDTH * state.zoom + "px" } },
         objectNodes,
         frameNodes,
         hyperapp_1.h(components.Vigor, { side: opponentSide, left: 390, top: 60 }),
@@ -50383,6 +50421,21 @@ var view = function (state, actions) {
                 hyperapp_1.h("div", { class: "ui black deny button", onclick: function () { actions.hide(); state.promiseReject(); } }, "\u30AD\u30E3\u30F3\u30BB\u30EB")))));
 };
 exports.default = view;
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/const.ts":
+/*!*******************************!*\
+  !*** ./src/sakuraba/const.ts ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BOARD_BASE_WIDTH = 1350;
 
 
 /***/ }),

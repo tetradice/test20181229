@@ -133,6 +133,18 @@ function getStoredActionLogs(tableId: string, callback: (logs: state.LogRecord[]
   });
 }
 
+/** Redis上に保存されたチャットログを取得 */
+function getStoredChatLogs(tableId: string, callback: (logs: state.LogRecord[]) => void){
+  // ログを取得
+  RedisClient.LRANGE(`sakuraba:tables:${tableId}:chatLogs`, 0, -1, (err, jsons) => {
+
+    let logs = jsons.map((json) => JSON.parse(json) as state.LogRecord); 
+
+    // コールバックを実行
+    callback(logs);
+  });
+}
+
 /** Redisへアクションログデータを追加 */
 function appendActionLogs(tableId: string, logs: state.LogRecord[], callback: (logs: state.LogRecord[]) => void){
   // ログをトランザクションで追加
@@ -147,20 +159,40 @@ function appendActionLogs(tableId: string, logs: state.LogRecord[], callback: (l
   });
 }
 
+/** Redisへチャットログデータを追加 */
+function appendChatLogs(tableId: string, logs: state.LogRecord[], callback: (logs: state.LogRecord[]) => void){
+  // ログをトランザクションで追加
+  let commands: string[][] = [];
+  logs.forEach((log) => {
+    commands.push(['RPUSH', `sakuraba:tables:${tableId}:chatLogs`, JSON.stringify(log)]);
+  });
+  RedisClient.multi(commands).exec((err, success) => {
+    // コールバックを実行
+    console.log('appendChatLogs response: ', success);
+    callback(logs);
+  });
+}
+
 io.on('connection', (ioSocket) => {
   const socket = new ServerSocket(ioSocket);
 
   console.log(`Client connected - ${ioSocket.id}`);
   ioSocket.on('disconnect', () => console.log('Client disconnected'));
   
-  // ボード情報のリクエスト
-  socket.on('requestFirstBoard', (p) => {
+  // 初期情報のリクエスト
+  socket.on('requestFirstTableData', (p) => {
     // roomにjoin
     socket.ioSocket.join(p.tableId);
 
     // ボード情報を取得
     getStoredBoard(p.tableId, (board) => {
-      socket.emit('onFirstBoardReceived', {board});
+      // アクションログ情報を取得
+      getStoredActionLogs(p.tableId, (actionLogs) => {
+        // チャットログ情報を取得
+        getStoredChatLogs(p.tableId, (chatLogs) => {
+          socket.emit('onFirstTableDataReceived', {board: board, actionLogs: actionLogs, chatLogs: chatLogs});
+        });
+      });
     });
   });
 
@@ -182,15 +214,14 @@ io.on('connection', (ioSocket) => {
     }
   });
 
-  // アクションログ情報のリクエスト
-  socket.on('requestFirstActionLogs', (p) => {
-    // アクションログ情報を取得
-    getStoredActionLogs(p.tableId, (logs) => {
-      socket.emit('onFirstActionLogsReceived', {logs: logs});
+  // チャットログ追加
+  socket.on('appendChatLog', (p) => {
+    appendChatLogs(p.tableId, [p.appendedChatLog], (logs) => {
+      // チャットログ追加イベントを他ユーザーに配信
+      socket.broadcastEmit(p.tableId, 'onChatLogAppended', {appendedChatLogs: logs});
     });
   });
 
-  
   // 通知送信
   socket.on('notify', (p) => {
       // ログが追加されたイベントを他ユーザーに配信

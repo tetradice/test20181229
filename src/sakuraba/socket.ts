@@ -1,19 +1,19 @@
 import { EventEmitter } from "events";
 
 interface ServerToClientEventProps {
-    onFirstBoardReceived: {board: state.Board};
-    onFirstActionLogsReceived: {logs: state.LogRecord[]};
+    onFirstTableDataReceived: {board: state.Board, actionLogs: state.LogRecord[], chatLogs: state.LogRecord[]};
     onBoardReceived: {board: state.Board, appendedActionLogs: state.LogRecord[] | null};
+    onChatLogAppended: {appendedChatLogs: state.LogRecord[]};
 
     onNotifyReceived: {senderSide: PlayerSide, message: string};
 }
 type ServerToClientEventName = keyof ServerToClientEventProps;
 
 interface ClientToServerEventProps {
-    requestFirstBoard: {tableId: string}; 
-    requestFirstActionLogs: {tableId: string}; 
+    requestFirstTableData: {tableId: string}; 
     updateBoard: {tableId: string, side: SheetSide, board: state.Board, appendedActionLogs: state.LogRecord[] | null};
-    
+    appendChatLog: {tableId: string, appendedChatLog: state.LogRecord};
+
     notify: {tableId: string, senderSide: PlayerSide, message: string};
 }
 type ClientToServerEventName = keyof ClientToServerEventProps;

@@ -2,6 +2,7 @@ import { h, Children } from "hyperapp";
 import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
+import { BOARD_BASE_WIDTH } from "sakuraba/const";
 
 /** チャット */
 export const ChatLogArea = (p: {logs: state.LogRecord[]}) => (state: state.State, actions: ActionsType) => {
@@ -34,7 +35,6 @@ export const ChatLogArea = (p: {logs: state.LogRecord[]}) => (state: state.State
                 $(target).find('button').click();
             }
         });
-
     };
 
     const onupdate = (target) => {
@@ -45,20 +45,28 @@ export const ChatLogArea = (p: {logs: state.LogRecord[]}) => (state: state.State
 
     const onSend = (e: MouseEvent) => {
         let $text = $(e.target).closest('.ui.input').find('input[type=text]');
-        actions.appendChatLog({text: $text.val() as string});
+        let log = {text: $text.val() as string};
+        let newChatLogs = actions.appendChatLog(log);
         $text.val('');
+
+        // ソケットにチャットログの更新を通知
+        if(state.socket){
+            state.socket.emit('appendChatLog', { tableId: state.tableId, appendedChatLog: newChatLogs.chatLog[newChatLogs.chatLog.length - 1]});
+        }
     };
 
     return (
-        <div id="CHAT-LOG-SEGMENT"  style={{left: `${1340 * state.zoom + 20}px`}}
+        <div id="CHAT-LOG-SEGMENT"  style={{left: `${BOARD_BASE_WIDTH * state.zoom + 10}px`}}
             class="ui segment"
             oncreate={oncreate}
             onupdate={onupdate}>
             <div class="ui top attached label">チャット</div>
             <div id="CHAT-LOG-AREA">{logElements}</div>
-            <div class="ui action fluid input">
-                <input type="text" />
-                <button class="ui button" onclick={onSend}>送信</button>
+            <div id="CHAT-INPUT-AREA">
+                <div class="ui action fluid input">
+                    <input type="text" />
+                    <button class="ui button" onclick={onSend}>送信</button>
+                </div>
             </div>
         </div>
     );

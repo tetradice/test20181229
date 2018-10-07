@@ -630,7 +630,7 @@ function createInitialState() {
         boardHistoryPast: [],
         boardHistoryFuture: [],
         actionLog: [],
-        messageLog: [],
+        chatLog: [],
         actionLogVisible: false,
         zoom: 1
     };
@@ -797,6 +797,15 @@ function getStoredActionLogs(tableId, callback) {
         callback(logs);
     });
 }
+/** Redis上に保存されたチャットログを取得 */
+function getStoredChatLogs(tableId, callback) {
+    // ログを取得
+    RedisClient.LRANGE("sakuraba:tables:" + tableId + ":chatLogs", 0, -1, function (err, jsons) {
+        var logs = jsons.map(function (json) { return JSON.parse(json); });
+        // コールバックを実行
+        callback(logs);
+    });
+}
 /** Redisへアクションログデータを追加 */
 function appendActionLogs(tableId, logs, callback) {
     // ログをトランザクションで追加
@@ -810,17 +819,36 @@ function appendActionLogs(tableId, logs, callback) {
         callback(logs);
     });
 }
+/** Redisへチャットログデータを追加 */
+function appendChatLogs(tableId, logs, callback) {
+    // ログをトランザクションで追加
+    var commands = [];
+    logs.forEach(function (log) {
+        commands.push(['RPUSH', "sakuraba:tables:" + tableId + ":chatLogs", JSON.stringify(log)]);
+    });
+    RedisClient.multi(commands).exec(function (err, success) {
+        // コールバックを実行
+        console.log('appendChatLogs response: ', success);
+        callback(logs);
+    });
+}
 io.on('connection', function (ioSocket) {
     var socket = new socket_1.ServerSocket(ioSocket);
     console.log("Client connected - " + ioSocket.id);
     ioSocket.on('disconnect', function () { return console.log('Client disconnected'); });
-    // ボード情報のリクエスト
-    socket.on('requestFirstBoard', function (p) {
+    // 初期情報のリクエスト
+    socket.on('requestFirstTableData', function (p) {
         // roomにjoin
         socket.ioSocket.join(p.tableId);
         // ボード情報を取得
         getStoredBoard(p.tableId, function (board) {
-            socket.emit('onFirstBoardReceived', { board: board });
+            // アクションログ情報を取得
+            getStoredActionLogs(p.tableId, function (actionLogs) {
+                // チャットログ情報を取得
+                getStoredChatLogs(p.tableId, function (chatLogs) {
+                    socket.emit('onFirstTableDataReceived', { board: board, actionLogs: actionLogs, chatLogs: chatLogs });
+                });
+            });
         });
     });
     // ボード状態の更新
@@ -840,11 +868,11 @@ io.on('connection', function (ioSocket) {
             });
         }
     });
-    // アクションログ情報のリクエスト
-    socket.on('requestFirstActionLogs', function (p) {
-        // アクションログ情報を取得
-        getStoredActionLogs(p.tableId, function (logs) {
-            socket.emit('onFirstActionLogsReceived', { logs: logs });
+    // チャットログ追加
+    socket.on('appendChatLog', function (p) {
+        appendChatLogs(p.tableId, [p.appendedChatLog], function (logs) {
+            // チャットログ追加イベントを他ユーザーに配信
+            socket.broadcastEmit(p.tableId, 'onChatLogAppended', { appendedChatLogs: logs });
         });
     });
     // 通知送信

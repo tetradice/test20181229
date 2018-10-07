@@ -6,6 +6,7 @@ import * as apps from "sakuraba/apps";
 import { ClientSocket } from "sakuraba/socket";
 import { CARD_DATA, SAKURA_TOKEN_MAX } from "./sakuraba";
 import dragInfo from "sakuraba/dragInfo";
+import { BOARD_BASE_WIDTH } from "sakuraba/const";
 
 declare var params: {
     tableId: string;
@@ -39,15 +40,16 @@ $(function(){
     st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
 
     // ズーム設定を調整
-    let clientWidth = window.innerWidth - 350;
-    if(clientWidth < 1200) st.zoom = 0.9;
-    if(clientWidth < 1200 - 120) st.zoom = 0.8;
-    if(clientWidth < 1200 - 120 * 2) st.zoom = 0.7;
-    if(clientWidth < 1200 - 120 * 3) st.zoom = 0.6;
-    if(clientWidth < 1200 - 120 * 4) st.zoom = 0.5;
+    // コントロールパネルとチャットエリアの幅を350pxぶんは確保できるように調整
+    let sideWidth = 350;
+    let innerWidth = window.innerWidth;
+    if(BOARD_BASE_WIDTH + sideWidth > innerWidth) st.zoom = 0.9;
+    if(BOARD_BASE_WIDTH * 0.9 + sideWidth > innerWidth) st.zoom = 0.8;
+    if(BOARD_BASE_WIDTH * 0.8 + sideWidth > innerWidth) st.zoom = 0.7;
+    if(BOARD_BASE_WIDTH * 0.7 + sideWidth > innerWidth) st.zoom = 0.6;
 
     // アプリケーション起動
-    let appActions = apps.main.run(st, document.getElementById('BOARD'));
+    let appActions = apps.main.run(st, document.getElementById('BOARD-CONTAINER'));
 
     // 萎縮トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
@@ -167,7 +169,7 @@ $(function(){
 
     // 右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD *',
+        selector: '#BOARD, #BOARD *',
 
         build: function($elem: JQuery, event: JQueryEventObject){
             let currentState = appActions.getState();
@@ -438,12 +440,17 @@ $(function(){
     // });
 
 
-    // ボード情報をリクエスト
-    socket.emit('requestFirstBoard', {tableId: params.tableId});
+    // 初期情報をリクエスト
+    socket.emit('requestFirstTableData', {tableId: params.tableId});
 
     // ボード情報を受信した場合、メイン処理をスタート
-    socket.on('onFirstBoardReceived', (p: {board: state.Board}) => {
+    socket.on('onFirstTableDataReceived', (p: {board: state.Board, actionLogs: state.LogRecord[], chatLogs: state.LogRecord[]}) => {
+        // ボード情報のセット
         appActions.setBoard(p.board);
+
+        // ログ情報のセット
+        appActions.setActionLogs(p.actionLogs);
+        appActions.setChatLogs(p.chatLogs);
 
         // まだ名前が決定していなければ、名前の決定処理
         // 観戦者かどうかで名前の処理を分ける
@@ -486,16 +493,8 @@ $(function(){
 
     });
 
-    // アクションログ情報をリクエスト
-    socket.emit('requestFirstActionLogs', {tableId: params.tableId});
-
-    // アクションログ情報を受け取った場合、ステートに設定
-    socket.on('onFirstActionLogsReceived', (p: {logs: state.LogRecord[]}) => {
-        appActions.setActionLogs(p.logs);
-    });
-
     // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
-    socket.on('onBoardReceived', (p: {board: state.Board, appendedActionLogs: state.LogRecord[] | null}) => {
+    socket.on('onBoardReceived', (p) => {
         appActions.setBoard(p.board);
 
         // 追加ログがあれば
@@ -510,6 +509,19 @@ $(function(){
             toastr.info(msg, `${st.board.playerNames[targetLogs[0].playerSide]}:`);
         }
 
+    });
+
+
+    // 他のプレイヤーがチャットログを追加した場合の処理
+    socket.on('onChatLogAppended', (p) => {
+        // ログ追加
+        appActions.appendReceivedChatLogs(p.appendedChatLogs);
+
+        // 受け取ったログをtoastrで表示
+        let st = appActions.getState();
+        let targetLogs = p.appendedChatLogs.filter((log) => utils.logIsVisible(log, st.side));
+        let msg = targetLogs.map((log) => log.body).join('<br>');
+        toastr.info(msg, `${st.board.playerNames[targetLogs[0].playerSide]}:`);
     });
 
     // toastrの標準オプションを設定

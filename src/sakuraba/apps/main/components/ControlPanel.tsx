@@ -4,6 +4,7 @@ import * as utils from "sakuraba/utils";
 import * as css from "./ControlPanel.css"
 import * as models from "sakuraba/models";
 import toastr from "toastr";
+import { BOARD_BASE_WIDTH } from "sakuraba/const";
 
 
 // ルール編集メモ
@@ -152,6 +153,15 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         }
     }
    
+    let notifyValueChanged = (e) => {
+        let val = $(e.target).val();
+        let $button = $('#NOTIFY-SEND-BUTTON');
+        if(val === '-'){
+            $button.addClass('disabled');
+        } else {
+            $button.removeClass('disabled');
+        }
+    };
     let notify = () => {
         if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
         let side = state.side;
@@ -216,7 +226,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             <div class="ui sub header">相手プレイヤーへ通知</div>
             <div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', '-')}>
 
-                <input type="hidden" name="notifyType" />
+                <input type="hidden" name="notifyType" onchange={notifyValueChanged} />
                 <i class="dropdown icon"></i>
                 <div class="default text"></div>
                 <div class="menu">
@@ -226,7 +236,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     <div class="item" data-value="reaction">対応します</div>
                 </div>
             </div>
-            <button class="ui basic button" onclick={notify}>送信</button>
+            <button class="ui basic button disabled" id="NOTIFY-SEND-BUTTON" onclick={notify}>送信</button>
         </div>
     );
     // 観戦者の場合元に戻すボタン、通知パネルの表示はなし
@@ -237,7 +247,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     }
 
     return (
-        <div id="CONTROL-PANEL" style={{left: `${1340 * state.zoom + 20}px`}}>    
+        <div id="CONTROL-PANEL" style={{left: `${BOARD_BASE_WIDTH * state.zoom + 10}px`}}>    
             {undoPanel}&nbsp;
             {menu}<br />
 
@@ -245,7 +255,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
 
 
-            <table class="ui definition table" style={{ width: '100%', fontSize: 'small' }}>
+            <table class="ui definition table" style={{ width: '95%', fontSize: 'small' }}>
                 <tbody>
                     <tr>
                         <td class="collapsing">プレイヤー1</td>
@@ -265,7 +275,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 {notifyPanel}
 
 <div class="ui sub header">ボードサイズ</div>
-<div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', state.zoom * 10)}>
+<div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', Math.round(state.zoom * 10))}>
 
   <input type="hidden" name="boardSize" onchange={(e) => {return actions.setZoom(Number($(e.target).val()) * 0.1)}} />
   <i class="dropdown icon"></i>

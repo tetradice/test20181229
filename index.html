@@ -109,8 +109,8 @@
             tableHistory.unshift(pushedData);
             localStorage.setItem("tableHistory", JSON.stringify(tableHistory));
 
-            $('.ui.accordion').append('<div class="title"><i class="dropdown icon"></i>' + moment(pushedData.time).format('YYYY/M/D HH:mm:ss') + 'に作成した卓</div>');
-            $('.ui.accordion').append('<div class="content">プレイヤー1の参加用URL: <a target="_blank" href="' + pushedData.p1Url + '">' + pushedData.p1Url + '</a><br />プレイヤー2の参加用URL: <a target="_blank" href="' + pushedData.p2Url + '">' + pushedData.p2Url + '</a><br />観戦用URL: <a target="_blank" href="' + pushedData.watchUrl + '">' + pushedData.watchUrl + '</a><br /></div>');
+            $('.ui.accordion').prepend('<div class="content">プレイヤー1の参加用URL: <a target="_blank" href="' + pushedData.p1Url + '">' + pushedData.p1Url + '</a><br />プレイヤー2の参加用URL: <a target="_blank" href="' + pushedData.p2Url + '">' + pushedData.p2Url + '</a><br />観戦用URL: <a target="_blank" href="' + pushedData.watchUrl + '">' + pushedData.watchUrl + '</a><br /></div>');
+            $('.ui.accordion').prepend('<div class="title"><i class="dropdown icon"></i>' + moment(pushedData.time).format('YYYY/M/D HH:mm:ss') + 'に作成した卓</div>');
 
             $('.ui.loader').removeClass('active');
 

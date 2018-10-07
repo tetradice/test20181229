@@ -7,6 +7,7 @@ import _ from "lodash";
 import { CARD_DATA, MEGAMI_DATA } from "sakuraba";
 import { MegamiTarots } from "sakuraba/apps/common/components";
 import { StackedCards } from "sakuraba/apps/common/components/StackedCards";
+import { BOARD_BASE_WIDTH } from "sakuraba/const";
 
 /** レイアウト種別 */
 type LayoutType = 'horizontal' | 'vertical' | 'stacked';
@@ -130,8 +131,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
                 , side: side
                 , title: null
                 , cardLayoutType: 'horizontal'
-                , left: (side === 'p1' ? 10 : 380)
-                , top: (side === 'p1' ? 430 : 30)
+                , left: (side === state.side ? 10 : 380)
+                , top: (side === state.side ? 430 : 30)
                 , width: 820
                 , height: 330
             });
@@ -348,7 +349,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     }
 
     return (
-        <div>
+        <div id="BOARD" style={{width: `${BOARD_BASE_WIDTH * state.zoom}px`}}>
             {objectNodes}
             {frameNodes}
             <components.Vigor side={opponentSide} left={390} top={60} />

@@ -1,0 +1,1 @@
+export const BOARD_BASE_WIDTH = 1350;

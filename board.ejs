@@ -45,7 +45,7 @@
         #CONTROL-PANEL {
             top: 1vh;
             height: 49vh;
-            width: 25em;
+            right: 1vw;
             overflow: auto;
             position: absolute;
         }
@@ -54,11 +54,24 @@
             right: 1vw;
             bottom: 1vh;
             width: auto;
-            overflow: auto;
             position: absolute;
             top: 50vh;
-                height: auto;
+           height: auto;
         }
+        #CHAT-LOG-AREA {
+            width: 95%;
+            position: absolute;
+            top: 0.5rem;
+            overflow: auto;
+            bottom: 4rem;
+        }
+        #CHAT-INPUT-AREA {
+            position: absolute;
+            left: 0.8rem;
+            right: 0.8rem;
+            bottom: 0.5rem;
+        }
+
         .area, .fbs-card, .sakura-token, .fbs-vigor-card, .withered-token {
             position: absolute !important;
         }
@@ -76,6 +89,10 @@
 
         .clickable:hover.plan-token{
             filter: drop-shadow(0 0 6px #7098ff);
+        }
+
+        #BOARD-CONTAINER{
+            height: 100%;
         }
         #BOARD{
             height: 100%;
@@ -357,10 +374,7 @@
             height: 95%;
             overflow: scroll;
         }
-        #CHAT-LOG-AREA {
-            width: 95%;
-            height: 80%;
-        }
+
 
         .dragging {
             opacity: 0.4;
@@ -384,7 +398,7 @@
 </head>
 <body>
 
-<div id="BOARD">
+<div id="BOARD-CONTAINER">
 
 </div>
 
