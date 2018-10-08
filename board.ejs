@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-127139577-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-127139577-1');
+</script>
+
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Page Title</title>
@@ -514,13 +524,15 @@
     </div>
 </div>
 
-<div class="ui modal tiny" id="ABOUT-MODAL">
+<div class="ui modal" id="ABOUT-MODAL">
         <div class="header">ふるよにボードシミュレーターについて</div>
     <div class="scrolling content">
         <p>
         ふるよにボードシミュレーター α版 (version 0.1.0)<br>
         制作: ポン (<a href="https://twitter.com/tetradice" target="_blank">Twitter</a>)<br>
-        このWebサービスは開発中のものです。
+        <br>
+        このWebサービスは開発中のものです。<br>
+        意見、要望、感想、バグ報告などは、<a href="https://twitter.com/tetradice" target="_blank">Twitter</a>か、<a href="https://disboard.org/ja/server/444124341849030666" target="_blank">Discordサーバー「ふるよにミカン」</a>、もしくは<a href="https://its.morphball.net/projects/furuyoni_simulator/issues/new?issue[subject]=%EF%BC%88%E5%85%A5%E5%8A%9B%E4%B8%8D%E8%A6%81%EF%BC%89" target="_blank">要望・バグ報告ポスト</a>までお送りください。
         </p>
         <p><strong>ライセンス情報:</strong></p>
         <ul>
@@ -687,7 +699,7 @@
             </div>
             <div class="ui error message"></div>
         </div>
-        <ul><li>現在のα版では、サリヤとアナザーメガミは選択できません。</li></ul>
+        <p>※現在のα版では、サリヤとアナザーメガミは選択できません。<p>
     </div>
 
     <div class="actions">

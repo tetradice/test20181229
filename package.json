@@ -1,6 +1,6 @@
 {
   "name": "furuyoni_simulator",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "scripts": {
     "start": "node dist/server.js",
@@ -15,23 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "awesome-typescript-loader": "^5.2.0",
-    "css-loader": "^0.28.11",
-    "ejs": "^2.6.1",
-    "express": "4.16.3",
-    "hyperapp": "^1.2.6",
-    "hyperapp-debug": "^0.0.1-beta.10",
-    "hyperapp-devtools": "^0.3.0",
-    "hyperapp-types": "^0.3.0",
-    "jquery-contextmenu": "^2.6.4",
-    "lodash": "^4.17.10",
-    "moment": "^2.22.2",
-    "randomstring": "^1.1.5",
-    "redis": "^2.8.0",
-    "socket.io": "2.1.1",
-    "style-loader": "^0.21.0",
-    "toastr": "^2.1.4",
-    "ts-node": "^7.0.0"
+
   },
   "devDependencies": {
     "@hyperapp/logger": "^0.5.0",
@@ -60,6 +44,23 @@
     "typescript": "^2.9.1",
     "webpack": "^4.12.0",
     "webpack-cli": "^3.0.3",
-    "webpack-node-externals": "^1.7.2"
+    "webpack-node-externals": "^1.7.2",
+    "lodash": "^4.17.10",
+    "redis": "^2.8.0",
+    "toastr": "^2.1.4",
+    "awesome-typescript-loader": "^5.2.0",
+    "css-loader": "^0.28.11",
+    "ejs": "^2.6.1",
+    "express": "4.16.3",
+    "hyperapp": "^1.2.6",
+    "hyperapp-debug": "^0.0.1-beta.10",
+    "hyperapp-devtools": "^0.3.0",
+    "hyperapp-types": "^0.3.0",
+    "jquery-contextmenu": "^2.6.4",
+    "moment": "^2.22.2",
+    "randomstring": "^1.1.5",
+    "socket.io": "2.1.1",
+    "style-loader": "^0.21.0",
+    "ts-node": "^7.0.0"
   }
 }
