@@ -46850,7 +46850,7 @@ $(function () {
                             appActions.setPlayerName({ side: params.side, name: playerName });
                         }
                     });
-                    messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u308B\u6E96\u5099\u304C\u3067\u304D\u305F\u3089\u3001\u307E\u305A\u306F\u53F3\u4E0A\u306E\u300C\u30E1\u30AC\u30DF\u9078\u629E\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
+                    messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u308B\u6E96\u5099\u304C\u3067\u304D\u305F\u3089\u3001\u307E\u305A\u306F\u300C\u30E1\u30AC\u30DF\u9078\u629E\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
                 });
             }
         }
@@ -48997,7 +48997,9 @@ exports.ControlPanel = function () { return function (state, actions) {
     // コマンドボタンの決定
     var commandButtons = null;
     if (state.side === 'watcher') {
-        // 観戦者である場合の処理 (何も表示しない)
+        // 観戦者である場合の処理
+        commandButtons = (hyperapp_1.h("div", { class: css.commandButtons },
+            hyperapp_1.h("div", { class: css.currentPhase }, "- \u89B3\u6226 -")));
     }
     else {
         // プレイヤーである場合の処理
@@ -49021,6 +49023,14 @@ exports.ControlPanel = function () { return function (state, actions) {
                     hyperapp_1.h("button", { id: "CHARGE-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (myAuraCount >= 1 ? '' : 'disabled'), onclick: function () { return basicAction([side_1, 'aura', null], [side_1, 'flair', null], '宿し'); } }, "\u5BBF\u3057")),
                 hyperapp_1.h("br", null),
                 hyperapp_1.h("button", { id: "ALL-ENHANCE-DECREASE-BUTTON", class: "ui basic button " + (onCardTokenFound ? '' : 'disabled'), style: "margin-top: 5px;", onclick: function () { return actions.oprRemoveSakuraTokenfromAllEnhanceCard(); } }, "\u5168\u4ED8\u4E0E\u672D\u306E\u685C\u82B1\u7D50\u6676-1")));
+        }
+        else if (state.board.megamiOpenFlags[state.side]) {
+            commandButtons = (hyperapp_1.h("div", { class: css.commandButtons },
+                hyperapp_1.h("div", { class: css.currentPhase }, "- \u773C\u524D\u69CB\u7BC9 -")));
+        }
+        else if (state.board.playerNames[state.side] !== null) {
+            commandButtons = (hyperapp_1.h("div", { class: css.commandButtons },
+                hyperapp_1.h("div", { class: css.currentPhase }, "- \u53CC\u638C\u7E5A\u4E71 -")));
         }
     }
     // メガミ表示の決定
@@ -49356,7 +49366,6 @@ exports.MainProcessButtons = function (p) { return function (state, actions) {
                 proc: function () {
                     actions.appendActionLog({ text: "-> " + utils.getMegamiDispName(board.megamis[state.side][0]) + "\u3001" + utils.getMegamiDispName(board.megamis[state.side][1]) });
                     actions.setMegamiOpenFlag({ side: side, value: true });
-                    utils.messageModal("次に、右上の「デッキ構築」ボタンをクリックし、デッキの構築を行ってください。");
                 }
             });
         });
@@ -49386,8 +49395,8 @@ exports.MainProcessButtons = function (p) { return function (state, actions) {
                 hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top1, zoom: state.zoom, onclick: deckBuild, primary: !deckBuilded }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
                 deckBuilded ? hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top2, zoom: state.zoom, onclick: firstHandSet, primary: true, disabled: !deckBuilded }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F") : null));
         }
-        else {
-            // まだメガミを公開済みでない場合
+        else if (state.board.playerNames[state.side] !== null) {
+            // まだメガミを公開済みでなく、プレイヤー名は決定済みである場合
             var megamiSelected = state.board.megamis[state.side] !== null;
             processButtons = (hyperapp_1.h("div", null,
                 hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top1, zoom: state.zoom, onclick: megamiSelect, primary: !megamiSelected }, "\u30E1\u30AC\u30DF\u9078\u629E"),
@@ -50036,7 +50045,9 @@ var view = function (state, actions) {
     ];
     // 桜花決闘を開始していなければ、自陣営の全エリア非表示
     // 代わりに全体枠1つだけを表示
+    var READY_AREA_LOCATIONS = {};
     ['p1', 'p2'].forEach(function (side) {
+        READY_AREA_LOCATIONS[side] = (side === state.side ? [10, 430] : [380, 30]);
         if (!state.board.firstDrawFlags[side]) {
             lodash_1.default.remove(cardAreaData, function (a) { return a.side === side; });
             cardAreaData.push({
@@ -50044,8 +50055,8 @@ var view = function (state, actions) {
                 side: side,
                 title: null,
                 cardLayoutType: 'horizontal',
-                left: (side === state.side ? 10 : 380),
-                top: (side === state.side ? 430 : 30),
+                left: READY_AREA_LOCATIONS[side][0],
+                top: READY_AREA_LOCATIONS[side][1],
                 width: 820,
                 height: 330
             });
@@ -50199,25 +50210,40 @@ var view = function (state, actions) {
     // 準備中オブジェクトの配置
     var readyObjects = [];
     var mainProcessButtonLeft = 0;
-    if (!state.board.megamiOpenFlags[state.side]) {
-        // メガミ選択中の場合
-        readyObjects.push(hyperapp_1.h(components_1.MegamiTarots, { left: 50, top: 450, zoom: state.zoom, stackedCount: megamiNumber - (state.board.megamis[state.side] !== null ? 2 : 0) }));
-        if (state.board.megamis[state.side] !== null) {
-            readyObjects.push(hyperapp_1.h(components_1.MegamiTarots, { left: 580, top: 470, zoom: state.zoom, stackedCount: 1 }));
-            readyObjects.push(hyperapp_1.h(components_1.MegamiTarots, { left: 690, top: 470, zoom: state.zoom, stackedCount: 1 }));
+    ['p1', 'p2'].forEach(function (side) {
+        // プレイヤー名が決まっていない場合はスキップ
+        if (state.board.playerNames[side] === null)
+            return true;
+        var _a = READY_AREA_LOCATIONS[side], readyAreaLeft = _a[0], readyAreaTop = _a[1];
+        if (!state.board.megamiOpenFlags[side]) {
+            // メガミ選択中の場合
+            readyObjects.push(hyperapp_1.h(components_1.MegamiTarots, { left: readyAreaLeft + 40, top: readyAreaTop + 20, zoom: state.zoom, stackedCount: megamiNumber - (state.board.megamis[side] !== null ? 2 : 0) }));
+            if (state.board.megamis[side] !== null) {
+                readyObjects.push(hyperapp_1.h(components_1.MegamiTarots, { left: readyAreaLeft + 570, top: readyAreaTop + 40, zoom: state.zoom, stackedCount: 1 }));
+                readyObjects.push(hyperapp_1.h(components_1.MegamiTarots, { left: readyAreaLeft + 680, top: readyAreaTop + 40, zoom: state.zoom, stackedCount: 1 }));
+            }
+            if (side === state.side) {
+                mainProcessButtonLeft = 260;
+            }
         }
-        mainProcessButtonLeft = 260;
-    }
-    else if (!state.board.firstDrawFlags[state.side]) {
-        var deckBuilded = boardModel.getSideCards(selfSide).length >= 1;
-        readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: 50, top: 450, zoom: state.zoom, stackedCount: 14 - (deckBuilded ? 7 : 0), baseClass: "back-normal" }));
-        readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: 180, top: 450, zoom: state.zoom, stackedCount: 8 - (deckBuilded ? 3 : 0), baseClass: "back-special" }));
-        if (deckBuilded) {
-            readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: 850, top: 560, zoom: state.zoom, stackedCount: 7, baseClass: "back-normal" }));
-            readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: 980, top: 560, zoom: state.zoom, stackedCount: 3, baseClass: "back-special" }));
+        else if (!state.board.firstDrawFlags[side]) {
+            // 初回手札を引いている場合
+            var deckBuilded = boardModel.getSideCards(selfSide).length >= 1;
+            readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: readyAreaLeft + 40, top: readyAreaTop + 20, zoom: state.zoom, stackedCount: 14 - (deckBuilded ? 7 : 0), baseClass: "back-normal" }));
+            readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: readyAreaLeft + 170, top: readyAreaTop + 20, zoom: state.zoom, stackedCount: 8 - (deckBuilded ? 3 : 0), baseClass: "back-special" }));
+            if (deckBuilded) {
+                var baseLeft = (side === state.viewingSide ? 850 : 10);
+                ;
+                var baseTop = (side === state.viewingSide ? 560 : 30);
+                readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: baseLeft, top: baseTop, zoom: state.zoom, stackedCount: 7, baseClass: "back-normal" }));
+                readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: baseLeft + 130, top: baseTop, zoom: state.zoom, stackedCount: 3, baseClass: "back-special" }));
+            }
+            if (side === state.side) {
+                mainProcessButtonLeft = 340;
+            }
         }
-        mainProcessButtonLeft = 340;
-    }
+        return true;
+    });
     return (hyperapp_1.h("div", { id: "BOARD", style: { width: const_1.BOARD_BASE_WIDTH * state.zoom + "px" } },
         objectNodes,
         frameNodes,

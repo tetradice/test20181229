@@ -207,7 +207,6 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                 proc: () => {
                     actions.appendActionLog({text: `-> ${utils.getMegamiDispName(board.megamis[state.side][0])}、${utils.getMegamiDispName(board.megamis[state.side][1])}`});
                     actions.setMegamiOpenFlag({side: side, value: true});
-                    utils.messageModal("次に、右上の「デッキ構築」ボタンをクリックし、デッキの構築を行ってください。");
                 }
             });
         });
@@ -240,8 +239,8 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                     {deckBuilded ? <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={firstHandSet} primary disabled={!deckBuilded}>最初の手札を引く</ProcessButton> : null}
                 </div>
             );
-        } else {
-            // まだメガミを公開済みでない場合
+        } else if(state.board.playerNames[state.side] !== null) {
+            // まだメガミを公開済みでなく、プレイヤー名は決定済みである場合
             let megamiSelected = state.board.megamis[state.side] !== null;
             processButtons = (
                 <div>

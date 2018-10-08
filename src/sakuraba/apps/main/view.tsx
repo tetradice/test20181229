@@ -123,7 +123,10 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
     // 桜花決闘を開始していなければ、自陣営の全エリア非表示
     // 代わりに全体枠1つだけを表示
+    let READY_AREA_LOCATIONS: {[side: string]: [number, number]} = {};
     ['p1', 'p2'].forEach((side: PlayerSide) => {
+        READY_AREA_LOCATIONS[side] = (side === state.side ? [10, 430] : [380, 30]);
+
         if(!state.board.firstDrawFlags[side]){
             _.remove(cardAreaData, a => a.side === side);
             cardAreaData.push({
@@ -131,8 +134,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
                 , side: side
                 , title: null
                 , cardLayoutType: 'horizontal'
-                , left: (side === state.side ? 10 : 380)
-                , top: (side === state.side ? 430 : 30)
+                , left: READY_AREA_LOCATIONS[side][0]
+                , top: READY_AREA_LOCATIONS[side][1]
                 , width: 820
                 , height: 330
             });
@@ -328,25 +331,43 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     // 準備中オブジェクトの配置
     let readyObjects = [];
     let mainProcessButtonLeft: number = 0;
-    if(!state.board.megamiOpenFlags[state.side]){
-        // メガミ選択中の場合
-        readyObjects.push(<MegamiTarots left={50} top={450} zoom={state.zoom} stackedCount={megamiNumber - (state.board.megamis[state.side] !== null ? 2 : 0)} />);
-        if(state.board.megamis[state.side] !== null){
-            readyObjects.push(<MegamiTarots left={580} top={470} zoom={state.zoom} stackedCount={1} />);
-            readyObjects.push(<MegamiTarots left={690} top={470} zoom={state.zoom} stackedCount={1} />);
-        }
-        mainProcessButtonLeft = 260;
-    } else if(!state.board.firstDrawFlags[state.side]){
-        let deckBuilded = boardModel.getSideCards(selfSide).length >= 1;
 
-        readyObjects.push(<StackedCards left={50} top={450} zoom={state.zoom} stackedCount={14 - (deckBuilded ? 7 : 0)} baseClass="back-normal" />);
-        readyObjects.push(<StackedCards left={180} top={450} zoom={state.zoom} stackedCount={8 - (deckBuilded ? 3 : 0)}  baseClass="back-special" />);
-        if(deckBuilded){
-            readyObjects.push(<StackedCards left={850} top={560} zoom={state.zoom} stackedCount={7} baseClass="back-normal" />);
-            readyObjects.push(<StackedCards left={980} top={560} zoom={state.zoom} stackedCount={3}  baseClass="back-special" />);
+    ['p1', 'p2'].forEach((side: PlayerSide) => {
+        // プレイヤー名が決まっていない場合はスキップ
+        if(state.board.playerNames[side] === null) return true;
+
+        let [readyAreaLeft, readyAreaTop] = READY_AREA_LOCATIONS[side];
+        if(!state.board.megamiOpenFlags[side]){
+            // メガミ選択中の場合
+            readyObjects.push(<MegamiTarots left={readyAreaLeft + 40} top={readyAreaTop + 20} zoom={state.zoom} stackedCount={megamiNumber - (state.board.megamis[side] !== null ? 2 : 0)} />);
+            if(state.board.megamis[side] !== null){
+                readyObjects.push(<MegamiTarots left={readyAreaLeft + 570} top={readyAreaTop + 40} zoom={state.zoom} stackedCount={1} />);
+                readyObjects.push(<MegamiTarots left={readyAreaLeft + 680} top={readyAreaTop + 40} zoom={state.zoom} stackedCount={1} />);
+            }
+
+            if(side === state.side){
+                mainProcessButtonLeft = 260;
+            }
+        } else if(!state.board.firstDrawFlags[side]){
+            // 初回手札を引いている場合
+            let deckBuilded = boardModel.getSideCards(selfSide).length >= 1;
+
+            readyObjects.push(<StackedCards left={readyAreaLeft + 40} top={readyAreaTop + 20} zoom={state.zoom} stackedCount={14 - (deckBuilded ? 7 : 0)} baseClass="back-normal" />);
+            readyObjects.push(<StackedCards left={readyAreaLeft + 170} top={readyAreaTop + 20} zoom={state.zoom} stackedCount={8 - (deckBuilded ? 3 : 0)}  baseClass="back-special" />);
+            if(deckBuilded){
+                let baseLeft = (side === state.viewingSide ? 850 : 10);;
+                let baseTop = (side === state.viewingSide ? 560 : 30);
+                readyObjects.push(<StackedCards left={baseLeft} top={baseTop} zoom={state.zoom} stackedCount={7} baseClass="back-normal" />);
+                readyObjects.push(<StackedCards left={baseLeft + 130} top={baseTop} zoom={state.zoom} stackedCount={3}  baseClass="back-special" />);
+            }
+
+            if(side === state.side){
+                mainProcessButtonLeft = 340;
+            }
         }
-        mainProcessButtonLeft = 340;
-    }
+
+        return true;
+    });
 
     return (
         <div id="BOARD" style={{width: `${BOARD_BASE_WIDTH * state.zoom}px`}}>

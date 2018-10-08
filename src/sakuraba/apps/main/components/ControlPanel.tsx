@@ -71,7 +71,12 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     let commandButtons: Children = null;
 
     if(state.side === 'watcher'){
-        // 観戦者である場合の処理 (何も表示しない)
+        // 観戦者である場合の処理
+        commandButtons = (
+            <div class={css.commandButtons}>
+            <div class={css.currentPhase}>- 観戦 -</div>
+            </div>
+        );
     } else {
         // プレイヤーである場合の処理
         if(state.board.firstDrawFlags[state.side]){
@@ -125,6 +130,18 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     style="margin-top: 5px;"
                     onclick={() => actions.oprRemoveSakuraTokenfromAllEnhanceCard()}>全付与札の桜花結晶-1</button>
 
+                </div>
+            );
+        } else if(state.board.megamiOpenFlags[state.side]){
+            commandButtons = (
+                <div class={css.commandButtons}>
+                <div class={css.currentPhase}>- 眼前構築 -</div>
+                </div>
+            );
+        } else if(state.board.playerNames[state.side] !== null){
+            commandButtons = (
+                <div class={css.commandButtons}>
+                <div class={css.currentPhase}>- 双掌繚乱 -</div>
                 </div>
             );
         }
