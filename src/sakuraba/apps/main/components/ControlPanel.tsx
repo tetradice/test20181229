@@ -207,12 +207,6 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         $(e).dropdown({action: 'hide'});
     };
 
-    const audioPlay = () => {
-        const bgm = new Audio('http://inazumaapps.info/furuyoni_simulator/deliv/bgm/sword_dance.mp3');
-        bgm.volume = 0.5;
-        bgm.loop = true;
-        bgm.play();
-    };
 
     const aboutThisService = () => {
         utils.showModal("#ABOUT-MODAL");
@@ -229,7 +223,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     {(state.actionLogVisible ? <i class="check icon"></i> : null)}
                     操作ログを表示
                                 </div>
-                <div class="item" onclick={audioPlay}>BGM再生</div>
+                <div class="item" onclick={() => actions.toggleBgmPlaying()}>BGM再生</div>
                 <div class="divider"></div>
                 <div class="item" onclick={aboutThisService}>ふるよにボードシミュレーターについて <br />(バージョン、著作権情報、連絡先)</div>
             </div>

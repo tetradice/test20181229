@@ -127,8 +127,13 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     ['p1', 'p2'].forEach((side: PlayerSide) => {
         READY_AREA_LOCATIONS[side] = (side === state.side ? [10, 430] : [380, 30]);
 
-        if(!state.board.firstDrawFlags[side]){
-            _.remove(cardAreaData, a => a.side === side);
+        if(!state.board.mariganFlags[side]){
+            // 最初の手札を引いており、引き直しの有無を選択していない場合は、手札だけは表示する
+            if(state.board.firstDrawFlags[side]){
+                _.remove(cardAreaData, a => a.side === side && a.region !== 'hand');
+            } else {
+                _.remove(cardAreaData, a => a.side === side);
+            }
             cardAreaData.push({
                   region: null
                 , side: side
@@ -140,6 +145,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
                 , height: 330
             });
         }
+
     });
 
     // 追加札を持つメガミを宿している場合のみ、追加札領域を追加
@@ -381,6 +387,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.ChatLogArea logs={state.chatLog} />
             <components.MariganButton left={10} top={770} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
+            <components.BGMWindow shown={state.bgmPlaying} />
             {extraTokens}
             <components.PlayerNameDisplay left={10} top={10} width={1200} side={utils.flipSide(selfSide)} />
             <components.PlayerNameDisplay left={10} top={770} width={1200} side={selfSide} />

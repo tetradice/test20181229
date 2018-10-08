@@ -182,7 +182,6 @@ $(function(){
 
             // 決闘を開始していなければ、メニューを開けない
             if(!currentState.board.firstDrawFlags[playerSide]){
-                utils.messageModal('決闘を開始するまでは、カードや桜花結晶の操作は行えません。');
                 return false;
             };
 

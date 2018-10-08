@@ -24,6 +24,7 @@ export interface State {
     chatLog: LogRecord[];
 
     actionLogVisible: boolean;
+    bgmPlaying: boolean;
 }
 
 /** ボード履歴 */
@@ -49,8 +50,9 @@ export interface Board {
     megamiOpenFlags: {p1: boolean, p2: boolean};
     /** 最初の手札を引いたかどうか */
     firstDrawFlags: {p1: boolean, p2: boolean};
-    /** 手札の引き直しを行ったかどうか */
+    /** 手札の引き直しを行った（もしくは行わないことを選択した）かどうか */
     mariganFlags: {p1: boolean, p2: boolean};
+
     /** 手札を相手に公開しているかどうか */
     handOpenFlags: {p1: boolean, p2: boolean};
     /** 特定の手札を相手に公開しているかどうか */

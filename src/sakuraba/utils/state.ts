@@ -26,6 +26,7 @@ export function createInitialState(): state.State{
       , actionLog: []
       , chatLog: []
       , actionLogVisible: false
+      , bgmPlaying: false
       , zoom: 1
   }
   return st;

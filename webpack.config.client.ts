@@ -25,7 +25,7 @@ const config: webpack.Configuration = {
         // 拡張子 .ts の場合
         test: /\.ts$|\.tsx$/,
         // TypeScriptでビルド
-        use: ['awesome-typescript-loader']
+        use: ['ts-loader']
       },
       {
         // 拡張子 .css の場合

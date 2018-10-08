@@ -640,6 +640,7 @@ function createInitialState() {
         actionLog: [],
         chatLog: [],
         actionLogVisible: false,
+        bgmPlaying: false,
         zoom: 1
     };
     return st;

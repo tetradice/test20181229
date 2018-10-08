@@ -46576,7 +46576,6 @@ $(function () {
             var playerSide = currentState.side;
             // 決闘を開始していなければ、メニューを開けない
             if (!currentState.board.firstDrawFlags[playerSide]) {
-                utils.messageModal('決闘を開始するまでは、カードや桜花結晶の操作は行えません。');
                 return false;
             }
             ;
@@ -48458,7 +48457,10 @@ exports.default = {
     /** ズーム倍率を変更する */
     setZoom: function (p) {
         return { zoom: p };
-    }
+    },
+    toggleBgmPlaying: function () { return function (state) {
+        return { bgmPlaying: !state.bgmPlaying };
+    }; }
 };
 
 
@@ -48652,6 +48654,81 @@ exports.ActionLogWindow = function (p) { return function (state, actions) {
                 hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleActionLogVisible(); } },
                     hyperapp_1.h("i", { class: "times icon" }))),
             hyperapp_1.h("div", { id: "ACTION-LOG-AREA" }, logElements_1)));
+    }
+    else {
+        return null;
+    }
+}; };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/main/components/BGMWindow.tsx":
+/*!*********************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/BGMWindow.tsx ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+// ウインドウの表示状態をローカルストレージに保存
+function saveWindowState(elem) {
+    var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top'), width: $(elem).css('width'), height: $(elem).css('height') };
+    localStorage.setItem(elem.id + "-WindowState", JSON.stringify(current));
+}
+/** BGM再生ウインドウ */
+exports.BGMWindow = function (p) { return function (state, actions) {
+    if (p.shown) {
+        var bgm_1 = new Audio('http://inazumaapps.info/furuyoni_simulator/deliv/bgm/sword_dance.mp3');
+        var oncreate = function (e) {
+            // ウインドウを移動可能にする
+            $(e).draggable({
+                cursor: "move",
+                stop: function () {
+                    saveWindowState(e);
+                },
+            });
+            // ウインドウの状態を復元
+            var windowStateJson = localStorage.getItem(e.id + "-WindowState");
+            if (windowStateJson) {
+                var windowState = JSON.parse(windowStateJson);
+                $(e).css(windowState);
+            }
+            // BGM再生
+            bgm_1.volume = 0.5;
+            bgm_1.loop = true;
+            bgm_1.play();
+            // range初期化
+            $('#BGM-VOLUME-RANGE').range({
+                min: 0,
+                max: 100,
+                start: 50,
+                step: 2,
+                onChange: function (value) {
+                    bgm_1.volume = value * 0.01;
+                }
+            });
+        };
+        var ondestroy = function (target) {
+            bgm_1.pause();
+        };
+        return (hyperapp_1.h("div", { id: "BGM-PLAY-WINDOW", style: { height: "11rem", width: "25rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate, ondestroy: ondestroy },
+            hyperapp_1.h("div", { class: "ui top attached label" },
+                "BGM\u518D\u751F\u4E2D",
+                hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleBgmPlaying(); } },
+                    hyperapp_1.h("i", { class: "times icon" }))),
+            hyperapp_1.h("p", null,
+                hyperapp_1.h("i", { class: "music icon" }),
+                "\u5263\u306E\u821E",
+                hyperapp_1.h("br", null),
+                "Composed by t.tam",
+                hyperapp_1.h("br", null),
+                "From ",
+                hyperapp_1.h("a", { href: "https://dova-s.jp/bgm/play3721.html", target: "_blank" }, "\u30D5\u30EA\u30FCBGM DOVA-SYNDROME")),
+            hyperapp_1.h("div", { class: "ui blue range", id: "BGM-VOLUME-RANGE" })));
     }
     else {
         return null;
@@ -49090,12 +49167,6 @@ exports.ControlPanel = function () { return function (state, actions) {
     var dropdownCreate = function (e) {
         $(e).dropdown({ action: 'hide' });
     };
-    var audioPlay = function () {
-        var bgm = new Audio('http://inazumaapps.info/furuyoni_simulator/deliv/bgm/sword_dance.mp3');
-        bgm.volume = 0.5;
-        bgm.loop = true;
-        bgm.play();
-    };
     var aboutThisService = function () {
         utils.showModal("#ABOUT-MODAL");
     };
@@ -49108,7 +49179,7 @@ exports.ControlPanel = function () { return function (state, actions) {
             hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleActionLogVisible(); } },
                 (state.actionLogVisible ? hyperapp_1.h("i", { class: "check icon" }) : null),
                 "\u64CD\u4F5C\u30ED\u30B0\u3092\u8868\u793A"),
-            hyperapp_1.h("div", { class: "item", onclick: audioPlay }, "BGM\u518D\u751F"),
+            hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleBgmPlaying(); } }, "BGM\u518D\u751F"),
             hyperapp_1.h("div", { class: "divider" }),
             hyperapp_1.h("div", { class: "item", onclick: aboutThisService },
                 "\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u306B\u3064\u3044\u3066 ",
@@ -49918,6 +49989,7 @@ __export(__webpack_require__(/*! ./SakuraTokenAreaBackground */ "./src/sakuraba/
 __export(__webpack_require__(/*! ./SakuraTokenAreaDroppable */ "./src/sakuraba/apps/main/components/SakuraTokenAreaDroppable.tsx"));
 __export(__webpack_require__(/*! ./MariganButton */ "./src/sakuraba/apps/main/components/MariganButton.tsx"));
 __export(__webpack_require__(/*! ./ActionLogWindow */ "./src/sakuraba/apps/main/components/ActionLogWindow.tsx"));
+__export(__webpack_require__(/*! ./BGMWindow */ "./src/sakuraba/apps/main/components/BGMWindow.tsx"));
 __export(__webpack_require__(/*! ./ChatLogArea */ "./src/sakuraba/apps/main/components/ChatLogArea.tsx"));
 __export(__webpack_require__(/*! ./PlayerNameDisplay */ "./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx"));
 __export(__webpack_require__(/*! ./MainProcessButtons */ "./src/sakuraba/apps/main/components/MainProcessButtons.tsx"));
@@ -50054,8 +50126,14 @@ var view = function (state, actions) {
     var READY_AREA_LOCATIONS = {};
     ['p1', 'p2'].forEach(function (side) {
         READY_AREA_LOCATIONS[side] = (side === state.side ? [10, 430] : [380, 30]);
-        if (!state.board.firstDrawFlags[side]) {
-            lodash_1.default.remove(cardAreaData, function (a) { return a.side === side; });
+        if (!state.board.mariganFlags[side]) {
+            // 最初の手札を引いており、引き直しの有無を選択していない場合は、手札だけは表示する
+            if (state.board.firstDrawFlags[side]) {
+                lodash_1.default.remove(cardAreaData, function (a) { return a.side === side && a.region !== 'hand'; });
+            }
+            else {
+                lodash_1.default.remove(cardAreaData, function (a) { return a.side === side; });
+            }
             cardAreaData.push({
                 region: null,
                 side: side,
@@ -50261,6 +50339,7 @@ var view = function (state, actions) {
         hyperapp_1.h(components.ChatLogArea, { logs: state.chatLog }),
         hyperapp_1.h(components.MariganButton, { left: 10, top: 770 }),
         hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),
+        hyperapp_1.h(components.BGMWindow, { shown: state.bgmPlaying }),
         extraTokens,
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 10, width: 1200, side: utils.flipSide(selfSide) }),
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: selfSide }),
@@ -50978,6 +51057,7 @@ function createInitialState() {
         actionLog: [],
         chatLog: [],
         actionLogVisible: false,
+        bgmPlaying: false,
         zoom: 1
     };
     return st;
