@@ -47616,7 +47616,7 @@ exports.MegamiTarots = function (p) {
     var cx = p.left;
     var cy = p.top;
     for (var i = 0; i < p.stackedCount; i++) {
-        tarots.push(hyperapp_1.h("img", { src: "/furuyoni_commons/furuyoni_na/tarots/tarotback_emboss.png", style: Object.assign({}, styles, { left: cx * p.zoom + "px", top: cy * p.zoom + "px" }) }));
+        tarots.push(hyperapp_1.h("img", { src: "http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/tarots/tarotback_emboss.png", style: Object.assign({}, styles, { left: cx * p.zoom + "px", top: cy * p.zoom + "px" }) }));
         cx += 3;
         cy += 3;
     }
@@ -49091,10 +49091,13 @@ exports.ControlPanel = function () { return function (state, actions) {
         $(e).dropdown({ action: 'hide' });
     };
     var audioPlay = function () {
-        var bgm = new Audio('/audio/sword_dance.mp3');
+        var bgm = new Audio('http://inazumaapps.info/furuyoni_simulator/deliv/bgm/sword_dance.mp3');
         bgm.volume = 0.5;
         bgm.loop = true;
         bgm.play();
+    };
+    var aboutThisService = function () {
+        utils.showModal("#ABOUT-MODAL");
     };
     var menu = (hyperapp_1.h("button", { class: "ui basic button dropdown", oncreate: dropdownCreate },
         "\u30E1\u30CB\u30E5\u30FC",
@@ -49106,9 +49109,11 @@ exports.ControlPanel = function () { return function (state, actions) {
                 (state.actionLogVisible ? hyperapp_1.h("i", { class: "check icon" }) : null),
                 "\u64CD\u4F5C\u30ED\u30B0\u3092\u8868\u793A"),
             hyperapp_1.h("div", { class: "item", onclick: audioPlay }, "BGM\u518D\u751F"),
-            hyperapp_1.h("div", { class: "item" }, "\u5353\u60C5\u5831"),
             hyperapp_1.h("div", { class: "divider" }),
-            hyperapp_1.h("div", { class: "item" }, "\u3053\u306E\u30B5\u30A4\u30C8\u306B\u3064\u3044\u3066 (\u30D0\u30FC\u30B8\u30E7\u30F3\u3001\u8457\u4F5C\u6A29\u60C5\u5831)"))));
+            hyperapp_1.h("div", { class: "item", onclick: aboutThisService },
+                "\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u306B\u3064\u3044\u3066 ",
+                hyperapp_1.h("br", null),
+                "(\u30D0\u30FC\u30B8\u30E7\u30F3\u3001\u8457\u4F5C\u6A29\u60C5\u5831\u3001\u9023\u7D61\u5148)"))));
     var undoPanel = (hyperapp_1.h("div", { class: "ui icon basic buttons" },
         hyperapp_1.h("button", { class: "ui button " + (state.boardHistoryPast.length === 0 ? 'disabled' : ''), onclick: function () { return actions.undoBoard(); } },
             hyperapp_1.h("i", { class: "undo alternate icon" })),
@@ -49529,7 +49534,7 @@ exports.PlanToken = function (p) { return function (state, actions) {
         popupTitle = '神算';
     if (p.planState === 'back-red')
         popupTitle = '鬼謀';
-    return hyperapp_1.h("img", { class: "plan-token " + (p.side === state.side ? 'clickable' : ''), "data-title": popupTitle, src: "/furuyoni_commons/furuyoni_na/board_token/plan_" + imageName + ".png", oncreate: oncreate, style: styles, onclick: onclick });
+    return hyperapp_1.h("img", { class: "plan-token " + (p.side === state.side ? 'clickable' : ''), "data-title": popupTitle, src: "http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/board_token/plan_" + imageName + ".png", oncreate: oncreate, style: styles, onclick: onclick });
 }; };
 
 
@@ -49671,7 +49676,7 @@ exports.UmbrellaToken = function (p) { return function (state, actions) {
             $('#CONTEXT-UMBRELLA-TOKEN-CLICK').contextMenu({ x: e.pageX, y: e.pageY });
         }
     };
-    return hyperapp_1.h("img", { class: (p.side === state.side ? 'clickable' : ''), src: "/furuyoni_commons/furuyoni_na/cards/umbrella_" + (p.umbrellaState === 'closed' ? 'a' : 'b') + "_cut.png", style: styles, onclick: onclick });
+    return hyperapp_1.h("img", { class: (p.side === state.side ? 'clickable' : ''), src: "http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/cards/umbrella_" + (p.umbrellaState === 'closed' ? 'a' : 'b') + "_cut.png", style: styles, onclick: onclick });
 }; };
 
 
@@ -50916,6 +50921,13 @@ function messageModal(desc) {
         .modal('show');
 }
 exports.messageModal = messageModal;
+/** 任意のモーダルを表示する */
+function showModal(modalSelector) {
+    $(modalSelector)
+        .modal({ closable: false })
+        .modal('show');
+}
+exports.showModal = showModal;
 /** 入力ボックスを表示する */
 function userInputModal(desc, decideCallback) {
     // すべてのポップアップを非表示にする

@@ -583,6 +583,13 @@ function messageModal(desc) {
         .modal('show');
 }
 exports.messageModal = messageModal;
+/** 任意のモーダルを表示する */
+function showModal(modalSelector) {
+    $(modalSelector)
+        .modal({ closable: false })
+        .modal('show');
+}
+exports.showModal = showModal;
 /** 入力ボックスを表示する */
 function userInputModal(desc, decideCallback) {
     // すべてのポップアップを非表示にする

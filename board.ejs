@@ -5,11 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Page Title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/jquery-ui/jquery-ui.css">
-    <link rel="stylesheet" href="/jquery-ui/jquery-ui.structure.css">
-    <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
+    <link rel="stylesheet" href="http://inazumaapps.info/furuyoni_simulator/deliv/jquery-ui/jquery-ui.css">
+    <link rel="stylesheet" href="http://inazumaapps.info/furuyoni_simulator/deliv/jquery-ui/jquery-ui.structure.css">
+    <link rel="stylesheet" type="text/css" href="http://inazumaapps.info/furuyoni_simulator/deliv/semantic/dist/semantic.min.css">
     <link rel="stylesheet" type="text/css" href="/jquery-contextmenu/dist/jquery.contextMenu.min.css">
-    <link rel="stylesheet" type="text/css" href="/toastr/toastr.min.css">
+    <link rel="stylesheet" type="text/css" href="http://inazumaapps.info/furuyoni_simulator/deliv/toastr/toastr.min.css">
     <style type="text/css">
         /* Prevent the text contents of draggable elements from being selectable. */
         [draggable] {
@@ -191,7 +191,7 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            background-image: url(/furuyoni_commons/others/sakura_token_ghost1.png);
+            background-image: url(http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost1.png);
             z-index: 200;
         }
 
@@ -201,28 +201,28 @@
         }
 
         .fbs-card.back-normal {
-            background-image: url(/furuyoni_commons/furuyoni_na/cards/cardback_normal_emboss.png);
+            background-image: url(http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/cards/cardback_normal_emboss.png);
         }
 
         .fbs-card.back-special {
-            background-image: url(/furuyoni_commons/furuyoni_na/cards/cardback_special_emboss.png);
+            background-image: url(http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/cards/cardback_special_emboss.png);
         }
         .fbs-card.back-poison {
-            background-image: url(/furuyoni_commons/furuyoni_na/cards/cardback_poison.png);
+            background-image: url(http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/cards/cardback_poison.png);
         }
         .fbs-vigor-card {
             width: 140px;
             height: 100px;
             background-size: contain;
             background-repeat: no-repeat;
-            background-image: url(/furuyoni_commons/furuyoni_na/cards/vigor.png);
+            background-image: url(http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/cards/vigor.png);
         }
         .withered-token {
             width: 140px;
             height: 100px;
             background-size: contain;
             background-repeat: no-repeat;
-            background-image: url(/furuyoni_commons/furuyoni_na/board_token/shrink.png);
+            background-image: url(http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/board_token/shrink.png);
         }
         .area.background {
             z-index: -1;
@@ -501,18 +501,138 @@
 </div> -->
 
 <div class="ui modal tiny" id="MESSAGE-MODAL">
-    <div class="content">
+    <div class="scrolling content">
         <div class="description">
         </div>
 
     </div>
     <div class="actions">
         <div class="ui positive labeled icon button">
-        確定
+        OK
         <i class="checkmark icon"></i>
         </div>
     </div>
 </div>
+
+<div class="ui modal tiny" id="ABOUT-MODAL">
+        <div class="header">ふるよにボードシミュレーターについて</div>
+    <div class="scrolling content">
+        <p>
+        ふるよにボードシミュレーター α版 (version 0.1.0)<br>
+        制作: ポン (<a href="https://twitter.com/tetradice" target="_blank">Twitter</a>)<br>
+        このWebサービスは開発中のものです。
+        </p>
+        <p><strong>ライセンス情報:</strong></p>
+        <ul>
+            <li><a href="https://main-bakafire.ssl-lolipop.jp/furuyoni/na/rule.html" target="_blank">ふるよにコモンズ</a>
+                <ul>
+                    <li>制作: BakaFire,TOKIAME</li>
+                    <li>ライセンス: <a href="https://main-bakafire.ssl-lolipop.jp/furuyoni/na/rule.html" target="_blank">https://main-bakafire.ssl-lolipop.jp/furuyoni/na/rule.html</a></li>
+                </ul>
+            </li>
+            <li><a href="https://jquery.com/" target="_blank">JQuery</a>
+                <ul>
+                        <li>制作: jQuery Foundation</li>
+                        <li>ライセンス: <a href="https://jquery.org/license/" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="https://semantic-ui.com/" target="_blank">Semantic UI</a>
+                <ul>
+                        <li>制作: Jack Lukic</li>
+                        <li>ライセンス: <a href="https://github.com/Semantic-Org/Semantic-UI/blob/master/LICENSE.md" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="http://www.toastrjs.com" target="_blank">Toastr</a>
+                <ul>
+                        <li>制作: John Papa, Tim Ferrell and Hans Fjällemark</li>
+                        <li>ライセンス: <a href="https://github.com/CodeSeven/toastr/blob/master/LICENSE" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="http://socket.io/" target="_blank">socket.io</a>
+                <ul>
+                        <li>制作: Automattic</li>
+                        <li>ライセンス: <a href="https://github.com/socketio/socket.io/blob/master/LICENSE" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="http://redis.js.org/" target="_blank">redis - a node.js redis client</a>
+                <ul>
+                        <li>制作: NodeRedis</li>
+                        <li>ライセンス: <a href="https://github.com/NodeRedis/node_redis/blob/master/LICENSE" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="https://github.com/klughammer/node-randomstring" target="_blank">randomstring</a>
+                <ul>
+                        <li>制作: Elias Klughammer</li>
+                        <li>ライセンス: <a href="https://github.com/klughammer/node-randomstring/blob/master/LICENSE" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="http://momentjs.com/" target="_blank">moment.js</a>
+                <ul>
+                        <li>制作: Iskren Ivov Chernev</li>
+                        <li>ライセンス: <a href="https://github.com/moment/moment/blob/develop/LICENSE" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="https://lodash.com/" target="_blank">Lodash</a>
+                <ul>
+                        <li>制作: JS Foundation and other contributors</li>
+                        <li>ライセンス: <a href="https://github.com/lodash/lodash/blob/master/LICENSE" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="http://swisnl.github.io/jQuery-contextMenu/" target="_blank">jQuery contextmenu</a>
+                <ul>
+                        <li>制作: SWIS BV</li>
+                        <li>ライセンス: <a href="https://github.com/swisnl/jQuery-contextMenu/blob/master/LICENSE" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="http://expressjs.com/" target="_blank">Express</a> 
+                <ul>
+                        <li>制作: TJ Holowaychuk, Roman Shtylman and Douglas Christopher Wilson</li>
+                        <li>ライセンス: <a href="https://github.com/expressjs/express/blob/HEAD/LICENSE" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="https://github.com/jorgebucaran/hyperapp" target="_blank">hyperapp</a> 
+                <ul>
+                        <li>制作: Jorge Bucaran</li>
+                        <li>ライセンス: <a href="https://github.com/jorgebucaran/hyperapp/blob/master/LICENSE.md" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="http://ejs.co/" target="_blank">EJS</a> 
+                <ul>
+                        <li>制作: Matthew Eernisse</li>
+                        <li>ライセンス: <a href="http://www.apache.org/licenses/" target="_blank">Apache License Version 2.0</a></li>
+                </ul>
+            </li>
+            <li><a href="https://webpack.js.org/" target="_blank">webpack and plugins (css-loader, style-loader)</a>
+                <ul>
+                        <li>制作: Tobias Koppers @sokra</li>
+                        <li>ライセンス: <a href="https://github.com/webpack/webpack/blob/master/LICENSE" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+            <li><a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a>
+                <ul>
+                        <li>制作: Microsoft Co.</li>
+                        <li>ライセンス: <a href="https://github.com/Microsoft/TypeScript/blob/master/LICENSE.txt" target="_blank">Apache License</a></li>
+                </ul>
+            </li>
+            <li><a href="https://github.com/s-panferov/awesome-typescript-loader/" target="_blank">awesome-typescript-loader</a>
+                <ul>
+                        <li>制作: Stanislav Panferov</li>
+                        <li>ライセンス: <a href="https://github.com/s-panferov/awesome-typescript-loader/blob/master/LICENSE.md" target="_blank">MIT</a></li>
+                </ul>
+            </li>
+
+
+        </ul>
+
+    </div>
+    <div class="actions">
+        <div class="ui positive labeled icon button">
+        OK
+        <i class="checkmark icon"></i>
+        </div>
+    </div>
+</div>
+
 
 <div class="ui modal tiny" id="INPUT-MODAL">
         <div class="content">
@@ -588,22 +708,22 @@
 
 <!-- ドラッグ時のghost画像は、他パネルの下に隠して配置 (ロード完了後に表示する) -->
 <div class="drag-ghost" id="sakura-token-ghost-1" style="display: none; width: 80px; height: 26px; z-index: -9999; position: absolute; left: 380px; top: 380px;">
-    <img src="/furuyoni_commons/others/sakura_token_ghost1.png" width="26" height="26">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost1.png" width="26" height="26">
 </div>
 <div class="drag-ghost" id="sakura-token-ghost-2" style="display: none; width: 80px; height: 26px; z-index: -9999; position: absolute; left: 380px; top: 380px;">
-    <img src="/furuyoni_commons/others/sakura_token_ghost2.png" width="35" height="26">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost2.png" width="35" height="26">
 </div>
 <div class="drag-ghost" id="sakura-token-ghost-3" style="display: none; width: 80px; height: 26px; z-index: -9999; position: absolute; left: 380px; top: 380px;">
-    <img src="/furuyoni_commons/others/sakura_token_ghost3.png" width="43" height="26">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost3.png" width="43" height="26">
 </div>
 <div class="drag-ghost" id="sakura-token-ghost-4" style="display: none; width: 80px; height: 26px; z-index: -9999; position: absolute; left: 380px; top: 380px;">
-    <img src="/furuyoni_commons/others/sakura_token_ghost4.png" width="52" height="26">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost4.png" width="52" height="26">
 </div>
 <div class="drag-ghost" id="sakura-token-ghost-5" style="display: none; width: 80px; height: 26px; z-index: -9999; position: absolute; left: 380px; top: 380px;">
-    <img src="/furuyoni_commons/others/sakura_token_ghost5.png" width="61" height="26">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost5.png" width="61" height="26">
 </div>
 <div class="drag-ghost" id="sakura-token-ghost-many" style="display: none; width: 72px; height: 26px; z-index: -9999; position: absolute; left: 380px; top: 380px;">
-    <img src="/furuyoni_commons/others/sakura_token_ghost5.png" width="61" height="26">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost5.png" width="61" height="26">
     <div class="count" style="position: absolute; right: 2px; bottom: 2px; font-size: medium; color: silver; font-weight: bold; ">4</div>
 </div>
 
@@ -613,9 +733,9 @@
     var draggingFrom = null;
 </script>
 <script src="/socket.io/socket.io.js"></script>
-<script type="text/javascript" src="/jquery-3.3.1.min.js"></script>
-<script type="text/javascript" src="/jquery-ui/jquery-ui.js"></script>
-<script type="text/javascript" src="/semantic/dist/semantic.js"></script>
+<script type="text/javascript" src="http://inazumaapps.info/furuyoni_simulator/deliv/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="http://inazumaapps.info/furuyoni_simulator/deliv/jquery-ui/jquery-ui.js"></script>
+<script type="text/javascript" src="http://inazumaapps.info/furuyoni_simulator/deliv/semantic/dist/semantic.js"></script>
 <script type="text/javascript" src="/jquery-contextmenu/dist/jquery.ui.position.js"></script>
 <script type="text/javascript" src="/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
 <script type="text/javascript" src="/dist/main.js"></script>

@@ -21,5 +21,5 @@ export const UmbrellaToken = (p: {side: PlayerSide, umbrellaState: UmbrellaState
         }
     };
 
-    return <img class={(p.side === state.side ? 'clickable' : '')} src={`/furuyoni_commons/furuyoni_na/cards/umbrella_${p.umbrellaState === 'closed' ? 'a' : 'b'}_cut.png`} style={styles} onclick={onclick} />;
+    return <img class={(p.side === state.side ? 'clickable' : '')} src={`http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/cards/umbrella_${p.umbrellaState === 'closed' ? 'a' : 'b'}_cut.png`} style={styles} onclick={onclick} />;
 }

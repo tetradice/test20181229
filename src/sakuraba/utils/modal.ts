@@ -19,6 +19,13 @@ export function messageModal(desc: string){
         .modal('show');
 }
 
+/** 任意のモーダルを表示する */
+export function showModal(modalSelector: string){
+    $(modalSelector)
+        .modal({closable: false})
+        .modal('show');
+}
+
 /** 入力ボックスを表示する */
 export function userInputModal(desc: string, decideCallback: (this: JQuery, $element: JQuery) => false | void){
     // すべてのポップアップを非表示にする

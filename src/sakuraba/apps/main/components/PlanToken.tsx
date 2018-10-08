@@ -41,5 +41,5 @@ export const PlanToken = (p: {side: PlayerSide, planState: PlanState, left: numb
     if(p.planState === 'back-blue') popupTitle = '神算';
     if(p.planState === 'back-red') popupTitle = '鬼謀';
 
-    return <img class={`plan-token ` + (p.side === state.side ? 'clickable' : '')} data-title={popupTitle} src={`/furuyoni_commons/furuyoni_na/board_token/plan_${imageName}.png`} oncreate={oncreate} style={styles} onclick={onclick} />;
+    return <img class={`plan-token ` + (p.side === state.side ? 'clickable' : '')} data-title={popupTitle} src={`http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/board_token/plan_${imageName}.png`} oncreate={oncreate} style={styles} onclick={onclick} />;
 }
