@@ -46458,7 +46458,7 @@ $(function () {
     if (const_1.BOARD_BASE_WIDTH * 0.7 + sideWidth > innerWidth)
         st.zoom = 0.6;
     // アプリケーション起動
-    var appActions = apps.main.run(st, document.getElementById('BOARD-CONTAINER'));
+    var appActions = apps.main.run(st, document.getElementById('BOARD'));
     // 萎縮トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
@@ -50244,7 +50244,7 @@ var view = function (state, actions) {
         }
         return true;
     });
-    return (hyperapp_1.h("div", { id: "BOARD", style: { width: const_1.BOARD_BASE_WIDTH * state.zoom + "px" } },
+    return (hyperapp_1.h("div", { id: "BOARD-PLAYAREA", style: { width: const_1.BOARD_BASE_WIDTH * state.zoom + "px" } },
         objectNodes,
         frameNodes,
         hyperapp_1.h(components.Vigor, { side: opponentSide, left: 390, top: 60 }),

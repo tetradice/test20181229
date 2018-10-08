@@ -370,7 +370,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     });
 
     return (
-        <div id="BOARD" style={{width: `${BOARD_BASE_WIDTH * state.zoom}px`}}>
+        <div id="BOARD-PLAYAREA" style={{width: `${BOARD_BASE_WIDTH * state.zoom}px`}}>
             {objectNodes}
             {frameNodes}
             <components.Vigor side={opponentSide} left={390} top={60} />

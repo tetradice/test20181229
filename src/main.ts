@@ -49,7 +49,7 @@ $(function(){
     if(BOARD_BASE_WIDTH * 0.7 + sideWidth > innerWidth) st.zoom = 0.6;
 
     // アプリケーション起動
-    let appActions = apps.main.run(st, document.getElementById('BOARD-CONTAINER'));
+    let appActions = apps.main.run(st, document.getElementById('BOARD'));
 
     // 萎縮トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
