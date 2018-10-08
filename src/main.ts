@@ -52,7 +52,7 @@ $(function(){
     let appActions = apps.main.run(st, document.getElementById('BOARD'));
 
     // 萎縮トークンクリックメニュー
-    $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
+    $('#BOARD-PLAYAREA').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
         zIndex: 9999,
         trigger: 'none',
@@ -78,7 +78,7 @@ $(function(){
     });
 
     // 計略トークンクリックメニュー
-    $('#BOARD').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
+    $('#BOARD-PLAYAREA').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
     $.contextMenu({
         zIndex: 9999,
         trigger: 'none',
@@ -127,7 +127,7 @@ $(function(){
     });
 
     // 傘トークンクリックメニュー
-    $('#BOARD').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
+    $('#BOARD-PLAYAREA').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
     $.contextMenu({
         zIndex: 9999,
         trigger: 'none',
@@ -169,7 +169,7 @@ $(function(){
 
     // 右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD, #BOARD *',
+        selector: '#BOARD-PLAYAREA, #BOARD-PLAYAREA *',
 
         build: function($elem: JQuery, event: JQueryEventObject){
             let currentState = appActions.getState();

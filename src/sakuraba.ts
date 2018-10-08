@@ -37,11 +37,11 @@ export const MEGAMI_DATA = {
     , 'hagane':   {name: 'ハガネ', symbol: '槌'}
     , 'chikage':  {name: 'チカゲ', symbol: '毒'}
     , 'kururu':   {name: 'クルル', symbol: '絡繰'}
-    , 'thallya':  {name: 'サリヤ', symbol: '乗騎'}
+    //, 'thallya':  {name: 'サリヤ', symbol: '乗騎'}
     , 'raira':    {name: 'ライラ', symbol: '爪'}
     , 'utsuro':   {name: 'ウツロ', symbol: '鎌'}
 };
-export type Megami = keyof (typeof MEGAMI_DATA);
+export type Megami = keyof (typeof MEGAMI_DATA) | 'thallya';
 
 // カード情報
 interface CardDataItemBase {

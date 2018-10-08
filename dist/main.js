@@ -46460,7 +46460,7 @@ $(function () {
     // アプリケーション起動
     var appActions = apps.main.run(st, document.getElementById('BOARD'));
     // 萎縮トークンクリックメニュー
-    $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
+    $('#BOARD-PLAYAREA').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
         zIndex: 9999,
         trigger: 'none',
@@ -46482,7 +46482,7 @@ $(function () {
         }
     });
     // 計略トークンクリックメニュー
-    $('#BOARD').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
+    $('#BOARD-PLAYAREA').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
     $.contextMenu({
         zIndex: 9999,
         trigger: 'none',
@@ -46527,7 +46527,7 @@ $(function () {
         }
     });
     // 傘トークンクリックメニュー
-    $('#BOARD').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
+    $('#BOARD-PLAYAREA').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
     $.contextMenu({
         zIndex: 9999,
         trigger: 'none',
@@ -46565,7 +46565,7 @@ $(function () {
     });
     // 右クリックメニュー
     $.contextMenu({
-        selector: '#BOARD, #BOARD *',
+        selector: '#BOARD-PLAYAREA, #BOARD-PLAYAREA *',
         build: function ($elem, event) {
             var currentState = appActions.getState();
             var board = new models.Board(currentState.board);
@@ -47313,8 +47313,9 @@ exports.MEGAMI_DATA = {
     'shinra': { name: 'シンラ', symbol: '書' },
     'hagane': { name: 'ハガネ', symbol: '槌' },
     'chikage': { name: 'チカゲ', symbol: '毒' },
-    'kururu': { name: 'クルル', symbol: '絡繰' },
-    'thallya': { name: 'サリヤ', symbol: '乗騎' },
+    'kururu': { name: 'クルル', symbol: '絡繰' }
+    //, 'thallya':  {name: 'サリヤ', symbol: '乗騎'}
+    ,
     'raira': { name: 'ライラ', symbol: '爪' },
     'utsuro': { name: 'ウツロ', symbol: '鎌' }
 };

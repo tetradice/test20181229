@@ -123,8 +123,9 @@ exports.MEGAMI_DATA = {
     'shinra': { name: 'シンラ', symbol: '書' },
     'hagane': { name: 'ハガネ', symbol: '槌' },
     'chikage': { name: 'チカゲ', symbol: '毒' },
-    'kururu': { name: 'クルル', symbol: '絡繰' },
-    'thallya': { name: 'サリヤ', symbol: '乗騎' },
+    'kururu': { name: 'クルル', symbol: '絡繰' }
+    //, 'thallya':  {name: 'サリヤ', symbol: '乗騎'}
+    ,
     'raira': { name: 'ライラ', symbol: '爪' },
     'utsuro': { name: 'ウツロ', symbol: '鎌' }
 };
