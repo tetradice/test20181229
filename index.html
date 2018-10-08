@@ -15,7 +15,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>ふるよにボードシミュレーター α版</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="http://inazumaapps.info/furuyoni_simulator/deliv/semantic/dist/semantic.min.css">
     <style type="text/css">
       body {
         background-color: #FFFFFF;
@@ -46,84 +46,86 @@
         <div class="ui main container">
           <div class="ui huge loader"></div>
           <div class="ui grid">
-              <div class="seven wide column">
-            <button class="ui primary button" id="NEW-BOARD-BUTTON">新しい卓を作る</button>
-            <p>新しい卓を作り、自分や他の人が参加できる状態にします。<br>（ユーザー登録は不要です）</p>
-
-            <div class="ui segment" id="RESULT-AREA" style="display: none;">
-            <p>新しい卓を作成しました。下記のURLにアクセスすることで、決闘への参加や観戦が可能です。</p>
-            <table class="ui definition table">
-                <tbody>
-                  <tr>
-                    <td class="collapsing">プレイヤー1の参加用URL</td>
-                    <td><a id="P1-URL" href="#" target="_blank"></a></td>
-                  </tr>
-                  <tr>
-                    <td>プレイヤー2の参加用URL</td>
-                    <td><a id="P2-URL" href="#" target="_blank"></a></td>
-                  </tr>
-                  <tr>
+            <div class="eight wide column">
+              <button class="ui primary button" id="NEW-BOARD-BUTTON">新しい卓を作る</button>
+              <p>新しい卓を作り、自分や他の人が参加できる状態にします。<br>（ユーザー登録は不要です）</p>
+        
+              <div class="ui segment" id="RESULT-AREA" style="display: none; overflow: auto;">
+                <p>新しい卓を作成しました。下記のURLにアクセスすることで、決闘への参加や観戦が可能です。</p>
+                <table class="ui definition table">
+                  <tbody>
+                    <tr>
+                      <td class="collapsing">プレイヤー1の参加用URL</td>
+                      <td><a id="P1-URL" href="#" target="_blank"></a></td>
+                    </tr>
+                    <tr>
+                      <td>プレイヤー2の参加用URL</td>
+                      <td><a id="P2-URL" href="#" target="_blank"></a></td>
+                    </tr>
+                    <tr>
                       <td>観戦用URL</td>
                       <td><a id="WATCH-URL" href="#" target="_blank"></a></td>
                     </tr>
-              </tbody></table>
-            </div>
-
-            <div class="ui segment" id="HISTORY-AREA" style="margin-top: 4em;">
-              <h4 class="ui header">これまでに作成した卓の履歴</h4>
-              <p id="HISTORY-NO-DATA-DESC" style="display: none;">作成した卓はありません。</p>
-              <div class="ui styled accordion" style="display: none;">
+                  </tbody>
+                </table>
+        
               </div>
-              <div class="ui divider"></div>
-              <p style="font-size: small;">※履歴はPC（端末）ごとに記録されており、ほかの人には見えません。</p>
+
+              <div class="ui segment" id="HISTORY-AREA" style="margin-top: 4em;">
+                <h4 class="ui header">これまでに作成した卓の履歴</h4>
+                <p id="HISTORY-NO-DATA-DESC" style="display: none;">作成した卓はありません。</p>
+                <div class="ui styled accordion" style="display: none;">
+                </div>
+                <div class="ui divider"></div>
+                <p style="font-size: small;">※履歴はPC（端末）ごとに記録されており、ほかの人には見えません。</p>
+              </div>
+            </div>
+            <div class="one wide column">
+            </div>
+            <div class="seven wide column">
+              <h3 class="ui dividing header" style="margin-top: 4em;">
+                必要環境
+              </h3>
+              <p>
+                <strong>PC版のGoogle Chrome</strong> (比較的新しめのバージョンのもの)<br>
+                <br>
+                α版ではIE, Edge, FireFoxなどの別ブラウザでの動作は確認していません。<br>
+                また、タブレットやスマホには対応していません。
+              </p>
+        
+              <h3 class="ui dividing header" style="margin-top: 3em;">
+                ふるよにボードシミュレーターとは
+              </h3>
+              <p>
+                　PCのブラウザから遊べる、ボードゲーム「<a href="https://main-bakafire.ssl-lolipop.jp/furuyoni/">桜降る代に決闘を</a>」のシミュレーターです。<br>
+                　オンラインでの対戦や観戦が可能なため、友達との対戦に使用することができます。また、1人で2つの画面を開くことで、1人盤回しに使用することも可能です。
+              </p>
+              <p><img src="http://inazumaapps.info/furuyoni_simulator/deliv/WS000593.PNG" style="width: 100%; border: 1px solid silver;"></p>
+              <p>
+                　ただし、これはあくまで「シミュレーター」で、<strong>対戦ツールではない</strong>ことにご注意ください。そのため、既存の対戦ツールと比べると、ルールや盤上の管理はあまり自動でやってくれません。（カードや桜花結晶の移動、攻撃したときのライフ減少などは、プレイヤーが自分でやる必要があります）
+              </p>
+        
+              <h3 class="ui dividing header" style="margin-top: 3em;">
+                現在のバージョン（α版）についての注意
+              </h3>
+              <ul>
+                <li>現在のα版では、新幕シーズン2に存在するメガミのうち、サリヤを除いた12柱のメガミを使用可能です。（アナザーメガミ、およびはじまりの決闘のホノカとウツロは使用できません）</li>
+                <li>試作中のバージョンのため、未完成部分やバグが多数含まれている可能性があります。</li>
+                <li>開発やサポートは予告なく中止される可能性があります。</li>
+              </ul>
+        
+              <h3 class="ui dividing header" style="margin-top: 3em;">
+                連絡先
+              </h3>
+              <p>意見、要望、感想、バグ報告などは、下記のどれかまでお送りください。</p>
+              <ul>
+                <li><a href="https://twitter.com/tetradice" target="_blank">制作者（ポン）のTwitter</a></li>
+                <li><a href="https://disboard.org/ja/server/444124341849030666" target="_blank">Discordサーバー「ふるよにミカン」</a></li>
+                <li><a href="https://its.morphball.net/projects/furuyoni_simulator/issues/new?issue[subject]=%EF%BC%88%E5%85%A5%E5%8A%9B%E4%B8%8D%E8%A6%81%EF%BC%89"
+                    target="_blank">要望・バグ報告ポスト</a>　※ログイン不要</li>
+              </ul>
             </div>
           </div>
-          <div class="one wide column">
-          </div>
-          <div class="eight wide column">
-            <h3 class="ui dividing header" style="margin-top: 4em;">
-              必要環境
-            </h3>
-            <p>
-              <strong>PC版のGoogle Chrome</strong> (比較的新しめのバージョンのもの)<br>
-              <br>
-              α版ではIE, Edge, FireFoxなどの別ブラウザでの動作は確認していません。<br>
-              また、タブレットやスマホには対応していません。
-            </p>
-            
-            <h3 class="ui dividing header" style="margin-top: 3em;">
-              ふるよにボードシミュレーターとは
-            </h3>
-            <p>
-              　PCのブラウザから遊べる、ボードゲーム「<a href="https://main-bakafire.ssl-lolipop.jp/furuyoni/">桜降る代に決闘を</a>」のシミュレーターです。<br>
-              　オンラインでの対戦や観戦が可能なため、友達との対戦に使用することができます。また、1人で2つの画面を開くことで、1人盤回しに使用することも可能です。
-            </p>
-            <p><img src="http://inazumaapps.info/furuyoni_simulator/deliv/WS000593.PNG" style="width: 100%; border: 1px solid silver;"></p>
-            <p>
-              　ただし、これはあくまで「シミュレーター」で、<strong>対戦ツールではない</strong>ことにご注意ください。そのため、既存の対戦ツールと比べると、ルールや盤上の管理はあまり自動でやってくれません。（カードや桜花結晶の移動、攻撃したときのライフ減少などは、プレイヤーが自分でやる必要があります）
-            </p>
-            
-            <h3 class="ui dividing header" style="margin-top: 3em;">
-              現在のバージョン（α版）についての注意
-            </h3>
-            <ul>
-              <li>現在のα版では、新幕シーズン2に存在するメガミのうち、サリヤを除いた12柱のメガミを使用可能です。（アナザーメガミ、およびはじまりの決闘のホノカとウツロは使用できません）</li>
-              <li>試作中のバージョンのため、未完成部分やバグが多数含まれている可能性があります。</li>
-              <li>開発やサポートは予告なく中止される可能性があります。</li>
-            </ul>
-            
-            <h3 class="ui dividing header" style="margin-top: 3em;">
-              連絡先
-            </h3>
-            <p>意見、要望、感想、バグ報告などは、下記のどれかまでお送りください。</p>
-            <ul>
-              <li><a href="https://twitter.com/tetradice" target="_blank">制作者（ポン）のTwitter</a></li>
-              <li><a href="https://disboard.org/ja/server/444124341849030666" target="_blank">Discordサーバー「ふるよにミカン」</a></li>
-              <li><a href="https://its.morphball.net/projects/furuyoni_simulator/issues/new?issue[subject]=%EF%BC%88%E5%85%A5%E5%8A%9B%E4%B8%8D%E8%A6%81%EF%BC%89"
-                  target="_blank">要望・バグ報告ポスト</a>　※ログイン不要</li>
-            </ul>
-          </div>
-        </div>
 
     <p id='server-time'></p>
     <script type="text/javascript" src="http://inazumaapps.info/furuyoni_simulator/deliv/jquery-3.3.1.min.js"></script>
