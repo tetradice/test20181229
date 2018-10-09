@@ -22,31 +22,31 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
     };
 
     let onClick = () => {
-        // マリガンダイアログを起動
-        let board = new models.Board(state.board);
+        // // マリガンダイアログを起動
+        // let board = new models.Board(state.board);
         
-        let promise = new Promise<state.Card[]>((resolve, reject) => {
-            let cards = board.getRegionCards(side, 'hand', null);
-            let st = apps.mariganModal.State.create(side, cards, state.zoom, resolve, reject);
-            apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));            
-        }).then((selectedCards) => {
-            // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
-            actions.operate({
-                log: `手札${selectedCards.length}枚を山札の底に置き、同じ枚数のカードを引き直し`,
-                proc: () => {
-                    // 選択したカードを山札の底に移動
-                    selectedCards.forEach(card => {
-                        actions.moveCard({from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す'});
-                    });
+        // let promise = new Promise<state.Card[]>((resolve, reject) => {
+        //     let cards = board.getRegionCards(side, 'hand', null);
+        //     let st = apps.mariganModal.State.create(side, cards, state.zoom, resolve, reject);
+        //     apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));            
+        // }).then((selectedCards) => {
+        //     // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
+        //     actions.operate({
+        //         log: `手札${selectedCards.length}枚を山札の底に置き、同じ枚数のカードを引き直し`,
+        //         proc: () => {
+        //             // 選択したカードを山札の底に移動
+        //             selectedCards.forEach(card => {
+        //                 actions.moveCard({from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す'});
+        //             });
 
-                    // 手札n枚を引く
-                    actions.draw({number: selectedCards.length});
+        //             // 手札n枚を引く
+        //             actions.draw({number: selectedCards.length});
         
-                    // マリガンフラグON
-                    actions.setMariganFlag({side: side, value: true});
-                }
-            })
-        });
+        //             // マリガンフラグON
+        //             actions.setMariganFlag({side: side, value: true});
+        //         }
+        //     })
+        // });
     }
 
     return <button style={styles} class={`ui basic button`} onclick={onClick}><span style={{color: 'blue'}}>手札を引き直す</span></button>;

@@ -56,9 +56,6 @@ function layoutObjects<T extends state.BoardObject>(
         } else {
             // 領域の幅に収まらない場合は、収まるように均等に詰めて並べる
             let overlapWidth = ((objectWidth * objects.length) - innerWidth) / (objects.length - 1);
-            if(objects.length >= 1 && objects[0].type === 'card' && objects[0].region === 'used' && objects[0].side === 'p1'){
-                console.log(`★innerWidth = ${innerWidth}, requiredWidth = ${requiredWidth}, over = ${(objectWidth * objects.length) - innerWidth}, overlapWidth = ${overlapWidth}`);
-            }
             objects.forEach((child, i) => {
                 ret.push([child, cx, cy]);
 
@@ -125,7 +122,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     // 代わりに全体枠1つだけを表示
     let READY_AREA_LOCATIONS: {[side: string]: [number, number]} = {};
     ['p1', 'p2'].forEach((side: PlayerSide) => {
-        READY_AREA_LOCATIONS[side] = (side === state.side ? [10, 430] : [380, 30]);
+        READY_AREA_LOCATIONS[side] = (side === state.viewingSide ? [10, 430] : [380, 30]);
 
         if(!state.board.mariganFlags[side]){
             // 最初の手札を引いており、引き直しの有無を選択していない場合は、手札だけは表示する
@@ -355,7 +352,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
                 mainProcessButtonLeft = 260;
             }
         } else if(!state.board.firstDrawFlags[side]){
-            // 初回手札を引いている場合
+            // デッキ構築中の場合
             let deckBuilded = boardModel.getSideCards(selfSide).length >= 1;
 
             readyObjects.push(<StackedCards left={readyAreaLeft + 40} top={readyAreaTop + 20} zoom={state.zoom} stackedCount={14 - (deckBuilded ? 7 : 0)} baseClass="back-normal" />);
@@ -370,6 +367,10 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             if(side === state.side){
                 mainProcessButtonLeft = 340;
             }
+
+        } else if(!state.board.mariganFlags[side]){
+            // 手札引き直しを選択中の場合
+            mainProcessButtonLeft = 450;
         }
 
         return true;
@@ -385,7 +386,6 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.WitheredToken side={selfSide} left={680} top={630} />
             <components.ControlPanel />
             <components.ChatLogArea logs={state.chatLog} />
-            <components.MariganButton left={10} top={770} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
             <components.BGMWindow shown={state.bgmPlaying} />
             {extraTokens}

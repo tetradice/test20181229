@@ -181,7 +181,7 @@ $(function(){
             let playerSide = currentState.side;
 
             // 決闘を開始していなければ、メニューを開けない
-            if(!currentState.board.firstDrawFlags[playerSide]){
+            if(!currentState.board.mariganFlags[playerSide]){
                 return false;
             };
 
@@ -623,7 +623,7 @@ $(function(){
             let currentState = appActions.getState();
             if(currentState.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
 
-            if(!currentState.board.firstDrawFlags[params.side]){
+            if(!currentState.board.mariganFlags[params.side]){
                 utils.messageModal('決闘を開始するまでは、カードや桜花結晶の移動は行えません。');
                 return false;
             };

@@ -77,7 +77,7 @@ interface SpecialCardDataItem extends CardDataItemBase {
 }
 
 
-type CardDataItem = NormalCardDataItem | SpecialCardDataItem;
+export type CardDataItem = NormalCardDataItem | SpecialCardDataItem;
 
 export const CARD_DATA: {[key: string]: CardDataItem} = {
       '01-yurina-o-n-1': {megami: 'yurina', name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: "3-4", damage: '3/1', text: ''}

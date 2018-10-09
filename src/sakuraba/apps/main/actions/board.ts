@@ -421,9 +421,9 @@ export default {
 
         return {board: newBoard};
     },
-    
-    /** 最初の手札を引き、桜花結晶などを配置する */
-    oprBoardSetup: () => (state: state.State, actions: ActionsType) => {
+
+    /** 最初の手札を引く */
+    oprFirstDraw: () => (state: state.State, actions: ActionsType) => {
         actions.operate({
             undoType: 'notBack',
             proc: () => {
@@ -438,6 +438,21 @@ export default {
                 actions.appendActionLog({text: `最初の手札3枚を引きました`});
                 actions.draw({number: 3, cardNameLogging: true});
 
+                // 最初の手札を引いたフラグをセット
+                actions.setFirstDrawFlag({side: state.side, value: true});
+            }
+        });
+    },
+    
+    /** 桜花結晶などを配置する */
+    oprBoardSetup: () => (state: state.State, actions: ActionsType) => {
+        actions.operate({
+            undoType: 'notBack',
+            proc: () => {
+                if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
+        
+                let board = new models.Board(state.board);
+
                 // 桜花結晶を作り、同時に集中力をセット
                 actions.addSakuraToken({side: state.side, region: 'aura', number: 3});
                 actions.addSakuraToken({side: state.side, region: 'life', number: 10});
@@ -448,9 +463,6 @@ export default {
                 if(board.getRegionSakuraTokens(null, 'distance', null).length === 0){
                     actions.addSakuraToken({side: null, region: 'distance', number: 10});
                 };
-
-                // 最初の手札を引いたフラグをセット
-                actions.setFirstDrawFlag({side: state.side, value: true});
 
                 // シンラがいれば計略トークンをセット
                 if(board.megamis[state.side].find(m => m === 'shinra')){

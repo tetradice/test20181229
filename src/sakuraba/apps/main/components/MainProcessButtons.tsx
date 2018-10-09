@@ -6,11 +6,13 @@ import * as css from "./ControlPanel.css"
 import { withLogger } from "@hyperapp/logger"
 import * as models from "sakuraba/models";
 import { Card, ProcessButton } from "sakuraba/apps/common/components";
-
+import * as apps from "sakuraba/apps";
 
 
 /** 処理を進めるためのボタンを表示 */
 export const MainProcessButtons = (p: {left: number}) => (state: state.State, actions: ActionsType) => {
+    if(state.side === 'watcher') return null; // 観戦者は表示しない
+    let side = state.side;
 
     /** メガミ選択処理 */
     let megamiSelect = function(){
@@ -213,42 +215,94 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
     };
     let firstHandSet = () => {
         utils.confirmModal('手札を引くと、それ以降デッキの変更は行えません。<br>よろしいですか？', () => {
-            actions.oprBoardSetup({side: state.side});
+            actions.oprFirstDraw();
         });
     };
 
     let board = state.board;
-    let deckBuilded = (state.side !== 'watcher' && boardModel.getSideCards(state.side).length >= 1);
+    let deckBuilded = (boardModel.getSideCards(state.side).length >= 1);
 
     // コマンドボタンの決定
     let processButtons: Children = null;
     let top1 = 500;
     let top2 = 600;
 
-    if(state.side === 'watcher'){
-        // 観戦者である場合の処理 (何も表示しない)
-    } else {
-        // プレイヤーである場合の処理
-        if(state.board.firstDrawFlags[state.side]){
-            // 最初の手札を引いたあとは表示無し
-        } else if(state.board.megamiOpenFlags[state.side]){
-            // 選択したメガミを公開済みの場合
-            processButtons = (
-                <div>
-                    <ProcessButton left={p.left} top={top1} zoom={state.zoom} onclick={deckBuild} primary={!deckBuilded}>デッキ構築</ProcessButton>
-                    {deckBuilded ? <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={firstHandSet} primary disabled={!deckBuilded}>最初の手札を引く</ProcessButton> : null}
-                </div>
-            );
-        } else if(state.board.playerNames[state.side] !== null) {
-            // まだメガミを公開済みでなく、プレイヤー名は決定済みである場合
-            let megamiSelected = state.board.megamis[state.side] !== null;
-            processButtons = (
-                <div>
-                    <ProcessButton left={p.left} top={top1} zoom={state.zoom} onclick={megamiSelect} primary={!megamiSelected}>メガミ選択</ProcessButton>
-                    {megamiSelected ? <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={megamiOpen} primary  disabled={!megamiSelected}>選択したメガミを公開</ProcessButton> : null}
-                </div>
-            );
+    // プレイヤーである場合の処理
+    if(state.board.mariganFlags[state.side]){
+        // 手札の引き直しをするかどうかを確定した後は表示しない
+    } else if(state.board.firstDrawFlags[state.side]){
+        // 最初の手札を引いた後
+
+        const marigan = () => {
+            // マリガンダイアログを起動
+            let board = new models.Board(state.board);
+            
+            let promise = new Promise<state.Card[]>((resolve, reject) => {
+                let cards = board.getRegionCards(side, 'hand', null);
+                let st = apps.mariganModal.State.create(side, cards, state.zoom, resolve, reject);
+                apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));            
+            }).then((selectedCards) => {
+                // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
+                actions.operate({
+                    log: `手札${selectedCards.length}枚を山札の底に置き、同じ枚数のカードを引き直しました`,
+                    proc: () => {
+                        // 選択したカードを山札の底に移動
+                        selectedCards.forEach(card => {
+                            actions.moveCard({from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す'});
+                        });
+
+                        // 手札n枚を引く
+                        actions.draw({number: selectedCards.length});
+            
+                        // マリガンフラグON
+                        actions.setMariganFlag({side: side, value: true});
+
+                        // 盤面をセットアップ
+                        actions.oprBoardSetup();
+                    }
+                })
+
+                utils.messageModal("桜花決闘の準備が完了しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
+            });
+        };
+
+        const notMarigan = () => {
+            utils.confirmModal("手札の引き直しを行わずに、決闘を開始します。<br>よろしいですか？", () => {
+                // マリガンフラグON
+                actions.setMariganFlag({side: side, value: true});
+
+                // 盤面のカードや桜花結晶などを配置して、メッセージを表示
+                actions.oprBoardSetup({});
+                utils.messageModal("桜花決闘の準備が完了しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
+
+            });
+
         }
+
+        processButtons = (
+            <div>
+                <ProcessButton left={p.left} top={top1} zoom={state.zoom} onclick={marigan} primary>手札を引き直して決闘を開始</ProcessButton>
+                <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={notMarigan}>決闘を開始</ProcessButton>
+            </div>
+        );
+    } else if(state.board.megamiOpenFlags[state.side]){
+        // 選択したメガミを公開済みの場合
+        processButtons = (
+            <div>
+                <ProcessButton left={p.left} top={top1} zoom={state.zoom} onclick={deckBuild} primary={!deckBuilded}>デッキ構築</ProcessButton>
+                {deckBuilded ? <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={firstHandSet} primary disabled={!deckBuilded}>最初の手札を引く</ProcessButton> : null}
+            </div>
+        );
+    } else if(state.board.playerNames[state.side] !== null) {
+        // まだメガミを公開済みでなく、プレイヤー名は決定済みである場合
+        let megamiSelected = state.board.megamis[state.side] !== null;
+
+        processButtons = (
+            <div>
+                <ProcessButton left={p.left} top={top1} zoom={state.zoom} onclick={megamiSelect} primary={!megamiSelected}>メガミ選択</ProcessButton>
+                {megamiSelected ? <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={megamiOpen} primary  disabled={!megamiSelected}>選択したメガミを公開</ProcessButton> : null}
+            </div>
+        );
     }
     return processButtons;
 }

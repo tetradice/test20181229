@@ -46575,7 +46575,7 @@ $(function () {
                 return false;
             var playerSide = currentState.side;
             // 決闘を開始していなければ、メニューを開けない
-            if (!currentState.board.firstDrawFlags[playerSide]) {
+            if (!currentState.board.mariganFlags[playerSide]) {
                 return false;
             }
             ;
@@ -46969,7 +46969,7 @@ $(function () {
             var currentState = appActions.getState();
             if (currentState.side === 'watcher')
                 throw "Forbidden operation for watcher"; // 観戦者は実行不可能な操作
-            if (!currentState.board.firstDrawFlags[params.side]) {
+            if (!currentState.board.mariganFlags[params.side]) {
                 utils.messageModal('決闘を開始するまでは、カードや桜花結晶の移動は行えません。');
                 return false;
             }
@@ -48052,8 +48052,8 @@ exports.default = {
             newBoard.thunderGuage[p.side] = 20;
         return { board: newBoard };
     }; },
-    /** 最初の手札を引き、桜花結晶などを配置する */
-    oprBoardSetup: function () { return function (state, actions) {
+    /** 最初の手札を引く */
+    oprFirstDraw: function () { return function (state, actions) {
         actions.operate({
             undoType: 'notBack',
             proc: function () {
@@ -48065,6 +48065,19 @@ exports.default = {
                 // 山札を3枚引く
                 actions.appendActionLog({ text: "\u6700\u521D\u306E\u624B\u672D3\u679A\u3092\u5F15\u304D\u307E\u3057\u305F" });
                 actions.draw({ number: 3, cardNameLogging: true });
+                // 最初の手札を引いたフラグをセット
+                actions.setFirstDrawFlag({ side: state.side, value: true });
+            }
+        });
+    }; },
+    /** 桜花結晶などを配置する */
+    oprBoardSetup: function () { return function (state, actions) {
+        actions.operate({
+            undoType: 'notBack',
+            proc: function () {
+                if (state.side === 'watcher')
+                    throw "Forbidden operation for watcher"; // 観戦者は実行不可能な操作
+                var board = new models.Board(state.board);
                 // 桜花結晶を作り、同時に集中力をセット
                 actions.addSakuraToken({ side: state.side, region: 'aura', number: 3 });
                 actions.addSakuraToken({ side: state.side, region: 'life', number: 10 });
@@ -48075,8 +48088,6 @@ exports.default = {
                     actions.addSakuraToken({ side: null, region: 'distance', number: 10 });
                 }
                 ;
-                // 最初の手札を引いたフラグをセット
-                actions.setFirstDrawFlag({ side: state.side, value: true });
                 // シンラがいれば計略トークンをセット
                 if (board.megamis[state.side].find(function (m) { return m === 'shinra'; })) {
                     actions.setPlanState({ side: state.side, value: 'back-blue' });
@@ -49274,8 +49285,12 @@ var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/saku
 var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var components_1 = __webpack_require__(/*! sakuraba/apps/common/components */ "./src/sakuraba/apps/common/components/index.ts");
+var apps = __importStar(__webpack_require__(/*! sakuraba/apps */ "./src/sakuraba/apps/index.ts"));
 /** 処理を進めるためのボタンを表示 */
 exports.MainProcessButtons = function (p) { return function (state, actions) {
+    if (state.side === 'watcher')
+        return null; // 観戦者は表示しない
+    var side = state.side;
     /** メガミ選択処理 */
     var megamiSelect = function () {
         if (state.side === 'watcher')
@@ -49449,36 +49464,73 @@ exports.MainProcessButtons = function (p) { return function (state, actions) {
     };
     var firstHandSet = function () {
         utils.confirmModal('手札を引くと、それ以降デッキの変更は行えません。<br>よろしいですか？', function () {
-            actions.oprBoardSetup({ side: state.side });
+            actions.oprFirstDraw();
         });
     };
     var board = state.board;
-    var deckBuilded = (state.side !== 'watcher' && boardModel.getSideCards(state.side).length >= 1);
+    var deckBuilded = (boardModel.getSideCards(state.side).length >= 1);
     // コマンドボタンの決定
     var processButtons = null;
     var top1 = 500;
     var top2 = 600;
-    if (state.side === 'watcher') {
-        // 観戦者である場合の処理 (何も表示しない)
+    // プレイヤーである場合の処理
+    if (state.board.mariganFlags[state.side]) {
+        // 手札の引き直しをするかどうかを確定した後は表示しない
     }
-    else {
-        // プレイヤーである場合の処理
-        if (state.board.firstDrawFlags[state.side]) {
-            // 最初の手札を引いたあとは表示無し
-        }
-        else if (state.board.megamiOpenFlags[state.side]) {
-            // 選択したメガミを公開済みの場合
-            processButtons = (hyperapp_1.h("div", null,
-                hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top1, zoom: state.zoom, onclick: deckBuild, primary: !deckBuilded }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
-                deckBuilded ? hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top2, zoom: state.zoom, onclick: firstHandSet, primary: true, disabled: !deckBuilded }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F") : null));
-        }
-        else if (state.board.playerNames[state.side] !== null) {
-            // まだメガミを公開済みでなく、プレイヤー名は決定済みである場合
-            var megamiSelected = state.board.megamis[state.side] !== null;
-            processButtons = (hyperapp_1.h("div", null,
-                hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top1, zoom: state.zoom, onclick: megamiSelect, primary: !megamiSelected }, "\u30E1\u30AC\u30DF\u9078\u629E"),
-                megamiSelected ? hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top2, zoom: state.zoom, onclick: megamiOpen, primary: true, disabled: !megamiSelected }, "\u9078\u629E\u3057\u305F\u30E1\u30AC\u30DF\u3092\u516C\u958B") : null));
-        }
+    else if (state.board.firstDrawFlags[state.side]) {
+        // 最初の手札を引いた後
+        var marigan = function () {
+            // マリガンダイアログを起動
+            var board = new models.Board(state.board);
+            var promise = new Promise(function (resolve, reject) {
+                var cards = board.getRegionCards(side, 'hand', null);
+                var st = apps.mariganModal.State.create(side, cards, state.zoom, resolve, reject);
+                apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));
+            }).then(function (selectedCards) {
+                // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
+                actions.operate({
+                    log: "\u624B\u672D" + selectedCards.length + "\u679A\u3092\u5C71\u672D\u306E\u5E95\u306B\u7F6E\u304D\u3001\u540C\u3058\u679A\u6570\u306E\u30AB\u30FC\u30C9\u3092\u5F15\u304D\u76F4\u3057\u307E\u3057\u305F",
+                    proc: function () {
+                        // 選択したカードを山札の底に移動
+                        selectedCards.forEach(function (card) {
+                            actions.moveCard({ from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す' });
+                        });
+                        // 手札n枚を引く
+                        actions.draw({ number: selectedCards.length });
+                        // マリガンフラグON
+                        actions.setMariganFlag({ side: side, value: true });
+                        // 盤面をセットアップ
+                        actions.oprBoardSetup();
+                    }
+                });
+                utils.messageModal("桜花決闘の準備が完了しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
+            });
+        };
+        var notMarigan = function () {
+            utils.confirmModal("手札の引き直しを行わずに、決闘を開始します。<br>よろしいですか？", function () {
+                // マリガンフラグON
+                actions.setMariganFlag({ side: side, value: true });
+                // 盤面のカードや桜花結晶などを配置して、メッセージを表示
+                actions.oprBoardSetup({});
+                utils.messageModal("桜花決闘の準備が完了しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
+            });
+        };
+        processButtons = (hyperapp_1.h("div", null,
+            hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top1, zoom: state.zoom, onclick: marigan, primary: true }, "\u624B\u672D\u3092\u5F15\u304D\u76F4\u3057\u3066\u6C7A\u95D8\u3092\u958B\u59CB"),
+            hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top2, zoom: state.zoom, onclick: notMarigan }, "\u6C7A\u95D8\u3092\u958B\u59CB")));
+    }
+    else if (state.board.megamiOpenFlags[state.side]) {
+        // 選択したメガミを公開済みの場合
+        processButtons = (hyperapp_1.h("div", null,
+            hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top1, zoom: state.zoom, onclick: deckBuild, primary: !deckBuilded }, "\u30C7\u30C3\u30AD\u69CB\u7BC9"),
+            deckBuilded ? hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top2, zoom: state.zoom, onclick: firstHandSet, primary: true, disabled: !deckBuilded }, "\u6700\u521D\u306E\u624B\u672D\u3092\u5F15\u304F") : null));
+    }
+    else if (state.board.playerNames[state.side] !== null) {
+        // まだメガミを公開済みでなく、プレイヤー名は決定済みである場合
+        var megamiSelected = state.board.megamis[state.side] !== null;
+        processButtons = (hyperapp_1.h("div", null,
+            hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top1, zoom: state.zoom, onclick: megamiSelect, primary: !megamiSelected }, "\u30E1\u30AC\u30DF\u9078\u629E"),
+            megamiSelected ? hyperapp_1.h(components_1.ProcessButton, { left: p.left, top: top2, zoom: state.zoom, onclick: megamiOpen, primary: true, disabled: !megamiSelected }, "\u9078\u629E\u3057\u305F\u30E1\u30AC\u30DF\u3092\u516C\u958B") : null));
     }
     return processButtons;
 }; };
@@ -49495,17 +49547,8 @@ exports.MainProcessButtons = function (p) { return function (state, actions) {
 
 "use strict";
 
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var apps = __importStar(__webpack_require__(/*! sakuraba/apps */ "./src/sakuraba/apps/index.ts"));
-var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 /** 手札の引き直しボタン */
 exports.MariganButton = function (p) { return function (state, actions) {
     if (state.side === 'watcher')
@@ -49522,28 +49565,28 @@ exports.MariganButton = function (p) { return function (state, actions) {
         position: 'absolute'
     };
     var onClick = function () {
-        // マリガンダイアログを起動
-        var board = new models.Board(state.board);
-        var promise = new Promise(function (resolve, reject) {
-            var cards = board.getRegionCards(side, 'hand', null);
-            var st = apps.mariganModal.State.create(side, cards, state.zoom, resolve, reject);
-            apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));
-        }).then(function (selectedCards) {
-            // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
-            actions.operate({
-                log: "\u624B\u672D" + selectedCards.length + "\u679A\u3092\u5C71\u672D\u306E\u5E95\u306B\u7F6E\u304D\u3001\u540C\u3058\u679A\u6570\u306E\u30AB\u30FC\u30C9\u3092\u5F15\u304D\u76F4\u3057",
-                proc: function () {
-                    // 選択したカードを山札の底に移動
-                    selectedCards.forEach(function (card) {
-                        actions.moveCard({ from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す' });
-                    });
-                    // 手札n枚を引く
-                    actions.draw({ number: selectedCards.length });
-                    // マリガンフラグON
-                    actions.setMariganFlag({ side: side, value: true });
-                }
-            });
-        });
+        // // マリガンダイアログを起動
+        // let board = new models.Board(state.board);
+        // let promise = new Promise<state.Card[]>((resolve, reject) => {
+        //     let cards = board.getRegionCards(side, 'hand', null);
+        //     let st = apps.mariganModal.State.create(side, cards, state.zoom, resolve, reject);
+        //     apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));            
+        // }).then((selectedCards) => {
+        //     // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
+        //     actions.operate({
+        //         log: `手札${selectedCards.length}枚を山札の底に置き、同じ枚数のカードを引き直し`,
+        //         proc: () => {
+        //             // 選択したカードを山札の底に移動
+        //             selectedCards.forEach(card => {
+        //                 actions.moveCard({from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す'});
+        //             });
+        //             // 手札n枚を引く
+        //             actions.draw({number: selectedCards.length});
+        //             // マリガンフラグON
+        //             actions.setMariganFlag({side: side, value: true});
+        //         }
+        //     })
+        // });
     };
     return hyperapp_1.h("button", { style: styles, class: "ui basic button", onclick: onClick },
         hyperapp_1.h("span", { style: { color: 'blue' } }, "\u624B\u672D\u3092\u5F15\u304D\u76F4\u3059"));
@@ -50073,9 +50116,6 @@ function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spa
         else {
             // 領域の幅に収まらない場合は、収まるように均等に詰めて並べる
             var overlapWidth_1 = ((objectWidth * objects.length) - innerWidth_1) / (objects.length - 1);
-            if (objects.length >= 1 && objects[0].type === 'card' && objects[0].region === 'used' && objects[0].side === 'p1') {
-                console.log("\u2605innerWidth = " + innerWidth_1 + ", requiredWidth = " + requiredWidth + ", over = " + ((objectWidth * objects.length) - innerWidth_1) + ", overlapWidth = " + overlapWidth_1);
-            }
             objects.forEach(function (child, i) {
                 ret.push([child, cx, cy]);
                 cx += objectWidth;
@@ -50125,7 +50165,7 @@ var view = function (state, actions) {
     // 代わりに全体枠1つだけを表示
     var READY_AREA_LOCATIONS = {};
     ['p1', 'p2'].forEach(function (side) {
-        READY_AREA_LOCATIONS[side] = (side === state.side ? [10, 430] : [380, 30]);
+        READY_AREA_LOCATIONS[side] = (side === state.viewingSide ? [10, 430] : [380, 30]);
         if (!state.board.mariganFlags[side]) {
             // 最初の手札を引いており、引き直しの有無を選択していない場合は、手札だけは表示する
             if (state.board.firstDrawFlags[side]) {
@@ -50311,7 +50351,7 @@ var view = function (state, actions) {
             }
         }
         else if (!state.board.firstDrawFlags[side]) {
-            // 初回手札を引いている場合
+            // デッキ構築中の場合
             var deckBuilded = boardModel.getSideCards(selfSide).length >= 1;
             readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: readyAreaLeft + 40, top: readyAreaTop + 20, zoom: state.zoom, stackedCount: 14 - (deckBuilded ? 7 : 0), baseClass: "back-normal" }));
             readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: readyAreaLeft + 170, top: readyAreaTop + 20, zoom: state.zoom, stackedCount: 8 - (deckBuilded ? 3 : 0), baseClass: "back-special" }));
@@ -50326,6 +50366,10 @@ var view = function (state, actions) {
                 mainProcessButtonLeft = 340;
             }
         }
+        else if (!state.board.mariganFlags[side]) {
+            // 手札引き直しを選択中の場合
+            mainProcessButtonLeft = 450;
+        }
         return true;
     });
     return (hyperapp_1.h("div", { id: "BOARD-PLAYAREA", style: { width: const_1.BOARD_BASE_WIDTH * state.zoom + "px" } },
@@ -50337,7 +50381,6 @@ var view = function (state, actions) {
         hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680, top: 630 }),
         hyperapp_1.h(components.ControlPanel, null),
         hyperapp_1.h(components.ChatLogArea, { logs: state.chatLog }),
-        hyperapp_1.h(components.MariganButton, { left: 10, top: 770 }),
         hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),
         hyperapp_1.h(components.BGMWindow, { shown: state.bgmPlaying }),
         extraTokens,
