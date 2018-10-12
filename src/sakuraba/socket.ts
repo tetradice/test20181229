@@ -1,11 +1,15 @@
 import { EventEmitter } from "events";
 
 interface ServerToClientEventProps {
-    onFirstTableDataReceived: {board: state.Board, actionLogs: state.LogRecord[], chatLogs: state.LogRecord[]};
+    onFirstTableDataReceived: {board: state.Board, actionLogs: state.LogRecord[], chatLogs: state.LogRecord[], watchers: {[sessionId: string]: WatcherInfo}};
     onBoardReceived: {board: state.Board, appendedActionLogs: state.LogRecord[] | null};
     onChatLogAppended: {appendedChatLogs: state.LogRecord[]};
 
     onNotifyReceived: {senderSide: PlayerSide, message: string};
+
+    onWatcherLoginSuccess: {watchers: {[sessionId: string]: WatcherInfo}};
+    onWatcherChanged: {watchers: {[sessionId: string]: WatcherInfo}};
+    requestWatcherName: {};
 }
 type ServerToClientEventName = keyof ServerToClientEventProps;
 
@@ -15,6 +19,9 @@ interface ClientToServerEventProps {
     appendChatLog: {tableId: string, appendedChatLog: state.LogRecord};
 
     notify: {tableId: string, senderSide: PlayerSide, message: string};
+
+    watcherLogin: {tableId: string, sessionId: string};
+    watcherNameInput: {tableId: string, sessionId: string, name: string};
 }
 type ClientToServerEventName = keyof ClientToServerEventProps;
 

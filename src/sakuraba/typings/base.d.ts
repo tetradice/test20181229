@@ -11,6 +11,12 @@ type UmbrellaState = null | 'closed' | 'opened';
 
 type VigorValue = 0 | 1 | 2;
 
+/** 観戦者情報 */
+interface WatcherInfo {
+    name: string;
+    online: boolean;
+}
+
 // for webpack css-loader
 declare module "*.css" {
     const classes: {[className: string]: string} // css-moduleの結果をstring型のobjectに

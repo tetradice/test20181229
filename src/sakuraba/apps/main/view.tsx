@@ -387,6 +387,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.ControlPanel />
             <components.ChatLogArea logs={state.chatLog} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
+            <components.HelpWindow shown={state.helpVisible} />
             <components.BGMWindow shown={state.bgmPlaying} />
             {extraTokens}
             <components.PlayerNameDisplay left={10} top={10} width={1200} side={utils.flipSide(selfSide)} />

@@ -4,6 +4,10 @@ export default {
         return {zoom: p};
     },
 
+    toggleHelpVisible: () => (state: state.State) => {
+        return {helpVisible: !state.helpVisible};
+    },
+
     toggleBgmPlaying: () => (state: state.State) => {
         return {bgmPlaying: !state.bgmPlaying};
     }

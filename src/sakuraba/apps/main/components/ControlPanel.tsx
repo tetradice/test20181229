@@ -169,7 +169,21 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             megamiCaptionP2 = ` - ？？？、？？？`
         }
     }
-   
+
+    // 観戦者名表示の決定
+    let watcherNameElements: JSX.Element[] = [];
+    let firstWatcher = true;
+    for(let sessionId in state.board.watchers){
+        let watcher = state.board.watchers[sessionId];
+        if(!watcher.online) continue; // オフラインの観戦者は表示しない
+    
+        let name = watcher.name;
+        if(!firstWatcher) watcherNameElements.push(<span>、</span>);
+        watcherNameElements.push((state.currentWatcherSessionId === sessionId ? (<span style={{color: 'blue'}}>{name}</span>) : (<span>{name}</span>)));
+
+        firstWatcher = false;
+    }
+
     let notifyValueChanged = (e) => {
         let val = $(e.target).val();
         let $button = $('#NOTIFY-SEND-BUTTON');
@@ -263,6 +277,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     return (
         <div id="CONTROL-PANEL" style={{left: `${BOARD_BASE_WIDTH * state.zoom + 10}px`}}>    
             {undoPanel}&nbsp;
+            <button class="ui basic button" onclick={() => actions.toggleHelpVisible()}>
+            <i class="icon question circle outline"></i>
+            操作説明
+            </button>
             {menu}<br />
 
             {commandButtons}
@@ -273,15 +291,15 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <tbody>
                     <tr>
                         <td class="collapsing">プレイヤー1</td>
-                        <td>{board.playerNames.p1} {megamiCaptionP1}</td>
+                        <td style={state.side === 'p1' ? {color: 'blue'} : null}>{board.playerNames.p1} {megamiCaptionP1}</td>
                     </tr>
                     <tr>
                         <td>プレイヤー2</td>
-                        <td>{board.playerNames.p2} {megamiCaptionP2}</td>
+                        <td style={state.side === 'p2' ? {color: 'blue'} : null}>{board.playerNames.p2} {megamiCaptionP2}</td>
                     </tr>
                     <tr>
                         <td>観戦者</td>
-                        <td></td>
+                        <td>{watcherNameElements}</td>
                     </tr>
                 </tbody>
             </table>

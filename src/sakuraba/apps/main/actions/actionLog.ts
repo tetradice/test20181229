@@ -7,7 +7,13 @@ export default {
     },
 
     appendActionLog: (p: {text: string, visibility?: LogVisibility}) => (state: state.State) => {
-        let append: state.LogRecord = {body: p.text, time: moment().format(), playerSide: state.side, visibility: (p.visibility ? p.visibility : 'shown')};
+        let append: state.LogRecord = {
+              body: p.text
+            , time: moment().format()
+            , side: state.side
+            , watcherSessionId: (state.side === 'watcher' ? state.currentWatcherSessionId : null)
+            , visibility: (p.visibility ? p.visibility : 'shown')
+        };
         let newLogs = state.actionLog.concat([append]);
         
         return {actionLog: newLogs};

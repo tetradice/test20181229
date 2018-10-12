@@ -16,8 +16,8 @@ export function getMegamiDispName(megami: sakuraba.Megami): string{
 /** ログを表示できるかどうか判定 */
 export function logIsVisible(log: state.LogRecord, side: SheetSide): boolean{
     if(log.visibility === 'shown') return true;
-    if(log.visibility === 'ownerOnly' && log.playerSide === side) return true;
-    if(log.visibility === 'outerOnly' && log.playerSide !== side) return true;
+    if(log.visibility === 'ownerOnly' && log.side === side) return true;
+    if(log.visibility === 'outerOnly' && log.side !== side) return true;
     return false;
 }
 

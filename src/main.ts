@@ -4,9 +4,10 @@ import * as models from "sakuraba/models";
 import * as utils from "sakuraba/utils";
 import * as apps from "sakuraba/apps";
 import { ClientSocket } from "sakuraba/socket";
-import { CARD_DATA, SAKURA_TOKEN_MAX } from "./sakuraba";
+import { CARD_DATA, SAKURA_TOKEN_MAX, CardDataItem, SpecialCardDataItem } from "./sakuraba";
 import dragInfo from "sakuraba/dragInfo";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
+import * as randomstring from 'randomstring';
 
 declare var params: {
     tableId: string;
@@ -52,7 +53,7 @@ $(function(){
     let appActions = apps.main.run(st, document.getElementById('BOARD'));
 
     // 萎縮トークンクリックメニュー
-    $('#BOARD-PLAYAREA').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
+    $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
         zIndex: 9999,
         trigger: 'none',
@@ -78,7 +79,7 @@ $(function(){
     });
 
     // 計略トークンクリックメニュー
-    $('#BOARD-PLAYAREA').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
+    $('#BOARD').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
     $.contextMenu({
         zIndex: 9999,
         trigger: 'none',
@@ -127,7 +128,7 @@ $(function(){
     });
 
     // 傘トークンクリックメニュー
-    $('#BOARD-PLAYAREA').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
+    $('#BOARD').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
     $.contextMenu({
         zIndex: 9999,
         trigger: 'none',
@@ -170,6 +171,7 @@ $(function(){
     // 右クリックメニュー
     $.contextMenu({
         selector: '#BOARD-PLAYAREA, #BOARD-PLAYAREA *',
+        zIndex: 99999,
 
         build: function($elem: JQuery, event: JQueryEventObject){
             let currentState = appActions.getState();
@@ -384,61 +386,6 @@ $(function(){
         }
     });
 
-    // // 集中力右クリックメニュー
-    // $.contextMenu({
-    //     selector: '#BOARD .fbs-vigor-card, #BOARD .withered-token',
-    //     build: function($elem: JQuery, event: JQueryEventObject){
-    //         let st = appActions.getState();
-    //         let board = new models.Board(st.board);
-    //         let side = $elem.closest('[data-side]').attr('data-side') as PlayerSide;
-
-    //         let items = {};
-    //         items['wither'] =  {
-    //               name: (board.witherFlags[side] ? '萎縮を解除' : '萎縮')
-    //             , callback: () => appActions.oprSetWitherFlag({side: side, value: !board.witherFlags[side]})
-    //         }
-    //         return {
-    //             items: items,
-    //         }
-    //     }
-
-    // });
-
-
-    // // 山札エリア右クリックメニュー
-    // $.contextMenu({
-    //     selector: '#BOARD .area.background[data-region=library], #BOARD .fbs-card[data-region=library]',
-    //     callback: function(key: string) {
-    //         let state = appActions.getState();
-    //         if(key === 'draw'){
-    //             // 1枚引く
-    //             appActions.oprDraw();
-    //         }
-
-    //         if(key === 'reshuffle'){
-    //             // 再構成
-    //             appActions.oprReshuffle({side: state.side, lifeDecrease: true});
-    //         }
-    //         if(key === 'reshuffleWithoutDamage'){
-    //             // 再構成
-    //             appActions.oprReshuffle({side: state.side, lifeDecrease: false});
-    //         }
-    //         return;
-    //     },
-    //     items: {
-    //         'draw': {name: '1枚引く', disabled: () => {
-    //             let board = new models.Board(appActions.getState().board);
-
-    //             let cards = board.getRegionCards(appActions.getState().side, 'library');
-    //             return cards.length === 0;
-    //         }},
-    //         'sep1': '---------',
-    //         'reshuffle': {name: '再構成する'},
-    //         'reshuffleWithoutDamage': {name: '再構成する (ライフ減少なし)'},
-    //     }
-    // });
-
-
     // 初期情報をリクエスト
     socket.emit('requestFirstTableData', {tableId: params.tableId});
 
@@ -454,22 +401,20 @@ $(function(){
         // まだ名前が決定していなければ、名前の決定処理
         // 観戦者かどうかで名前の処理を分ける
         if(params.side === 'watcher'){
-            if(p.board.watcherNames[socket.ioSocket.id] === undefined){
-                utils.userInputModal(`<p>ふるよにボードシミュレーターへようこそ。<br>あなたは観戦者として卓に参加します。</p><p>観戦者名：</p>`, ($elem) => {
-                    let playerName = $('#INPUT-MODAL input').val() as string;
-                    if(playerName === ''){
-                        playerName = `観戦者${socket.ioSocket.id}`;
-                    }
-                    appActions.operate({
-                        log: `観戦者として卓に参加しました`,
-                        undoType: 'notBack',
-                        proc: () => {
-                            appActions.setWatcherName({socketId: socket.ioSocket.id, name: playerName});
-                        }
-                    });
-                });
+            // 観戦者の場合
+            // まずログインしてきた観戦者に、観戦者セッションIDが割り当てられているかどうかを確認
+            let sessionId = localStorage.getItem(`table${params.tableId}:watcherSessionId`);
+            if(sessionId){
+                // セッションIDがあれば、そのセッションIDでログイン
+                socket.emit('watcherLogin', {tableId: params.tableId, sessionId: sessionId});
+            } else {
+                // セッションIDがなければ、新たなセッションIDを割り当てて、そのIDでログイン
+                sessionId = randomstring.generate({readable: true, length: 16});
+                localStorage.setItem(`table${params.tableId}:watcherSessionId`, sessionId);
+                socket.emit('watcherLogin', {tableId: params.tableId, sessionId: sessionId});
             }
         } else {
+            // 観戦者でない場合
             if(p.board.playerNames[params.side] === null){
                 let playerCommonName = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
                 utils.userInputModal(`<p>ふるよにボードシミュレーターへようこそ。<br>あなたは${playerCommonName}として卓に参加します。</p><p>プレイヤー名：</p>`, ($elem) => {
@@ -505,10 +450,75 @@ $(function(){
             let st = appActions.getState();
             let targetLogs = p.appendedActionLogs.filter((log) => utils.logIsVisible(log, st.side));
             let msg = targetLogs.map((log) => log.body).join('<br>');
-            toastr.info(msg, `${st.board.playerNames[targetLogs[0].playerSide]}:`);
+            let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+            toastr.info(msg, `${name}:`);
         }
 
     });
+
+    // 観戦者名の入力を要求された
+    socket.on('requestWatcherName', (p) => {
+        utils.userInputModal(`<p>ふるよにボードシミュレーターへようこそ。<br>あなたは観戦者として卓に参加します。</p><p>観戦者名：</p>`, ($elem) => {
+            let playerName = $('#INPUT-MODAL input').val() as string;
+            if(playerName === ''){
+                playerName = `観戦者${socket.ioSocket.id}`;
+            }
+            let sessionId = localStorage.getItem(`table${params.tableId}:watcherSessionId`);
+            socket.emit('watcherNameInput', {tableId: params.tableId, sessionId: sessionId, name: playerName});
+        });
+    });
+
+    // 観戦者ログイン成功
+    socket.on('onWatcherLoginSuccess', (p) => {
+        let sessionId = localStorage.getItem(`table${params.tableId}:watcherSessionId`);
+        appActions.setWatcherInfo({watchers: p.watchers, currentWatcherSessionId: sessionId});
+        appActions.operate({
+            log: `観戦者として卓に参加しました`,
+            undoType: 'notBack',
+            proc: () => {
+            }
+        });
+    });
+
+    // 観戦者情報が更新された
+    socket.on('onWatcherChanged', (p) => {
+        appActions.setWatcherInfo({watchers: p.watchers});
+    });
+
+    // ★集計
+    // すべてのカード情報を取得
+    let allCards: [string, CardDataItem][] = [];
+    for(let key in CARD_DATA){
+        allCards.push([key, CARD_DATA[key]]);
+    }
+    {
+    let costSummary: {[key: number]: number} = {};
+    let costSummaryCardTitles: {[key: number]: string[]} = {};
+        let targetCards = allCards.filter(([cardId, card]) => card.baseType === 'special' && card.cost !== undefined && /^[0-9]+$/.test(card.cost)) as [string, SpecialCardDataItem][];
+        targetCards.forEach(([cardId, card]) => {
+            let intCost = parseInt(card.cost);
+            if(costSummary[intCost] === undefined) costSummary[intCost] = 0;
+            if(costSummaryCardTitles[intCost] === undefined) costSummaryCardTitles[intCost] = [];
+            costSummary[intCost] += 1;
+            costSummaryCardTitles[intCost].push(card.name);
+        });
+
+        console.log(costSummary, costSummaryCardTitles);
+    }
+    {
+        let auraDamageSummary: {[key: number]: number} = {};
+        let auraDamageSummaryCardTitles: {[key: number]: string[]} = {};
+        let targetCards = allCards.filter(([cardId, card]) => card.damage !== undefined && /^[0-9]+\/[0-9]+$/.test(card.damage));
+        targetCards.forEach(([cardId, card]) => {
+            let [auraDamage, lifeDamage] = card.damage.split('/').map(d => parseInt(d));
+            if(auraDamageSummary[auraDamage] === undefined) auraDamageSummary[auraDamage] = 0;
+            if(auraDamageSummaryCardTitles[auraDamage] === undefined) auraDamageSummaryCardTitles[auraDamage] = [];
+            auraDamageSummary[auraDamage] += 1;
+            auraDamageSummaryCardTitles[auraDamage].push(card.name);
+        });
+
+        console.log(auraDamageSummary, auraDamageSummaryCardTitles);
+    }
 
 
     // 他のプレイヤーがチャットログを追加した場合の処理
@@ -520,7 +530,8 @@ $(function(){
         let st = appActions.getState();
         let targetLogs = p.appendedChatLogs.filter((log) => utils.logIsVisible(log, st.side));
         let msg = targetLogs.map((log) => log.body).join('<br>');
-        toastr.info(msg, `${st.board.playerNames[targetLogs[0].playerSide]}:`);
+        let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+        toastr.info(msg, `${name}:`);
     });
 
     // toastrの標準オプションを設定

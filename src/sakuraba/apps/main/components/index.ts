@@ -13,6 +13,7 @@ export * from './SakuraTokenAreaDroppable';
 export * from './MariganButton';
 export * from './ActionLogWindow';
 export * from './BGMWindow';
+export * from './HelpWindow';
 export * from './ChatLogArea';
 export * from './PlayerNameDisplay';
 export * from './MainProcessButtons';

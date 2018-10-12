@@ -67,11 +67,11 @@ interface CardDataItemBase {
     extra?: boolean;
 }
 
-interface NormalCardDataItem extends CardDataItemBase {
+export interface NormalCardDataItem extends CardDataItemBase {
     baseType: 'normal';
 }
 
-interface SpecialCardDataItem extends CardDataItemBase {
+export interface SpecialCardDataItem extends CardDataItemBase {
     baseType: 'special';
     cost?: string;
 }

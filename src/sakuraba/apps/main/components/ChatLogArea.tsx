@@ -17,9 +17,10 @@ export const ChatLogArea = (p: {logs: state.LogRecord[]}) => (state: state.State
         let logTime = moment(log.time);
         let timeStr = (logTime.isSame(now, 'date') ? logTime.format('H:mm') : logTime.format('YYYY/M/D H:mm'));
         let bodyStyle = (log.visibility === 'ownerOnly' ? {color: 'green'} : null);
+        let name = (log.side === 'watcher' ? state.board.watchers[log.watcherSessionId].name : state.board.playerNames[log.side]);
         logElements.push(
             <div>
-            {state.board.playerNames[log.playerSide]}: <span style={bodyStyle}>{log.body}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
+            {name}: <span style={bodyStyle}>{log.body}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
             </div>
         )
     });

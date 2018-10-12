@@ -60,6 +60,8 @@ app
       // 卓を追加
       let state = utils.createInitialState();
       multiClient.SET(`sakuraba:tables:${newTableNo}:board`, JSON.stringify(state.board));
+      multiClient.SET(`sakuraba:tables:${newTableNo}:watchers`, JSON.stringify({}));
+
 
       // 卓へアクセスするための、プレイヤー1用アクセスキー、プレイヤー2用アクセスキーを生成
       let p1Key = randomstring.generate({
@@ -174,13 +176,37 @@ function appendChatLogs(tableId: string, logs: state.LogRecord[], callback: (log
 }
 
 io.on('connection', (ioSocket) => {
+  let connectedTableId = null;
+  let connectedWatcherSessionId = null;
   const socket = new ServerSocket(ioSocket);
 
   console.log(`Client connected - ${ioSocket.id}`);
-  ioSocket.on('disconnect', () => console.log('Client disconnected'));
+  ioSocket.on('disconnect', () => {
+    console.log(`Client disconnect - ${ioSocket.id}, ${connectedTableId}, ${connectedWatcherSessionId}`)
+
+    // もし観戦者が切断したなら、観戦者情報を削除
+    if(connectedWatcherSessionId !== null){
+      RedisClient.GET(`sakuraba:tables:${connectedTableId}:watchers`, (err, json) => {
+        let watchers = JSON.parse(json) as { [sessionId: string]: WatcherInfo };
+
+        // 観戦者情報を更新して、ログイン応答を返す
+        if(watchers[connectedWatcherSessionId] !== undefined){
+          watchers[connectedWatcherSessionId].online = false;
+        }
+        RedisClient.SET(`sakuraba:tables:${connectedTableId}:watchers`, JSON.stringify(watchers), (err, json) => {
+          socket.emit('onWatcherLoginSuccess', { watchers: watchers });
+          socket.broadcastEmit(connectedTableId, 'onWatcherChanged', { watchers: watchers });
+          connectedWatcherSessionId = connectedWatcherSessionId;
+        });
+      });
+    }
+  });
   
   // 初期情報のリクエスト
   socket.on('requestFirstTableData', (p) => {
+    // テーブルIDを記憶
+    connectedTableId = p.tableId;
+
     // roomにjoin
     socket.ioSocket.join(p.tableId);
 
@@ -190,7 +216,7 @@ io.on('connection', (ioSocket) => {
       getStoredActionLogs(p.tableId, (actionLogs) => {
         // チャットログ情報を取得
         getStoredChatLogs(p.tableId, (chatLogs) => {
-          socket.emit('onFirstTableDataReceived', {board: board, actionLogs: actionLogs, chatLogs: chatLogs});
+          socket.emit('onFirstTableDataReceived', {board: board, actionLogs: actionLogs, chatLogs: chatLogs, watchers: {}});
         });
       });
     });
@@ -228,57 +254,39 @@ io.on('connection', (ioSocket) => {
       socket.broadcastEmit(p.tableId, 'onNotifyReceived', {senderSide: p.senderSide, message: p.message});
   });
 
-  // 名前の入力
-  ioSocket.on('player_name_input', (data: {tableId: string, side: PlayerSide, name: string}) => {
-    console.log('on player_name_input: ', data);
-    // ボード情報を取得
-    getStoredBoard(data.tableId, (board) => {
-      // 名前をアップデートして保存
-      board.playerNames[data.side] = data.name;
-      saveBoard(data.tableId, board, () => {
-        // プレイヤー名が入力されたイベントを他ユーザーに配信
-        ioSocket.broadcast.emit('on_player_name_input', board);
-      });
-    });
-  });
-  
-  // メガミの選択
-  ioSocket.on('megami_select', (data: {tableId: string, side: PlayerSide, megamis: sakuraba.Megami[]}) => {
-    console.log('on megami_select: ', data);
-    // ボード情報を取得
-    getStoredBoard(data.tableId, (board) => {
-      // メガミをアップデートして保存
-      board.megamis[data.side] = data.megamis;
-      saveBoard(data.tableId, board, () => {
-        // メガミが選択されたイベントを他ユーザーに配信
-        ioSocket.broadcast.emit('on_megami_select', board);
-      });
+  // 観戦者ログイン
+  socket.on('watcherLogin', (p) => {
+    // 観戦者情報を取得
+    RedisClient.GET(`sakuraba:tables:${p.tableId}:watchers`, (err, json) => {
+      let watchers = JSON.parse(json) as { [sessionId: string]: WatcherInfo };
+
+      // 送信されたセッションIDに対応する観戦者がいるかどうかで応答を変更
+      if (watchers[p.sessionId] !== undefined) {
+        // 観戦者情報を更新して、ログイン応答を返す
+        watchers[p.sessionId].online = true;
+        RedisClient.SET(`sakuraba:tables:${p.tableId}:watchers`, JSON.stringify(watchers), (err, json) => {
+          socket.emit('onWatcherLoginSuccess', { watchers: watchers });
+          socket.broadcastEmit(p.tableId, 'onWatcherChanged', { watchers: watchers });
+          connectedWatcherSessionId = p.sessionId;
+        });
+      } else {
+        socket.emit('requestWatcherName', {});
+      }
     });
   });
 
-  // デッキの構築
-  ioSocket.on('deck_build', (data: {tableId: string, side: PlayerSide, addObjects: state.BoardObject[]}) => {
-    console.log('on deck_build: ', data);
+  // 観戦者名決定
+  socket.on('watcherNameInput', (p) => {
+    // 観戦者情報を取得
+    RedisClient.GET(`sakuraba:tables:${p.tableId}:watchers`, (err, json) => {
+      let watchers = JSON.parse(json) as { [sessionId: string]: WatcherInfo };
 
-    // ボード情報を取得
-    getStoredBoard(data.tableId, (board) => {
-      board.objects = board.objects.concat(data.addObjects);
-      saveBoard(data.tableId, board, () => {
-        // デッキが構築されたイベントを他ユーザーに配信
-        ioSocket.broadcast.emit('on_deck_build', board);
-      });
-    });
-  });
-
-  // ボードオブジェクトの状態を更新
-  ioSocket.on('board_object_set', (data: {tableId: string, side: PlayerSide, objects: state.BoardObject[]}) => {
-    console.log('on board_object_set: ', data);
-    // ボード情報を取得
-    getStoredBoard(data.tableId, (board) => {
-      board.objects = data.objects;
-      saveBoard(data.tableId, board, () => {
-        // ボードオブジェクトの状態が更新されたイベントを他ユーザーに配信
-        ioSocket.broadcast.emit('on_board_object_set', board);
+      // 観戦者情報を更新して、ログイン応答を返す
+      watchers[p.sessionId] = {name: p.name, online: true};
+      RedisClient.SET(`sakuraba:tables:${p.tableId}:watchers`, JSON.stringify(watchers), (err, json) => {
+        socket.emit('onWatcherLoginSuccess', { watchers: watchers });
+        socket.broadcastEmit(p.tableId, 'onWatcherChanged', { watchers: watchers });
+        connectedWatcherSessionId = p.sessionId;
       });
     });
   });

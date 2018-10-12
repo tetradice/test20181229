@@ -20,10 +20,13 @@ export interface State {
     /** 自分がいまp1/p2どちら側の席から卓を見ているか */
     viewingSide?: PlayerSide;
 
+    currentWatcherSessionId: string;
+
     actionLog: LogRecord[];
     chatLog: LogRecord[];
 
     actionLogVisible: boolean;
+    helpVisible: boolean;
     bgmPlaying: boolean;
 }
 
@@ -37,7 +40,7 @@ export interface BoardHistoryItem {
 export interface Board {
     objects: BoardObject[];
     playerNames: {p1: string, p2: string};
-    watcherNames: {[socketId: string]: string}; // ソケットIDに対して観戦者名を割り当てる
+    watchers: {[sessionId: string]: WatcherInfo};
     megamis: {p1: Megami[], p2: Megami[]};
 
     /** 集中力 */
@@ -108,6 +111,7 @@ export interface SakuraToken extends BoardObjectBase {
 export interface LogRecord {
     body: string;
     time: string; // momentから変換した値を渡す
-    playerSide?: SheetSide;
+    side?: SheetSide;
+    watcherSessionId?: string;
     visibility: LogVisibility;
 }

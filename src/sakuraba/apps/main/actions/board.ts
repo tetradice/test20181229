@@ -80,7 +80,7 @@ export default {
     resetBoard: () => (state: state.State, actions: ActionsType) => {
 
         let extended: Partial<state.Board> = {playerNames: state.board.playerNames};
-        return {board: _.extend(utils.createInitialState().board, extended)};
+        return {board: _.extend(utils.createInitialState().board, extended)} as Partial<state.State>;
     },
 
     /** Undo */
@@ -99,7 +99,7 @@ export default {
         if(state.socket){
             state.socket.emit('updateBoard', { tableId: state.tableId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: appendedLogs});
         }
-        return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board};
+        return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board} as Partial<state.State>;
     },
 
     /** Redo */
@@ -116,12 +116,12 @@ export default {
         if(state.socket){
             state.socket.emit('updateBoard', { tableId: state.tableId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: recoveredHistItem.appendedLogs});
         }
-        return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board};
+        return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board} as Partial<state.State>;
     },
 
     /** ボード履歴を削除して、Undo/Redoを禁止する */
     forgetBoardHistory: () => {
-        return {boardHistoryPast: [], boardHistoryFuture: []};
+        return {boardHistoryPast: [], boardHistoryFuture: []} as Partial<state.State>;
     },
 
     /** 指定したサイドのプレイヤー名を設定する */
@@ -129,15 +129,15 @@ export default {
         let newBoard = _.merge({}, state.board);
         newBoard.playerNames[p.side] = p.name;
         
-        return {board: newBoard};
+        return {board: newBoard} as Partial<state.State>;
     },
 
-    /** 観戦者名を設定する */
-    setWatcherName: (p: {socketId: string, name: string}) => (state: state.State) => {
+    /** 観戦者情報をセット */
+    setWatcherInfo: (p: {watchers: {[sessionId: string]: WatcherInfo}, currentWatcherSessionId?: string}) => (state: state.State) => {
         let newBoard = _.merge({}, state.board);
-        newBoard.watcherNames[p.socketId] = p.name;
+        newBoard.watchers = p.watchers;
         
-        return {board: newBoard};
+        return {board: newBoard, currentWatcherSessionId: (p.currentWatcherSessionId === undefined ? null : p.currentWatcherSessionId)} as Partial<state.State>;
     },
 
     /** 指定したサイドのメガミを設定する */
@@ -145,7 +145,7 @@ export default {
         let newBoard = _.merge({}, state.board);
         newBoard.megamis[p.side] = [p.megami1, p.megami2];
         
-        return {board: newBoard};
+        return {board: newBoard} as Partial<state.State>;
     },
 
     /** 集中力の値を変更 */
