@@ -184,6 +184,12 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         firstWatcher = false;
     }
 
+
+    // 通知
+    let notifyData = [
+        {message: 'ターンを終了します', key: 'turnEnd'},
+        {message: '対応します', key: 'reaction'},
+    ];
     let notifyValueChanged = (e) => {
         let val = $(e.target).val();
         let $button = $('#NOTIFY-SEND-BUTTON');
@@ -200,15 +206,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         let opponentName = state.board.playerNames[utils.flipSide(state.side)];
 
         let notifyType = $('[name=notifyType]').val();
-        if(notifyType === 'ready'){
-            state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: `準備できました`});
-        }
-        if(notifyType === 'turnEnd'){
-            state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: `ターンを終了しました`});
-        }
-        if(notifyType === 'reaction'){
-            state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: `対応します`});
-        }
+        let notifyItem = notifyData.find(item => item.key === notifyType);
+        state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: notifyItem.message});
 
         // 送信完了
         toastr.success(`${opponentName}へ通知しました。`, '', {timeOut: 5000});
@@ -237,7 +236,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     {(state.actionLogVisible ? <i class="check icon"></i> : null)}
                     操作ログを表示
                                 </div>
-                <div class="item" onclick={() => actions.toggleBgmPlaying()}>BGM再生</div>
+                <div class="item" onclick={() => actions.toggleBgmPlaying()}>
+                    {(state.bgmPlaying ? <i class="check icon"></i> : null)}
+                    BGM再生
+                </div>
                 <div class="divider"></div>
                 <div class="item" onclick={aboutThisService}>ふるよにボードシミュレーターについて <br />(バージョン、著作権情報、連絡先)</div>
             </div>
@@ -259,28 +261,31 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <div class="default text"></div>
                 <div class="menu">
                     <div class="item" data-value="-"></div>
-                    <div class="item" data-value="ready">準備できました</div>
-                    <div class="item" data-value="turnEnd">ターンを終了しました</div>
-                    <div class="item" data-value="reaction">対応します</div>
+                    {notifyData.map(item => <div class="item" data-value={item.key}>{item.message}</div>)}
                 </div>
             </div>
             <button class="ui basic button disabled" id="NOTIFY-SEND-BUTTON" onclick={notify}>送信</button>
         </div>
     );
-    // 観戦者の場合元に戻すボタン、通知パネルの表示はなし
+
+    let helpButton = (
+        <button class="ui basic button" onclick={() => actions.toggleHelpVisible()}>
+        <i class="icon question circle outline"></i>
+        操作説明
+        </button>
+    );
+    // 観戦者の場合元に戻すボタン、操作説明ボタン、通知パネルの表示はなし
     // またメニューも簡易版にする
     if(state.side === 'watcher'){
         notifyPanel = null;
         undoPanel = null;
+        helpButton = null;
     }
 
     return (
         <div id="CONTROL-PANEL" style={{left: `${BOARD_BASE_WIDTH * state.zoom + 10}px`}}>    
             {undoPanel}&nbsp;
-            <button class="ui basic button" onclick={() => actions.toggleHelpVisible()}>
-            <i class="icon question circle outline"></i>
-            操作説明
-            </button>
+            {helpButton}
             {menu}<br />
 
             {commandButtons}

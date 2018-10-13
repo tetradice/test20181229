@@ -70374,7 +70374,7 @@ $(function () {
         var targetLogs = p.appendedChatLogs.filter(function (log) { return utils.logIsVisible(log, st.side); });
         var msg = targetLogs.map(function (log) { return log.body; }).join('<br>');
         var name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
-        toastr_1.default.info(msg, name + ":");
+        toastr_1.default.success(msg, name + ":", { toastClass: 'toast chat' });
     });
     // toastrの標準オプションを設定
     toastr_1.default.options = {
@@ -71913,7 +71913,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 exports.default = {
     appendChatLog: function (p) { return function (state) {
-        var append = { body: p.text, time: moment().format(), side: state.side, visibility: 'shown' };
+        var append = {
+            body: p.text,
+            time: moment().format(),
+            side: state.side,
+            watcherSessionId: (state.side === 'watcher' ? state.currentWatcherSessionId : null),
+            visibility: 'shown'
+        };
         var newLogs = state.chatLog.concat([append]);
         return { chatLog: newLogs };
     }; },
@@ -72667,6 +72673,11 @@ exports.ControlPanel = function () { return function (state, actions) {
         watcherNameElements.push((state.currentWatcherSessionId === sessionId ? (hyperapp_1.h("span", { style: { color: 'blue' } }, name_1)) : (hyperapp_1.h("span", null, name_1))));
         firstWatcher = false;
     }
+    // 通知
+    var notifyData = [
+        { message: 'ターンを終了します', key: 'turnEnd' },
+        { message: '対応します', key: 'reaction' },
+    ];
     var notifyValueChanged = function (e) {
         var val = $(e.target).val();
         var $button = $('#NOTIFY-SEND-BUTTON');
@@ -72683,15 +72694,8 @@ exports.ControlPanel = function () { return function (state, actions) {
         var side = state.side;
         var opponentName = state.board.playerNames[utils.flipSide(state.side)];
         var notifyType = $('[name=notifyType]').val();
-        if (notifyType === 'ready') {
-            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u6E96\u5099\u3067\u304D\u307E\u3057\u305F" });
-        }
-        if (notifyType === 'turnEnd') {
-            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F" });
-        }
-        if (notifyType === 'reaction') {
-            state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: "\u5BFE\u5FDC\u3057\u307E\u3059" });
-        }
+        var notifyItem = notifyData.find(function (item) { return item.key === notifyType; });
+        state.socket.emit('notify', { tableId: state.tableId, senderSide: state.side, message: notifyItem.message });
         // 送信完了
         toastr_1.default.success(opponentName + "\u3078\u901A\u77E5\u3057\u307E\u3057\u305F\u3002", '', { timeOut: 5000 });
         // ドロップダウンを元に戻す
@@ -72712,7 +72716,9 @@ exports.ControlPanel = function () { return function (state, actions) {
             hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleActionLogVisible(); } },
                 (state.actionLogVisible ? hyperapp_1.h("i", { class: "check icon" }) : null),
                 "\u64CD\u4F5C\u30ED\u30B0\u3092\u8868\u793A"),
-            hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleBgmPlaying(); } }, "BGM\u518D\u751F"),
+            hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleBgmPlaying(); } },
+                (state.bgmPlaying ? hyperapp_1.h("i", { class: "check icon" }) : null),
+                "BGM\u518D\u751F"),
             hyperapp_1.h("div", { class: "divider" }),
             hyperapp_1.h("div", { class: "item", onclick: aboutThisService },
                 "\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u306B\u3064\u3044\u3066 ",
@@ -72731,22 +72737,22 @@ exports.ControlPanel = function () { return function (state, actions) {
             hyperapp_1.h("div", { class: "default text" }),
             hyperapp_1.h("div", { class: "menu" },
                 hyperapp_1.h("div", { class: "item", "data-value": "-" }),
-                hyperapp_1.h("div", { class: "item", "data-value": "ready" }, "\u6E96\u5099\u3067\u304D\u307E\u3057\u305F"),
-                hyperapp_1.h("div", { class: "item", "data-value": "turnEnd" }, "\u30BF\u30FC\u30F3\u3092\u7D42\u4E86\u3057\u307E\u3057\u305F"),
-                hyperapp_1.h("div", { class: "item", "data-value": "reaction" }, "\u5BFE\u5FDC\u3057\u307E\u3059"))),
+                notifyData.map(function (item) { return hyperapp_1.h("div", { class: "item", "data-value": item.key }, item.message); }))),
         hyperapp_1.h("button", { class: "ui basic button disabled", id: "NOTIFY-SEND-BUTTON", onclick: notify }, "\u9001\u4FE1")));
-    // 観戦者の場合元に戻すボタン、通知パネルの表示はなし
+    var helpButton = (hyperapp_1.h("button", { class: "ui basic button", onclick: function () { return actions.toggleHelpVisible(); } },
+        hyperapp_1.h("i", { class: "icon question circle outline" }),
+        "\u64CD\u4F5C\u8AAC\u660E"));
+    // 観戦者の場合元に戻すボタン、操作説明ボタン、通知パネルの表示はなし
     // またメニューも簡易版にする
     if (state.side === 'watcher') {
         notifyPanel = null;
         undoPanel = null;
+        helpButton = null;
     }
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL", style: { left: const_1.BOARD_BASE_WIDTH * state.zoom + 10 + "px" } },
         undoPanel,
         "\u00A0",
-        hyperapp_1.h("button", { class: "ui basic button", onclick: function () { return actions.toggleHelpVisible(); } },
-            hyperapp_1.h("i", { class: "icon question circle outline" }),
-            "\u64CD\u4F5C\u8AAC\u660E"),
+        helpButton,
         menu,
         hyperapp_1.h("br", null),
         commandButtons,

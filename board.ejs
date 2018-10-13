@@ -423,6 +423,24 @@
         .card-type-variable { color: gray; font-weight: bold; }
         .card-type-reaction { color: purple; font-weight: bold; }
         .card-type-fullpower { color: #E0C000; font-weight: bold; }
+
+
+/* toastによるチャット通知 */
+#toast-container > .toast.chat {
+    background-image: none !important;
+}
+
+#toast-container > .toast.chat:before {
+    position: fixed;
+    font-size: 18px;
+    line-height: 18px;
+    float: left;
+    color: #FFF;
+    padding-right: 0.5em;
+    margin: auto 0.5em auto -1.8em;
+    content: "\f27a";
+    font-family: Icons;
+}    
     </style>
 </head>
 <body>
