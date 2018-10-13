@@ -12,7 +12,6 @@ function saveWindowState(elem: HTMLElement){
 /** ヘルプウインドウ */
 export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions: ActionsType) => {
     if(p.shown){
-        const bgm = new Audio('http://inazumaapps.info/furuyoni_simulator/deliv/bgm/sword_dance.mp3');
         const oncreate = (e) => {
             // ウインドウを移動可能にする
             $(e).draggable({
@@ -59,7 +58,7 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
 
         return (
             <div id="HELP-WINDOW"
-             style={{height: "25rem", width: "40rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
+             style={{height: "20rem", width: "40rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}>
                 <div class="ui top attached label">操作説明<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleHelpVisible()}><i class="times icon"></i></a></div>

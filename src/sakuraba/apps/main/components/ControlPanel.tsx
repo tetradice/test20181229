@@ -187,7 +187,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
     // 通知
     let notifyData = [
-        {message: 'ターンを終了します', key: 'turnEnd'},
+        {message: 'ターンを終了しました', key: 'turnEnd'},
         {message: '対応します', key: 'reaction'},
     ];
     let notifyValueChanged = (e) => {
@@ -241,7 +241,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     BGM再生
                 </div>
                 <div class="divider"></div>
-                <div class="item" onclick={aboutThisService}>ふるよにボードシミュレーターについて <br />(バージョン、著作権情報、連絡先)</div>
+                <div class="item" onclick={aboutThisService} style={{lineHeight: '1.5'}}>ふるよにボードシミュレーターについて <br />(バージョン、著作権情報、連絡先)</div>
             </div>
         </button>
     );

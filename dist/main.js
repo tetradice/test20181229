@@ -72207,7 +72207,8 @@ function saveWindowState(elem) {
 /** BGM再生ウインドウ */
 exports.BGMWindow = function (p) { return function (state, actions) {
     if (p.shown) {
-        var bgm_1 = new Audio('http://inazumaapps.info/furuyoni_simulator/deliv/bgm/sword_dance.mp3');
+        var bgm_1 = null;
+        var currentVolume_1 = 0.5;
         var oncreate = function (e) {
             // ウインドウを移動可能にする
             $(e).draggable({
@@ -72222,10 +72223,6 @@ exports.BGMWindow = function (p) { return function (state, actions) {
                 var windowState = JSON.parse(windowStateJson);
                 $(e).css(windowState);
             }
-            // BGM再生
-            bgm_1.volume = 0.5;
-            bgm_1.loop = true;
-            bgm_1.play();
             // range初期化
             $('#BGM-VOLUME-RANGE').range({
                 min: 0,
@@ -72233,27 +72230,63 @@ exports.BGMWindow = function (p) { return function (state, actions) {
                 start: 50,
                 step: 2,
                 onChange: function (value) {
-                    bgm_1.volume = value * 0.01;
+                    currentVolume_1 = value * 0.01;
+                    if (bgm_1) {
+                        bgm_1.volume = currentVolume_1;
+                    }
                 }
             });
         };
         var ondestroy = function (target) {
             bgm_1.pause();
         };
-        return (hyperapp_1.h("div", { id: "BGM-PLAY-WINDOW", style: { height: "11rem", width: "25rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate, ondestroy: ondestroy },
+        var bgmData_1 = [
+            { key: 'sword_dance', title: '剣の舞', composer: 't.tam', siteTitle: 'フリーBGM DOVA-SYNDROME', url: 'https://dova-s.jp/bgm/play3721.html', bannerUrl: 'http://inazumaapps.info/furuyoni_simulator/deliv/banner/dova-syndrome.gif' },
+            { key: 'elemental_dance', title: '精霊舞い', composer: '秋山裕和', siteTitle: 'フリー音楽素材 H/MIX GALLERY', url: 'http://www.hmix.net/music_gallery/image/buttle.htm', bannerUrl: 'http://inazumaapps.info/furuyoni_simulator/deliv/banner/hmix3.gif' }
+        ];
+        var onChange = function (e) {
+            var val = $(e.target).val();
+            var bgmItem = bgmData_1.find(function (x) { return x.key === val; });
+            // 再生中のbgmがあれば止める
+            if (bgm_1) {
+                bgm_1.pause();
+                bgm_1 = null;
+            }
+            if (bgmItem) {
+                // 新しいBGMを再生
+                bgm_1 = new Audio("http://inazumaapps.info/furuyoni_simulator/deliv/bgm/" + bgmItem.key + ".mp3");
+                bgm_1.volume = currentVolume_1;
+                bgm_1.loop = true;
+                bgm_1.play();
+                // 説明を表示
+                $('#PLAYING-BGM-DESCRIPTION').html("Composed by " + bgmItem.composer + "<br>From <a href=\"" + bgmItem.url + "\" target=\"_blank\">" + bgmItem.siteTitle + "</a><br><a href=\"" + bgmItem.url + "\" target=\"_blank\"><img src=\"" + bgmItem.bannerUrl + "\"></a>");
+            }
+            else {
+                // 説明をクリア
+                $('#PLAYING-BGM-DESCRIPTION').text('');
+            }
+        };
+        return (hyperapp_1.h("div", { id: "BGM-PLAY-WINDOW", style: { height: "16rem", width: "25rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate, ondestroy: ondestroy },
             hyperapp_1.h("div", { class: "ui top attached label" },
-                "BGM\u518D\u751F\u4E2D",
+                "BGM\u518D\u751F",
                 hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleBgmPlaying(); } },
                     hyperapp_1.h("i", { class: "times icon" }))),
-            hyperapp_1.h("p", null,
-                hyperapp_1.h("i", { class: "music icon" }),
-                "\u5263\u306E\u821E",
-                hyperapp_1.h("br", null),
-                "Composed by t.tam",
-                hyperapp_1.h("br", null),
-                "From ",
-                hyperapp_1.h("a", { href: "https://dova-s.jp/bgm/play3721.html", target: "_blank" }, "\u30D5\u30EA\u30FCBGM DOVA-SYNDROME")),
-            hyperapp_1.h("div", { class: "ui blue range", id: "BGM-VOLUME-RANGE" })));
+            hyperapp_1.h("div", null,
+                hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', '-'); } },
+                    hyperapp_1.h("input", { type: "hidden", name: "selectedMusic", onchange: onChange }),
+                    hyperapp_1.h("i", { class: "dropdown icon" }),
+                    hyperapp_1.h("div", { class: "default text" }),
+                    hyperapp_1.h("div", { class: "menu" },
+                        hyperapp_1.h("div", { class: "item", "data-value": "-" }, "(\u66F2\u3092\u9078\u629E)"),
+                        bgmData_1.map(function (item) { return hyperapp_1.h("div", { class: "item", "data-value": item.key },
+                            hyperapp_1.h("i", { class: "music icon" }),
+                            " ",
+                            item.title); })))),
+            hyperapp_1.h("p", { id: "PLAYING-BGM-DESCRIPTION", style: { marginTop: '1em' } }),
+            hyperapp_1.h("div", { style: { position: 'absolute', bottom: '0.8em', width: '100%' } },
+                hyperapp_1.h("div", { style: { float: 'left' } },
+                    hyperapp_1.h("i", { class: "volume up icon" })),
+                hyperapp_1.h("div", { style: { marginLeft: '1.5rem', width: '90%' }, class: "ui blue range", id: "BGM-VOLUME-RANGE" }))));
     }
     else {
         return null;
@@ -72675,7 +72708,7 @@ exports.ControlPanel = function () { return function (state, actions) {
     }
     // 通知
     var notifyData = [
-        { message: 'ターンを終了します', key: 'turnEnd' },
+        { message: 'ターンを終了しました', key: 'turnEnd' },
         { message: '対応します', key: 'reaction' },
     ];
     var notifyValueChanged = function (e) {
@@ -72720,7 +72753,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                 (state.bgmPlaying ? hyperapp_1.h("i", { class: "check icon" }) : null),
                 "BGM\u518D\u751F"),
             hyperapp_1.h("div", { class: "divider" }),
-            hyperapp_1.h("div", { class: "item", onclick: aboutThisService },
+            hyperapp_1.h("div", { class: "item", onclick: aboutThisService, style: { lineHeight: '1.5' } },
                 "\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u306B\u3064\u3044\u3066 ",
                 hyperapp_1.h("br", null),
                 "(\u30D0\u30FC\u30B8\u30E7\u30F3\u3001\u8457\u4F5C\u6A29\u60C5\u5831\u3001\u9023\u7D61\u5148)"))));
@@ -72811,7 +72844,6 @@ function saveWindowState(elem) {
 /** ヘルプウインドウ */
 exports.HelpWindow = function (p) { return function (state, actions) {
     if (p.shown) {
-        var bgm = new Audio('http://inazumaapps.info/furuyoni_simulator/deliv/bgm/sword_dance.mp3');
         var oncreate = function (e) {
             // ウインドウを移動可能にする
             $(e).draggable({
@@ -72859,7 +72891,7 @@ exports.HelpWindow = function (p) { return function (state, actions) {
                     hyperapp_1.h("li", null, "\u840E\u7E2E\u3055\u305B\u308B\u3068\u304D\u306F\u3001\u96C6\u4E2D\u529B\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"),
                     hyperapp_1.h("li", null, "\u624B\u672D\u3092\u76F8\u624B\u306B\u516C\u958B\u3059\u308B\u3068\u304D\u306F\u3001\u624B\u672D\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"))));
         }
-        return (hyperapp_1.h("div", { id: "HELP-WINDOW", style: { height: "25rem", width: "40rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
+        return (hyperapp_1.h("div", { id: "HELP-WINDOW", style: { height: "20rem", width: "40rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
             hyperapp_1.h("div", { class: "ui top attached label" },
                 "\u64CD\u4F5C\u8AAC\u660E",
                 hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleHelpVisible(); } },
