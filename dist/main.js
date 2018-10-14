@@ -71002,7 +71002,8 @@ exports.Card = function (p) {
         top: (p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) * p.zoom - (p.selected || p.handOpened ? 1 : 0) + "px",
         width: 100 * p.zoom + "px",
         height: 140 * p.zoom + "px",
-        fontSize: p.zoom + "em"
+        fontSize: 1.0 + ((p.zoom - 1.0) / 2) + "em",
+        lineHeight: "1.3"
     };
     if (p.target.region === 'on-card') {
         styles.zIndex = "" + (90 - p.target.indexOfRegion);
@@ -72836,9 +72837,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                 hyperapp_1.h("div", { class: "item", "data-value": "7" }, "7"),
                 hyperapp_1.h("div", { class: "item", "data-value": "8" }, "8"),
                 hyperapp_1.h("div", { class: "item", "data-value": "9" }, "9"),
-                hyperapp_1.h("div", { class: "item", "data-value": "10" }, "10"),
-                hyperapp_1.h("div", { class: "item", "data-value": "11" }, "11"),
-                hyperapp_1.h("div", { class: "item", "data-value": "12" }, "12")))));
+                hyperapp_1.h("div", { class: "item", "data-value": "10" }, "10")))));
 }; };
 
 

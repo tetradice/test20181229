@@ -29,7 +29,8 @@ export const Card = (p: Param) => {
       , top: `${(p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) * p.zoom - (p.selected || p.handOpened ? 1 : 0)}px`
       , width: `${100 * p.zoom}px`
       , height: `${140 * p.zoom}px`
-      , fontSize: `${p.zoom}em`
+      , fontSize: `${1.0 + ((p.zoom - 1.0) / 2)}em`
+      , lineHeight: `1.3`
   };
 
     if (p.target.region === 'on-card') {

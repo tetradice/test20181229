@@ -333,8 +333,6 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     <div class="item" data-value="8">8</div>
     <div class="item" data-value="9">9</div>
     <div class="item" data-value="10">10</div>
-    <div class="item" data-value="11">11</div>
-    <div class="item" data-value="12">12</div>
   </div>
 </div>
 
