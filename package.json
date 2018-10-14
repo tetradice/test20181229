@@ -20,6 +20,7 @@
     "randomstring": "^1.1.5",
     "redis": "^2.8.0",
     "socket.io": "2.1.1",
+    "ejs": "^2.6.1",
     "semantic-ui-range": "^1.0.1"
   },
   "devDependencies": {
@@ -45,7 +46,6 @@
     "browser-sync": "^2.24.4",
     "connect-browser-sync": "^2.1.0",
     "css-loader": "^0.28.11",
-    "ejs": "^2.6.1",
     "hyperapp": "^1.2.6",
     "hyperapp-debug": "^0.0.1-beta.10",
     "hyperapp-devtools": "^0.3.0",
