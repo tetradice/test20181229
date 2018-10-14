@@ -239,16 +239,16 @@ $(function(){
                 // 条件を満たしていれば、帯電解除コマンドを追加
                 addDischargeCommand(items, card, true);
 
-                // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
-                if(CARD_DATA[card.cardId].removable){
-                    items['sep2'] = '---';
-                    items['remove'] =  {
-                        name: "ボード上から取り除く"
-                        , callback: function() {
-                        appActions.oprRemoveCard({objectId: id});
-                        }
-                    }
-                };
+                // // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
+                // if(CARD_DATA[card.cardId].removable){
+                //     items['sep2'] = '---';
+                //     items['remove'] =  {
+                //         name: "ボード上から取り除く"
+                //         , callback: function() {
+                //         appActions.oprRemoveCard({objectId: id});
+                //         }
+                //     }
+                // };
             }
 
             
@@ -787,15 +787,27 @@ $(function(){
 
         $('#BOARD').on('dragleave', '.area.droppable', function(e){
             console.log('dragleave', this);
-            $(`.area.background`).removeClass('over').removeClass('over-forbidden');
-            $(`.area.droppable`).removeClass('over').removeClass('over-forbidden');
-            $(`.fbs-card`).removeClass('over').removeClass('over-forbidden');
+            let side = $(this).attr('data-side') as (PlayerSide | 'none');
+            let region = $(this).attr('data-region') as (CardRegion | SakuraTokenRegion);
+            let linkedCardId = $(this).attr('data-linked-card-id');
+
+            if(region === 'on-card'){
+                $(`.fbs-card[data-object-id=${linkedCardId}]`).removeClass('over').removeClass('over-forbidden');
+            } else {
+                $(`.area.background[data-side=${side}][data-region=${region}]`).removeClass('over').removeClass('over-forbidden');
+            }
+            $(`.area.droppable[data-side=${side}][data-region=${region}]`).removeClass('over').removeClass('over-forbidden');
         });
 
         let lastDraggingFrom: state.BoardObject = null; 
         $('#BOARD').on('drop', '.area', function(e){
             // this / e.target is current target element.
             let $this = $(this);
+
+            // ドラッグ禁止状態の場合は処理しない
+            if($(this).hasClass('over-forbidden')){
+                return false;
+            }
 
             // 現在のステートを取得
             let currentState = appActions.getState();

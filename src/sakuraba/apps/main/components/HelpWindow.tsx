@@ -43,6 +43,7 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
                 </div>
             );
         } else {
+            let rairaFound = state.board.megamis[state.side][0] === 'raira' || state.board.megamis[state.side][1] === 'raira';
             contentDiv = (
                 <div>
                     <h4><i class="icon question circle outline"></i>決闘中の操作方法</h4>
@@ -54,8 +55,9 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
                         <li>再構成を行うときは、自分の山札の上で右クリック</li>
                         <li>萎縮させるときは、集中力の上で右クリック</li>
                         <li>手札を相手に公開するときは、手札の上で右クリック</li>
-                        <li>カードを封印したい時には、封印先のカードの上にドラッグ<br />（[論破]などの一部カードにのみ封印可能）</li>
-                        <li>カードをゲームから取り除きたい場合は、そのカードの上で右クリック<br />（[風魔招来孔]などの一部カードのみ実行可能）</li>
+                        <li>カードを封印したい時には、使用済み領域にある封印先のカードの上にドラッグ<br />（[論破]などの一部カードにのみ封印可能）</li>
+                        <li>カードをゲームから取り除きたい場合は、追加札領域へ移動<br />（[風魔招来孔]などの一部カードのみ実行可能）</li>
+                        {rairaFound ? <li>カードの帯電を解除したい場合は、表向きのカードの上で右クリック</li> : null}
                     </ul>
                 </div>
             );
@@ -63,7 +65,7 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
 
         return (
             <div id="HELP-WINDOW"
-             style={{position: 'absolute', height: "23rem", width: "40rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
+             style={{position: 'absolute', height: "23rem", width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}>
                 <div class="ui top attached label">操作説明<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleHelpVisible()}><i class="times icon"></i></a></div>

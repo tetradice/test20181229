@@ -70097,17 +70097,16 @@ $(function () {
                 };
                 // 条件を満たしていれば、帯電解除コマンドを追加
                 addDischargeCommand(items, card_1, true);
-                // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
-                if (sakuraba_1.CARD_DATA[card_1.cardId].removable) {
-                    items['sep2'] = '---';
-                    items['remove'] = {
-                        name: "ボード上から取り除く",
-                        callback: function () {
-                            appActions.oprRemoveCard({ objectId: id_1 });
-                        }
-                    };
-                }
-                ;
+                // // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
+                // if(CARD_DATA[card.cardId].removable){
+                //     items['sep2'] = '---';
+                //     items['remove'] =  {
+                //         name: "ボード上から取り除く"
+                //         , callback: function() {
+                //         appActions.oprRemoveCard({objectId: id});
+                //         }
+                //     }
+                // };
             }
             // 集中力で右クリック
             if ($elem.is('.fbs-vigor-card, .withered-token')) {
@@ -70597,14 +70596,25 @@ $(function () {
         });
         $('#BOARD').on('dragleave', '.area.droppable', function (e) {
             console.log('dragleave', this);
-            $(".area.background").removeClass('over').removeClass('over-forbidden');
-            $(".area.droppable").removeClass('over').removeClass('over-forbidden');
-            $(".fbs-card").removeClass('over').removeClass('over-forbidden');
+            var side = $(this).attr('data-side');
+            var region = $(this).attr('data-region');
+            var linkedCardId = $(this).attr('data-linked-card-id');
+            if (region === 'on-card') {
+                $(".fbs-card[data-object-id=" + linkedCardId + "]").removeClass('over').removeClass('over-forbidden');
+            }
+            else {
+                $(".area.background[data-side=" + side + "][data-region=" + region + "]").removeClass('over').removeClass('over-forbidden');
+            }
+            $(".area.droppable[data-side=" + side + "][data-region=" + region + "]").removeClass('over').removeClass('over-forbidden');
         });
         var lastDraggingFrom = null;
         $('#BOARD').on('drop', '.area', function (e) {
             // this / e.target is current target element.
             var $this = $(this);
+            // ドラッグ禁止状態の場合は処理しない
+            if ($(this).hasClass('over-forbidden')) {
+                return false;
+            }
             // 現在のステートを取得
             var currentState = appActions.getState();
             var boardModel = new models.Board(currentState.board);
@@ -71101,8 +71111,12 @@ exports.Card = function (p) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var lodash_1 = __importDefault(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
 /** メガミタロット */
 exports.MegamiTarots = function (p) {
     // ベーススタイル決定
@@ -71116,7 +71130,7 @@ exports.MegamiTarots = function (p) {
     var cx = p.left;
     var cy = p.top;
     for (var i = 0; i < p.stackedCount; i++) {
-        tarots.push(hyperapp_1.h("img", { src: "http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/tarots/tarotback_emboss.png", style: Object.assign({}, styles, { left: cx * p.zoom + "px", top: cy * p.zoom + "px" }) }));
+        tarots.push(hyperapp_1.h("img", { src: "http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/tarots/tarotback_emboss.png", style: lodash_1.default.assign({}, styles, { left: cx * p.zoom + "px", top: cy * p.zoom + "px" }) }));
         cx += 3;
         cy += 3;
     }
@@ -71985,7 +71999,7 @@ exports.default = {
     },
     /** 観戦者の場合に表示側を変更する */
     setWatcherViewingSide: function (p) {
-        return { viewingSide: p.value };
+        return { viewingSide: p.value, handViewableFromCurrentWatcher: p.handViewable };
     },
     toggleHelpVisible: function () { return function (state) {
         return { helpVisible: !state.helpVisible };
@@ -72345,13 +72359,15 @@ exports.BoardCard = function (p) { return function (state, actions) {
         handOpened = true;
     }
     // 公開判定
-    var opened = (p.target.openState === 'opened' || (p.target.openState === 'ownerOnly' && p.target.side === state.side));
+    var opened = (p.target.openState === 'opened'
+        || (p.target.openState === 'ownerOnly' && p.target.side === state.side)
+        || (p.target.openState === 'ownerOnly' && p.target.side === state.viewingSide && state.side === 'watcher' && state.handViewableFromCurrentWatcher));
     // リバース表示判定
     var reversed = p.target.side === utils.flipSide(state.viewingSide);
     // 説明表示判定
     // 表向きであるか、自分の伏せ札であるか、自分の切り札であれば説明を見ることができる
-    var known = (p.target.openState === 'opened'
-        || (p.target.openState === 'ownerOnly' && p.target.side === state.side)
+    // また観戦者の場合で、手札公開フラグONの場合も説明を見ることができる
+    var known = (opened
         || (p.target.region === 'hidden-used' && p.target.side === state.side)
         || (p.target.region === 'special' && p.target.side === state.side));
     // ドラッグ可否判定
@@ -72798,17 +72814,30 @@ exports.ControlPanel = function () { return function (state, actions) {
         hyperapp_1.h("button", { class: "ui basic button disabled", id: "NOTIFY-SEND-BUTTON", onclick: notify }, "\u9001\u4FE1")));
     var watchSideChanged = function (e) {
         var val = $(e.target).val();
-        actions.setWatcherViewingSide({ value: val });
+        if (val === 'p1-handviewing') {
+            actions.setWatcherViewingSide({ value: 'p1', handViewable: true });
+        }
+        if (val === 'p2-handviewing') {
+            actions.setWatcherViewingSide({ value: 'p2', handViewable: true });
+        }
+        if (val === 'p1') {
+            actions.setWatcherViewingSide({ value: 'p1', handViewable: false });
+        }
+        if (val === 'p2') {
+            actions.setWatcherViewingSide({ value: 'p2', handViewable: false });
+        }
     };
     var watchSidePanel = (hyperapp_1.h("div", null,
         hyperapp_1.h("div", { class: "ui sub header" }, "\u8996\u70B9"),
-        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', 'p1'); } },
+        hyperapp_1.h("div", { class: "ui selection dropdown", style: { width: '20em' }, oncreate: function (e) { return $(e).dropdown('set selected', 'p1'); } },
             hyperapp_1.h("input", { type: "hidden", name: "watchSide", onchange: watchSideChanged }),
             hyperapp_1.h("i", { class: "dropdown icon" }),
             hyperapp_1.h("div", { class: "default text" }),
             hyperapp_1.h("div", { class: "menu" },
                 hyperapp_1.h("div", { class: "item", "data-value": "p1" }, "\u30D7\u30EC\u30A4\u30E4\u30FC1\u5074"),
-                hyperapp_1.h("div", { class: "item", "data-value": "p2" }, "\u30D7\u30EC\u30A4\u30E4\u30FC2\u5074")))));
+                hyperapp_1.h("div", { class: "item", "data-value": "p1-handviewing" }, "\u30D7\u30EC\u30A4\u30E4\u30FC1\u5074\uFF08\u624B\u672D\u3082\u898B\u308B\uFF09"),
+                hyperapp_1.h("div", { class: "item", "data-value": "p2" }, "\u30D7\u30EC\u30A4\u30E4\u30FC2\u5074"),
+                hyperapp_1.h("div", { class: "item", "data-value": "p2-handviewing" }, "\u30D7\u30EC\u30A4\u30E4\u30FC2\u5074\uFF08\u624B\u672D\u3082\u898B\u308B\uFF09")))));
     var helpButton = (hyperapp_1.h("button", { class: "ui basic button", onclick: function () { return actions.toggleHelpVisible(); } },
         hyperapp_1.h("i", { class: "icon question circle outline" }),
         "\u64CD\u4F5C\u8AAC\u660E"));
@@ -72917,6 +72946,7 @@ exports.HelpWindow = function (p) { return function (state, actions) {
                     "\u30E1\u30AC\u30DF\u9078\u629E\u3001\u30C7\u30C3\u30AD\u69CB\u7BC9\u3001\u624B\u672D\u306E\u5F15\u304D\u76F4\u3057\u304C\u7D42\u308F\u308B\u3068\u6C7A\u95D8\u958B\u59CB\u3068\u306A\u308A\u307E\u3059\u3002")));
         }
         else {
+            var rairaFound = state.board.megamis[state.side][0] === 'raira' || state.board.megamis[state.side][1] === 'raira';
             contentDiv = (hyperapp_1.h("div", null,
                 hyperapp_1.h("h4", null,
                     hyperapp_1.h("i", { class: "icon question circle outline" }),
@@ -72935,15 +72965,16 @@ exports.HelpWindow = function (p) { return function (state, actions) {
                     hyperapp_1.h("li", null, "\u840E\u7E2E\u3055\u305B\u308B\u3068\u304D\u306F\u3001\u96C6\u4E2D\u529B\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"),
                     hyperapp_1.h("li", null, "\u624B\u672D\u3092\u76F8\u624B\u306B\u516C\u958B\u3059\u308B\u3068\u304D\u306F\u3001\u624B\u672D\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"),
                     hyperapp_1.h("li", null,
-                        "\u30AB\u30FC\u30C9\u3092\u5C01\u5370\u3057\u305F\u3044\u6642\u306B\u306F\u3001\u5C01\u5370\u5148\u306E\u30AB\u30FC\u30C9\u306E\u4E0A\u306B\u30C9\u30E9\u30C3\u30B0",
+                        "\u30AB\u30FC\u30C9\u3092\u5C01\u5370\u3057\u305F\u3044\u6642\u306B\u306F\u3001\u4F7F\u7528\u6E08\u307F\u9818\u57DF\u306B\u3042\u308B\u5C01\u5370\u5148\u306E\u30AB\u30FC\u30C9\u306E\u4E0A\u306B\u30C9\u30E9\u30C3\u30B0",
                         hyperapp_1.h("br", null),
                         "\uFF08[\u8AD6\u7834]\u306A\u3069\u306E\u4E00\u90E8\u30AB\u30FC\u30C9\u306B\u306E\u307F\u5C01\u5370\u53EF\u80FD\uFF09"),
                     hyperapp_1.h("li", null,
-                        "\u30AB\u30FC\u30C9\u3092\u30B2\u30FC\u30E0\u304B\u3089\u53D6\u308A\u9664\u304D\u305F\u3044\u5834\u5408\u306F\u3001\u305D\u306E\u30AB\u30FC\u30C9\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF",
+                        "\u30AB\u30FC\u30C9\u3092\u30B2\u30FC\u30E0\u304B\u3089\u53D6\u308A\u9664\u304D\u305F\u3044\u5834\u5408\u306F\u3001\u8FFD\u52A0\u672D\u9818\u57DF\u3078\u79FB\u52D5",
                         hyperapp_1.h("br", null),
-                        "\uFF08[\u98A8\u9B54\u62DB\u6765\u5B54]\u306A\u3069\u306E\u4E00\u90E8\u30AB\u30FC\u30C9\u306E\u307F\u5B9F\u884C\u53EF\u80FD\uFF09"))));
+                        "\uFF08[\u98A8\u9B54\u62DB\u6765\u5B54]\u306A\u3069\u306E\u4E00\u90E8\u30AB\u30FC\u30C9\u306E\u307F\u5B9F\u884C\u53EF\u80FD\uFF09"),
+                    rairaFound ? hyperapp_1.h("li", null, "\u30AB\u30FC\u30C9\u306E\u5E2F\u96FB\u3092\u89E3\u9664\u3057\u305F\u3044\u5834\u5408\u306F\u3001\u8868\u5411\u304D\u306E\u30AB\u30FC\u30C9\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF") : null)));
         }
-        return (hyperapp_1.h("div", { id: "HELP-WINDOW", style: { position: 'absolute', height: "23rem", width: "40rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
+        return (hyperapp_1.h("div", { id: "HELP-WINDOW", style: { position: 'absolute', height: "23rem", width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
             hyperapp_1.h("div", { class: "ui top attached label" },
                 "\u64CD\u4F5C\u8AAC\u660E",
                 hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleHelpVisible(); } },
@@ -73186,6 +73217,7 @@ exports.MainProcessButtons = function (p) { return function (state, actions) {
             }).then(function (selectedCards) {
                 // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
                 actions.operate({
+                    undoType: 'notBack',
                     log: "\u624B\u672D" + selectedCards.length + "\u679A\u3092\u5C71\u672D\u306E\u5E95\u306B\u7F6E\u304D\u3001\u540C\u3058\u679A\u6570\u306E\u30AB\u30FC\u30C9\u3092\u5F15\u304D\u76F4\u3057\u307E\u3057\u305F",
                     proc: function () {
                         // 選択したカードを山札の底に移動

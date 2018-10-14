@@ -244,6 +244,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
             }).then((selectedCards) => {
                 // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
                 actions.operate({
+                    undoType: 'notBack',
                     log: `手札${selectedCards.length}枚を山札の底に置き、同じ枚数のカードを引き直しました`,
                     proc: () => {
                         // 選択したカードを山札の底に移動

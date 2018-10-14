@@ -20,15 +20,19 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
     }
 
     // 公開判定
-    let opened = (p.target.openState === 'opened' || (p.target.openState === 'ownerOnly' && p.target.side === state.side));
+    let opened = (
+        p.target.openState === 'opened'
+        || (p.target.openState === 'ownerOnly' && p.target.side === state.side)
+        || (p.target.openState === 'ownerOnly' && p.target.side === state.viewingSide && state.side === 'watcher' && state.handViewableFromCurrentWatcher)
+    );
     // リバース表示判定
     let reversed = p.target.side === utils.flipSide(state.viewingSide);
 
     // 説明表示判定
     // 表向きであるか、自分の伏せ札であるか、自分の切り札であれば説明を見ることができる
+    // また観戦者の場合で、手札公開フラグONの場合も説明を見ることができる
     let known = (
-        p.target.openState === 'opened'
-        || (p.target.openState === 'ownerOnly' && p.target.side === state.side)
+        opened
         || (p.target.region === 'hidden-used' && p.target.side === state.side)
         || (p.target.region === 'special' && p.target.side === state.side)
     )

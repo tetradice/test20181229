@@ -87,9 +87,10 @@
                 必要環境
               </h3>
               <p>
-                <strong>PC版のGoogle Chrome</strong> (比較的新しめのバージョンのもの)<br>
+                <strong>PC版のブラウザ （Google Chrome, Edge）</strong><br>
+                ※Google Chrome推奨<br>
                 <br>
-                α版ではIE, Edge, FireFoxなどの別ブラウザでの動作は確認していません。<br>
+                α版ではIE, FireFoxなどでの動作は確認していません。<br>
                 また、タブレットやスマホには対応しておりません。
               </p>
         
@@ -100,7 +101,7 @@
                 　PCのブラウザから遊べる、ボードゲーム「<a href="https://main-bakafire.ssl-lolipop.jp/furuyoni/">桜降る代に決闘を</a>」のシミュレーターです。<br>
                 　オンラインでの対戦や観戦が可能なため、友達との対戦に使用することができます。また、1人で2つの画面を開くことで、1人盤回しに使用することも可能です。
               </p>
-              <p><img src="http://inazumaapps.info/furuyoni_simulator/deliv/WS000593.PNG" style="width: 100%; border: 1px solid silver;"></p>
+              <p><a href="http://inazumaapps.info/furuyoni_simulator/deliv/WS000594.PNG"><img src="http://inazumaapps.info/furuyoni_simulator/deliv/WS000594.PNG" style="width: 100%; border: 1px solid silver;"></a></p>
               <p>
                 　ただし、これはあくまで「シミュレーター」で、<strong>対戦ツールではない</strong>ことにご注意ください。そのため、既存の対戦ツールと比べると、ルールや盤上の管理はあまり自動でやってくれません。（カードや桜花結晶の移動、攻撃したときのライフ減少などは、プレイヤーが自分でやる必要があります）
               </p>
@@ -169,7 +170,7 @@
             $('#RESULT-AREA').show();
 
             // 作った卓のURLをローカルストレージに記憶
-            var pushedData = Object.assign({}, data, {time: Date.now()});
+            var pushedData = $.extend({}, data, {time: Date.now()});
             tableHistory.unshift(pushedData);
             localStorage.setItem("tableHistory", JSON.stringify(tableHistory));
 

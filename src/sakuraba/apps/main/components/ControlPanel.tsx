@@ -279,21 +279,35 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     );
 
     let watchSideChanged = (e) => {
-        let val = $(e.target).val() as PlayerSide;
-        actions.setWatcherViewingSide({value: val});
+        let val = $(e.target).val();
+        if(val === 'p1-handviewing'){
+            actions.setWatcherViewingSide({value: 'p1', handViewable: true});
+        }
+        if(val === 'p2-handviewing'){
+            actions.setWatcherViewingSide({value: 'p2', handViewable: true});
+        }
+        if(val === 'p1'){
+            actions.setWatcherViewingSide({value: 'p1', handViewable: false});
+        }
+        if(val === 'p2'){
+            actions.setWatcherViewingSide({value: 'p2', handViewable: false});
+        }
+        
     };
 
     let watchSidePanel = (
         <div>
             <div class="ui sub header">視点</div>
-            <div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', 'p1')}>
+            <div class="ui selection dropdown" style={{width: '20em'}} oncreate={(e) => $(e).dropdown('set selected', 'p1')}>
 
                 <input type="hidden" name="watchSide" onchange={watchSideChanged} />
                 <i class="dropdown icon"></i>
                 <div class="default text"></div>
                 <div class="menu">
                     <div class="item" data-value="p1">プレイヤー1側</div>
+                    <div class="item" data-value="p1-handviewing">プレイヤー1側（手札も見る）</div>
                     <div class="item" data-value="p2">プレイヤー2側</div>
+                    <div class="item" data-value="p2-handviewing">プレイヤー2側（手札も見る）</div>
                 </div>
             </div>
         </div>

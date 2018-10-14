@@ -5,8 +5,8 @@ export default {
     },
 
     /** 観戦者の場合に表示側を変更する */
-    setWatcherViewingSide: (p: {value: PlayerSide}) => {
-        return {viewingSide: p.value} as Partial<state.State>;
+    setWatcherViewingSide: (p: {value: PlayerSide, handViewable: boolean}) => {
+        return {viewingSide: p.value, handViewableFromCurrentWatcher: p.handViewable} as Partial<state.State>;
     },
 
     toggleHelpVisible: () => (state: state.State) => {

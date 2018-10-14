@@ -756,6 +756,11 @@
     var params = {tableId: '<%= tableId %>', side: '<%= side %>'};
     // グローバル変数初期化
     var draggingFrom = null;
+
+    // Object.assignがない場合、IE11など古いブラウザの可能性が高いので警告
+    if(Object.assign === undefined){
+        alert('お使いのブラウザが、ふるよにボードシミュレーターに対応していないブラウザの可能性があります。\n（ふるよにボードシミュレーターは、PC版のGoogle Chrome, Edgeにのみ対応しています）');
+    }
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="http://inazumaapps.info/furuyoni_simulator/deliv/jquery-3.3.1.min.js"></script>

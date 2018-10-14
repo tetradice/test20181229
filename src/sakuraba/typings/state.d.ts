@@ -19,6 +19,8 @@ export interface State {
     side?: SheetSide;
     /** 自分がいまp1/p2どちら側の席から卓を見ているか */
     viewingSide?: PlayerSide;
+    /** 自分が観戦者の場合に、プレイヤーの手札などを見ることができるか */
+    handViewableFromCurrentWatcher?: boolean;
 
     currentWatcherSessionId: string;
 

@@ -2,6 +2,7 @@ import { h } from "hyperapp";
 import * as utils from "sakuraba/utils";
 import * as sakuraba from "sakuraba";
 import dragInfo from "sakuraba/dragInfo";
+import _ from "lodash";
 
 /** カード */
 interface Param {
@@ -24,7 +25,7 @@ export const MegamiTarots = (p: Param) => {
   let cx = p.left;
   let cy = p.top;
   for(let i = 0; i < p.stackedCount; i++){
-      tarots.push(<img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/tarots/tarotback_emboss.png" style={Object.assign({}, styles, {left: `${cx * p.zoom}px`, top: `${cy * p.zoom}px`})} />);
+      tarots.push(<img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/tarots/tarotback_emboss.png" style={_.assign({}, styles, {left: `${cx * p.zoom}px`, top: `${cy * p.zoom}px`})} />);
       cx += 3;
       cy += 3;
   }
