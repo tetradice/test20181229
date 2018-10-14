@@ -71001,7 +71001,8 @@ exports.Card = function (p) {
         left: (p.target.rotated ? p.left + ((140 - 100) / 2) : p.left) * p.zoom - (p.selected || p.handOpened ? 1 : 0) + "px",
         top: (p.target.rotated ? p.top - ((140 - 100) / 2) : p.top) * p.zoom - (p.selected || p.handOpened ? 1 : 0) + "px",
         width: 100 * p.zoom + "px",
-        height: 140 * p.zoom + "px"
+        height: 140 * p.zoom + "px",
+        fontSize: p.zoom + "em"
     };
     if (p.target.region === 'on-card') {
         styles.zIndex = "" + (90 - p.target.indexOfRegion);
@@ -71142,7 +71143,8 @@ exports.ProcessButton = function (p, children) {
         top: p.top * p.zoom + "px",
         width: 240 * p.zoom + "px",
         height: 50 * p.zoom + "px",
-        position: 'absolute'
+        position: 'absolute',
+        fontSize: p.zoom + "em"
     };
     return hyperapp_1.h("button", { class: "ui button" + (p.disabled ? ' disabled' : '') + (p.primary ? ' primary' : ''), style: styles, onclick: p.onclick }, children);
 };

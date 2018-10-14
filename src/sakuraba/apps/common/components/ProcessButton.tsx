@@ -15,6 +15,7 @@ export const ProcessButton = (p: {
         , width: `${240 * p.zoom}px`
         , height: `${50 * p.zoom}px`
         , position: 'absolute'
+        , fontSize: `${p.zoom}em`
     };
 
     return <button class={`ui button` + (p.disabled ? ' disabled' : '') + (p.primary ? ' primary' : '')} style={styles} onclick={p.onclick}>{children}</button>
