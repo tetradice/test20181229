@@ -74099,7 +74099,9 @@ var view = function (state, actions) {
         }
         else if (!state.board.mariganFlags[side]) {
             // 手札引き直しを選択中の場合
-            mainProcessButtonLeft = 450;
+            if (side === state.side) {
+                mainProcessButtonLeft = 450;
+            }
         }
         return true;
     });
