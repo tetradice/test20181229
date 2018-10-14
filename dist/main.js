@@ -70204,8 +70204,8 @@ $(function () {
                     };
                 }
             }
-            // 山札で右クリック
-            if ($elem.is('.area.background[data-region=library], .fbs-card[data-region=library]')) {
+            // 自分の山札で右クリック
+            if ($elem.is(".area.background[data-region=library][data-side=" + playerSide + "], .fbs-card[data-region=library][data-side=" + playerSide + "]")) {
                 items = {
                     'draw': { name: '1枚引く', disabled: function () {
                             var board = new models.Board(appActions.getState().board);
@@ -70587,7 +70587,7 @@ $(function () {
                 }
             }
             if (region === 'on-card') {
-                console.log('overcard');
+                console.log("overcard " + linkedCardId);
                 $(".fbs-card[data-object-id=" + linkedCardId + "]").addClass('over');
             }
             else {
@@ -70597,8 +70597,6 @@ $(function () {
         });
         $('#BOARD').on('dragleave', '.area.droppable', function (e) {
             console.log('dragleave', this);
-            var side = $(this).attr('data-side');
-            var region = $(this).attr('data-region');
             $(".area.background").removeClass('over').removeClass('over-forbidden');
             $(".area.droppable").removeClass('over').removeClass('over-forbidden');
             $(".fbs-card").removeClass('over').removeClass('over-forbidden');
@@ -71017,6 +71015,9 @@ exports.Card = function (p) {
     }
     var cardData = sakuraba.CARD_DATA[p.target.cardId];
     var className = "fbs-card";
+    // クリック可能クラスを付与する場合
+    if (p.clickableClass)
+        className += " clickable";
     // 選択済み、もしくは手札公開中の場合は、選択済みスタイルを付与
     if (p.selected || p.handOpened)
         className += " selected";
@@ -72173,7 +72174,7 @@ exports.ActionLogWindow = function (p) { return function (state, actions) {
             var $logArea = $(e).find('#ACTION-LOG-AREA');
             $logArea.scrollTop($logArea.get(0).scrollHeight);
         };
-        return (hyperapp_1.h("div", { id: "ACTION-LOG-WINDOW", style: { height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate, onupdate: onupdate },
+        return (hyperapp_1.h("div", { id: "ACTION-LOG-WINDOW", style: { position: 'absolute', height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate, onupdate: onupdate },
             hyperapp_1.h("div", { class: "ui top attached label" },
                 "\u64CD\u4F5C\u30ED\u30B0",
                 hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleActionLogVisible(); } },
@@ -72201,14 +72202,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem) {
-    var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top'), width: $(elem).css('width'), height: $(elem).css('height') };
+    var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top') };
     localStorage.setItem(elem.id + "-WindowState", JSON.stringify(current));
 }
 /** BGM再生ウインドウ */
 exports.BGMWindow = function (p) { return function (state, actions) {
     if (p.shown) {
-        var bgm_1 = null;
-        var currentVolume_1 = 0.5;
         var oncreate = function (e) {
             // ウインドウを移動可能にする
             $(e).draggable({
@@ -72230,34 +72229,32 @@ exports.BGMWindow = function (p) { return function (state, actions) {
                 start: 50,
                 step: 2,
                 onChange: function (value) {
-                    currentVolume_1 = value * 0.01;
-                    if (bgm_1) {
-                        bgm_1.volume = currentVolume_1;
-                    }
+                    var bgm = document.getElementById('BGM');
+                    bgm.volume = value * 0.01;
                 }
             });
         };
         var ondestroy = function (target) {
-            bgm_1.pause();
+            var bgm = document.getElementById('BGM');
+            bgm.pause();
         };
         var bgmData_1 = [
             { key: 'sword_dance', title: '剣の舞', composer: 't.tam', siteTitle: 'フリーBGM DOVA-SYNDROME', url: 'https://dova-s.jp/bgm/play3721.html', bannerUrl: 'http://inazumaapps.info/furuyoni_simulator/deliv/banner/dova-syndrome.gif' },
             { key: 'elemental_dance', title: '精霊舞い', composer: '秋山裕和', siteTitle: 'フリー音楽素材 H/MIX GALLERY', url: 'http://www.hmix.net/music_gallery/image/buttle.htm', bannerUrl: 'http://inazumaapps.info/furuyoni_simulator/deliv/banner/hmix3.gif' }
         ];
         var onChange = function (e) {
+            var bgm = document.getElementById('BGM');
             var val = $(e.target).val();
             var bgmItem = bgmData_1.find(function (x) { return x.key === val; });
             // 再生中のbgmがあれば止める
-            if (bgm_1) {
-                bgm_1.pause();
-                bgm_1 = null;
+            if (bgm) {
+                bgm.pause();
             }
             if (bgmItem) {
                 // 新しいBGMを再生
-                bgm_1 = new Audio("http://inazumaapps.info/furuyoni_simulator/deliv/bgm/" + bgmItem.key + ".mp3");
-                bgm_1.volume = currentVolume_1;
-                bgm_1.loop = true;
-                bgm_1.play();
+                bgm.src = "http://inazumaapps.info/furuyoni_simulator/deliv/bgm/" + bgmItem.key + ".mp3";
+                bgm.loop = true;
+                bgm.play();
                 // 説明を表示
                 $('#PLAYING-BGM-DESCRIPTION').html("Composed by " + bgmItem.composer + "<br>From <a href=\"" + bgmItem.url + "\" target=\"_blank\">" + bgmItem.siteTitle + "</a><br><a href=\"" + bgmItem.url + "\" target=\"_blank\"><img src=\"" + bgmItem.bannerUrl + "\"></a>");
             }
@@ -72266,7 +72263,7 @@ exports.BGMWindow = function (p) { return function (state, actions) {
                 $('#PLAYING-BGM-DESCRIPTION').text('');
             }
         };
-        return (hyperapp_1.h("div", { id: "BGM-PLAY-WINDOW", style: { height: "16rem", width: "25rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate, ondestroy: ondestroy },
+        return (hyperapp_1.h("div", { id: "BGM-PLAY-WINDOW", style: { position: 'absolute', height: "16rem", width: "25rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate, ondestroy: ondestroy },
             hyperapp_1.h("div", { class: "ui top attached label" },
                 "BGM\u518D\u751F",
                 hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleBgmPlaying(); } },
@@ -72286,7 +72283,8 @@ exports.BGMWindow = function (p) { return function (state, actions) {
             hyperapp_1.h("div", { style: { position: 'absolute', bottom: '0.8em', width: '100%' } },
                 hyperapp_1.h("div", { style: { float: 'left' } },
                     hyperapp_1.h("i", { class: "volume up icon" })),
-                hyperapp_1.h("div", { style: { marginLeft: '1.5rem', width: '90%' }, class: "ui blue range", id: "BGM-VOLUME-RANGE" }))));
+                hyperapp_1.h("div", { style: { marginLeft: '1.5rem', width: '90%' }, class: "ui blue range", id: "BGM-VOLUME-RANGE" })),
+            hyperapp_1.h("audio", { id: "BGM" })));
     }
     else {
         return null;
@@ -72344,17 +72342,22 @@ exports.BoardCard = function (p) { return function (state, actions) {
     // ドラッグ可否判定
     var libraryCards = state.board.objects.filter(function (o) { return o.type === 'card' && o.side === p.target.side && o.region === p.target.region; });
     var draggable = true;
+    var clickableClass = true;
     if (state.side === 'watcher') {
         // 観戦者はドラッグもクリックも不可能
         draggable = false;
+        clickableClass = known; // この場合、説明を表示可能である場合に限り、クリック可能クラスを付与
     }
     else {
-        if (p.target.region === 'library' && p.target.indexOfRegion !== (libraryCards.length - 1))
-            draggable = false; // 山札にあって、かつ一番上のカードでない場合はドラッグ不可
+        // 山札にあって、かつ一番上のカードでない場合はドラッグ不可
+        if (p.target.region === 'library' && p.target.indexOfRegion !== (libraryCards.length - 1)) {
+            draggable = false;
+            clickableClass = false; // この場合、クリック可能クラスも付与しない
+        }
     }
     // ボード上のカードをダブルクリックした場合の処理
     var onDoubleClickAtBoard = function (element) {
-        if (!state.board.firstDrawFlags[state.side]) {
+        if (!state.board.mariganFlags[state.side]) {
             utils.messageModal('決闘を開始するまでは、カードや桜花結晶の操作は行えません。');
             return false;
         }
@@ -72376,7 +72379,7 @@ exports.BoardCard = function (p) { return function (state, actions) {
     if (cardData.rangeOpened !== undefined && state.board.umbrellaStatus[p.target.ownerSide] === 'opened') {
         useOpenedData = true;
     }
-    return (hyperapp_1.h(components_1.Card, __assign({ opened: opened, handOpened: handOpened, useOpenedCardData: useOpenedData, reversed: reversed, descriptionViewable: known, ondblclick: onDoubleClickAtBoard, draggable: draggable, zoom: state.zoom }, p)));
+    return (hyperapp_1.h(components_1.Card, __assign({ opened: opened, handOpened: handOpened, clickableClass: clickableClass, useOpenedCardData: useOpenedData, reversed: reversed, descriptionViewable: known, ondblclick: onDoubleClickAtBoard, draggable: draggable, zoom: state.zoom }, p)));
 }; };
 
 
@@ -72647,8 +72650,7 @@ exports.ControlPanel = function () { return function (state, actions) {
             var myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
             var onCardTokenFound = (state.board.objects.find(function (o) { return o.type === 'sakura-token' && o.region === 'on-card'; }) ? true : false);
             var side_1 = state.side;
-            commandButtons = (hyperapp_1.h("div", { class: css.commandButtons },
-                hyperapp_1.h("div", { class: css.currentPhase }, "- \u685C\u82B1\u6C7A\u95D8 -"),
+            var innerCommandButtons = (hyperapp_1.h("div", null,
                 hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
                     hyperapp_1.h("button", { id: "FORWARD-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (distanceCount >= 1 && myAuraCount < 5 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'distance', null], [side_1, 'aura', null], '前進'); } }, "\u524D\u9032"),
                     hyperapp_1.h("button", { id: "LEAVE-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (dustCount >= 1 && distanceCount < 10 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'dust', null], [null, 'distance', null], '離脱'); } }, "\u96E2\u8131")),
@@ -72660,6 +72662,13 @@ exports.ControlPanel = function () { return function (state, actions) {
                     hyperapp_1.h("button", { id: "CHARGE-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (myAuraCount >= 1 ? '' : 'disabled'), onclick: function () { return basicAction([side_1, 'aura', null], [side_1, 'flair', null], '宿し'); } }, "\u5BBF\u3057")),
                 hyperapp_1.h("br", null),
                 hyperapp_1.h("button", { id: "ALL-ENHANCE-DECREASE-BUTTON", class: "ui basic button " + (onCardTokenFound ? '' : 'disabled'), style: "margin-top: 5px;", onclick: function () { return actions.oprRemoveSakuraTokenfromAllEnhanceCard(); } }, "\u5168\u4ED8\u4E0E\u672D\u306E\u685C\u82B1\u7D50\u6676-1")));
+            // 決闘開始操作を行っていなければ、コマンドボタンはまだ表示しない
+            if (!state.board.mariganFlags[state.side]) {
+                innerCommandButtons = null;
+            }
+            commandButtons = (hyperapp_1.h("div", { class: css.commandButtons },
+                hyperapp_1.h("div", { class: css.currentPhase }, "- \u685C\u82B1\u6C7A\u95D8 -"),
+                innerCommandButtons));
         }
         else if (state.board.megamiOpenFlags[state.side]) {
             commandButtons = (hyperapp_1.h("div", { class: css.commandButtons },
@@ -72838,7 +72847,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem) {
-    var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top'), width: $(elem).css('width'), height: $(elem).css('height') };
+    var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top') };
     localStorage.setItem(elem.id + "-WindowState", JSON.stringify(current));
 }
 /** ヘルプウインドウ */
@@ -72887,11 +72896,19 @@ exports.HelpWindow = function (p) { return function (state, actions) {
                     hyperapp_1.h("strong", null, "\u5207\u672D\u3092\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF:"),
                     " \u5207\u672D\u3092\u8868\u5411\u304D(\u4F7F\u7528\u6E08\u307F)\u306B\u3059\u308B"),
                 hyperapp_1.h("ul", null,
-                    hyperapp_1.h("li", null, "\u518D\u69CB\u6210\u3092\u884C\u3046\u3068\u304D\u306F\u3001\u5C71\u672D\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"),
+                    hyperapp_1.h("li", null, "\u518D\u69CB\u6210\u3092\u884C\u3046\u3068\u304D\u306F\u3001\u81EA\u5206\u306E\u5C71\u672D\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"),
                     hyperapp_1.h("li", null, "\u840E\u7E2E\u3055\u305B\u308B\u3068\u304D\u306F\u3001\u96C6\u4E2D\u529B\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"),
-                    hyperapp_1.h("li", null, "\u624B\u672D\u3092\u76F8\u624B\u306B\u516C\u958B\u3059\u308B\u3068\u304D\u306F\u3001\u624B\u672D\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"))));
+                    hyperapp_1.h("li", null, "\u624B\u672D\u3092\u76F8\u624B\u306B\u516C\u958B\u3059\u308B\u3068\u304D\u306F\u3001\u624B\u672D\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"),
+                    hyperapp_1.h("li", null,
+                        "\u30AB\u30FC\u30C9\u3092\u5C01\u5370\u3057\u305F\u3044\u6642\u306B\u306F\u3001\u5C01\u5370\u5148\u306E\u30AB\u30FC\u30C9\u306E\u4E0A\u306B\u30C9\u30E9\u30C3\u30B0",
+                        hyperapp_1.h("br", null),
+                        "\uFF08[\u8AD6\u7834]\u306A\u3069\u306E\u4E00\u90E8\u30AB\u30FC\u30C9\u306B\u306E\u307F\u5C01\u5370\u53EF\u80FD\uFF09"),
+                    hyperapp_1.h("li", null,
+                        "\u30AB\u30FC\u30C9\u3092\u30B2\u30FC\u30E0\u304B\u3089\u53D6\u308A\u9664\u304D\u305F\u3044\u5834\u5408\u306F\u3001\u305D\u306E\u30AB\u30FC\u30C9\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF",
+                        hyperapp_1.h("br", null),
+                        "\uFF08[\u98A8\u9B54\u62DB\u6765\u5B54]\u306A\u3069\u306E\u4E00\u90E8\u30AB\u30FC\u30C9\u306E\u307F\u5B9F\u884C\u53EF\u80FD\uFF09"))));
         }
-        return (hyperapp_1.h("div", { id: "HELP-WINDOW", style: { height: "20rem", width: "40rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
+        return (hyperapp_1.h("div", { id: "HELP-WINDOW", style: { position: 'absolute', height: "23rem", width: "40rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
             hyperapp_1.h("div", { class: "ui top attached label" },
                 "\u64CD\u4F5C\u8AAC\u660E",
                 hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleHelpVisible(); } },
@@ -73047,7 +73064,7 @@ exports.MainProcessButtons = function (p) { return function (state, actions) {
                         var top = 4 + r * (160 + 8);
                         var left = 4 + c * (100 + 8);
                         var selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
-                        cardElements.push(hyperapp_1.h(components_1.Card, { target: card, opened: true, descriptionViewable: true, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); }, zoom: state.zoom }));
+                        cardElements.push(hyperapp_1.h(components_1.Card, { clickableClass: true, target: card, opened: true, descriptionViewable: true, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(cardId); }, zoom: state.zoom }));
                     });
                 });
                 var normalCardCount = deckBuildState.selectedCardIds.filter(function (cardId) { return sakuraba.CARD_DATA[cardId].baseType === 'normal'; }).length;
@@ -73148,7 +73165,7 @@ exports.MainProcessButtons = function (p) { return function (state, actions) {
                         actions.oprBoardSetup();
                     }
                 });
-                utils.messageModal("桜花決闘の準備が完了しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
+                utils.messageModal("桜花決闘を開始しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
             });
         };
         var notMarigan = function () {
@@ -73157,7 +73174,7 @@ exports.MainProcessButtons = function (p) { return function (state, actions) {
                 actions.setMariganFlag({ side: side, value: true });
                 // 盤面のカードや桜花結晶などを配置して、メッセージを表示
                 actions.oprBoardSetup({});
-                utils.messageModal("桜花決闘の準備が完了しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
+                utils.messageModal("桜花決闘を開始しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
             });
         };
         processButtons = (hyperapp_1.h("div", null,
@@ -73832,17 +73849,18 @@ var view = function (state, actions) {
             });
         }
     });
-    // 追加札を持つメガミを宿している場合のみ、追加札領域を追加
+    // 追加札を持つメガミを宿しており、かつメガミ公開済みの「場合のみ、追加札領域を追加
     ['p1', 'p2'].forEach(function (side) {
         if (state.board.megamis[side] &&
+            state.board.megamiOpenFlags[side] &&
             state.board.megamis[side].find(function (megami) { return megami === 'chikage' || megami === 'kururu' || megami === 'thallya' || megami === 'raira'; })) {
             cardAreaData.push({
                 region: 'extra',
                 side: side,
-                title: (side === state.side ? '追加札' : null),
+                title: (side === state.viewingSide ? '追加札' : ''),
                 cardLayoutType: 'vertical',
                 left: 1220,
-                top: (side === state.side ? 430 : 30),
+                top: (side === state.viewingSide ? 430 : 30),
                 width: 120,
                 height: 340
             });
@@ -73998,7 +74016,7 @@ var view = function (state, actions) {
         }
         else if (!state.board.firstDrawFlags[side]) {
             // デッキ構築中の場合
-            var deckBuilded = boardModel.getSideCards(selfSide).length >= 1;
+            var deckBuilded = boardModel.getSideCards(side).length >= 1;
             readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: readyAreaLeft + 40, top: readyAreaTop + 20, zoom: state.zoom, stackedCount: 14 - (deckBuilded ? 7 : 0), baseClass: "back-normal" }));
             readyObjects.push(hyperapp_1.h(StackedCards_1.StackedCards, { left: readyAreaLeft + 170, top: readyAreaTop + 20, zoom: state.zoom, stackedCount: 8 - (deckBuilded ? 3 : 0), baseClass: "back-special" }));
             if (deckBuilded) {
@@ -74202,7 +74220,7 @@ var view = function (state, actions) {
         var top = 4;
         var left = 4 + c * (100 + 8);
         var selected = state.selectedCards.indexOf(card) >= 0;
-        cardElements.push(hyperapp_1.h(components_1.Card, { target: card, opened: true, descriptionViewable: true, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(card); }, zoom: state.zoom }));
+        cardElements.push(hyperapp_1.h(components_1.Card, { clickableClass: true, target: card, opened: true, descriptionViewable: true, left: left, top: top, selected: selected, onclick: function () { return actions.selectCard(card); }, zoom: state.zoom }));
     });
     var selectedCount = state.selectedCards.filter(function (card) { return sakuraba.CARD_DATA[card.cardId].baseType === 'normal'; }).length;
     var okButtonClass = "ui positive labeled icon button";
@@ -74616,6 +74634,9 @@ function getCardRegionTitle(selfSide, side, region) {
     }
     if (region === 'used') {
         titleBase = "使用済み";
+    }
+    if (region === 'extra') {
+        titleBase = "追加札";
     }
     // 相手側に移動した場合は、「相手の」をつける
     if (selfSide !== side) {

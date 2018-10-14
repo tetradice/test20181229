@@ -29,7 +29,7 @@ const view: View<State, ActionsType> = (state, actions) => {
         let left = 4 + c * (100 + 8);
         let selected = state.selectedCards.indexOf(card) >= 0;
         
-        cardElements.push(<Card target={card} opened={true} descriptionViewable={true} left={left} top={top} selected={selected} onclick={() => actions.selectCard(card)} zoom={state.zoom}></Card>);
+        cardElements.push(<Card clickableClass target={card} opened descriptionViewable left={left} top={top} selected={selected} onclick={() => actions.selectCard(card)} zoom={state.zoom}></Card>);
     });
 
     let selectedCount = state.selectedCards.filter(card => sakuraba.CARD_DATA[card.cardId].baseType === 'normal').length;

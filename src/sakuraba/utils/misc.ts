@@ -128,7 +128,10 @@ export function getCardRegionTitle(selfSide: PlayerSide, side: PlayerSide, regio
     if(region === 'used'){
         titleBase = "使用済み";
     }
-
+    if(region === 'extra'){
+        titleBase = "追加札";
+    }
+    
     // 相手側に移動した場合は、「相手の」をつける
     if(selfSide !== side){
         return `相手の${titleBase}`

@@ -510,6 +510,9 @@ function getCardRegionTitle(selfSide, side, region) {
     if (region === 'used') {
         titleBase = "使用済み";
     }
+    if (region === 'extra') {
+        titleBase = "追加札";
+    }
     // 相手側に移動した場合は、「相手の」をつける
     if (selfSide !== side) {
         return "\u76F8\u624B\u306E" + titleBase;

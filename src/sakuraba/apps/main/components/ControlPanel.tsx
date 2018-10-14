@@ -87,9 +87,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             let onCardTokenFound = (state.board.objects.find(o => o.type === 'sakura-token' && o.region === 'on-card') ? true : false);
             let side = state.side;
 
-            commandButtons = (
-                <div class={css.commandButtons}>
-                <div class={css.currentPhase}>- 桜花決闘 -</div>
+            let innerCommandButtons = (
+                <div>
                 <div class="ui basic buttons" style="margin-right: 10px;">
                     <button
                     id="FORWARD-BUTTON"
@@ -129,6 +128,17 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     class={`ui basic button ${onCardTokenFound ? '' : 'disabled'}`}
                     style="margin-top: 5px;"
                     onclick={() => actions.oprRemoveSakuraTokenfromAllEnhanceCard()}>全付与札の桜花結晶-1</button>
+                </div>
+            );
+            // 決闘開始操作を行っていなければ、コマンドボタンはまだ表示しない
+            if(!state.board.mariganFlags[state.side]){
+                innerCommandButtons = null;
+            }
+
+            commandButtons = (
+                <div class={css.commandButtons}>
+                <div class={css.currentPhase}>- 桜花決闘 -</div>
+                {innerCommandButtons}
 
                 </div>
             );

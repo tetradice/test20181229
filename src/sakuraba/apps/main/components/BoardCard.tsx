@@ -36,21 +36,25 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
     // ドラッグ可否判定
     let libraryCards = state.board.objects.filter(o => o.type === 'card' && o.side === p.target.side && o.region === p.target.region);
     let draggable = true;
-
+    let clickableClass = true;
     if(state.side === 'watcher'){
         // 観戦者はドラッグもクリックも不可能
         draggable = false;
+        clickableClass = known; // この場合、説明を表示可能である場合に限り、クリック可能クラスを付与
     } else {
-        if(p.target.region === 'library' && p.target.indexOfRegion !== (libraryCards.length - 1)) draggable = false; // 山札にあって、かつ一番上のカードでない場合はドラッグ不可
+         // 山札にあって、かつ一番上のカードでない場合はドラッグ不可
+        if(p.target.region === 'library' && p.target.indexOfRegion !== (libraryCards.length - 1)){
+            draggable = false;
+            clickableClass = false; // この場合、クリック可能クラスも付与しない
+        }
     }
 
     // ボード上のカードをダブルクリックした場合の処理
     const onDoubleClickAtBoard = (element) => {
-        if(!state.board.firstDrawFlags[state.side]){
+        if(!state.board.mariganFlags[state.side]){
             utils.messageModal('決闘を開始するまでは、カードや桜花結晶の操作は行えません。');
             return false;
         };
-
         const data = sakuraba.CARD_DATA[p.target.cardId];
 
         // 切札なら裏返す
@@ -78,6 +82,7 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
         <Card
             opened={opened}
             handOpened={handOpened}
+            clickableClass={clickableClass}
             useOpenedCardData={useOpenedData}
             reversed={reversed}
             descriptionViewable={known}

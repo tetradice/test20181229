@@ -5,15 +5,13 @@ import { ActionsType } from "../actions";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
-    let current = {display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top'), width: $(elem).css('width'), height: $(elem).css('height')};
+    let current = {display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top')};
     localStorage.setItem(`${elem.id}-WindowState`, JSON.stringify(current));
 }
 
 /** BGM再生ウインドウ */
 export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: ActionsType) => {
     if(p.shown){
-        let bgm: HTMLAudioElement = null;
-        let currentVolume: number = 0.5;
         const oncreate = (e) => {
             // ウインドウを移動可能にする
             $(e).draggable({
@@ -38,15 +36,14 @@ export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: 
                 start: 50,
                 step: 2,
                 onChange: (value) => {
-                    currentVolume = value * 0.01;
-                    if(bgm){
-                        bgm.volume = currentVolume;
-                    }
+                    let bgm = document.getElementById('BGM') as HTMLAudioElement;
+                    bgm.volume = value * 0.01;
                 }
             });
         };
 
         const ondestroy = (target) => {
+            let bgm = document.getElementById('BGM') as HTMLAudioElement;
             bgm.pause();
         };
 
@@ -55,18 +52,17 @@ export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: 
           , {key: 'elemental_dance', title: '精霊舞い', composer: '秋山裕和', siteTitle: 'フリー音楽素材 H/MIX GALLERY', url: 'http://www.hmix.net/music_gallery/image/buttle.htm', bannerUrl: 'http://inazumaapps.info/furuyoni_simulator/deliv/banner/hmix3.gif'}
         ];
         const onChange = (e: Event) => {
+            let bgm = document.getElementById('BGM') as HTMLAudioElement;
             let val = $(e.target).val();
             let bgmItem = bgmData.find(x => x.key === val);
             // 再生中のbgmがあれば止める
             if(bgm){
                 bgm.pause();
-                bgm = null;
             }
 
             if(bgmItem){
                 // 新しいBGMを再生
-                bgm = new Audio(`http://inazumaapps.info/furuyoni_simulator/deliv/bgm/${bgmItem.key}.mp3`);
-                bgm.volume = currentVolume;
+                bgm.src = `http://inazumaapps.info/furuyoni_simulator/deliv/bgm/${bgmItem.key}.mp3`;
                 bgm.loop = true;
                 bgm.play();
 
@@ -81,7 +77,7 @@ export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: 
 
         return (
             <div id="BGM-PLAY-WINDOW"
-             style={{height: "16rem", width: "25rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
+             style={{position: 'absolute', height: "16rem", width: "25rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}
               ondestroy={ondestroy}>
@@ -105,6 +101,7 @@ export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: 
                     <div style={{float: 'left'}}><i class="volume up icon"></i></div>
                     <div style={{marginLeft: '1.5rem', width: '90%'}} class="ui blue range" id="BGM-VOLUME-RANGE"></div>
                 </div>
+                <audio id="BGM"></audio>
             </div>
         )
     } else {

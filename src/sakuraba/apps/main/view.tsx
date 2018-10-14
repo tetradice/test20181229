@@ -145,17 +145,18 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
     });
 
-    // 追加札を持つメガミを宿している場合のみ、追加札領域を追加
+    // 追加札を持つメガミを宿しており、かつメガミ公開済みの「場合のみ、追加札領域を追加
     ['p1', 'p2'].forEach((side: PlayerSide) => {
         if(state.board.megamis[side] &&
+        state.board.megamiOpenFlags[side] &&
         state.board.megamis[side].find((megami) => megami === 'chikage' || megami === 'kururu' || megami === 'thallya' || megami === 'raira')){
             cardAreaData.push({
                   region: 'extra'
                 , side: side
-                , title: (side === state.side ? '追加札' : null)
+                , title: (side === state.viewingSide ? '追加札' : '')
                 , cardLayoutType: 'vertical'
                 , left: 1220
-                , top: (side === state.side ? 430 : 30)
+                , top: (side === state.viewingSide ? 430 : 30)
                 , width: 120
                 , height: 340
             });
@@ -353,7 +354,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             }
         } else if(!state.board.firstDrawFlags[side]){
             // デッキ構築中の場合
-            let deckBuilded = boardModel.getSideCards(selfSide).length >= 1;
+            let deckBuilded = boardModel.getSideCards(side).length >= 1;
 
             readyObjects.push(<StackedCards left={readyAreaLeft + 40} top={readyAreaTop + 20} zoom={state.zoom} stackedCount={14 - (deckBuilded ? 7 : 0)} baseClass="back-normal" />);
             readyObjects.push(<StackedCards left={readyAreaLeft + 170} top={readyAreaTop + 20} zoom={state.zoom} stackedCount={8 - (deckBuilded ? 3 : 0)}  baseClass="back-special" />);

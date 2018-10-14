@@ -5,7 +5,7 @@ import { ActionsType } from "../actions";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
-    let current = {display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top'), width: $(elem).css('width'), height: $(elem).css('height')};
+    let current = {display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top')};
     localStorage.setItem(`${elem.id}-WindowState`, JSON.stringify(current));
 }
 
@@ -48,9 +48,11 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
                         <strong>切札をダブルクリック:</strong> 切札を表向き(使用済み)にする
                 </p>
                     <ul>
-                        <li>再構成を行うときは、山札の上で右クリック</li>
+                        <li>再構成を行うときは、自分の山札の上で右クリック</li>
                         <li>萎縮させるときは、集中力の上で右クリック</li>
                         <li>手札を相手に公開するときは、手札の上で右クリック</li>
+                        <li>カードを封印したい時には、封印先のカードの上にドラッグ<br />（[論破]などの一部カードにのみ封印可能）</li>
+                        <li>カードをゲームから取り除きたい場合は、そのカードの上で右クリック<br />（[風魔招来孔]などの一部カードのみ実行可能）</li>
                     </ul>
                 </div>
             );
@@ -58,7 +60,7 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
 
         return (
             <div id="HELP-WINDOW"
-             style={{height: "20rem", width: "40rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
+             style={{position: 'absolute', height: "23rem", width: "40rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}>
                 <div class="ui top attached label">操作説明<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleHelpVisible()}><i class="times icon"></i></a></div>

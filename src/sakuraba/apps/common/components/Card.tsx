@@ -8,6 +8,7 @@ interface Param {
     target: state.Card;
     left: number;
     top: number;
+    clickableClass?: boolean;
     selected?: boolean;
     onclick?: Function;
     ondblclick?: Function;
@@ -41,6 +42,9 @@ export const Card = (p: Param) => {
 
   let cardData = sakuraba.CARD_DATA[p.target.cardId];
   let className = "fbs-card";
+
+  // クリック可能クラスを付与する場合
+  if(p.clickableClass) className += " clickable";
 
   // 選択済み、もしくは手札公開中の場合は、選択済みスタイルを付与
   if(p.selected || p.handOpened) className += " selected";

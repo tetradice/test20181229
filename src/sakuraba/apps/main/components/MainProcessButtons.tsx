@@ -140,7 +140,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                         let left = 4 + c * (100 + 8);
                         let selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
                         
-                        cardElements.push(<Card target={card} opened={true} descriptionViewable={true} left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={state.zoom}></Card>);
+                        cardElements.push(<Card clickableClass target={card} opened descriptionViewable left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={state.zoom}></Card>);
                     });
                 });
 
@@ -262,7 +262,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                     }
                 })
 
-                utils.messageModal("桜花決闘の準備が完了しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
+                utils.messageModal("桜花決闘を開始しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
             });
         };
 
@@ -273,7 +273,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
 
                 // 盤面のカードや桜花結晶などを配置して、メッセージを表示
                 actions.oprBoardSetup({});
-                utils.messageModal("桜花決闘の準備が完了しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
+                utils.messageModal("桜花決闘を開始しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
 
             });
 

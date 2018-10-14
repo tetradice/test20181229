@@ -353,8 +353,8 @@ $(function(){
                     }
                 }
             }
-            // 山札で右クリック
-            if($elem.is('.area.background[data-region=library], .fbs-card[data-region=library]')){
+            // 自分の山札で右クリック
+            if($elem.is(`.area.background[data-region=library][data-side=${playerSide}], .fbs-card[data-region=library][data-side=${playerSide}]`)){
 
                 items = {
                     'draw': {name: '1枚引く', disabled: () => {
@@ -777,7 +777,7 @@ $(function(){
             }
 
             if(region === 'on-card'){
-                console.log('overcard');
+                console.log(`overcard ${linkedCardId}`);
                 $(`.fbs-card[data-object-id=${linkedCardId}]`).addClass('over');
             } else {
                 $(`.area.background[data-side=${side}][data-region=${region}]`).addClass('over');
@@ -787,8 +787,6 @@ $(function(){
 
         $('#BOARD').on('dragleave', '.area.droppable', function(e){
             console.log('dragleave', this);
-            let side = $(this).attr('data-side') as (PlayerSide | 'none');
-            let region = $(this).attr('data-region');
             $(`.area.background`).removeClass('over').removeClass('over-forbidden');
             $(`.area.droppable`).removeClass('over').removeClass('over-forbidden');
             $(`.fbs-card`).removeClass('over').removeClass('over-forbidden');

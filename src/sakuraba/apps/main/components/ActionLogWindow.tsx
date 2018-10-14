@@ -66,7 +66,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
 
         return (
             <div id="ACTION-LOG-WINDOW"
-             style={{height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
+             style={{position: 'absolute', height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}
               onupdate={onupdate}>
