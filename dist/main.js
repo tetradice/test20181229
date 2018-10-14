@@ -71983,6 +71983,10 @@ exports.default = {
     setZoom: function (p) {
         return { zoom: p };
     },
+    /** 観戦者の場合に表示側を変更する */
+    setWatcherViewingSide: function (p) {
+        return { viewingSide: p.value };
+    },
     toggleHelpVisible: function () { return function (state) {
         return { helpVisible: !state.helpVisible };
     }; },
@@ -72384,7 +72388,7 @@ exports.BoardCard = function (p) { return function (state, actions) {
         }
         return true;
     };
-    // そのカードが開いた状態での適性距離を持っていれば、カードの所有プレイヤーが傘を開いているかどうかを判定
+    // そのカードが開いた状態での適正距離を持っていれば、カードの所有プレイヤーが傘を開いているかどうかを判定
     var useOpenedData = false;
     var cardData = sakuraba.CARD_DATA[p.target.cardId];
     if (cardData.rangeOpened !== undefined && state.board.umbrellaStatus[p.target.ownerSide] === 'opened') {
@@ -72792,6 +72796,19 @@ exports.ControlPanel = function () { return function (state, actions) {
                 hyperapp_1.h("div", { class: "item", "data-value": "-" }),
                 notifyData.map(function (item) { return hyperapp_1.h("div", { class: "item", "data-value": item.key }, item.message); }))),
         hyperapp_1.h("button", { class: "ui basic button disabled", id: "NOTIFY-SEND-BUTTON", onclick: notify }, "\u9001\u4FE1")));
+    var watchSideChanged = function (e) {
+        var val = $(e.target).val();
+        actions.setWatcherViewingSide({ value: val });
+    };
+    var watchSidePanel = (hyperapp_1.h("div", null,
+        hyperapp_1.h("div", { class: "ui sub header" }, "\u8996\u70B9"),
+        hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', 'p1'); } },
+            hyperapp_1.h("input", { type: "hidden", name: "watchSide", onchange: watchSideChanged }),
+            hyperapp_1.h("i", { class: "dropdown icon" }),
+            hyperapp_1.h("div", { class: "default text" }),
+            hyperapp_1.h("div", { class: "menu" },
+                hyperapp_1.h("div", { class: "item", "data-value": "p1" }, "\u30D7\u30EC\u30A4\u30E4\u30FC1\u5074"),
+                hyperapp_1.h("div", { class: "item", "data-value": "p2" }, "\u30D7\u30EC\u30A4\u30E4\u30FC2\u5074")))));
     var helpButton = (hyperapp_1.h("button", { class: "ui basic button", onclick: function () { return actions.toggleHelpVisible(); } },
         hyperapp_1.h("i", { class: "icon question circle outline" }),
         "\u64CD\u4F5C\u8AAC\u660E"));
@@ -72801,6 +72818,10 @@ exports.ControlPanel = function () { return function (state, actions) {
         notifyPanel = null;
         undoPanel = null;
         helpButton = null;
+    }
+    // プレイヤーの場合視点パネルの表示は無し
+    if (state.side !== 'watcher') {
+        watchSidePanel = null;
     }
     return (hyperapp_1.h("div", { id: "CONTROL-PANEL", style: { left: const_1.BOARD_BASE_WIDTH * state.zoom + 10 + "px" } },
         undoPanel,
@@ -72827,6 +72848,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                     hyperapp_1.h("td", null, "\u89B3\u6226\u8005"),
                     hyperapp_1.h("td", null, watcherNameElements)))),
         notifyPanel,
+        watchSidePanel,
         hyperapp_1.h("div", { class: "ui sub header" }, "\u30DC\u30FC\u30C9\u30B5\u30A4\u30BA"),
         hyperapp_1.h("div", { class: "ui selection dropdown", oncreate: function (e) { return $(e).dropdown('set selected', Math.round(state.zoom * 10)); } },
             hyperapp_1.h("input", { type: "hidden", name: "boardSize", onchange: function (e) { return actions.setZoom(Number($(e.target).val()) * 0.1); } }),

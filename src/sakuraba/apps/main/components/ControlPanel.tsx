@@ -278,6 +278,27 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         </div>
     );
 
+    let watchSideChanged = (e) => {
+        let val = $(e.target).val() as PlayerSide;
+        actions.setWatcherViewingSide({value: val});
+    };
+
+    let watchSidePanel = (
+        <div>
+            <div class="ui sub header">視点</div>
+            <div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', 'p1')}>
+
+                <input type="hidden" name="watchSide" onchange={watchSideChanged} />
+                <i class="dropdown icon"></i>
+                <div class="default text"></div>
+                <div class="menu">
+                    <div class="item" data-value="p1">プレイヤー1側</div>
+                    <div class="item" data-value="p2">プレイヤー2側</div>
+                </div>
+            </div>
+        </div>
+    );
+
     let helpButton = (
         <button class="ui basic button" onclick={() => actions.toggleHelpVisible()}>
         <i class="icon question circle outline"></i>
@@ -290,6 +311,11 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         notifyPanel = null;
         undoPanel = null;
         helpButton = null;
+    }
+
+    // プレイヤーの場合視点パネルの表示は無し
+    if(state.side !== 'watcher'){
+        watchSidePanel = null;
     }
 
     return (
@@ -320,6 +346,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             </table>
 
 {notifyPanel}
+{watchSidePanel}
 
 <div class="ui sub header">ボードサイズ</div>
 <div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', Math.round(state.zoom * 10))}>
