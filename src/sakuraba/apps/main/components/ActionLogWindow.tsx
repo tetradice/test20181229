@@ -51,6 +51,9 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
             if(actionLogWindowStateJson){
                 let windowState = JSON.parse(actionLogWindowStateJson);
                 $(e).css(windowState);
+            } else {
+                // 設定がなければ中央に配置
+                $(e).css({left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2});
             }
 
             // スクロールバーを最下部までスクロール

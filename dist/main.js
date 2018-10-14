@@ -72165,6 +72165,10 @@ exports.ActionLogWindow = function (p) { return function (state, actions) {
                 var windowState = JSON.parse(actionLogWindowStateJson);
                 $(e).css(windowState);
             }
+            else {
+                // 設定がなければ中央に配置
+                $(e).css({ left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2 });
+            }
             // スクロールバーを最下部までスクロール
             var $logArea = $(e).find('#ACTION-LOG-AREA');
             $logArea.scrollTop($logArea.get(0).scrollHeight);
@@ -72221,6 +72225,10 @@ exports.BGMWindow = function (p) { return function (state, actions) {
             if (windowStateJson) {
                 var windowState = JSON.parse(windowStateJson);
                 $(e).css(windowState);
+            }
+            else {
+                // 設定がなければ中央に配置
+                $(e).css({ left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2 });
             }
             // range初期化
             $('#BGM-VOLUME-RANGE').range({
@@ -72866,6 +72874,10 @@ exports.HelpWindow = function (p) { return function (state, actions) {
             if (windowStateJson) {
                 var windowState = JSON.parse(windowStateJson);
                 $(e).css(windowState);
+            }
+            else {
+                // 設定がなければ中央に配置
+                $(e).css({ left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2 });
             }
         };
         var contentDiv = void 0;

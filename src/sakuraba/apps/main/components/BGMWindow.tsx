@@ -26,6 +26,9 @@ export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: 
             if(windowStateJson){
                 let windowState = JSON.parse(windowStateJson);
                 $(e).css(windowState);
+            } else {
+                // 設定がなければ中央に配置
+                $(e).css({left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2});
             }
 
 
