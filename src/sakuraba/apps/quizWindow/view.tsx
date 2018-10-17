@@ -97,26 +97,34 @@ const view: View<State, ActionsType> = (state, actions) => {
 
             nextButton = (
                 <div>
-                    <div class="ui vertical menu" style={{width: '100%', marginTop: '3em'}}>
+                    <div class="ui vertical menu" style={{width: '100%', marginTop: '2em'}}>
                         <a class="item" onclick={() => actions.setNewQuiz()}>
                             次の問題
                         </a>
                     </div>
-                    <p style={{textAlign: 'right'}}><a href="#" onclick={() => { $('#QUIZ-EXPLANATION').show(); return false}}>解説を表示</a></p>
+                    <p style={{textAlign: 'right'}}><a href="#" onclick={() => { $('#QUIZ-EXPLANATION').toggle(); return false}}>解説を表示</a></p>
                     <div class="ui message" id="QUIZ-EXPLANATION" style={{display: 'none'}}>{state.currentQuiz.explanation}</div>
                 </div>
             );
 
         }
+        let summary: hyperapp.Children;
+        let totalCount = state.correctCount + state.incorrectCount;
+        if(totalCount >= 1){
+            summary = <span>{totalCount}問中 {state.correctCount}問正解 （正答率: {Math.round(state.correctCount * 100 / (totalCount))}%）</span>;
+        } else {
+            summary = <span>{totalCount}問中 0問正解 （正答率: 0%）</span>;
+        }
 
         mainDiv = (
-            <div style={{width: '100%'}}>
-                <p>{state.currentQuiz.text}</p>
+            <div style={{paddingTop: '1em', width: '100%'}}>
+                <p><strong>問{state.questionNumber}</strong>　{state.currentQuiz.text}</p>
                 <div class="ui vertical menu" style={{width: '100%'}}>
                     {answerItems}
                 </div>
                 {result}
                 {nextButton}
+                <div style={{position: 'absolute', fontSize: '0.8rem', color: 'gray', right: '2em', bottom: '1em'}}>{summary}</div>
             </div>
         );
 

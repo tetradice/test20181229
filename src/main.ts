@@ -503,21 +503,31 @@ $(function(){
             costSummaryCardTitles[intCost].push(card.name);
         });
 
-        console.log(costSummary, costSummaryCardTitles);
+        console.log(costSummaryCardTitles);
     }
     {
-        let auraDamageSummary: {[key: number]: number} = {};
-        let auraDamageSummaryCardTitles: {[key: number]: string[]} = {};
-        let targetCards = allCards.filter(([cardId, card]) => card.damage !== undefined && /^[0-9]+\/[0-9]+$/.test(card.damage));
+        let auraDamageSummary: {[key: string]: number} = {};
+        let auraDamageSummaryCardTitles: {[key: string]: string[]} = {};
+        let lifeDamageSummary: {[key: string]: number} = {};
+        let lifeDamageSummaryCardTitles: {[key: string]: string[]} = {};
+       
+        let targetCards = allCards.filter(([cardId, card]) => card.damage !== undefined && card.megami !== 'yukihi' && /^[0-9-]+\/[0-9-]+$/.test(card.damage));
         targetCards.forEach(([cardId, card]) => {
-            let [auraDamage, lifeDamage] = card.damage.split('/').map(d => parseInt(d));
+            let [auraDamage, lifeDamage] = card.damage.split('/');
+
             if(auraDamageSummary[auraDamage] === undefined) auraDamageSummary[auraDamage] = 0;
             if(auraDamageSummaryCardTitles[auraDamage] === undefined) auraDamageSummaryCardTitles[auraDamage] = [];
             auraDamageSummary[auraDamage] += 1;
             auraDamageSummaryCardTitles[auraDamage].push(card.name);
+
+            if(lifeDamageSummary[lifeDamage] === undefined) lifeDamageSummary[lifeDamage] = 0;
+            if(lifeDamageSummaryCardTitles[lifeDamage] === undefined) lifeDamageSummaryCardTitles[lifeDamage] = [];
+            lifeDamageSummary[lifeDamage] += 1;
+            lifeDamageSummaryCardTitles[lifeDamage].push(card.name);
         });
 
-        console.log(auraDamageSummary, auraDamageSummaryCardTitles);
+        console.log(auraDamageSummaryCardTitles);
+        console.log(lifeDamageSummaryCardTitles);
     }
 
 

@@ -70368,26 +70368,35 @@ $(function () {
             costSummary_1[intCost] += 1;
             costSummaryCardTitles_1[intCost].push(card.name);
         });
-        console.log(costSummary_1, costSummaryCardTitles_1);
+        console.log(costSummaryCardTitles_1);
     }
     {
         var auraDamageSummary_1 = {};
         var auraDamageSummaryCardTitles_1 = {};
+        var lifeDamageSummary_1 = {};
+        var lifeDamageSummaryCardTitles_1 = {};
         var targetCards = allCards.filter(function (_a) {
             var cardId = _a[0], card = _a[1];
-            return card.damage !== undefined && /^[0-9]+\/[0-9]+$/.test(card.damage);
+            return card.damage !== undefined && card.megami !== 'yukihi' && /^[0-9-]+\/[0-9-]+$/.test(card.damage);
         });
         targetCards.forEach(function (_a) {
             var cardId = _a[0], card = _a[1];
-            var _b = card.damage.split('/').map(function (d) { return parseInt(d); }), auraDamage = _b[0], lifeDamage = _b[1];
+            var _b = card.damage.split('/'), auraDamage = _b[0], lifeDamage = _b[1];
             if (auraDamageSummary_1[auraDamage] === undefined)
                 auraDamageSummary_1[auraDamage] = 0;
             if (auraDamageSummaryCardTitles_1[auraDamage] === undefined)
                 auraDamageSummaryCardTitles_1[auraDamage] = [];
             auraDamageSummary_1[auraDamage] += 1;
             auraDamageSummaryCardTitles_1[auraDamage].push(card.name);
+            if (lifeDamageSummary_1[lifeDamage] === undefined)
+                lifeDamageSummary_1[lifeDamage] = 0;
+            if (lifeDamageSummaryCardTitles_1[lifeDamage] === undefined)
+                lifeDamageSummaryCardTitles_1[lifeDamage] = [];
+            lifeDamageSummary_1[lifeDamage] += 1;
+            lifeDamageSummaryCardTitles_1[lifeDamage].push(card.name);
         });
-        console.log(auraDamageSummary_1, auraDamageSummaryCardTitles_1);
+        console.log(auraDamageSummaryCardTitles_1);
+        console.log(lifeDamageSummaryCardTitles_1);
     }
     // 他のプレイヤーがチャットログを追加した場合の処理
     socket.on('onChatLogAppended', function (p) {
@@ -70862,7 +70871,7 @@ exports.CARD_DATA = {
     '01-yurina-o-s-4': { megami: 'yurina', name: '天音揺波の底力', ruby: 'あまねゆりなのそこぢから', baseType: 'special', cost: '5', types: ['attack', 'fullpower'], range: '1-4', damage: '5/5', text: '【常時】決死-あなたのライフが3以下でないと、このカードは使用できない。' },
     '02-saine-o-n-1': { megami: 'saine', name: '八方振り', ruby: 'はっぽうぶり', baseType: 'normal', types: ['attack'], range: "4-5", damage: '2/1', text: '【攻撃後】八相-あなたのオーラが0ならば、攻撃『適正距離4-5、2/1』を行う。' },
     '02-saine-o-n-2': { megami: 'saine', name: '薙斬り', ruby: 'なぎぎり', baseType: 'normal', types: ['attack', 'reaction'], range: "4-5", damage: '3/1', text: '' },
-    '02-saine-o-n-3': { megami: 'saine', name: '返し刃', ruby: 'かえしやいば', baseType: 'normal', types: ['attack'], range: "3-5", damage: '1/1', text: '【攻撃後】このカードを対応で使用したならば、攻撃『適正距離3-5、2/1、対応不可』を行う。' },
+    '02-saine-o-n-3': { megami: 'saine', name: '返し刃', ruby: 'かえしやいば', baseType: 'normal', types: ['attack', 'reaction'], range: "3-5", damage: '1/1', text: '【攻撃後】このカードを対応で使用したならば、攻撃『適正距離3-5、2/1、対応不可』を行う。' },
     '02-saine-o-n-4': { megami: 'saine', name: '見切り', ruby: 'みきり', baseType: 'normal', types: ['action'], text: '【常時】八相-あなたのオーラが0ならば、このカードを《対応》を持つかのように相手の《攻撃》に割り込んで使用できる。\n間合⇔ダスト：1' },
     '02-saine-o-n-5': { megami: 'saine', name: '圏域', ruby: 'けんいき', baseType: 'normal', types: ['enhance'], capacity: '3', text: '【展開時】ダスト→間合：1\n【展開中】達人の間合は2大きくなる。' },
     '02-saine-o-n-6': { megami: 'saine', name: '衝音晶', ruby: 'しょうおんしょう', baseType: 'normal', types: ['enhance', 'reaction'], capacity: '1', text: '【展開時】対応した《攻撃》は-1/+0となる。 \n【破棄時】攻撃『適正距離0-10、1/-、対応不可』を行う。' },
@@ -74365,10 +74374,19 @@ exports.actions = {
     },
     setNewQuiz: function () { return function (state) {
         var newQuiz = quiz_1.QuizMaker.make();
-        return { currentQuiz: newQuiz, selectedAnswerIndex: null };
+        return {
+            currentQuiz: newQuiz,
+            selectedAnswerIndex: null,
+            questionNumber: state.questionNumber + 1
+        };
     }; },
     selectAnswer: function (index) { return function (state) {
-        return { selectedAnswerIndex: index };
+        var answer = state.currentQuiz.answers[index];
+        return {
+            selectedAnswerIndex: index,
+            correctCount: (answer.correct ? state.correctCount + 1 : state.correctCount),
+            incorrectCount: (!answer.correct ? state.incorrectCount + 1 : state.incorrectCount)
+        };
     }; }
 };
 
@@ -74459,7 +74477,11 @@ var QuizAnswer = /** @class */ (function () {
 }());
 exports.QuizAnswer = QuizAnswer;
 var QuizTypeList = [
-    'specialCost'
+    'specialCost',
+    'damage',
+    'damage',
+    'type',
+    'type'
 ];
 var QuizMakerClass = /** @class */ (function () {
     function QuizMakerClass() {
@@ -74496,33 +74518,202 @@ var QuizMakerClass = /** @class */ (function () {
         for (var key in sakuraba_1.CARD_DATA) {
             allCards.push({ id: key, data: sakuraba_1.CARD_DATA[key] });
         }
+        // 変数初期化
+        var successCard;
+        var failCards = [];
         // ランダムに問題の種類を決定する
         var quizType = pick(QuizTypeList);
         // 問題の種類に応じた処理
         if (quizType === 'specialCost') {
-            // 切札のコスト問題
-            // まずは対象となる切札カードを、コスト付きですべて選出
+            // 切札の消費問題
+            // まずは対象となる切札カードを、消費付きですべて選出
             var targetCards = allCards.filter(function (card) { return card.data.baseType === 'special' && card.data.cost !== undefined && /^[0-9]+$/.test(card.data.cost); })
                 .map(function (card) { return lodash_1.default.assign({}, card, { cost: parseInt(card.data.cost) }); });
             // 条件を指定
-            var condType = pick(['lower']);
+            var condType = pick(['lower', 'higher', 'notEqual']);
             if (condType === 'lower') {
-                // コストn以下
+                // 消費n以下
                 var border_1 = pick([1, 2, 3, 4, 5]);
-                // コストn以下のカードを1枚抽出
-                var successCard_1 = pick(targetCards.filter(function (card) { return card.cost <= border_1; }));
-                // コストがnより大きいカードを3枚抽出
-                var failCards = pickMultiple(targetCards.filter(function (card) { return card.cost > border_1; }), 3);
-                // 問題を作成
-                quiz.text = "\u6B21\u306E\u3046\u3061\u3001\u30B3\u30B9\u30C8\u304C" + border_1 + "\u4EE5\u4E0B\u306E\u5207\u672D\u306F\u3069\u308C\uFF1F";
-                var cards = lodash_1.default.shuffle([].concat(successCard_1, failCards));
-                var explanations_1 = ["各切札のコストは下記の通りです。", hyperapp_1.h("br", null)];
-                cards.forEach(function (card) {
-                    quiz.addAnswer(_this.getCardTitleHtml(card.data), (card === successCard_1));
-                    explanations_1.push(hyperapp_1.h("br", null), card.data.name + ": " + card.cost);
-                });
-                quiz.explanation = explanations_1;
+                successCard = pick(targetCards.filter(function (card) { return card.cost <= border_1; }));
+                failCards = pickMultiple(targetCards.filter(function (card) { return card.cost > border_1; }), 3);
+                quiz.text = "\u6B21\u306E\u3046\u3061\u3001\u6D88\u8CBB\u304C" + border_1 + "\u4EE5\u4E0B\u306E\u5207\u672D\u306F\u3069\u308C\uFF1F";
             }
+            if (condType === 'higher') {
+                // 消費n以上
+                var border_2 = pick([1, 2, 3, 4, 5, 6, 7]);
+                successCard = pick(targetCards.filter(function (card) { return card.cost >= border_2; }));
+                // 消費がnより小さいカードを3枚抽出
+                failCards = pickMultiple(targetCards.filter(function (card) { return card.cost < border_2; }), 3);
+                quiz.text = "\u6B21\u306E\u3046\u3061\u3001\u6D88\u8CBB\u304C" + border_2 + "\u4EE5\u4E0A\u306E\u5207\u672D\u306F\u3069\u308C\uFF1F";
+            }
+            if (condType === 'notEqual') {
+                // 消費がnでない
+                var v_1 = pick([0, 1, 2, 3, 4, 5, 6]);
+                successCard = pick(targetCards.filter(function (card) { return card.cost !== v_1; }));
+                failCards = pickMultiple(targetCards.filter(function (card) { return card.cost === v_1; }), 3);
+                quiz.text = "\u6B21\u306E\u3046\u3061\u3001\u6D88\u8CBB\u304C" + v_1 + "\u3067\u306A\u3044\u5207\u672D\u306F\u3069\u308C\uFF1F";
+            }
+            // 回答をシャッフルして問題作成
+            var cards = lodash_1.default.shuffle([].concat(successCard, failCards));
+            var explanations_1 = ["各切札の消費は下記の通りです。", hyperapp_1.h("br", null)];
+            cards.forEach(function (card) {
+                quiz.addAnswer(_this.getCardTitleHtml(card.data), (card === successCard));
+                explanations_1.push(hyperapp_1.h("br", null), card.data.name + ": " + card.cost);
+            });
+            quiz.explanation = explanations_1;
+        }
+        if (quizType === 'damage') {
+            // ダメージ問題
+            // まずは対象となる攻撃カードをすべて選出
+            // (ユキヒのカードは除く)
+            var targetCards_1 = allCards.filter(function (card) { return card.data.damage !== undefined && card.data.megami !== 'yukihi' && /^[0-9-]+\/[0-9-]+$/.test(card.data.damage); })
+                .map(function (card) { return lodash_1.default.assign({}, card, { auraDamage: card.data.damage.split('/')[0], lifeDamage: card.data.damage.split('/')[1] }); });
+            // 条件を指定
+            var condType = pick(['auraHigher', 'auraEqual', 'lifeEqual']);
+            if (condType === 'auraHigher') {
+                // オーラダメージn以上
+                var border_3 = pick([2, 2, 3, 3, 4]);
+                successCard = pick(targetCards_1.filter(function (card) { return card.auraDamage !== '-' && parseInt(card.auraDamage) >= border_3; }));
+                failCards = pickMultiple(targetCards_1.filter(function (card) { return card.auraDamage !== '-' && parseInt(card.auraDamage) < border_3; }), 3);
+                quiz.text = hyperapp_1.h("span", null,
+                    "\u6B21\u306E\u3046\u3061\u3001\u30AA\u30FC\u30E9\u30C0\u30E1\u30FC\u30B8\u304C",
+                    border_3,
+                    "\u4EE5\u4E0A\u306E\u653B\u6483\u672D\u306F\u3069\u308C\uFF1F",
+                    hyperapp_1.h("br", null),
+                    hyperapp_1.h("span", { style: { fontSize: '0.8em', color: 'gray' } }, "(\u30C0\u30E1\u30FC\u30B8\u304C \"\uFF0D\" \u306E\u672D\u306F\u9664\u304F)"));
+            }
+            if (condType === 'auraEqual') {
+                // オーラダメージがn
+                var v_2 = pick(['0', '1', '2', '2', '3', '3', '-']);
+                successCard = pick(targetCards_1.filter(function (card) { return card.auraDamage === v_2; }));
+                failCards = pickMultiple(targetCards_1.filter(function (card) { return card.auraDamage !== v_2; }), 3);
+                quiz.text = hyperapp_1.h("span", null,
+                    "\u6B21\u306E\u3046\u3061\u3001\u30AA\u30FC\u30E9\u30C0\u30E1\u30FC\u30B8\u304C",
+                    v_2,
+                    "\u306E\u653B\u6483\u672D\u306F\u3069\u308C\uFF1F");
+            }
+            if (condType === 'lifeEqual') {
+                // ライフダメージがn
+                var v_3 = pick(['0', '1', '1', '2', '2', '3', '3', '4', '5', '-']);
+                successCard = pick(targetCards_1.filter(function (card) { return card.lifeDamage === v_3; }));
+                failCards = pickMultiple(targetCards_1.filter(function (card) { return card.lifeDamage !== v_3; }), 3);
+                quiz.text = hyperapp_1.h("span", null,
+                    "\u6B21\u306E\u3046\u3061\u3001\u30E9\u30A4\u30D5\u30C0\u30E1\u30FC\u30B8\u304C",
+                    v_3,
+                    "\u306E\u653B\u6483\u672D\u306F\u3069\u308C\uFF1F");
+            }
+            // 回答をシャッフルして問題作成
+            var cards = lodash_1.default.shuffle([].concat(successCard, failCards));
+            var explanations_2 = ["各カードのダメージは下記の通りです。", hyperapp_1.h("br", null)];
+            cards.forEach(function (card) {
+                quiz.addAnswer(_this.getCardTitleHtml(card.data), (card === successCard));
+                explanations_2.push(hyperapp_1.h("br", null), card.data.name + ": " + card.data.damage);
+            });
+            quiz.explanation = explanations_2;
+        }
+        if (quizType === 'type') {
+            // カードタイプ問題
+            // まずは対象となるカードをすべて選出
+            var targetCards_2 = allCards.map(function (card) { return lodash_1.default.assign({}, card, {}); });
+            // 条件を指定
+            var condType = pick(['fullpower', 'notFullpower', 'notAttack']);
+            if (condType === 'fullpower') {
+                // 全力を持つ
+                successCard = pick(targetCards_2.filter(function (card) { return card.data.types[1] === 'fullpower'; }));
+                failCards = pickMultiple(targetCards_2.filter(function (card) { return card.data.types[1] !== 'fullpower'; }), 3);
+                quiz.text = hyperapp_1.h("span", null, "\u6B21\u306E\u3046\u3061\u3001\u300C\u5168\u529B\u300D\u30AB\u30FC\u30C9\u306F\u3069\u308C\uFF1F");
+            }
+            if (condType === 'notFullpower') {
+                // 全力でない
+                successCard = pick(targetCards_2.filter(function (card) { return card.data.types[1] !== 'fullpower'; }));
+                failCards = pickMultiple(targetCards_2.filter(function (card) { return card.data.types[1] === 'fullpower'; }), 3);
+                quiz.text = hyperapp_1.h("span", null, "\u6B21\u306E\u3046\u3061\u3001\u300C\u5168\u529B\u300D\u3067\u306F\u306A\u3044\u30AB\u30FC\u30C9\u306F\u3069\u308C\uFF1F");
+            }
+            if (condType === 'notAttack') {
+                // 攻撃でない
+                // この問題の場合、明らかに攻撃であるカードは除外する
+                // また、クルルのカードはすべて攻撃ではないため除外する
+                targetCards_2 = targetCards_2.filter(function (c) {
+                    var name = c.data.name;
+                    if (name === '一閃')
+                        return false;
+                    if (name === '居合')
+                        return false;
+                    if (/斬/.test(name))
+                        return false;
+                    if (name === '月影落')
+                        return false;
+                    if (name === '天音揺波の底力')
+                        return false;
+                    if (name === '八方振り')
+                        return false;
+                    if (name === '氷雨細音の果ての果て')
+                        return false;
+                    if (name === 'シュート')
+                        return false;
+                    if (name === 'ラピッドファイア')
+                        return false;
+                    if (name === 'マグナムカノン')
+                        return false;
+                    if (name === 'フルバースト')
+                        return false;
+                    if (name === 'レッドバレット')
+                        return false;
+                    if (name === 'クリムゾンゼロ')
+                        return false;
+                    if (/打ち/.test(name))
+                        return false;
+                    if (name === 'しこみばり / ふくみばり')
+                        return false;
+                    if (name === 'ふりまわし / つきさし')
+                        return false;
+                    if (/撃/.test(name))
+                        return false;
+                    if (name === '大地砕き')
+                        return false;
+                    if (name === '大天空クラッシュ')
+                        return false;
+                    if (name === '飛苦無')
+                        return false;
+                    if (name === '毒針')
+                        return false;
+                    if (name === '首切り')
+                        return false;
+                    if (c.data.megami === 'kururu')
+                        return false;
+                    if (/Edge/.test(name))
+                        return false;
+                    if (name === '雷螺風神爪')
+                        return false;
+                    if (name === '刈取り')
+                        return false;
+                    return true;
+                });
+                successCard = pick(targetCards_2.filter(function (card) { return card.data.types[0] !== 'attack'; }));
+                failCards = pickMultiple(targetCards_2.filter(function (card) { return card.data.types[0] === 'attack'; }), 3);
+                quiz.text = hyperapp_1.h("span", null, "\u6B21\u306E\u3046\u3061\u3001\u300C\u653B\u6483\u300D\u3067\u306F\u306A\u3044\u30AB\u30FC\u30C9\u306F\u3069\u308C\uFF1F");
+            }
+            // 回答をシャッフルして問題作成
+            var cards = lodash_1.default.shuffle([].concat(successCard, failCards));
+            var explanations_3 = ["各カードのタイプは下記の通りです。", hyperapp_1.h("br", null)];
+            cards.forEach(function (card) {
+                quiz.addAnswer(_this.getCardTitleHtml(card.data), (card === successCard));
+                var typeCaptions = [];
+                if (card.data.types.indexOf('attack') >= 0)
+                    typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-attack' }, "\u653B\u6483"));
+                if (card.data.types.indexOf('action') >= 0)
+                    typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-action' }, "\u884C\u52D5"));
+                if (card.data.types.indexOf('enhance') >= 0)
+                    typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-enhance' }, "\u4ED8\u4E0E"));
+                if (card.data.types.indexOf('variable') >= 0)
+                    typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-variable' }, "\u4E0D\u5B9A"));
+                if (card.data.types.indexOf('reaction') >= 0)
+                    typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-reaction' }, "\u5BFE\u5FDC"));
+                if (card.data.types.indexOf('fullpower') >= 0)
+                    typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-fullpower' }, "\u5168\u529B"));
+                explanations_3.push(hyperapp_1.h("br", null), card.data.name + ": ", (typeCaptions.length === 2 ? [typeCaptions[0], '/', typeCaptions[1]] : typeCaptions[0]));
+            });
+            quiz.explanation = explanations_3;
         }
         return quiz;
     };
@@ -74550,7 +74741,10 @@ var State;
         return {
             shown: true,
             currentQuiz: null,
-            selectedAnswerIndex: null
+            selectedAnswerIndex: null,
+            questionNumber: 0,
+            correctCount: 0,
+            incorrectCount: 0
         };
     }
     State.create = create;
@@ -74685,17 +74879,39 @@ var view = function (state, actions) {
                     " \u4E0D\u6B63\u89E3"));
             }
             nextButton = (hyperapp_1.h("div", null,
-                hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '100%', marginTop: '3em' } },
+                hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '100%', marginTop: '2em' } },
                     hyperapp_1.h("a", { class: "item", onclick: function () { return actions.setNewQuiz(); } }, "\u6B21\u306E\u554F\u984C")),
                 hyperapp_1.h("p", { style: { textAlign: 'right' } },
-                    hyperapp_1.h("a", { href: "#", onclick: function () { $('#QUIZ-EXPLANATION').show(); return false; } }, "\u89E3\u8AAC\u3092\u8868\u793A")),
+                    hyperapp_1.h("a", { href: "#", onclick: function () { $('#QUIZ-EXPLANATION').toggle(); return false; } }, "\u89E3\u8AAC\u3092\u8868\u793A")),
                 hyperapp_1.h("div", { class: "ui message", id: "QUIZ-EXPLANATION", style: { display: 'none' } }, state.currentQuiz.explanation)));
         }
-        mainDiv = (hyperapp_1.h("div", { style: { width: '100%' } },
-            hyperapp_1.h("p", null, state.currentQuiz.text),
+        var summary = void 0;
+        var totalCount = state.correctCount + state.incorrectCount;
+        if (totalCount >= 1) {
+            summary = hyperapp_1.h("span", null,
+                totalCount,
+                "\u554F\u4E2D ",
+                state.correctCount,
+                "\u554F\u6B63\u89E3 \uFF08\u6B63\u7B54\u7387: ",
+                Math.round(state.correctCount * 100 / (totalCount)),
+                "%\uFF09");
+        }
+        else {
+            summary = hyperapp_1.h("span", null,
+                totalCount,
+                "\u554F\u4E2D 0\u554F\u6B63\u89E3 \uFF08\u6B63\u7B54\u7387: 0%\uFF09");
+        }
+        mainDiv = (hyperapp_1.h("div", { style: { paddingTop: '1em', width: '100%' } },
+            hyperapp_1.h("p", null,
+                hyperapp_1.h("strong", null,
+                    "\u554F",
+                    state.questionNumber),
+                "\u3000",
+                state.currentQuiz.text),
             hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '100%' } }, answerItems_1),
             result,
-            nextButton));
+            nextButton,
+            hyperapp_1.h("div", { style: { position: 'absolute', fontSize: '0.8rem', color: 'gray', right: '2em', bottom: '1em' } }, summary)));
     }
     return (hyperapp_1.h("div", { id: "QUIZ-WINDOW", class: "ui segment draggable ui-widget-content " + css.quizWindow, oncreate: oncreate },
         hyperapp_1.h("div", { class: "ui top attached label" },

@@ -9,10 +9,20 @@ export const actions = {
     setNewQuiz: () => (state: State) => {
         let newQuiz = QuizMaker.make();
         
-        return {currentQuiz: newQuiz, selectedAnswerIndex: null} as Partial<State>;
+        return {
+              currentQuiz: newQuiz
+            , selectedAnswerIndex: null
+            , questionNumber: state.questionNumber + 1
+        } as Partial<State>;
     },
     selectAnswer: (index: number) => (state: State) => {
-        return {selectedAnswerIndex: index} as Partial<State>;
+        let answer = state.currentQuiz.answers[index];
+
+        return {
+              selectedAnswerIndex: index
+            , correctCount: (answer.correct ? state.correctCount + 1 : state.correctCount)
+            , incorrectCount: (!answer.correct ? state.incorrectCount + 1 : state.incorrectCount)
+        } as Partial<State>;
     }
 };
 
