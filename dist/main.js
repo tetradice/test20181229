@@ -10035,6 +10035,31 @@ exports.locals = {
 
 /***/ }),
 
+/***/ "./node_modules/css-loader/index.js?!./src/sakuraba/apps/quizWindow/view.css":
+/*!***********************************************************************************!*\
+  !*** ./node_modules/css-loader??ref--5-1!./src/sakuraba/apps/quizWindow/view.css ***!
+  \***********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-loader/lib/css-base.js */ "./node_modules/css-loader/lib/css-base.js")(true);
+// imports
+
+
+// module
+exports.push([module.i, "._3Zt0RcNDQvannqfddNOyGc,\n.EFw6ZC_AeN2qagEBH05uu {\n    color: forestgreen !important;\n}\n.EFw6ZC_AeN2qagEBH05uu {\n    background-color: #b0ffb0 !important;\n}\n\n._3X-1FrHM8PkPxgJ--47Ev7,\n._3gCfB4NowsTUUpqInwY7mb {\n    color: #d00000 !important;\n}\n\n._3gCfB4NowsTUUpqInwY7mb {\n    background-color: #ffd4d4 !important;\n}\n\n._2u0lq3xw9ix8II5LJcn7Eg {\n    position: absolute !important;\n    width: 30em !important;\n    height: 45em !important;\n    background-color: rgba(255, 255, 255, 0.9) !important;\n    z-index: 500 !important;\n}", "", {"version":3,"sources":["D:/work/furuyoni_simulator/server/src/sakuraba/apps/quizWindow/view.css"],"names":[],"mappings":"AAAA;;IAEI,8BAA8B;CACjC;AACD;IACI,qCAAqC;CACxC;;AAED;;IAEI,0BAA0B;CAC7B;;AAED;IACI,qCAAqC;CACxC;;AAED;IACI,8BAA8B;IAC9B,uBAAuB;IACvB,wBAAwB;IACxB,sDAAsD;IACtD,wBAAwB;CAC3B","file":"view.css","sourcesContent":[".correct,\n.correctArea {\n    color: forestgreen !important;\n}\n.correctArea {\n    background-color: #b0ffb0 !important;\n}\n\n.incorrect,\n.incorrectArea {\n    color: #d00000 !important;\n}\n\n.incorrectArea {\n    background-color: #ffd4d4 !important;\n}\n\n.quizWindow {\n    position: absolute !important;\n    width: 30em !important;\n    height: 45em !important;\n    background-color: rgba(255, 255, 255, 0.9) !important;\n    z-index: 500 !important;\n}"],"sourceRoot":""}]);
+
+// exports
+exports.locals = {
+	"correct": "_3Zt0RcNDQvannqfddNOyGc",
+	"correctArea": "EFw6ZC_AeN2qagEBH05uu",
+	"incorrect": "_3X-1FrHM8PkPxgJ--47Ev7",
+	"incorrectArea": "_3gCfB4NowsTUUpqInwY7mb",
+	"quizWindow": "_2u0lq3xw9ix8II5LJcn7Eg"
+};
+
+/***/ }),
+
 /***/ "./node_modules/css-loader/lib/css-base.js":
 /*!*************************************************!*\
   !*** ./node_modules/css-loader/lib/css-base.js ***!
@@ -70818,9 +70843,8 @@ exports.MEGAMI_DATA = {
     'shinra': { name: 'シンラ', symbol: '書' },
     'hagane': { name: 'ハガネ', symbol: '槌' },
     'chikage': { name: 'チカゲ', symbol: '毒' },
-    'kururu': { name: 'クルル', symbol: '絡繰' }
-    //, 'thallya':  {name: 'サリヤ', symbol: '乗騎'}
-    ,
+    'kururu': { name: 'クルル', symbol: '絡繰' },
+    'thallya': { name: 'サリヤ', symbol: '乗騎' },
     'raira': { name: 'ライラ', symbol: '爪' },
     'utsuro': { name: 'ウツロ', symbol: '鎌' }
 };
@@ -71242,6 +71266,8 @@ var main = __importStar(__webpack_require__(/*! ./main */ "./src/sakuraba/apps/m
 exports.main = main;
 var mariganModal = __importStar(__webpack_require__(/*! ./mariganModal */ "./src/sakuraba/apps/mariganModal/index.ts"));
 exports.mariganModal = mariganModal;
+var quizWindow = __importStar(__webpack_require__(/*! ./quizWindow */ "./src/sakuraba/apps/quizWindow/index.ts"));
+exports.quizWindow = quizWindow;
 
 
 /***/ }),
@@ -72614,6 +72640,7 @@ var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/saku
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var toastr_1 = __importDefault(__webpack_require__(/*! toastr */ "./node_modules/toastr/toastr.js"));
 var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
+var apps = __importStar(__webpack_require__(/*! sakuraba/apps */ "./src/sakuraba/apps/index.ts"));
 // ルール編集メモ
 // 第二幕、新幕の選択
 // アンドゥ制約（山札を引いた後のUndoは可能か？）
@@ -72780,6 +72807,10 @@ exports.ControlPanel = function () { return function (state, actions) {
     var aboutThisService = function () {
         utils.showModal("#ABOUT-MODAL");
     };
+    var quizOpen = function () {
+        var st = apps.quizWindow.State.create();
+        apps.quizWindow.run(st, document.getElementById('QUIZ-WINDOW-CONTAINER'));
+    };
     var menu = (hyperapp_1.h("button", { class: "ui basic button dropdown", oncreate: dropdownCreate },
         "\u30E1\u30CB\u30E5\u30FC",
         hyperapp_1.h("i", { class: "dropdown icon" }),
@@ -72792,6 +72823,8 @@ exports.ControlPanel = function () { return function (state, actions) {
             hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleBgmPlaying(); } },
                 (state.bgmPlaying ? hyperapp_1.h("i", { class: "check icon" }) : null),
                 "BGM\u518D\u751F"),
+            hyperapp_1.h("div", { class: "divider" }),
+            hyperapp_1.h("div", { class: "item", onclick: quizOpen }, "\u30DF\u30CB\u30B2\u30FC\u30E0: \u3075\u308B\u3088\u306B\u30DF\u30CB\u30AF\u30A4\u30BA"),
             hyperapp_1.h("div", { class: "divider" }),
             hyperapp_1.h("div", { class: "item", onclick: aboutThisService, style: { lineHeight: '1.5' } },
                 "\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u306B\u3064\u3044\u3066 ",
@@ -73040,6 +73073,8 @@ exports.MainProcessButtons = function (p) { return function (state, actions) {
         $('#MEGAMI2-SELECTION').empty().append('<option></option>');
         for (var key in sakuraba.MEGAMI_DATA) {
             var data = sakuraba.MEGAMI_DATA[key];
+            if (key === 'thallya')
+                continue;
             $('#MEGAMI1-SELECTION').append("<option value='" + key + "'>" + data.name + " (" + data.symbol + ")</option>");
             $('#MEGAMI2-SELECTION').append("<option value='" + key + "'>" + data.name + " (" + data.symbol + ")</option>");
         }
@@ -74307,6 +74342,367 @@ var view = function (state, actions) {
                     "\u6C7A\u5B9A ",
                     hyperapp_1.h("i", { class: "checkmark icon" })),
                 hyperapp_1.h("div", { class: "ui black deny button", onclick: function () { actions.hide(); state.promiseReject(); } }, "\u30AD\u30E3\u30F3\u30BB\u30EB")))));
+};
+exports.default = view;
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/quizWindow/actions.ts":
+/*!*************************************************!*\
+  !*** ./src/sakuraba/apps/quizWindow/actions.ts ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var quiz_1 = __webpack_require__(/*! ./quiz */ "./src/sakuraba/apps/quizWindow/quiz.tsx");
+exports.actions = {
+    hide: function () {
+        return { shown: false };
+    },
+    setNewQuiz: function () { return function (state) {
+        var newQuiz = quiz_1.QuizMaker.make();
+        return { currentQuiz: newQuiz, selectedAnswerIndex: null };
+    }; },
+    selectAnswer: function (index) { return function (state) {
+        return { selectedAnswerIndex: index };
+    }; }
+};
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/quizWindow/index.ts":
+/*!***********************************************!*\
+  !*** ./src/sakuraba/apps/quizWindow/index.ts ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
+var view_1 = __importDefault(__webpack_require__(/*! ./view */ "./src/sakuraba/apps/quizWindow/view.tsx"));
+var actions_1 = __webpack_require__(/*! ./actions */ "./src/sakuraba/apps/quizWindow/actions.ts");
+var state_1 = __webpack_require__(/*! ./state */ "./src/sakuraba/apps/quizWindow/state.ts");
+exports.State = state_1.State;
+function run(state, container) {
+    return logger_1.withLogger(hyperapp_1.app)(state, actions_1.actions, view_1.default, container);
+}
+exports.run = run;
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/quizWindow/quiz.tsx":
+/*!***********************************************!*\
+  !*** ./src/sakuraba/apps/quizWindow/quiz.tsx ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var sakuraba_1 = __webpack_require__(/*! sakuraba */ "./src/sakuraba.ts");
+var lodash_1 = __importDefault(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+// 指定した配列から1つの要素をランダムに選出して返す
+function pick(array) {
+    var list = pickMultiple(array, 1);
+    if (list === null)
+        return null;
+    return list[0];
+}
+// 指定した配列から複数の要素をランダムに選出して返す
+function pickMultiple(array, num) {
+    if (array === undefined || array === null || array.length === 0) {
+        return null;
+    }
+    var cloned = array.concat();
+    var ret = [];
+    for (var i = 0; i < num; i++) {
+        var index = Math.floor(Math.random() * cloned.length);
+        ret.push(cloned.splice(index, 1)[0]);
+    }
+    return ret;
+}
+var Quiz = /** @class */ (function () {
+    function Quiz() {
+        this.answers = [];
+    }
+    Quiz.prototype.addAnswer = function (titleHtml, correct) {
+        if (correct === void 0) { correct = false; }
+        var answer = new QuizAnswer();
+        answer.titleHtml = titleHtml;
+        answer.correct = correct;
+        this.answers.push(answer);
+    };
+    return Quiz;
+}());
+exports.Quiz = Quiz;
+var QuizAnswer = /** @class */ (function () {
+    function QuizAnswer() {
+    }
+    return QuizAnswer;
+}());
+exports.QuizAnswer = QuizAnswer;
+var QuizTypeList = [
+    'specialCost'
+];
+var QuizMakerClass = /** @class */ (function () {
+    function QuizMakerClass() {
+        this.difficult = 'normal';
+    }
+    QuizMakerClass.prototype.getCardTitleHtml = function (cardData) {
+        var megamiName = sakuraba_1.MEGAMI_DATA[cardData.megami].name;
+        if (cardData.megami === 'utsuro' && cardData.baseType === 'special') {
+            // ウツロの切札のみ、読み仮名を付与 (読み仮名がないと判別しにくいため)
+            return hyperapp_1.h("span", null,
+                hyperapp_1.h("ruby", null,
+                    hyperapp_1.h("rb", null, cardData.name),
+                    hyperapp_1.h("rp", null, "("),
+                    hyperapp_1.h("rt", null, cardData.ruby),
+                    hyperapp_1.h("rp", null, ")")),
+                " (",
+                megamiName,
+                ")");
+        }
+        else {
+            return hyperapp_1.h("span", null,
+                cardData.name,
+                " (",
+                megamiName,
+                ")");
+        }
+    };
+    /** 新しい設問を作成する */
+    QuizMakerClass.prototype.make = function () {
+        var _this = this;
+        var quiz = new Quiz();
+        // すべてのカード情報を取得
+        var allCards = [];
+        for (var key in sakuraba_1.CARD_DATA) {
+            allCards.push({ id: key, data: sakuraba_1.CARD_DATA[key] });
+        }
+        // ランダムに問題の種類を決定する
+        var quizType = pick(QuizTypeList);
+        // 問題の種類に応じた処理
+        if (quizType === 'specialCost') {
+            // 切札のコスト問題
+            // まずは対象となる切札カードを、コスト付きですべて選出
+            var targetCards = allCards.filter(function (card) { return card.data.baseType === 'special' && card.data.cost !== undefined && /^[0-9]+$/.test(card.data.cost); })
+                .map(function (card) { return lodash_1.default.assign({}, card, { cost: parseInt(card.data.cost) }); });
+            // 条件を指定
+            var condType = pick(['lower']);
+            if (condType === 'lower') {
+                // コストn以下
+                var border_1 = pick([1, 2, 3, 4, 5]);
+                // コストn以下のカードを1枚抽出
+                var successCard_1 = pick(targetCards.filter(function (card) { return card.cost <= border_1; }));
+                // コストがnより大きいカードを3枚抽出
+                var failCards = pickMultiple(targetCards.filter(function (card) { return card.cost > border_1; }), 3);
+                // 問題を作成
+                quiz.text = "\u6B21\u306E\u3046\u3061\u3001\u30B3\u30B9\u30C8\u304C" + border_1 + "\u4EE5\u4E0B\u306E\u5207\u672D\u306F\u3069\u308C\uFF1F";
+                var cards = lodash_1.default.shuffle([].concat(successCard_1, failCards));
+                var explanations_1 = ["各切札のコストは下記の通りです。", hyperapp_1.h("br", null)];
+                cards.forEach(function (card) {
+                    quiz.addAnswer(_this.getCardTitleHtml(card.data), (card === successCard_1));
+                    explanations_1.push(hyperapp_1.h("br", null), card.data.name + ": " + card.cost);
+                });
+                quiz.explanation = explanations_1;
+            }
+        }
+        return quiz;
+    };
+    return QuizMakerClass;
+}());
+exports.QuizMaker = new QuizMakerClass();
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/quizWindow/state.ts":
+/*!***********************************************!*\
+  !*** ./src/sakuraba/apps/quizWindow/state.ts ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var State;
+(function (State) {
+    /** 新しいstateの生成 */
+    function create() {
+        return {
+            shown: true,
+            currentQuiz: null,
+            selectedAnswerIndex: null
+        };
+    }
+    State.create = create;
+})(State = exports.State || (exports.State = {}));
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/quizWindow/view.css":
+/*!***********************************************!*\
+  !*** ./src/sakuraba/apps/quizWindow/view.css ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader??ref--5-1!./view.css */ "./node_modules/css-loader/index.js?!./src/sakuraba/apps/quizWindow/view.css");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"sourceMap":true,"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../../node_modules/style-loader/lib/addStyles.js */ "./node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/quizWindow/view.tsx":
+/*!***********************************************!*\
+  !*** ./src/sakuraba/apps/quizWindow/view.tsx ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var css = __importStar(__webpack_require__(/*! ./view.css */ "./src/sakuraba/apps/quizWindow/view.css"));
+// ウインドウの表示状態をローカルストレージに保存
+function saveWindowState(elem) {
+    var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top') };
+    localStorage.setItem(elem.id + "-WindowState", JSON.stringify(current));
+}
+var oncreate = function (e) {
+    // ウインドウを移動可能にする
+    $(e).draggable({
+        cursor: "move",
+        stop: function () {
+            saveWindowState(e);
+        },
+    });
+    // ウインドウの状態を復元
+    var windowStateJson = localStorage.getItem(e.id + "-WindowState");
+    if (windowStateJson) {
+        var windowState = JSON.parse(windowStateJson);
+        $(e).css(windowState);
+    }
+    else {
+        // 設定がなければ中央に配置
+        $(e).css({ left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2 });
+    }
+};
+// メインビューの定義
+var view = function (state, actions) {
+    if (!state.shown)
+        return null;
+    var mainDiv;
+    if (state.currentQuiz === null) {
+        mainDiv = (hyperapp_1.h("div", { style: { paddingTop: '4em', width: '100%' } },
+            hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '70%', marginLeft: 'auto', marginRight: 'auto' } },
+                hyperapp_1.h("a", { class: "item", onclick: function () { return actions.setNewQuiz(); } }, "\u958B\u59CB"),
+                hyperapp_1.h("a", { class: "item" }, "\u9589\u3058\u308B"))));
+    }
+    else {
+        var answerItems_1 = [];
+        state.currentQuiz.answers.forEach(function (answer, i) {
+            var answerClick = function () {
+                actions.selectAnswer(i);
+            };
+            if (i === state.selectedAnswerIndex) {
+                // 回答した項目
+                if (state.currentQuiz.answers[i].correct) {
+                    answerItems_1.push(hyperapp_1.h("a", { class: "item " + css.correctArea, onclick: answerClick }, answer.titleHtml));
+                }
+                else {
+                    answerItems_1.push(hyperapp_1.h("a", { class: "item " + css.incorrectArea, onclick: answerClick }, answer.titleHtml));
+                }
+            }
+            else {
+                // 未回答項目
+                if (state.selectedAnswerIndex !== null) {
+                    answerItems_1.push(hyperapp_1.h("a", { class: "item disabled" }, answer.titleHtml));
+                }
+                else {
+                    answerItems_1.push(hyperapp_1.h("a", { class: "item", onclick: answerClick }, answer.titleHtml));
+                }
+            }
+        });
+        var result = null;
+        var nextButton = null;
+        if (state.selectedAnswerIndex !== null) {
+            // 回答済み
+            if (state.currentQuiz.answers[state.selectedAnswerIndex].correct) {
+                result = (hyperapp_1.h("p", { class: css.correct },
+                    hyperapp_1.h("span", { style: { fontWeight: 'bold', fontSize: '1.2rem' } },
+                        hyperapp_1.h("i", { class: "icon circle outline" })),
+                    " \u6B63\u89E3"));
+            }
+            else {
+                result = (hyperapp_1.h("p", { class: css.incorrect },
+                    hyperapp_1.h("span", { style: { fontWeight: 'bold', fontSize: '1.2rem' } },
+                        hyperapp_1.h("i", { class: "icon times" })),
+                    " \u4E0D\u6B63\u89E3"));
+            }
+            nextButton = (hyperapp_1.h("div", null,
+                hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '100%', marginTop: '3em' } },
+                    hyperapp_1.h("a", { class: "item", onclick: function () { return actions.setNewQuiz(); } }, "\u6B21\u306E\u554F\u984C")),
+                hyperapp_1.h("p", { style: { textAlign: 'right' } },
+                    hyperapp_1.h("a", { href: "#", onclick: function () { $('#QUIZ-EXPLANATION').show(); return false; } }, "\u89E3\u8AAC\u3092\u8868\u793A")),
+                hyperapp_1.h("div", { class: "ui message", id: "QUIZ-EXPLANATION", style: { display: 'none' } }, state.currentQuiz.explanation)));
+        }
+        mainDiv = (hyperapp_1.h("div", { style: { width: '100%' } },
+            hyperapp_1.h("p", null, state.currentQuiz.text),
+            hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '100%' } }, answerItems_1),
+            result,
+            nextButton));
+    }
+    return (hyperapp_1.h("div", { id: "QUIZ-WINDOW", class: "ui segment draggable ui-widget-content " + css.quizWindow, oncreate: oncreate },
+        hyperapp_1.h("div", { class: "ui top attached label" },
+            "\u3075\u308B\u3088\u306B\u30DF\u30CB\u30AF\u30A4\u30BA",
+            hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.hide(); } },
+                hyperapp_1.h("i", { class: "times icon" }))),
+        mainDiv));
 };
 exports.default = view;
 

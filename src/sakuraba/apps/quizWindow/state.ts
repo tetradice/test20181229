@@ -1,32 +1,18 @@
+import { Quiz } from "./quiz";
+
 export interface State {
     shown: boolean;
-    side: PlayerSide;
-    cards: state.Card[];
-    selectedCards: state.Card[];
-    zoom: number;
-
-    promiseResolve: (selectedCards: state.Card[]) => void;
-    promiseReject: Function;
+    currentQuiz: Quiz;
+    selectedAnswerIndex: number | null;
 }
 
 export namespace State {
     /** 新しいstateの生成 */
-    export function create(
-          side: PlayerSide
-        , cards: state.Card[]
-        , zoom: number
-        , promiseResolve: (selectedCards: state.Card[]) => void
-        , promiseReject: Function
-    ): State{
+    export function create(): State{
         return {
               shown: true
-            , side: side
-            , cards: cards
-            , selectedCards: []
-            , zoom: zoom
-            
-            , promiseResolve: promiseResolve
-            , promiseReject: promiseReject
+            , currentQuiz: null
+            , selectedAnswerIndex: null
         };
     }
 }

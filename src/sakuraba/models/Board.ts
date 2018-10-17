@@ -5,7 +5,7 @@ import * as utils from "sakuraba/utils";
 export class Board implements state.Board {
     objects: state.Board['objects'];
     playerNames: state.Board['playerNames'];
-    watcherNames: state.Board['watcherNames'];
+    watchers: state.Board['watchers'];
     megamis: state.Board['megamis'];
     vigors: state.Board['vigors'];
     witherFlags: state.Board['witherFlags'];

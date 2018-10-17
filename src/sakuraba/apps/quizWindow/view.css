@@ -1,21 +1,24 @@
-.modalTop {
-    display: flex !important;
+.correct,
+.correctArea {
+    color: forestgreen !important;
+}
+.correctArea {
+    background-color: #b0ffb0 !important;
 }
 
-.outer {
-    width: 100%;
-    overflow: scroll;
-    max-height: 320px;
-    position: relative;
+.incorrect,
+.incorrectArea {
+    color: #d00000 !important;
 }
 
-.cardArea {
-    width: 320px;
-    height: 180px;
-    position: relative;
+.incorrectArea {
+    background-color: #ffd4d4 !important;
 }
 
-.countCaption {
-    margin-top: 1em;
-    font-size: larger;
+.quizWindow {
+    position: absolute !important;
+    width: 30em !important;
+    height: 45em !important;
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    z-index: 500 !important;
 }

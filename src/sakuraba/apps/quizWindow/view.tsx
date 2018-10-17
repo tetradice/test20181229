@@ -6,59 +6,128 @@ import * as sakuraba from "sakuraba";
 import { Card } from "sakuraba/apps/common/components";
 
 import * as css from "./view.css"
+import _ from "lodash";
 
-/** ポップアップ初期化 */
-function setPopup(){
-    // ポップアップ初期化
-    $('[data-html],[data-content]').popup({
-        delay: {show: 500, hide: 0},
-        onShow: function(): false | void{
-            //if(draggingFrom !== null) return false;
+
+// ウインドウの表示状態をローカルストレージに保存
+function saveWindowState(elem: HTMLElement){
+    let current = {display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top')};
+    localStorage.setItem(`${elem.id}-WindowState`, JSON.stringify(current));
+}
+const oncreate = (e) => {
+    // ウインドウを移動可能にする
+    $(e).draggable({
+        cursor: "move", 
+        stop: function(){
+            saveWindowState(e);
         },
     });
-}
+
+    // ウインドウの状態を復元
+    let windowStateJson = localStorage.getItem(`${e.id}-WindowState`);
+    if(windowStateJson){
+        let windowState = JSON.parse(windowStateJson);
+        $(e).css(windowState);
+    } else {
+        // 設定がなければ中央に配置
+        $(e).css({left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2});
+    }
+};
+
 // メインビューの定義
 const view: View<State, ActionsType> = (state, actions) => {
     if(!state.shown) return null;
 
-    let cardElements: JSX.Element[] = [];
-    state.cards.forEach((card, c) => {
-        let sCard = utils.createCard(`deck-${card.id}`, card.id, null, state.side);
-        sCard.openState = 'opened';
-        let top = 4;
-        let left = 4 + c * (100 + 8);
-        let selected = state.selectedCards.indexOf(card) >= 0;
-        
-        cardElements.push(<Card target={card} opened={true} descriptionViewable={true} left={left} top={top} selected={selected} onclick={() => actions.selectCard(card)} zoom={state.zoom}></Card>);
-    });
-
-    let selectedCount = state.selectedCards.filter(card => sakuraba.CARD_DATA[card.cardId].baseType === 'normal').length;
-
-    let okButtonClass = "ui positive labeled icon button";
-    if(selectedCount === 0) okButtonClass += " disabled";
-
-    return(
-        <div class={"ui dimmer modals page visible active " + css.modalTop} oncreate={() => setPopup()}>
-            <div class="ui modal visible active">
-                <div class="content">
-                    <div class="description" style={{marginBottom: '2em'}}>
-                        <p>山札の底に戻すカードを選択してください。（この操作は一度しか行えません）</p>
-                    </div>
-                    <div class={css.outer}>
-                        <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
-                            {cardElements}
-                        </div>
-                    </div>
-                </div>
-                <div class="actions">
-                    <div class={okButtonClass} onclick={() => {actions.hide(); state.promiseResolve(state.selectedCards)}}>
-                        決定 <i class="checkmark icon"></i>
-                    </div>
-                    <div class="ui black deny button" onclick={() => {actions.hide(); state.promiseReject()}}>
-                        キャンセル
-                    </div>
+    let mainDiv: JSX.Element;
+    if(state.currentQuiz === null){
+        mainDiv = (
+            <div style={{paddingTop: '4em', width: '100%'}}>
+                <div class={`ui vertical menu`} style={{width: '70%', marginLeft: 'auto', marginRight: 'auto'}}>
+                    <a class="item" onclick={() => actions.setNewQuiz()}>
+                        開始
+                    </a>
+                    <a class="item">
+                        閉じる
+                    </a>
                 </div>
             </div>
+        );
+    } else {
+        let answerItems: JSX.Element[] = [];
+        state.currentQuiz.answers.forEach((answer, i) => {
+            let answerClick = () => {
+                actions.selectAnswer(i);
+            };
+
+            if(i === state.selectedAnswerIndex){
+                // 回答した項目
+                if(state.currentQuiz.answers[i].correct){
+                    answerItems.push(<a class={`item ${css.correctArea}`} onclick={answerClick}>{answer.titleHtml}</a>);
+                } else {
+                    answerItems.push(<a class={`item ${css.incorrectArea}`} onclick={answerClick}>{answer.titleHtml}</a>);
+                }
+            } else {
+                // 未回答項目
+                if(state.selectedAnswerIndex !== null){
+                    answerItems.push(<a class="item disabled">{answer.titleHtml}</a>);
+                } else {
+                    answerItems.push(<a class="item" onclick={answerClick}>{answer.titleHtml}</a>);
+                }
+            }
+            
+        });
+
+        let result: JSX.Element = null;
+        let nextButton: JSX.Element = null;
+        if (state.selectedAnswerIndex !== null) {
+            // 回答済み
+            if (state.currentQuiz.answers[state.selectedAnswerIndex].correct) {
+                result = (
+                    <p class={css.correct}>
+                        <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}><i class="icon circle outline"></i></span> 正解
+                    </p>
+                );
+            } else {
+                result = (
+                    <p class={css.incorrect}>
+                        <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}><i class="icon times"></i></span> 不正解
+                    </p>
+                );
+            }
+
+            nextButton = (
+                <div>
+                    <div class="ui vertical menu" style={{width: '100%', marginTop: '3em'}}>
+                        <a class="item" onclick={() => actions.setNewQuiz()}>
+                            次の問題
+                        </a>
+                    </div>
+                    <p style={{textAlign: 'right'}}><a href="#" onclick={() => { $('#QUIZ-EXPLANATION').show(); return false}}>解説を表示</a></p>
+                    <div class="ui message" id="QUIZ-EXPLANATION" style={{display: 'none'}}>{state.currentQuiz.explanation}</div>
+                </div>
+            );
+
+        }
+
+        mainDiv = (
+            <div style={{width: '100%'}}>
+                <p>{state.currentQuiz.text}</p>
+                <div class="ui vertical menu" style={{width: '100%'}}>
+                    {answerItems}
+                </div>
+                {result}
+                {nextButton}
+            </div>
+        );
+
+    }
+
+    return(
+        <div id="QUIZ-WINDOW"
+          class={`ui segment draggable ui-widget-content ${css.quizWindow}`}
+          oncreate={oncreate}>
+            <div class="ui top attached label">ふるよにミニクイズ<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.hide()}><i class="times icon"></i></a></div>
+            {mainDiv}
         </div>
     );
 }

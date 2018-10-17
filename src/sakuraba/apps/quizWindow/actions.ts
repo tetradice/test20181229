@@ -1,23 +1,19 @@
 import { WiredActions } from 'hyperapp-types';
 import { State } from './state';
+import { QuizMaker } from './quiz';
 
 export const actions = {
     hide: () => {
         return {shown: false};
     },
-    selectCard: (card: state.Card) => (state: State) => {
-        let newSelectedCards = state.selectedCards.concat([]);
-
-        if(newSelectedCards.indexOf(card) >= 0){
-            // 選択OFF
-            newSelectedCards.splice(newSelectedCards.indexOf(card), 1);
-        } else {
-            // 選択ON
-            newSelectedCards.push(card)
-        }
-
-        return {selectedCards: newSelectedCards};
+    setNewQuiz: () => (state: State) => {
+        let newQuiz = QuizMaker.make();
+        
+        return {currentQuiz: newQuiz, selectedAnswerIndex: null} as Partial<State>;
     },
+    selectAnswer: (index: number) => (state: State) => {
+        return {selectedAnswerIndex: index} as Partial<State>;
+    }
 };
 
 export type ActionsType = WiredActions<State, typeof actions>;

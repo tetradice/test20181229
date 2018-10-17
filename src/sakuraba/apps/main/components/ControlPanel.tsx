@@ -5,6 +5,7 @@ import * as css from "./ControlPanel.css"
 import * as models from "sakuraba/models";
 import toastr from "toastr";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
+import * as apps from "sakuraba/apps"
 
 
 // ルール編集メモ
@@ -235,6 +236,11 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         utils.showModal("#ABOUT-MODAL");
     }
 
+    const quizOpen = () => {
+        let st = apps.quizWindow.State.create();
+        apps.quizWindow.run(st, document.getElementById('QUIZ-WINDOW-CONTAINER'));            
+    };
+
     let menu = (
         <button class="ui basic button dropdown" oncreate={dropdownCreate}>
             メニュー
@@ -249,6 +255,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <div class="item" onclick={() => actions.toggleBgmPlaying()}>
                     {(state.bgmPlaying ? <i class="check icon"></i> : null)}
                     BGM再生
+                </div>
+                <div class="divider"></div>
+                <div class="item" onclick={quizOpen}>
+                    ミニゲーム: ふるよにミニクイズ
                 </div>
                 <div class="divider"></div>
                 <div class="item" onclick={aboutThisService} style={{lineHeight: '1.5'}}>ふるよにボードシミュレーターについて <br />(バージョン、著作権情報、連絡先)</div>
