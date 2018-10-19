@@ -16,6 +16,7 @@ export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: 
             // ウインドウを移動可能にする
             $(e).draggable({
                 cursor: "move", 
+                opacity: 0.7,        
                 stop: function(){
                     saveWindowState(e);
                 },

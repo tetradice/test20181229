@@ -72204,6 +72204,7 @@ exports.ActionLogWindow = function (p) { return function (state, actions) {
             // 一部ウインドウをリサイズ可能にする
             $(e).draggable({
                 cursor: "move",
+                opacity: 0.7,
                 stop: function () {
                     saveWindowState(e);
                 },
@@ -72272,6 +72273,7 @@ exports.BGMWindow = function (p) { return function (state, actions) {
             // ウインドウを移動可能にする
             $(e).draggable({
                 cursor: "move",
+                opacity: 0.7,
                 stop: function () {
                     saveWindowState(e);
                 },
@@ -72959,6 +72961,7 @@ exports.HelpWindow = function (p) { return function (state, actions) {
             // ウインドウを移動可能にする
             $(e).draggable({
                 cursor: "move",
+                opacity: 0.7,
                 stop: function () {
                     saveWindowState(e);
                 },
@@ -74811,6 +74814,8 @@ var oncreate = function (e) {
     // ウインドウを移動可能にする
     $(e).draggable({
         cursor: "move",
+        cancel: "input,textarea,button,select,option,a",
+        opacity: 0.7,
         stop: function () {
             saveWindowState(e);
         },
@@ -74835,7 +74840,7 @@ var view = function (state, actions) {
         mainDiv = (hyperapp_1.h("div", { style: { paddingTop: '4em', width: '100%' } },
             hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '70%', marginLeft: 'auto', marginRight: 'auto' } },
                 hyperapp_1.h("a", { class: "item", onclick: function () { return actions.setNewQuiz(); } }, "\u958B\u59CB"),
-                hyperapp_1.h("a", { class: "item" }, "\u9589\u3058\u308B"))));
+                hyperapp_1.h("a", { class: "item", onclick: function () { return actions.hide(); } }, "\u9589\u3058\u308B"))));
     }
     else {
         var answerItems_1 = [];

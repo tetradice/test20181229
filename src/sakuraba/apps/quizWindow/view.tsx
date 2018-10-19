@@ -17,7 +17,9 @@ function saveWindowState(elem: HTMLElement){
 const oncreate = (e) => {
     // ウインドウを移動可能にする
     $(e).draggable({
-        cursor: "move", 
+        cursor: "move",
+        cancel: "input,textarea,button,select,option,a",
+        opacity: 0.7,
         stop: function(){
             saveWindowState(e);
         },
@@ -46,7 +48,7 @@ const view: View<State, ActionsType> = (state, actions) => {
                     <a class="item" onclick={() => actions.setNewQuiz()}>
                         開始
                     </a>
-                    <a class="item">
+                    <a class="item" onclick={() => actions.hide()}>
                         閉じる
                     </a>
                 </div>

@@ -34,6 +34,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
             // 一部ウインドウをリサイズ可能にする
             $(e).draggable({
                 cursor: "move", 
+                opacity: 0.7,
                 stop: function(){
                     saveWindowState(e);
                 },
