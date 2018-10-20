@@ -97,15 +97,43 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
             let cardIds: string[][] = [[], [], []];
 
             // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート。ただし追加札は除外
+            let allCardDataItem: sakuraba.CardDataItem[] = [];
+            for(let key in sakuraba.CARD_DATA){
+                allCardDataItem.push(sakuraba.CARD_DATA[key]);
+            }
             for(let key in sakuraba.CARD_DATA){
                 let data = sakuraba.CARD_DATA[key];
-                if(data.megami === state.board.megamis[state.side][0] && data.baseType === 'normal' && !data.extra){
-                    cardIds[0].push(key);
+
+                let megamis = state.board.megamis[state.side];
+                let megamiData1 = sakuraba.MEGAMI_DATA[megamis[0]];
+                let megamiData2 = sakuraba.MEGAMI_DATA[megamis[1]];
+
+                let replacedByAnother = allCardDataItem.find(x => x.anotherID !== undefined && x.replace === key);
+
+                if(data.baseType === 'normal' && !data.extra){
+                    // メガミ1柱目の所有カード判定 (非アナザー)
+                    if(data.megami === megamis[0] && !replacedByAnother){
+                        cardIds[0].push(key);
+                    }
+                    // メガミ1柱目の所有カード判定 (アナザー)
+                    if(data.megami === megamiData1.base && (!replacedByAnother || data.anotherID === megamiData1.anotherID)){
+                        cardIds[0].push(key);
+                    }
+                    
+                    // メガミ2柱目の所有カード判定 (非アナザー)
+                    if(data.megami === megamis[1] && !allCardDataItem.find(x => x.anotherID !== undefined && x.replace === key)){
+                        cardIds[1].push(key);
+                    }
+                    // メガミ2柱目の所有カード判定 (アナザー)
+                    if(data.megami === megamiData2.base && (!replacedByAnother || data.anotherID === megamiData2.anotherID)){
+                        cardIds[1].push(key);
+                    }
                 }
-                if(data.megami === state.board.megamis[state.side][1] && data.baseType === 'normal' && !data.extra){
-                    cardIds[1].push(key);
-                }
-                if(state.board.megamis[state.side].indexOf(data.megami) >= 0 && data.baseType === 'special' && !data.extra){
+                if(
+                    state.board.megamis[state.side].indexOf(data.megami) >= 0
+                    && data.baseType === 'special'
+                    && !data.extra
+                ){
                     cardIds[2].push(key);
                 }
             }

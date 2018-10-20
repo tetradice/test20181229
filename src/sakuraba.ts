@@ -15,22 +15,22 @@ export const SAKURA_TOKEN_MAX: {[P in SakuraTokenRegion]: number} = {
     , 'on-card': 99
 };
 
-
 // メガミ情報
 interface MegamiDataItem {
     name: string;
     symbol: string;
     base?: Megami;
+    anotherID?: string;
 }
-export const MEGAMI_DATA = {
+export const MEGAMI_DATA: {[megami: string]: MegamiDataItem} = {
       'yurina':   {name: 'ユリナ', symbol: '刀'}
-    //, 'yurina-a': {name: '第一章ユリナ', symbol: '古刀', base: 'yurina'}
+    //, 'yurina-a1': {name: '第一章ユリナ', symbol: '古刀', base: 'yurina'}
     , 'saine':    {name: 'サイネ', symbol: '薙刀'}
-    //, 'saine-a':  {name: '第二章サイネ', symbol: '琵琶', base: 'saine'}
+    //, 'saine-a1':  {name: '第二章サイネ', symbol: '琵琶', base: 'saine'}
     , 'himika':   {name: 'ヒミカ', symbol: '銃'}
-    //, 'himika-a': {name: '原初ヒミカ', symbol: '炎', base: 'himika'}
+    //, 'himika-a1': {name: '原初ヒミカ', symbol: '炎', base: 'himika'}
     , 'tokoyo':   {name: 'トコヨ', symbol: '扇'}
-    //, 'tokoyo-a': {name: '旅芸人トコヨ', symbol: '笛', base: 'tokoyo'}
+    , 'tokoyo-a1': {name: '旅芸人トコヨ', symbol: '扇+笛', base: 'tokoyo', anotherID: 'A1'}
     , 'oboro':    {name: 'オボロ', symbol: '忍'}
     , 'yukihi':   {name: 'ユキヒ', symbol: '傘/簪'}
     , 'shinra':   {name: 'シンラ', symbol: '書'}
@@ -41,12 +41,14 @@ export const MEGAMI_DATA = {
     , 'raira':    {name: 'ライラ', symbol: '爪'}
     , 'utsuro':   {name: 'ウツロ', symbol: '鎌'}
 };
-export type Megami = keyof (typeof MEGAMI_DATA) | 'thallya';
+export type Megami = keyof (typeof MEGAMI_DATA);
 
 // カード情報
 interface CardDataItemBase {
     megami: Megami;
     name: string;
+    anotherID?: string;
+    replace?: string;
     ruby?: string;
     types: CardType[];
     range?: string;
@@ -70,6 +72,7 @@ interface CardDataItemBase {
 export interface NormalCardDataItem extends CardDataItemBase {
     baseType: 'normal';
 }
+
 
 export interface SpecialCardDataItem extends CardDataItemBase {
     baseType: 'special';
@@ -127,7 +130,10 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
     , '04-tokoyo-o-s-2': {megami: 'tokoyo', name: '千歳ノ鳥', ruby: 'ちとせのとり', baseType: 'special', types: ['attack'], range: '3-4', damage: '2/2', cost: '2', text: '【攻撃後】山札を再構成する。 \n(その際にダメージは受けない)'}
     , '04-tokoyo-o-s-3': {megami: 'tokoyo', name: '無窮ノ風', ruby: 'むきゅうのかぜ', baseType: 'special', types: ['attack'], range: '3-8', damage: '1/1', cost: '1', text: '対応不可 \n【攻撃後】相手は手札から《攻撃》でないカード1枚を捨て札にする。それが行えない場合、相手は手札を公開する。 \n----\n【再起】境地-あなたの集中力が2である。'}
     , '04-tokoyo-o-s-4': {megami: 'tokoyo', name: '常世ノ月', ruby: 'とこよのつき', baseType: 'special', types: ['action'], cost: '2', text: 'あなたの集中力は2になり、相手の集中力は0になり、相手を畏縮させる。'}
-
+    , '04-tokoyo-A1-n-1': {megami: 'tokoyo', anotherID: 'A1', replace: '04-tokoyo-o-n-5', name: '奏流し', ruby: 'かなでながし', baseType: 'normal', types: ['attack'], range: '5', damage: '-/1', text: '【常時】あなたのトコヨの切札が1枚以上使用済ならば、この《攻撃》は対応不可を得る。 \n【攻撃後】境地-あなたの集中力が2かつ、あなたの他のメガミの切札が1枚以上使用済ならば、このカードを山札の上に置く。'}
+    , '04-tokoyo-A1-n-7': {megami: 'tokoyo', anotherID: 'A1', replace: '04-tokoyo-o-n-7', name: '陽の音', ruby: 'ひのね', baseType: 'normal', types: ['enhance'], capacity: '2', text: '【展開時/展開中】展開時、およびあなたが《対応》カードを使用した時、その解決後にダスト→自オーラ：1 \n【展開中】相手のターンにこのカードの上の桜花結晶は移動しない。'}
+    , '04-tokoyo-A1-s-2': {megami: 'tokoyo', anotherID: 'A1', replace: '04-tokoyo-o-s-2', name: '二重奏:吹弾陽明', ruby: 'にじゅうそう：すいだんようめい', baseType: 'special', types: ['action'], cost: '1', text: '【使用済】あなたの開始フェイズの開始時に捨て札または伏せ札からカード1枚を選び、それを山札の底に置いてもよい。 \n----\n【即再起】あなたが再構成以外でライフに1以上のダメージを受ける。'}
+        
     , '05-oboro-o-n-1': {megami: 'oboro', name: '鋼糸', ruby: 'こうし', baseType: 'normal', types: ['attack'], range: '3-4', damage: '2/2', text: '設置'}
     , '05-oboro-o-n-2': {megami: 'oboro', name: '影菱', ruby: 'かげびし', baseType: 'normal', types: ['attack'], range: '2', damage: '2/1', text: '設置　対応不可\n【攻撃後】このカードを伏せ札から使用したならば、相手の手札を見てその中から1枚を選び、それを伏せ札にする。'}
     , '05-oboro-o-n-3': {megami: 'oboro', name: '斬撃乱舞', ruby: 'ざんげきらんぶ', baseType: 'normal', types: ['attack', 'fullpower'], range: '2-4', damage: '3/2', text: '【常時】相手がこのターン中にオーラへのダメージを受けているならば、この《攻撃》は+1/+1となる。'}
