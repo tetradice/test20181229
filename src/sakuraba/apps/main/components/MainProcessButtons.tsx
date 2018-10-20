@@ -41,8 +41,20 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
             $('#MEGAMI2-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
         }
     
+        $.fn.form.settings.rules.originalMegamiEqual = function(value) {
+            let megami1 = $('#MEGAMI1-SELECTION').val() as sakuraba.Megami;
+            let megami2 = $('#MEGAMI2-SELECTION').val() as sakuraba.Megami;
+            let megami1Base = (sakuraba.MEGAMI_DATA[megami1].base || megami1);
+            let megami2Base = (sakuraba.MEGAMI_DATA[megami2].base || megami2);
 
-        let megami2Rule: SemanticUI.Form.Field = {identifier: 'megami2', rules: [{type: 'different[megami1]', prompt: '同じメガミを選択することはできません。'}]};
+            return megami1Base !== megami2Base;
+        };
+        let megami2Rule: SemanticUI.Form.Field = {
+              identifier: 'megami2'
+            , rules: [
+                {type: 'originalMegamiEqual', prompt: '同じメガミを選択することはできません。'}
+            ]
+        };
         $('#MEGAMI-SELECT-MODAL .ui.form').form({
             fields: {
                 megami2: megami2Rule
@@ -96,47 +108,39 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         let promise = new Promise(function(resolve, reject){
             let cardIds: string[][] = [[], [], []];
 
-            // 1柱目の通常札 → 2柱目の通常札 → すべての切札 順にソート。ただし追加札は除外
+            // 全カード情報を取得しておく
             let allCardDataItem: sakuraba.CardDataItem[] = [];
             for(let key in sakuraba.CARD_DATA){
                 allCardDataItem.push(sakuraba.CARD_DATA[key]);
             }
-            for(let key in sakuraba.CARD_DATA){
-                let data = sakuraba.CARD_DATA[key];
 
-                let megamis = state.board.megamis[state.side];
-                let megamiData1 = sakuraba.MEGAMI_DATA[megamis[0]];
-                let megamiData2 = sakuraba.MEGAMI_DATA[megamis[1]];
-
-                let replacedByAnother = allCardDataItem.find(x => x.anotherID !== undefined && x.replace === key);
-
-                if(data.baseType === 'normal' && !data.extra){
-                    // メガミ1柱目の所有カード判定 (非アナザー)
-                    if(data.megami === megamis[0] && !replacedByAnother){
-                        cardIds[0].push(key);
+            // カードを追加する処理
+            const addCardIds = (appendToCardIds: string[], megami: sakuraba.Megami, baseType: 'normal' | 'special') => {
+                // 全カードを探索し、指定された種類のカードで追加札でないカードを、カードIDリストへ追加する
+                for(let key in sakuraba.CARD_DATA){
+                    let data = sakuraba.CARD_DATA[key];
+                    let megamiData = sakuraba.MEGAMI_DATA[megami];
+    
+                    let replacedByAnother = allCardDataItem.find(x => x.anotherID !== undefined && x.replace === key);
+    
+                    if(data.baseType === baseType && !data.extra){
+                        // メガミの所有カード判定 (非アナザー)
+                        if(data.megami === megami && !replacedByAnother){
+                            appendToCardIds.push(key);
+                        }
+                        // メガミの所有カード判定 (アナザー)
+                        if(data.megami === megamiData.base && (!replacedByAnother || data.anotherID === megamiData.anotherID)){
+                            appendToCardIds.push(key);
+                        }
                     }
-                    // メガミ1柱目の所有カード判定 (アナザー)
-                    if(data.megami === megamiData1.base && (!replacedByAnother || data.anotherID === megamiData1.anotherID)){
-                        cardIds[0].push(key);
-                    }
-                    
-                    // メガミ2柱目の所有カード判定 (非アナザー)
-                    if(data.megami === megamis[1] && !allCardDataItem.find(x => x.anotherID !== undefined && x.replace === key)){
-                        cardIds[1].push(key);
-                    }
-                    // メガミ2柱目の所有カード判定 (アナザー)
-                    if(data.megami === megamiData2.base && (!replacedByAnother || data.anotherID === megamiData2.anotherID)){
-                        cardIds[1].push(key);
-                    }
-                }
-                if(
-                    state.board.megamis[state.side].indexOf(data.megami) >= 0
-                    && data.baseType === 'special'
-                    && !data.extra
-                ){
-                    cardIds[2].push(key);
                 }
             }
+            // 1柱目の通常札 → 2柱目の通常札 → 1柱目の切札＋2柱目の切札 順に設定
+            addCardIds(cardIds[0], state.board.megamis[state.side][0], 'normal');
+            addCardIds(cardIds[1], state.board.megamis[state.side][1], 'normal');
+            addCardIds(cardIds[2], state.board.megamis[state.side][0], 'special');
+            addCardIds(cardIds[2], state.board.megamis[state.side][1], 'special');
+
 
             // デッキ構築エリアをセット
             let actDefinitions = {
