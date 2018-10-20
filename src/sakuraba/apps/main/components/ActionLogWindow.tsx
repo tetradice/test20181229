@@ -2,6 +2,7 @@ import { h, Children } from "hyperapp";
 import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
+import { ZIndex } from "sakuraba/const";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -70,7 +71,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
 
         return (
             <div id="ACTION-LOG-WINDOW"
-             style={{position: 'absolute', height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
+             style={{position: 'absolute', height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}
               onupdate={onupdate}>

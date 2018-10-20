@@ -2,6 +2,7 @@ import { h, Children } from "hyperapp";
 import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
+import { ZIndex } from "sakuraba/const";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -81,7 +82,7 @@ export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: 
 
         return (
             <div id="BGM-PLAY-WINDOW"
-             style={{position: 'absolute', height: "16rem", width: "25rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
+             style={{position: 'absolute', height: "16rem", width: "25rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}
               ondestroy={ondestroy}>

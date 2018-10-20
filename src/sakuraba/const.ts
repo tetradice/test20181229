@@ -1,1 +1,14 @@
 export const BOARD_BASE_WIDTH = 1350;
+
+export namespace ZIndex {
+    export const CONTEXT_MENU_VISIBLE = 9999;
+    export const CONTEXT_MENU_VISIBLE_RIGHT_CLICK = 99999;
+
+    export const CARD = 100;
+    export const SEALED_CARD = 90;
+    export const TAPPED_CARD = 150;
+
+    export const FLOAT_WINDOW = 500;
+
+    export const HOVER_DROPPABLE = 9999;
+}

@@ -69960,7 +69960,7 @@ $(function () {
     // 萎縮トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
-        zIndex: 9999,
+        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
         trigger: 'none',
         selector: '#CONTEXT-WITHERED-TOKEN-CLICK',
         build: function ($elem, event) {
@@ -69982,7 +69982,7 @@ $(function () {
     // 計略トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
     $.contextMenu({
-        zIndex: 9999,
+        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
         trigger: 'none',
         selector: '#CONTEXT-PLAN-TOKEN-CLICK',
         build: function ($elem, event) {
@@ -70027,7 +70027,7 @@ $(function () {
     // 傘トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
     $.contextMenu({
-        zIndex: 9999,
+        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
         trigger: 'none',
         selector: '#CONTEXT-UMBRELLA-TOKEN-CLICK',
         build: function ($elem, event) {
@@ -70064,7 +70064,7 @@ $(function () {
     // 右クリックメニュー
     $.contextMenu({
         selector: '#BOARD-PLAYAREA, #BOARD-PLAYAREA *',
-        zIndex: 99999,
+        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE_RIGHT_CLICK,
         build: function ($elem, event) {
             var currentState = appActions.getState();
             var board = new models.Board(currentState.board);
@@ -70134,7 +70134,7 @@ $(function () {
                 // };
             }
             // 集中力で右クリック
-            if ($elem.is('.fbs-vigor-card, .withered-token')) {
+            if ($elem.is('.fbs-vigor-card, .fbs-vigor-card *, .withered-token')) {
                 var side_1 = $elem.closest('[data-side]').attr('data-side');
                 items = {};
                 items['wither'] = {
@@ -70530,12 +70530,12 @@ $(function () {
                 // (同じ領域への移動、もしくは自分に自分を封印するような処理は行えない)
                 if (cardData.baseType === 'special') {
                     // 切札であれば、切札領域と追加札領域に移動可能
-                    $(".area.card-region.droppable[data-region=special]:not([data-side=" + object.side + "][data-region=" + object.region + "]), .area.card-region.droppable[data-region=extra]:not([data-side=" + object.side + "][data-region=" + object.region + "])").css('z-index', 9999);
+                    $(".area.card-region.droppable[data-region=special]:not([data-side=" + object.side + "][data-region=" + object.region + "]), .area.card-region.droppable[data-region=extra]:not([data-side=" + object.side + "][data-region=" + object.region + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
                     dragInfo_1.default.draggingFrom = object;
                 }
                 else {
                     // 切札以外であれば、切札を除く他領域に移動可能
-                    $(".area.card-region.droppable:not([data-side=" + object.side + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "]):not([data-region=special]):not([data-region=on-card][data-linked-card-id=" + object.id + "])").css('z-index', 9999);
+                    $(".area.card-region.droppable:not([data-side=" + object.side + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "]):not([data-region=special]):not([data-region=on-card][data-linked-card-id=" + object.id + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
                     dragInfo_1.default.draggingFrom = object;
                 }
                 // ポップアップを非表示にする
@@ -70549,7 +70549,7 @@ $(function () {
                 var index = parseInt($this.attr('data-region-index'));
                 var draggingCount = parseInt($this.attr('data-dragging-count'));
                 // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択した桜花結晶を記憶
-                $(".area.sakura-token-region.droppable:not([data-side=" + side + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "])").css('z-index', 9999);
+                $(".area.sakura-token-region.droppable:not([data-side=" + side + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
                 dragInfo_1.default.draggingFrom = object;
                 // 移動数を記憶
                 dragInfo_1.default.sakuraTokenMoveCount = draggingCount;
@@ -71037,6 +71037,7 @@ var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/sr
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
 var dragInfo_1 = __importDefault(__webpack_require__(/*! sakuraba/dragInfo */ "./src/sakuraba/dragInfo.ts"));
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
 exports.Card = function (p) {
     // スタイル決定
     // 選択済みカードの場合、罫線が1px大きくなるため、leftとtopから1を引く
@@ -71049,14 +71050,14 @@ exports.Card = function (p) {
         lineHeight: "1.3"
     };
     if (p.target.region === 'on-card') {
-        styles.zIndex = "" + (90 - p.target.indexOfRegion);
+        styles.zIndex = "" + (const_1.ZIndex.SEALED_CARD - p.target.indexOfRegion);
     }
     else if (p.target.discharged) {
         // 帯電解除していれば表示順序を上げる (横向きになるため)
-        styles.zIndex = "" + (150 - p.target.indexOfRegion);
+        styles.zIndex = "" + (const_1.ZIndex.SEALED_CARD - p.target.indexOfRegion);
     }
     else {
-        styles.zIndex = "" + 100;
+        styles.zIndex = "" + const_1.ZIndex.CARD;
     }
     var cardData = sakuraba.CARD_DATA[p.target.cardId];
     var className = "fbs-card";
@@ -72171,6 +72172,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var moment_1 = __importDefault(__webpack_require__(/*! moment */ "./node_modules/moment/moment.js"));
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem) {
     var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top'), width: $(elem).css('width'), height: $(elem).css('height') };
@@ -72235,7 +72237,7 @@ exports.ActionLogWindow = function (p) { return function (state, actions) {
             var $logArea = $(e).find('#ACTION-LOG-AREA');
             $logArea.scrollTop($logArea.get(0).scrollHeight);
         };
-        return (hyperapp_1.h("div", { id: "ACTION-LOG-WINDOW", style: { position: 'absolute', height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate, onupdate: onupdate },
+        return (hyperapp_1.h("div", { id: "ACTION-LOG-WINDOW", style: { position: 'absolute', height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: const_1.ZIndex.FLOAT_WINDOW }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate, onupdate: onupdate },
             hyperapp_1.h("div", { class: "ui top attached label" },
                 "\u64CD\u4F5C\u30ED\u30B0",
                 hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleActionLogVisible(); } },
@@ -72261,6 +72263,7 @@ exports.ActionLogWindow = function (p) { return function (state, actions) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem) {
     var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top') };
@@ -72329,7 +72332,7 @@ exports.BGMWindow = function (p) { return function (state, actions) {
                 $('#PLAYING-BGM-DESCRIPTION').text('');
             }
         };
-        return (hyperapp_1.h("div", { id: "BGM-PLAY-WINDOW", style: { position: 'absolute', height: "16rem", width: "25rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate, ondestroy: ondestroy },
+        return (hyperapp_1.h("div", { id: "BGM-PLAY-WINDOW", style: { position: 'absolute', height: "16rem", width: "25rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: const_1.ZIndex.FLOAT_WINDOW }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate, ondestroy: ondestroy },
             hyperapp_1.h("div", { class: "ui top attached label" },
                 "BGM\u518D\u751F",
                 hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleBgmPlaying(); } },
@@ -72949,6 +72952,7 @@ exports.ControlPanel = function () { return function (state, actions) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem) {
     var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top') };
@@ -73019,7 +73023,7 @@ exports.HelpWindow = function (p) { return function (state, actions) {
                         "\uFF08[\u98A8\u9B54\u62DB\u6765\u5B54]\u306A\u3069\u306E\u4E00\u90E8\u30AB\u30FC\u30C9\u306E\u307F\u5B9F\u884C\u53EF\u80FD\uFF09"),
                     rairaFound ? hyperapp_1.h("li", null, "\u30AB\u30FC\u30C9\u306E\u5E2F\u96FB\u3092\u89E3\u9664\u3057\u305F\u3044\u5834\u5408\u306F\u3001\u8868\u5411\u304D\u306E\u30AB\u30FC\u30C9\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF") : null)));
         }
-        return (hyperapp_1.h("div", { id: "HELP-WINDOW", style: { position: 'absolute', height: "23rem", width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500 }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
+        return (hyperapp_1.h("div", { id: "HELP-WINDOW", style: { position: 'absolute', height: "23rem", width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: const_1.ZIndex.FLOAT_WINDOW }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
             hyperapp_1.h("div", { class: "ui top attached label" },
                 "\u64CD\u4F5C\u8AAC\u660E",
                 hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleHelpVisible(); } },
@@ -73611,9 +73615,9 @@ exports.Vigor = function (p) { return function (state, actions) {
     if (p.side === utils.flipSide(state.viewingSide))
         className += " opponent-side";
     return hyperapp_1.h("div", { class: className, style: styles, "data-side": p.side },
-        hyperapp_1.h("div", { class: "vigor0" + (vigor !== 0 && state.side !== 'watcher' ? " clickable" : ""), onclick: function () { return actions.oprSetVigor({ value: 0, side: p.side }); } }),
-        hyperapp_1.h("div", { class: "vigor1" + (vigor !== 1 && state.side !== 'watcher' ? " clickable" : ""), onclick: function () { return actions.oprSetVigor({ value: 1, side: p.side }); } }),
-        hyperapp_1.h("div", { class: "vigor2" + (vigor !== 2 && state.side !== 'watcher' ? " clickable" : ""), onclick: function () { return actions.oprSetVigor({ value: 2, side: p.side }); } }));
+        hyperapp_1.h("div", { class: "vigor0" + (vigor !== 0 && state.side !== 'watcher' ? " clickable" : ""), style: { width: 30 * state.zoom + "px", height: 100 * state.zoom + "px" }, onclick: function () { return actions.oprSetVigor({ value: 0, side: p.side }); } }),
+        hyperapp_1.h("div", { class: "vigor1" + (vigor !== 1 && state.side !== 'watcher' ? " clickable" : ""), style: { width: 140 * state.zoom + "px", height: 30 * state.zoom + "px" }, onclick: function () { return actions.oprSetVigor({ value: 1, side: p.side }); } }),
+        hyperapp_1.h("div", { class: "vigor2" + (vigor !== 2 && state.side !== 'watcher' ? " clickable" : ""), style: { width: 30 * state.zoom + "px", height: 100 * state.zoom + "px" }, onclick: function () { return actions.oprSetVigor({ value: 2, side: p.side }); } }));
 }; };
 
 
@@ -74941,6 +74945,16 @@ exports.default = view;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BOARD_BASE_WIDTH = 1350;
+var ZIndex;
+(function (ZIndex) {
+    ZIndex.CONTEXT_MENU_VISIBLE = 9999;
+    ZIndex.CONTEXT_MENU_VISIBLE_RIGHT_CLICK = 99999;
+    ZIndex.CARD = 100;
+    ZIndex.SEALED_CARD = 90;
+    ZIndex.TAPPED_CARD = 150;
+    ZIndex.FLOAT_WINDOW = 500;
+    ZIndex.HOVER_DROPPABLE = 9999;
+})(ZIndex = exports.ZIndex || (exports.ZIndex = {}));
 
 
 /***/ }),

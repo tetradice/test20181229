@@ -2,6 +2,7 @@ import { h } from "hyperapp";
 import * as utils from "sakuraba/utils";
 import * as sakuraba from "sakuraba";
 import dragInfo from "sakuraba/dragInfo";
+import { ZIndex } from "sakuraba/const";
 
 /** カード */
 interface Param {
@@ -34,12 +35,12 @@ export const Card = (p: Param) => {
   };
 
     if (p.target.region === 'on-card') {
-        styles.zIndex = `${90 - p.target.indexOfRegion}`;
+        styles.zIndex = `${ZIndex.SEALED_CARD - p.target.indexOfRegion}`;
     } else if (p.target.discharged) {
         // 帯電解除していれば表示順序を上げる (横向きになるため)
-        styles.zIndex = `${150 - p.target.indexOfRegion}`;
+        styles.zIndex = `${ZIndex.SEALED_CARD - p.target.indexOfRegion}`;
     } else {
-        styles.zIndex = `${100}`;
+        styles.zIndex = `${ZIndex.CARD}`;
     }
 
   let cardData = sakuraba.CARD_DATA[p.target.cardId];
