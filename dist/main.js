@@ -72207,6 +72207,7 @@ exports.ActionLogWindow = function (p) { return function (state, actions) {
             $(e).draggable({
                 cursor: "move",
                 opacity: 0.7,
+                cancel: "#ACTION-LOG-AREA",
                 stop: function () {
                     saveWindowState(e);
                 },
