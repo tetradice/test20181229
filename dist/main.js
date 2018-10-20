@@ -72546,7 +72546,7 @@ exports.ChatLogArea = function (p) { return function (state, actions) {
         var logTime = moment_1.default(log.time);
         var timeStr = (logTime.isSame(now, 'date') ? logTime.format('H:mm') : logTime.format('YYYY/M/D H:mm'));
         var bodyStyle = (log.visibility === 'ownerOnly' ? { color: 'green' } : null);
-        var name = (log.side === 'watcher' ? state.board.watchers[log.watcherSessionId].name : state.board.playerNames[log.side]);
+        var name = (log.side === 'watcher' ? (state.board.watchers[log.watcherSessionId] ? state.board.watchers[log.watcherSessionId].name : '?') : state.board.playerNames[log.side]);
         logElements.push(hyperapp_1.h("div", null,
             name,
             ": ",
