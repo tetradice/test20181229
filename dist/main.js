@@ -70406,7 +70406,7 @@ $(function () {
         var st = appActions.getState();
         var targetLogs = p.appendedChatLogs.filter(function (log) { return utils.logIsVisible(log, st.side); });
         var msg = targetLogs.map(function (log) { return log.body; }).join('<br>');
-        var name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+        var name = (targetLogs[0].side === 'watcher' ? (st.board.watchers[targetLogs[0].watcherSessionId] ? st.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
         toastr_1.default.success(msg, name + ":", { toastClass: 'toast chat' });
     });
     // toastrの標準オプションを設定
@@ -72189,7 +72189,7 @@ exports.ActionLogWindow = function (p) { return function (state, actions) {
             var logTime = moment_1.default(log.time);
             var timeStr = (logTime.isSame(now_1, 'date') ? logTime.format('H:mm') : logTime.format('YYYY/M/D H:mm'));
             var bodyStyle = (log.visibility === 'ownerOnly' ? { color: 'green' } : null);
-            var name = (log.side === 'watcher' ? state.board.watchers[log.watcherSessionId].name : state.board.playerNames[log.side]);
+            var name = (log.side === 'watcher' ? (state.board.watchers[log.watcherSessionId] ? state.board.watchers[log.watcherSessionId].name : '?') : state.board.playerNames[log.side]);
             logElements_1.push(hyperapp_1.h("div", null,
                 name,
                 ": ",

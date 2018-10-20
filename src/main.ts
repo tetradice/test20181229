@@ -540,7 +540,7 @@ $(function(){
         let st = appActions.getState();
         let targetLogs = p.appendedChatLogs.filter((log) => utils.logIsVisible(log, st.side));
         let msg = targetLogs.map((log) => log.body).join('<br>');
-        let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+        let name = (targetLogs[0].side === 'watcher' ? (st.board.watchers[targetLogs[0].watcherSessionId] ? st.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
         toastr.success(msg, `${name}:`, {toastClass: 'toast chat'});
     });
 
