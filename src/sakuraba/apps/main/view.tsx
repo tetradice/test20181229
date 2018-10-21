@@ -391,6 +391,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.ControlPanel />
             <components.ChatLogArea logs={state.chatLog} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
+            <components.TurnProcessWindow shown={state.turnProcessVisible} />
             <components.HelpWindow shown={state.helpVisible} />
             <components.BGMWindow shown={state.bgmPlaying} />
             {extraTokens}

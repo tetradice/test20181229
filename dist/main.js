@@ -72046,6 +72046,9 @@ exports.default = {
     setWatcherViewingSide: function (p) {
         return { viewingSide: p.value, handViewableFromCurrentWatcher: p.handViewable };
     },
+    toggleTurnProcessVisible: function () { return function (state) {
+        return { turnProcessVisible: !state.turnProcessVisible };
+    }; },
     toggleHelpVisible: function () { return function (state) {
         return { helpVisible: !state.helpVisible };
     }; },
@@ -72730,7 +72733,6 @@ exports.ControlPanel = function () { return function (state, actions) {
             var distanceCount = boardModel.getRegionSakuraTokens(null, 'distance', null).length;
             var dustCount = boardModel.getRegionSakuraTokens(null, 'dust', null).length;
             var myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
-            var onCardTokenFound = (state.board.objects.find(function (o) { return o.type === 'sakura-token' && o.region === 'on-card'; }) ? true : false);
             var side_1 = state.side;
             var innerCommandButtons = (hyperapp_1.h("div", null,
                 hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
@@ -72743,7 +72745,7 @@ exports.ControlPanel = function () { return function (state, actions) {
                 hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
                     hyperapp_1.h("button", { id: "CHARGE-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (myAuraCount >= 1 ? '' : 'disabled'), onclick: function () { return basicAction([side_1, 'aura', null], [side_1, 'flair', null], '宿し'); } }, "\u5BBF\u3057")),
                 hyperapp_1.h("br", null),
-                hyperapp_1.h("button", { id: "ALL-ENHANCE-DECREASE-BUTTON", class: "ui basic button " + (onCardTokenFound ? '' : 'disabled'), style: "margin-top: 5px;", onclick: function () { return actions.oprRemoveSakuraTokenfromAllEnhanceCard(); } }, "\u5168\u4ED8\u4E0E\u672D\u306E\u685C\u82B1\u7D50\u6676-1")));
+                hyperapp_1.h("button", { class: "ui basic button", style: "margin-top: 5px;", onclick: function () { return actions.toggleTurnProcessVisible(); } }, "\u30BF\u30FC\u30F3\u9032\u884C\u51E6\u7406")));
             // 決闘開始操作を行っていなければ、コマンドボタンはまだ表示しない
             if (!state.board.mariganFlags[state.side]) {
                 innerCommandButtons = null;
@@ -73585,6 +73587,61 @@ exports.SakuraTokenAreaDroppable = function (p) { return function (state, action
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/main/components/TurnProcessWindow.tsx":
+/*!*****************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/TurnProcessWindow.tsx ***!
+  \*****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
+// ウインドウの表示状態をローカルストレージに保存
+function saveWindowState(elem) {
+    var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top') };
+    localStorage.setItem(elem.id + "-WindowState", JSON.stringify(current));
+}
+/** ターン処理ウインドウ */
+exports.TurnProcessWindow = function (p) { return function (state, actions) {
+    if (p.shown) {
+        var oncreate = function (e) {
+            // ウインドウを移動可能にする
+            $(e).draggable({
+                cursor: "move",
+                opacity: 0.7,
+                stop: function () {
+                    saveWindowState(e);
+                },
+            });
+            // ウインドウの状態を復元
+            var windowStateJson = localStorage.getItem(e.id + "-WindowState");
+            if (windowStateJson) {
+                var windowState = JSON.parse(windowStateJson);
+                $(e).css(windowState);
+            }
+            else {
+                // 設定がなければ中央に配置
+                $(e).css({ left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2 });
+            }
+        };
+        return (hyperapp_1.h("div", { id: "TURN-PROCESS-WINDOW", style: { position: 'absolute', height: "50rem", width: "30rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: const_1.ZIndex.FLOAT_WINDOW }, class: "ui segment draggable ui-widget-content", oncreate: oncreate },
+            hyperapp_1.h("div", { class: "ui top attached label" },
+                "\u30BF\u30FC\u30F3\u9032\u884C",
+                hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleTurnProcessVisible(); } },
+                    hyperapp_1.h("i", { class: "times icon" }))),
+            hyperapp_1.h("div", null)));
+    }
+    else {
+        return null;
+    }
+}; };
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/main/components/UmbrellaToken.tsx":
 /*!*************************************************************!*\
   !*** ./src/sakuraba/apps/main/components/UmbrellaToken.tsx ***!
@@ -73860,6 +73917,7 @@ __export(__webpack_require__(/*! ./HelpWindow */ "./src/sakuraba/apps/main/compo
 __export(__webpack_require__(/*! ./ChatLogArea */ "./src/sakuraba/apps/main/components/ChatLogArea.tsx"));
 __export(__webpack_require__(/*! ./PlayerNameDisplay */ "./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx"));
 __export(__webpack_require__(/*! ./MainProcessButtons */ "./src/sakuraba/apps/main/components/MainProcessButtons.tsx"));
+__export(__webpack_require__(/*! ./TurnProcessWindow */ "./src/sakuraba/apps/main/components/TurnProcessWindow.tsx"));
 
 
 /***/ }),
@@ -74210,6 +74268,7 @@ var view = function (state, actions) {
         hyperapp_1.h(components.ControlPanel, null),
         hyperapp_1.h(components.ChatLogArea, { logs: state.chatLog }),
         hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),
+        hyperapp_1.h(components.TurnProcessWindow, { shown: state.turnProcessVisible }),
         hyperapp_1.h(components.HelpWindow, { shown: state.helpVisible }),
         hyperapp_1.h(components.BGMWindow, { shown: state.bgmPlaying }),
         extraTokens,
@@ -75518,6 +75577,7 @@ function createInitialState() {
         actionLog: [],
         chatLog: [],
         actionLogVisible: false,
+        turnProcessVisible: false,
         helpVisible: false,
         bgmPlaying: false,
         zoom: 1
