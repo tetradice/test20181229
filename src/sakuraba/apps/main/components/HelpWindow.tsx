@@ -2,6 +2,7 @@ import { h, Children } from "hyperapp";
 import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
+import { ZIndex } from "sakuraba/const";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -66,7 +67,7 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
 
         return (
             <div id="HELP-WINDOW"
-             style={{position: 'absolute', height: "23rem", width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
+             style={{position: 'absolute', height: "23rem", width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}>
                 <div class="ui top attached label">操作説明<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleHelpVisible()}><i class="times icon"></i></a></div>

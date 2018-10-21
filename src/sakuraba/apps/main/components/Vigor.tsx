@@ -21,8 +21,8 @@ export const Vigor = (p: {side: PlayerSide, left: number, top: number}) => (stat
     if(p.side === utils.flipSide(state.viewingSide)) className += " opponent-side"; 
 
     return <div class={className} style={styles} data-side={p.side}>
-        <div class={"vigor0" + (vigor !== 0 && state.side !== 'watcher' ? " clickable" : "")} onclick={() => actions.oprSetVigor({value: 0, side: p.side})}></div>
-        <div class={"vigor1" + (vigor !== 1 && state.side !== 'watcher' ? " clickable" : "")} onclick={() => actions.oprSetVigor({value: 1, side: p.side})}></div>
-        <div class={"vigor2" + (vigor !== 2 && state.side !== 'watcher' ? " clickable" : "")} onclick={() => actions.oprSetVigor({value: 2, side: p.side})}></div>
+        <div class={"vigor0" + (vigor !== 0 && state.side !== 'watcher' ? " clickable" : "")} style={{width: `${30 * state.zoom}px`, height: `${100 * state.zoom}px`}} onclick={() => actions.oprSetVigor({value: 0, side: p.side})}></div>
+        <div class={"vigor1" + (vigor !== 1 && state.side !== 'watcher' ? " clickable" : "")} style={{width: `${140 * state.zoom}px`, height: `${30 * state.zoom}px`}} onclick={() => actions.oprSetVigor({value: 1, side: p.side})}></div>
+        <div class={"vigor2" + (vigor !== 2 && state.side !== 'watcher' ? " clickable" : "")} style={{width: `${30 * state.zoom}px`, height: `${100 * state.zoom}px`}} onclick={() => actions.oprSetVigor({value: 2, side: p.side})}></div>
     </div>;
 }

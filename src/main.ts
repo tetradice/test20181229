@@ -6,7 +6,7 @@ import * as apps from "sakuraba/apps";
 import { ClientSocket } from "sakuraba/socket";
 import { CARD_DATA, SAKURA_TOKEN_MAX, CardDataItem, SpecialCardDataItem } from "./sakuraba";
 import dragInfo from "sakuraba/dragInfo";
-import { BOARD_BASE_WIDTH } from "sakuraba/const";
+import { BOARD_BASE_WIDTH, ZIndex } from "sakuraba/const";
 import * as randomstring from 'randomstring';
 
 declare var params: {
@@ -55,7 +55,7 @@ $(function(){
     // 萎縮トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
-        zIndex: 9999,
+        zIndex: ZIndex.CONTEXT_MENU_VISIBLE,
         trigger: 'none',
         selector: '#CONTEXT-WITHERED-TOKEN-CLICK',
         build: function($elem: JQuery, event: JQueryEventObject){
@@ -81,7 +81,7 @@ $(function(){
     // 計略トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
     $.contextMenu({
-        zIndex: 9999,
+        zIndex: ZIndex.CONTEXT_MENU_VISIBLE,
         trigger: 'none',
         selector: '#CONTEXT-PLAN-TOKEN-CLICK',
         build: function($elem: JQuery, event: JQueryEventObject){
@@ -130,7 +130,7 @@ $(function(){
     // 傘トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
     $.contextMenu({
-        zIndex: 9999,
+        zIndex: ZIndex.CONTEXT_MENU_VISIBLE,
         trigger: 'none',
         selector: '#CONTEXT-UMBRELLA-TOKEN-CLICK',
         build: function($elem: JQuery, event: JQueryEventObject){
@@ -171,7 +171,7 @@ $(function(){
     // 右クリックメニュー
     $.contextMenu({
         selector: '#BOARD-PLAYAREA, #BOARD-PLAYAREA *',
-        zIndex: 99999,
+        zIndex: ZIndex.CONTEXT_MENU_VISIBLE_RIGHT_CLICK,
 
         build: function($elem: JQuery, event: JQueryEventObject){
             let currentState = appActions.getState();
@@ -253,7 +253,7 @@ $(function(){
 
             
             // 集中力で右クリック
-            if($elem.is('.fbs-vigor-card, .withered-token')){
+            if($elem.is('.fbs-vigor-card, .fbs-vigor-card *, .withered-token')){
                 let side = $elem.closest('[data-side]').attr('data-side') as PlayerSide;
 
                 items = {};
@@ -540,7 +540,7 @@ $(function(){
         let st = appActions.getState();
         let targetLogs = p.appendedChatLogs.filter((log) => utils.logIsVisible(log, st.side));
         let msg = targetLogs.map((log) => log.body).join('<br>');
-        let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+        let name = (targetLogs[0].side === 'watcher' ? (st.board.watchers[targetLogs[0].watcherSessionId] ? st.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
         toastr.success(msg, `${name}:`, {toastClass: 'toast chat'});
     });
 
@@ -679,11 +679,11 @@ $(function(){
                 // (同じ領域への移動、もしくは自分に自分を封印するような処理は行えない)
                 if(cardData.baseType === 'special'){
                     // 切札であれば、切札領域と追加札領域に移動可能
-                    $(`.area.card-region.droppable[data-region=special]:not([data-side=${object.side}][data-region=${object.region}]), .area.card-region.droppable[data-region=extra]:not([data-side=${object.side}][data-region=${object.region}])`).css('z-index', 9999);
+                    $(`.area.card-region.droppable[data-region=special]:not([data-side=${object.side}][data-region=${object.region}]), .area.card-region.droppable[data-region=extra]:not([data-side=${object.side}][data-region=${object.region}])`).css('z-index', ZIndex.HOVER_DROPPABLE);
                     dragInfo.draggingFrom = object;
                 } else {
                     // 切札以外であれば、切札を除く他領域に移動可能
-                    $(`.area.card-region.droppable:not([data-side=${object.side}][data-region=${object.region}][data-linked-card-id=${linkedCardId}]):not([data-region=special]):not([data-region=on-card][data-linked-card-id=${object.id}])`).css('z-index', 9999);
+                    $(`.area.card-region.droppable:not([data-side=${object.side}][data-region=${object.region}][data-linked-card-id=${linkedCardId}]):not([data-region=special]):not([data-region=on-card][data-linked-card-id=${object.id}])`).css('z-index', ZIndex.HOVER_DROPPABLE);
                     dragInfo.draggingFrom = object;
                 }
 
@@ -700,7 +700,7 @@ $(function(){
                 let draggingCount = parseInt($this.attr('data-dragging-count'));
 
                 // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択した桜花結晶を記憶
-                $(`.area.sakura-token-region.droppable:not([data-side=${side}][data-region=${object.region}][data-linked-card-id=${linkedCardId}])`).css('z-index', 9999);
+                $(`.area.sakura-token-region.droppable:not([data-side=${side}][data-region=${object.region}][data-linked-card-id=${linkedCardId}])`).css('z-index', ZIndex.HOVER_DROPPABLE);
                 dragInfo.draggingFrom = object;
 
                 // 移動数を記憶

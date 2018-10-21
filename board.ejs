@@ -13,7 +13,7 @@
 
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Page Title</title>
+    <title>ふるよにボードシミュレーター</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="http://inazumaapps.info/furuyoni_simulator/deliv/jquery-ui/jquery-ui.css">
     <link rel="stylesheet" href="http://inazumaapps.info/furuyoni_simulator/deliv/jquery-ui/jquery-ui.structure.css">
@@ -128,13 +128,18 @@
         }
         #BOARD-PLAYAREA{
             height: 100%;
+        }
 
+        #BOARD-PLAYAREA .fbs-card
+        , #BOARD-PLAYAREA .background{
+            /* テキストを選択不可能にする */
             /* from https://www.softel.co.jp/blogs/tech/archives/2909/comment-page-1 */
             user-select: none; /* CSS3 */
             -moz-user-select: none; /* Firefox */
             -webkit-user-select: none; /* Safari、Chromeなど */
             -ms-user-select: none; /* IE10かららしい */
         }
+
 
         .fbs-vigor-card .vigor0.clickable:hover,
         .fbs-vigor-card .vigor1.clickable:hover,
@@ -229,7 +234,6 @@
             background-image: url(http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/board_token/shrink.png);
         }
         .area.background {
-            z-index: -1;
             margin: 0;
         }
 
@@ -374,14 +378,14 @@
             position: absolute;
             font-size: medium;
             color: silver;
-            z-index: 5000;
+            z-index: 800;
         }
         .card-count {
             position: absolute;
             font-size: x-large;
             color: silver;
             font-weight: bold;
-            z-index: 5000;
+            z-index: 800;
             right: 8px;
             bottom: 8px;
         }
@@ -390,7 +394,7 @@
             font-size: medium;
             color: silver;
             font-weight: bold;
-            z-index: 5000;
+            z-index: 800;
             right: 8px;
             bottom: 8px;
         }
@@ -561,7 +565,7 @@
         <div class="header">ふるよにボードシミュレーターについて</div>
     <div class="scrolling content">
         <p>
-        ふるよにボードシミュレーター α版 (version 0.1.0)<br>
+        ふるよにボードシミュレーター α版 (version 0.2.0)<br>
         制作: ポン (<a href="https://twitter.com/tetradice" target="_blank">Twitter</a>)<br>
         <br>
         このWebサービスは開発中のものです。<br>

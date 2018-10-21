@@ -68,7 +68,8 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                 $('#MEGAMI1-SELECTION').val(megamis[0]);
                 $('#MEGAMI2-SELECTION').val(megamis[1]);
             }
-            
+            updateMegamiSelectModalView(); // 表示を更新
+           
         }, onApprove:function(){
             if(!$('#MEGAMI-SELECT-MODAL .ui.form').form('validate form')){
                 return false;

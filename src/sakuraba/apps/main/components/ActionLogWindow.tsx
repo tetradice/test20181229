@@ -2,6 +2,7 @@ import { h, Children } from "hyperapp";
 import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
+import { ZIndex } from "sakuraba/const";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -22,7 +23,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
             let logTime = moment(log.time);
             let timeStr = (logTime.isSame(now, 'date') ? logTime.format('H:mm') : logTime.format('YYYY/M/D H:mm'));
             let bodyStyle = (log.visibility === 'ownerOnly' ? {color: 'green'} : null);
-            let name = (log.side === 'watcher' ? state.board.watchers[log.watcherSessionId].name : state.board.playerNames[log.side]);
+            let name = (log.side === 'watcher' ? (state.board.watchers[log.watcherSessionId] ? state.board.watchers[log.watcherSessionId].name : '?') : state.board.playerNames[log.side]);
             logElements.push(
                 <div>
                 {name}: <span style={bodyStyle}>{log.body}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
@@ -35,6 +36,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
             $(e).draggable({
                 cursor: "move", 
                 opacity: 0.7,
+                cancel: "#ACTION-LOG-AREA",
                 stop: function(){
                     saveWindowState(e);
                 },
@@ -70,7 +72,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
 
         return (
             <div id="ACTION-LOG-WINDOW"
-             style={{position: 'absolute', height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: 500}}
+             style={{position: 'absolute', height: "500px", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}
               onupdate={onupdate}>
