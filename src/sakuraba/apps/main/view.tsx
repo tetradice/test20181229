@@ -125,9 +125,10 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         READY_AREA_LOCATIONS[side] = (side === state.viewingSide ? [10, 430] : [380, 30]);
 
         if(!state.board.mariganFlags[side]){
-            // 最初の手札を引いており、引き直しの有無を選択していない場合は、手札だけは表示する
+            // 最初の手札を引いており、引き直しの有無を選択していない場合は、手札だけは表示する (タイトルなし)
             if(state.board.firstDrawFlags[side]){
                 _.remove(cardAreaData, a => a.side === side && a.region !== 'hand');
+                cardAreaData.find(a => a.side === side && a.region === 'hand').title = null;
             } else {
                 _.remove(cardAreaData, a => a.side === side);
             }
@@ -145,7 +146,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
     });
 
-    // 追加札を持つメガミを宿しており、かつメガミ公開済みの「場合のみ、追加札領域を追加
+    // 追加札を持つメガミを宿しており、かつメガミ公開済みの場合のみ、追加札領域を追加
     ['p1', 'p2'].forEach((side: PlayerSide) => {
         if(state.board.megamis[side] &&
         state.board.megamiOpenFlags[side] &&
