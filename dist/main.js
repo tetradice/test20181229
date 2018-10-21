@@ -69957,7 +69957,7 @@ $(function () {
         st.zoom = 0.6;
     // アプリケーション起動
     var appActions = apps.main.run(st, document.getElementById('BOARD'));
-    // 萎縮トークンクリックメニュー
+    // 畏縮トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
         zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
@@ -69968,7 +69968,7 @@ $(function () {
             var side = currentState.side;
             var board = new models.Board(currentState.board);
             var items = {};
-            items['remove'] = { name: '萎縮を解除', callback: function () {
+            items['remove'] = { name: '畏縮を解除', callback: function () {
                     appActions.oprSetWitherFlag({
                         side: side,
                         value: false
@@ -70138,7 +70138,7 @@ $(function () {
                 var side_1 = $elem.closest('[data-side]').attr('data-side');
                 items = {};
                 items['wither'] = {
-                    name: (board.witherFlags[side_1] ? '萎縮を解除' : '萎縮'),
+                    name: (board.witherFlags[side_1] ? '畏縮を解除' : '畏縮'),
                     callback: function () { return appActions.oprSetWitherFlag({ side: side_1, value: !board.witherFlags[side_1] }); }
                 };
             }
@@ -71479,24 +71479,24 @@ exports.default = {
         newBoard.vigors[p.side] = p.value;
         return { board: newBoard };
     }; },
-    /** 萎縮フラグを変更 */
+    /** 畏縮フラグを変更 */
     oprSetWitherFlag: function (p) { return function (state, actions) {
         // ログの内容を設定
         var logText;
         if (p.value) {
             if (p.side !== state.side) {
-                logText = state.board.playerNames[p.side] + "\u3092\u840E\u7E2E\u3055\u305B\u307E\u3057\u305F";
+                logText = state.board.playerNames[p.side] + "\u3092\u754F\u7E2E\u3055\u305B\u307E\u3057\u305F";
             }
             else {
-                logText = "\u840E\u7E2E\u3057\u307E\u3057\u305F";
+                logText = "\u754F\u7E2E\u3057\u307E\u3057\u305F";
             }
         }
         else {
             if (p.side !== state.side) {
-                logText = state.board.playerNames[p.side] + "\u306E\u840E\u7E2E\u3092\u89E3\u9664\u3057\u307E\u3057\u305F";
+                logText = state.board.playerNames[p.side] + "\u306E\u754F\u7E2E\u3092\u89E3\u9664\u3057\u307E\u3057\u305F";
             }
             else {
-                logText = "\u840E\u7E2E\u3092\u89E3\u9664\u3057\u307E\u3057\u305F";
+                logText = "\u754F\u7E2E\u3092\u89E3\u9664\u3057\u307E\u3057\u305F";
             }
         }
         // 実行
@@ -71507,7 +71507,7 @@ exports.default = {
             }
         });
     }; },
-    /** 萎縮フラグを変更 */
+    /** 畏縮フラグを変更 */
     setWitherFlag: function (p) { return function (state, actions) {
         var newBoard = models.Board.clone(state.board);
         newBoard.witherFlags[p.side] = p.value;
@@ -73021,7 +73021,7 @@ exports.HelpWindow = function (p) { return function (state, actions) {
                     " \u5207\u672D\u3092\u8868\u5411\u304D(\u4F7F\u7528\u6E08\u307F)\u306B\u3059\u308B"),
                 hyperapp_1.h("ul", null,
                     hyperapp_1.h("li", null, "\u518D\u69CB\u6210\u3092\u884C\u3046\u3068\u304D\u306F\u3001\u81EA\u5206\u306E\u5C71\u672D\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"),
-                    hyperapp_1.h("li", null, "\u840E\u7E2E\u3055\u305B\u308B\u3068\u304D\u306F\u3001\u96C6\u4E2D\u529B\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"),
+                    hyperapp_1.h("li", null, "\u754F\u7E2E\u3055\u305B\u308B\u3068\u304D\u306F\u3001\u96C6\u4E2D\u529B\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"),
                     hyperapp_1.h("li", null, "\u624B\u672D\u3092\u76F8\u624B\u306B\u516C\u958B\u3059\u308B\u3068\u304D\u306F\u3001\u624B\u672D\u306E\u4E0A\u3067\u53F3\u30AF\u30EA\u30C3\u30AF"),
                     hyperapp_1.h("li", null,
                         "\u30AB\u30FC\u30C9\u3092\u5C01\u5370\u3057\u305F\u3044\u6642\u306B\u306F\u3001\u4F7F\u7528\u6E08\u307F\u9818\u57DF\u306B\u3042\u308B\u5C01\u5370\u5148\u306E\u30AB\u30FC\u30C9\u306E\u4E0A\u306B\u30C9\u30E9\u30C3\u30B0",

@@ -192,26 +192,26 @@ export default {
         return {board: newBoard};
     },
 
-    /** 萎縮フラグを変更 */
+    /** 畏縮フラグを変更 */
     oprSetWitherFlag: (p: {
-        /** どちら側の萎縮フラグか */
+        /** どちら側の畏縮フラグか */
         side: PlayerSide;
-        /** 新しい萎縮フラグの値 */
+        /** 新しい畏縮フラグの値 */
         value: boolean;
     }) => (state: state.State, actions: ActionsType) => {
         // ログの内容を設定
         let logText: string;
         if(p.value){
             if(p.side !== state.side){
-                logText = `${state.board.playerNames[p.side]}を萎縮させました`;
+                logText = `${state.board.playerNames[p.side]}を畏縮させました`;
             } else {
-                logText = `萎縮しました`;
+                logText = `畏縮しました`;
             }
         } else {
             if(p.side !== state.side){
-                logText = `${state.board.playerNames[p.side]}の萎縮を解除しました`;
+                logText = `${state.board.playerNames[p.side]}の畏縮を解除しました`;
             } else {
-                logText = `萎縮を解除しました`;
+                logText = `畏縮を解除しました`;
             }
         }
 
@@ -224,11 +224,11 @@ export default {
         });
     }, 
 
-    /** 萎縮フラグを変更 */
+    /** 畏縮フラグを変更 */
     setWitherFlag: (p: {
-        /** どちら側の萎縮フラグか */
+        /** どちら側の畏縮フラグか */
         side: PlayerSide;
-        /** 新しい萎縮フラグの値 */
+        /** 新しい畏縮フラグの値 */
         value: boolean;
     }) => (state: state.State, actions: ActionsType) => {
         let newBoard = models.Board.clone(state.board);

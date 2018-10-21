@@ -48,7 +48,7 @@ export interface Board {
     /** 集中力 */
     vigors: {p1: VigorValue, p2: VigorValue};
 
-    /** 萎縮 */
+    /** 畏縮 */
     witherFlags: {p1: boolean, p2: boolean};
 
     /** メガミを公開したかどうか */
