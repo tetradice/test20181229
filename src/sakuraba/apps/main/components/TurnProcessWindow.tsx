@@ -37,6 +37,8 @@ export const TurnProcessWindow = (p: {shown: boolean}) => (state: state.State, a
             }
         };
 
+        let onCardTokenFound = (state.board.objects.find(o => o.type === 'sakura-token' && o.region === 'on-card') ? true : false);
+
         return (
             <div id="TURN-PROCESS-WINDOW"
              style={{position: 'absolute', height: "40rem", width: "30rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
@@ -50,12 +52,12 @@ export const TurnProcessWindow = (p: {shown: boolean}) => (state: state.State, a
                         </a>
                     </div>
                     <div class="ui vertical menu" style={{width: '80%', marginLeft: 'auto', marginRight: 'auto'}}>
-                        <a id="ALL-ENHANCE-DECREASE-BUTTON" class="item" onclick={() => actions.oprRemoveSakuraTokenfromAllEnhanceCard}>
+                        <a id="ALL-ENHANCE-DECREASE-BUTTON" class={`item ${onCardTokenFound ? '' : 'disabled'}`} onclick={() => actions.oprRemoveSakuraTokenfromAllEnhanceCard}>
                             全付与札の桜花結晶-1
                         </a>
                     </div>
                     <div class="ui vertical menu" style={{width: '80%', marginLeft: 'auto', marginRight: 'auto'}}>
-                        <a class="item" onclick={() => actions.oprReshuffle({side: side, lifeDecrease: true})}>
+                        <a id="RESHUFFLE-BUTTON" class="item" onclick={() => actions.oprReshuffle({side: side, lifeDecrease: true})}>
                             再構成
                         </a>
                     </div>
