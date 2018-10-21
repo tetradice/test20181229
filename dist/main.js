@@ -74247,10 +74247,10 @@ var view = function (state, actions) {
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: selfSide }),
         hyperapp_1.h(components.MainProcessButtons, { left: mainProcessButtonLeft }),
         readyObjects,
-        state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: "kururu", left: 10, top: 430 }) : null,
-        state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: "utsuro", left: 490, top: 600 }) : null,
-        state.megamiFaceViewMode === 'background2' ? hyperapp_1.h(components.MegamiFace, { megami: "kururu", left: 10, top: 430 }) : null,
-        state.megamiFaceViewMode === 'background2' ? hyperapp_1.h(components.MegamiFace, { megami: "utsuro", left: 820, top: 430 }) : null));
+        state.board.megamis[state.side] && state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[state.side][0], left: 10, top: 430 }) : null,
+        state.board.megamis[state.side] && state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[state.side][1], left: 490, top: 600 }) : null,
+        state.board.megamis[state.side] && state.megamiFaceViewMode === 'background2' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[state.side][0], left: 10, top: 430 }) : null,
+        state.board.megamis[state.side] && state.megamiFaceViewMode === 'background2' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[state.side][1], left: 820, top: 430 }) : null));
 };
 exports.default = view;
 
