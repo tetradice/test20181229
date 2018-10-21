@@ -73607,6 +73607,9 @@ function saveWindowState(elem) {
 /** ターン処理ウインドウ */
 exports.TurnProcessWindow = function (p) { return function (state, actions) {
     if (p.shown) {
+        if (state.side === 'watcher')
+            return null; // 観戦者は表示しない
+        var side_1 = state.side;
         var oncreate = function (e) {
             // ウインドウを移動可能にする
             $(e).draggable({
@@ -73627,12 +73630,20 @@ exports.TurnProcessWindow = function (p) { return function (state, actions) {
                 $(e).css({ left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2 });
             }
         };
-        return (hyperapp_1.h("div", { id: "TURN-PROCESS-WINDOW", style: { position: 'absolute', height: "50rem", width: "30rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: const_1.ZIndex.FLOAT_WINDOW }, class: "ui segment draggable ui-widget-content", oncreate: oncreate },
+        return (hyperapp_1.h("div", { id: "TURN-PROCESS-WINDOW", style: { position: 'absolute', height: "40rem", width: "30rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: const_1.ZIndex.FLOAT_WINDOW }, class: "ui segment draggable ui-widget-content", oncreate: oncreate },
             hyperapp_1.h("div", { class: "ui top attached label" },
                 "\u30BF\u30FC\u30F3\u9032\u884C",
                 hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleTurnProcessVisible(); } },
                     hyperapp_1.h("i", { class: "times icon" }))),
-            hyperapp_1.h("div", null)));
+            hyperapp_1.h("div", null,
+                hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '80%', marginLeft: 'auto', marginRight: 'auto' } },
+                    hyperapp_1.h("a", { class: "item", onclick: function () { return actions.oprSetVigor({ side: side_1, value: state.board.vigors[state.side] + 1 }); } }, "\u96C6\u4E2D\u529B+1 \uFF08\u3082\u3057\u304F\u306F\u754F\u7E2E\u306E\u89E3\u9664\uFF09")),
+                hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '80%', marginLeft: 'auto', marginRight: 'auto' } },
+                    hyperapp_1.h("a", { id: "ALL-ENHANCE-DECREASE-BUTTON", class: "item", onclick: function () { return actions.oprRemoveSakuraTokenfromAllEnhanceCard; } }, "\u5168\u4ED8\u4E0E\u672D\u306E\u685C\u82B1\u7D50\u6676-1")),
+                hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '80%', marginLeft: 'auto', marginRight: 'auto' } },
+                    hyperapp_1.h("a", { class: "item", onclick: function () { return actions.oprReshuffle({ side: side_1, lifeDecrease: true }); } }, "\u518D\u69CB\u6210")),
+                hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '80%', marginLeft: 'auto', marginRight: 'auto' } },
+                    hyperapp_1.h("a", { class: "item", onclick: function () { return actions.oprDraw({ number: 2, cardNameLogging: true }); } }, "\u30AB\u30FC\u30C9\u30922\u679A\u5F15\u304F")))));
     }
     else {
         return null;
