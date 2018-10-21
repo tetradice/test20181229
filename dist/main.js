@@ -70834,7 +70834,7 @@ exports.SAKURA_TOKEN_MAX = {
     dust: 99,
     'on-card': 99
 };
-exports.MEGAMI_DATA = {
+var MEGAMI_DATA_BASE = {
     'yurina': { name: 'ユリナ', symbol: '刀' },
     'yurina-a1': { name: '第一章ユリナ', symbol: '古刀', base: 'yurina', anotherID: 'A1' },
     'saine': { name: 'サイネ', symbol: '薙刀' },
@@ -70853,6 +70853,7 @@ exports.MEGAMI_DATA = {
     'raira': { name: 'ライラ', symbol: '爪' },
     'utsuro': { name: 'ウツロ', symbol: '鎌' }
 };
+exports.MEGAMI_DATA = MEGAMI_DATA_BASE;
 exports.CARD_DATA = {
     '01-yurina-o-n-1': { megami: 'yurina', name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: "3-4", damage: '3/1', text: '' },
     '01-yurina-A1-n-1': { megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-n-1', name: '乱打', ruby: 'らんだ', baseType: 'normal', types: ['attack'], range: '2', damage: '2/1', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+0/+2となり、対応不可を得る。' },

@@ -16,13 +16,13 @@ export const SAKURA_TOKEN_MAX: {[P in SakuraTokenRegion]: number} = {
 };
 
 // メガミ情報
-interface MegamiDataItem {
+export interface MegamiDataItem {
     name: string;
     symbol: string;
-    base?: Megami;
+    base?: string;
     anotherID?: string;
 }
-export const MEGAMI_DATA: {[megami: string]: MegamiDataItem} = {
+const MEGAMI_DATA_BASE = {
       'yurina':   {name: 'ユリナ', symbol: '刀'}
     , 'yurina-a1': {name: '第一章ユリナ', symbol: '古刀', base: 'yurina', anotherID: 'A1'}
     , 'saine':    {name: 'サイネ', symbol: '薙刀'}
@@ -41,7 +41,8 @@ export const MEGAMI_DATA: {[megami: string]: MegamiDataItem} = {
     , 'raira':    {name: 'ライラ', symbol: '爪'}
     , 'utsuro':   {name: 'ウツロ', symbol: '鎌'}
 };
-export type Megami = keyof (typeof MEGAMI_DATA);
+export type Megami = keyof (typeof MEGAMI_DATA_BASE);
+export const MEGAMI_DATA: {[megami: string]: MegamiDataItem} = MEGAMI_DATA_BASE;
 
 // カード情報
 interface CardDataItemBase {
