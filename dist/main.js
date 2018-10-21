@@ -74996,7 +74996,7 @@ var ZIndex;
     ZIndex.CARD = 100;
     ZIndex.SEALED_CARD = 90;
     ZIndex.TAPPED_CARD = 150;
-    ZIndex.FLOAT_WINDOW = 500;
+    ZIndex.FLOAT_WINDOW = 1000;
     ZIndex.HOVER_DROPPABLE = 9999;
 })(ZIndex = exports.ZIndex || (exports.ZIndex = {}));
 

@@ -8,7 +8,7 @@ export namespace ZIndex {
     export const SEALED_CARD = 90;
     export const TAPPED_CARD = 150;
 
-    export const FLOAT_WINDOW = 500;
+    export const FLOAT_WINDOW = 1000;
 
     export const HOVER_DROPPABLE = 9999;
 }
