@@ -73416,6 +73416,34 @@ exports.MariganButton = function (p) { return function (state, actions) {
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/main/components/MegamiFace.tsx":
+/*!**********************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/MegamiFace.tsx ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+/** メガミ顔 */
+exports.MegamiFace = function (p) { return function (state, actions) {
+    // DOMを返す
+    var styles = {
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: 240 * 2 * state.zoom + "px",
+        height: 80 * 2 * state.zoom + "px",
+        position: 'absolute',
+        opacity: '0.1'
+    };
+    return hyperapp_1.h("img", { style: styles, src: "http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/megami/face/" + p.megami + "_240x80.png" });
+}; };
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/main/components/PlanToken.tsx":
 /*!*********************************************************!*\
   !*** ./src/sakuraba/apps/main/components/PlanToken.tsx ***!
@@ -73859,6 +73887,7 @@ __export(__webpack_require__(/*! ./HelpWindow */ "./src/sakuraba/apps/main/compo
 __export(__webpack_require__(/*! ./ChatLogArea */ "./src/sakuraba/apps/main/components/ChatLogArea.tsx"));
 __export(__webpack_require__(/*! ./PlayerNameDisplay */ "./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx"));
 __export(__webpack_require__(/*! ./MainProcessButtons */ "./src/sakuraba/apps/main/components/MainProcessButtons.tsx"));
+__export(__webpack_require__(/*! ./MegamiFace */ "./src/sakuraba/apps/main/components/MegamiFace.tsx"));
 
 
 /***/ }),
@@ -74215,7 +74244,9 @@ var view = function (state, actions) {
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 10, width: 1200, side: utils.flipSide(selfSide) }),
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: selfSide }),
         hyperapp_1.h(components.MainProcessButtons, { left: mainProcessButtonLeft }),
-        readyObjects));
+        readyObjects,
+        state.megamiFaceViewMode === 'background' ? hyperapp_1.h(components.MegamiFace, { megami: "kururu", left: 10, top: 430 }) : null,
+        state.megamiFaceViewMode === 'background' ? hyperapp_1.h(components.MegamiFace, { megami: "utsuro", left: 490, top: 600 }) : null));
 };
 exports.default = view;
 
@@ -75519,7 +75550,8 @@ function createInitialState() {
         actionLogVisible: false,
         helpVisible: false,
         bgmPlaying: false,
-        zoom: 1
+        zoom: 1,
+        megamiFaceViewMode: 'background'
     };
     return st;
 }

@@ -399,6 +399,9 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
             <components.MainProcessButtons left={mainProcessButtonLeft} />
             {readyObjects}
+
+            {state.megamiFaceViewMode === 'background' ? <components.MegamiFace megami="kururu" left={10} top={430} /> : null}
+            {state.megamiFaceViewMode === 'background' ? <components.MegamiFace megami="utsuro" left={490} top={600} /> : null}
         </div>
     );
 }

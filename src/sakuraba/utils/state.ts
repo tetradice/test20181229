@@ -31,6 +31,8 @@ export function createInitialState(): state.State{
       , helpVisible: false
       , bgmPlaying: false
       , zoom: 1
+
+      , megamiFaceViewMode: 'background'
   }
   return st;
 }

@@ -30,6 +30,8 @@ export interface State {
     actionLogVisible: boolean;
     helpVisible: boolean;
     bgmPlaying: boolean;
+
+    megamiFaceViewMode: 'background' | 'none';
 }
 
 /** ボード履歴 */
