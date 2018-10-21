@@ -400,8 +400,10 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.MainProcessButtons left={mainProcessButtonLeft} />
             {readyObjects}
 
-            {state.megamiFaceViewMode === 'background' ? <components.MegamiFace megami="kururu" left={10} top={430} /> : null}
-            {state.megamiFaceViewMode === 'background' ? <components.MegamiFace megami="utsuro" left={490} top={600} /> : null}
+            {state.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami="kururu" left={10} top={430} /> : null}
+            {state.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami="utsuro" left={490} top={600} /> : null}
+            {state.megamiFaceViewMode === 'background2' ? <components.MegamiFace megami="kururu" left={10} top={430} /> : null}
+            {state.megamiFaceViewMode === 'background2' ? <components.MegamiFace megami="utsuro" left={820} top={430} /> : null}
         </div>
     );
 }

@@ -11,4 +11,6 @@ export namespace ZIndex {
     export const FLOAT_WINDOW = 500;
 
     export const HOVER_DROPPABLE = 9999;
+    
+    export const MEGAMI_FACE = -1;
 }

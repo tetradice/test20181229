@@ -73427,6 +73427,7 @@ exports.MariganButton = function (p) { return function (state, actions) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
 /** メガミ顔 */
 exports.MegamiFace = function (p) { return function (state, actions) {
     // DOMを返す
@@ -73436,7 +73437,8 @@ exports.MegamiFace = function (p) { return function (state, actions) {
         width: 240 * 2 * state.zoom + "px",
         height: 80 * 2 * state.zoom + "px",
         position: 'absolute',
-        opacity: '0.1'
+        opacity: '0.1',
+        zIndex: "" + const_1.ZIndex.MEGAMI_FACE
     };
     return hyperapp_1.h("img", { style: styles, src: "http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/megami/face/" + p.megami + "_240x80.png" });
 }; };
@@ -74245,8 +74247,10 @@ var view = function (state, actions) {
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: selfSide }),
         hyperapp_1.h(components.MainProcessButtons, { left: mainProcessButtonLeft }),
         readyObjects,
-        state.megamiFaceViewMode === 'background' ? hyperapp_1.h(components.MegamiFace, { megami: "kururu", left: 10, top: 430 }) : null,
-        state.megamiFaceViewMode === 'background' ? hyperapp_1.h(components.MegamiFace, { megami: "utsuro", left: 490, top: 600 }) : null));
+        state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: "kururu", left: 10, top: 430 }) : null,
+        state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: "utsuro", left: 490, top: 600 }) : null,
+        state.megamiFaceViewMode === 'background2' ? hyperapp_1.h(components.MegamiFace, { megami: "kururu", left: 10, top: 430 }) : null,
+        state.megamiFaceViewMode === 'background2' ? hyperapp_1.h(components.MegamiFace, { megami: "utsuro", left: 820, top: 430 }) : null));
 };
 exports.default = view;
 
@@ -75028,6 +75032,7 @@ var ZIndex;
     ZIndex.TAPPED_CARD = 150;
     ZIndex.FLOAT_WINDOW = 500;
     ZIndex.HOVER_DROPPABLE = 9999;
+    ZIndex.MEGAMI_FACE = -1;
 })(ZIndex = exports.ZIndex || (exports.ZIndex = {}));
 
 
@@ -75551,7 +75556,7 @@ function createInitialState() {
         helpVisible: false,
         bgmPlaying: false,
         zoom: 1,
-        megamiFaceViewMode: 'background'
+        megamiFaceViewMode: 'background1'
     };
     return st;
 }

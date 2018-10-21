@@ -31,7 +31,7 @@ export interface State {
     helpVisible: boolean;
     bgmPlaying: boolean;
 
-    megamiFaceViewMode: 'background' | 'none';
+    megamiFaceViewMode: 'background1' | 'background2' | 'none';
 }
 
 /** ボード履歴 */

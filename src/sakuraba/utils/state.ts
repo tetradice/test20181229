@@ -32,7 +32,7 @@ export function createInitialState(): state.State{
       , bgmPlaying: false
       , zoom: 1
 
-      , megamiFaceViewMode: 'background'
+      , megamiFaceViewMode: 'background1'
   }
   return st;
 }
