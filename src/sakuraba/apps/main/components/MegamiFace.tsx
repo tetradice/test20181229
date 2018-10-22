@@ -15,6 +15,9 @@ export const MegamiFace = (p: {megami: Megami, left: number, top: number}) => (s
         , opacity: '0.1'
         , zIndex: `${ZIndex.MEGAMI_FACE}`
     };
-    let imageName = `${p.megami}_240x80.png`
-    return <img style={styles} src={`http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/megami/face/${p.megami}_240x80.png`} />;
+    let imageName = `${p.megami.replace('-', '_')}_240x80.png`
+    if(p.megami === 'yukihi' && state.board.umbrellaStatus[state.side] === 'opened'){
+        imageName = 'yukihi_o_240x80.png';
+    }
+    return <img style={styles} src={`http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/megami/face/${imageName}`} />;
 }
