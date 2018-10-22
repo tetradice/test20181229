@@ -74087,6 +74087,10 @@ var view = function (state, actions) {
             var card = ret[0];
             var left = area.left + ret[1];
             var top = area.top + ret[2];
+            // 相手側の場合はカードの座標を逆転
+            if (area.side === opponentSide) {
+                left = area.left + (area.width - ret[1] - 100);
+            }
             objectNodes.push(hyperapp_1.h(components.BoardCard, { target: card, left: left, top: top }));
             // 座標を記憶しておく
             cardLocations[card.id] = [left, top];

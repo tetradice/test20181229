@@ -204,6 +204,12 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let card = ret[0];
             let left = area.left + ret[1];
             let top = area.top + ret[2];
+
+            // 相手側の場合はカードの座標を逆転
+            if(area.side === opponentSide){
+                left = area.left + (area.width - ret[1] - 100);
+            }
+
             objectNodes.push(<components.BoardCard target={card} left={left} top={top} />);
 
             // 座標を記憶しておく
