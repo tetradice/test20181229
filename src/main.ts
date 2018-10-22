@@ -52,7 +52,7 @@ $(function(){
     // アプリケーション起動
     let appActions = apps.main.run(st, document.getElementById('BOARD'));
 
-    // 萎縮トークンクリックメニュー
+    // 畏縮トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
         zIndex: ZIndex.CONTEXT_MENU_VISIBLE,
@@ -64,7 +64,7 @@ $(function(){
             let board = new models.Board(currentState.board);
             let items: Object = {};
 
-            items['remove'] = {name: '萎縮を解除', callback: () => {
+            items['remove'] = {name: '畏縮を解除', callback: () => {
                 appActions.oprSetWitherFlag({
                       side: side
                     , value: false
@@ -258,7 +258,7 @@ $(function(){
 
                 items = {};
                 items['wither'] =  {
-                    name: (board.witherFlags[side] ? '萎縮を解除' : '萎縮')
+                    name: (board.witherFlags[side] ? '畏縮を解除' : '畏縮')
                     , callback: () => appActions.oprSetWitherFlag({side: side, value: !board.witherFlags[side]})
                 }
             }
