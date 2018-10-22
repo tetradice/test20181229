@@ -73599,6 +73599,7 @@ exports.SakuraTokenAreaDroppable = function (p) { return function (state, action
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
+var sakuraba_1 = __webpack_require__(/*! sakuraba */ "./src/sakuraba.ts");
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem) {
     var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top') };
@@ -73631,6 +73632,44 @@ exports.TurnProcessWindow = function (p) { return function (state, actions) {
             }
         };
         var onCardTokenFound = (state.board.objects.find(function (o) { return o.type === 'sakura-token' && o.region === 'on-card'; }) ? true : false);
+        // 特定のカードが場に出ている場合、追加の処理を表示
+        var additionals_1 = [];
+        // 使用済みの切り札にターン開始時効果を持つカードがあれば、効果を発動
+        var startEffectCards = state.board.objects.filter(function (o) { return o.type === 'card' && o.side === side_1 && o.specialUsed && /あなたの開始フェイズの開始時に/.test(sakuraba_1.CARD_DATA[o.cardId].text); });
+        startEffectCards.forEach(function (c) {
+            additionals_1.push(hyperapp_1.h("li", null,
+                "\u30BF\u30FC\u30F3\u958B\u59CB\u6642\u306B\u300C",
+                sakuraba_1.CARD_DATA[c.cardId].name,
+                "\u300D\u306E\u52B9\u679C\u767A\u52D5"));
+        });
+        // 伏せ札に「設置」を持つカードがあれば、設置カードを使用可能である旨を表示
+        if (state.board.objects.find(function (o) { return o.type === 'card' && o.side === side_1 && o.region === 'hidden-used' && /設置/.test(sakuraba_1.CARD_DATA[o.cardId].text); })) {
+            additionals_1.push(hyperapp_1.h("li", null, "\u518D\u69CB\u6210\u6642\u306B\u3001\u4F0F\u305B\u672D\u306E\u4E2D\u304B\u3089\u300C\u8A2D\u7F6E\u300D\u3092\u6301\u3064\u30AB\u30FC\u30C91\u679A\u3092\u4F7F\u7528\u53EF\u80FD"));
+        }
+        // ライラがいれば、帯電解除を行える
+        if (state.board.megamis[side_1].find(function (x) { return x === 'raira'; })) {
+            additionals_1.push(hyperapp_1.h("li", null, "\u518D\u69CB\u6210\u6642\u306B\u3001\u4F7F\u7528\u6E08\u306E\u30AB\u30FC\u30C9\u306E\u5E2F\u96FB\u3092\u89E3\u9664\u3059\u308B\u3053\u3068\u304C\u3067\u304D\u308B"));
+        }
+        // 使用済みの切り札にターン終了時効果を持つカードがあれば、効果を発動
+        var endEffectCards = state.board.objects.filter(function (o) { return o.type === 'card' && o.side === side_1 && o.specialUsed && /あなたの終了フェイズに/.test(sakuraba_1.CARD_DATA[o.cardId].text); });
+        endEffectCards.forEach(function (c) {
+            additionals_1.push(hyperapp_1.h("li", null,
+                "\u30BF\u30FC\u30F3\u7D42\u4E86\u6642\u306B\u300C",
+                sakuraba_1.CARD_DATA[c.cardId].name,
+                "\u300D\u306E\u52B9\u679C\u767A\u52D5"));
+        });
+        // 使用済みの切り札に再起カードがあれば、再起可能
+        var reversalCards = state.board.objects.filter(function (o) { return o.type === 'card' && o.side === side_1 && o.specialUsed && /【再起】/.test(sakuraba_1.CARD_DATA[o.cardId].text); });
+        reversalCards.forEach(function (c) {
+            additionals_1.push(hyperapp_1.h("li", null,
+                "\u30BF\u30FC\u30F3\u7D42\u4E86\u6642\u306B\u3001\u6761\u4EF6\u3092\u6E80\u305F\u3057\u3066\u3044\u308C\u3070\u300C",
+                sakuraba_1.CARD_DATA[c.cardId].name,
+                "\u300D\u304C\u518D\u8D77"));
+        });
+        // ユキヒがいれば、傘の開閉を行える
+        if (state.board.megamis[side_1].find(function (x) { return x === 'yukihi'; })) {
+            additionals_1.push(hyperapp_1.h("li", null, "\u30BF\u30FC\u30F3\u7D42\u4E86\u6642\u306B\u3001\u5098\u306E\u958B\u9589\u3092\u884C\u3046\u3053\u3068\u304C\u3067\u304D\u308B"));
+        }
         return (hyperapp_1.h("div", { id: "TURN-PROCESS-WINDOW", style: { position: 'absolute', height: "40rem", width: "30rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: const_1.ZIndex.FLOAT_WINDOW }, class: "ui segment draggable ui-widget-content", oncreate: oncreate },
             hyperapp_1.h("div", { class: "ui top attached label" },
                 "\u30BF\u30FC\u30F3\u9032\u884C",
@@ -73644,7 +73683,10 @@ exports.TurnProcessWindow = function (p) { return function (state, actions) {
                 hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '80%', marginLeft: 'auto', marginRight: 'auto' } },
                     hyperapp_1.h("a", { id: "RESHUFFLE-BUTTON", class: "item", onclick: function () { return actions.oprReshuffle({ side: side_1, lifeDecrease: true }); } }, "\u518D\u69CB\u6210")),
                 hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '80%', marginLeft: 'auto', marginRight: 'auto' } },
-                    hyperapp_1.h("a", { class: "item", onclick: function () { return actions.oprDraw({ number: 2, cardNameLogging: true }); } }, "\u30AB\u30FC\u30C9\u30922\u679A\u5F15\u304F")))));
+                    hyperapp_1.h("a", { class: "item", onclick: function () { return actions.oprDraw({ number: 2, cardNameLogging: true }); } }, "\u30AB\u30FC\u30C9\u30922\u679A\u5F15\u304F")),
+                hyperapp_1.h("div", { class: "ui vertical menu", style: { width: '80%', marginLeft: 'auto', marginRight: 'auto' } },
+                    hyperapp_1.h("a", { class: "item", onclick: function () { return actions.oprDraw({ number: 2, cardNameLogging: true }); } }, "\u624B\u672D\u304C3\u679A\u4EE5\u4E0A\u306A\u3089\u30012\u679A\u306B\u306A\u308B\u3088\u3046\u306B\u4F0F\u305B\u308B"))),
+            hyperapp_1.h("div", { class: "ui message" }, additionals_1)));
     }
     else {
         return null;
