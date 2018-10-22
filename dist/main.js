@@ -73440,6 +73440,7 @@ exports.MegamiFace = function (p) { return function (state, actions) {
         opacity: '0.1',
         zIndex: "" + const_1.ZIndex.MEGAMI_FACE
     };
+    var imageName = p.megami + "_240x80.png";
     return hyperapp_1.h("img", { style: styles, src: "http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/megami/face/" + p.megami + "_240x80.png" });
 }; };
 
@@ -74248,7 +74249,7 @@ var view = function (state, actions) {
         hyperapp_1.h(components.MainProcessButtons, { left: mainProcessButtonLeft }),
         readyObjects,
         state.board.megamis[state.side] && state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[state.side][0], left: 10, top: 430 }) : null,
-        state.board.megamis[state.side] && state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[state.side][1], left: 490, top: 600 }) : null,
+        state.board.megamis[state.side] && state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[state.side][1], left: 240, top: 600 }) : null,
         state.board.megamis[state.side] && state.megamiFaceViewMode === 'background2' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[state.side][0], left: 10, top: 430 }) : null,
         state.board.megamis[state.side] && state.megamiFaceViewMode === 'background2' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[state.side][1], left: 820, top: 430 }) : null));
 };

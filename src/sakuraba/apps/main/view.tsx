@@ -401,7 +401,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             {readyObjects}
 
             {state.board.megamis[state.side] && state.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[state.side][0]} left={10} top={430} /> : null}
-            {state.board.megamis[state.side] && state.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[state.side][1]} left={490} top={600} /> : null}
+            {state.board.megamis[state.side] && state.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[state.side][1]} left={240} top={600} /> : null}
             {state.board.megamis[state.side] && state.megamiFaceViewMode === 'background2' ? <components.MegamiFace megami={state.board.megamis[state.side][0]} left={10} top={430} /> : null}
             {state.board.megamis[state.side] && state.megamiFaceViewMode === 'background2' ? <components.MegamiFace megami={state.board.megamis[state.side][1]} left={820} top={430} /> : null}
         </div>

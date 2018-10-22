@@ -15,6 +15,6 @@ export const MegamiFace = (p: {megami: Megami, left: number, top: number}) => (s
         , opacity: '0.1'
         , zIndex: `${ZIndex.MEGAMI_FACE}`
     };
-
+    let imageName = `${p.megami}_240x80.png`
     return <img style={styles} src={`http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/megami/face/${p.megami}_240x80.png`} />;
 }
