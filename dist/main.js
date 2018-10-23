@@ -73553,9 +73553,14 @@ exports.SakuraTokenAreaBackground = function (p) { return function (state) {
         height: p.height * state.zoom + "px",
         padding: "0"
     };
+    var titleBottom = 0;
+    if (state.zoom >= 0.7)
+        titleBottom = 1;
+    if (state.zoom >= 1.0)
+        titleBottom = 2;
     return (hyperapp_1.h("div", { class: "area background sakura-token-region ui segment ", style: styles, "data-side": p.side || 'none', "data-region": p.region, key: "SakuraTokenAreaBackground_" + p.side + "_" + p.region },
-        hyperapp_1.h("div", { class: "sakura-token-count", style: { fontSize: (13 * state.zoom) + "px", right: 6 * state.zoom + "px", bottom: 3 * state.zoom + "px" } }, p.tokenCount),
-        hyperapp_1.h("div", { class: "area-title", style: { fontSize: (15 * state.zoom) + "px", right: 26 * state.zoom + "px", top: 4 * state.zoom + "px" } }, p.title)));
+        hyperapp_1.h("div", { class: "sakura-token-count", style: { fontSize: (13 * state.zoom) + "px", right: 6 * state.zoom + "px", bottom: "0px" } }, p.tokenCount),
+        hyperapp_1.h("div", { class: "area-title", style: { fontSize: (15 * state.zoom) + "px", right: 26 * state.zoom + "px", bottom: titleBottom + "px" } }, p.title)));
 }; };
 
 
