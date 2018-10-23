@@ -73061,6 +73061,61 @@ exports.HelpWindow = function (p) { return function (state, actions) {
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/main/components/MachineButtons.tsx":
+/*!**************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/MachineButtons.tsx ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
+/** 造花結晶を操作するためのボタン */
+exports.MachineButtons = function (p) { return function (state, actions) {
+    // DOMを返す
+    var styles = {
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        height: 50 * state.zoom + "px",
+        position: 'absolute'
+    };
+    var boardModel = new models.Board(state.board);
+    var burn = function () {
+        actions.operate({
+            log: "\u30DE\u30B7\u30F3\u306E\u71C3\u6599\u3092\u6D88\u8CBB\u3057\u307E\u3057\u305F",
+            proc: function () {
+                actions.moveSakuraToken({ from: [p.side, 'machine', null], to: [p.side, 'burned', null] });
+            }
+        });
+    };
+    var charge = function () {
+        actions.operate({
+            log: "\u30DE\u30B7\u30F3\u306E\u71C3\u6599\u3092\u56DE\u5FA9\u3057\u307E\u3057\u305F",
+            proc: function () {
+                actions.moveSakuraToken({ from: [p.side, 'burned', null], to: [p.side, 'machine', null] });
+            }
+        });
+    };
+    var distanceTokens = boardModel.getRegionSakuraTokens(null, 'distance', null);
+    var machineTokens = boardModel.getRegionSakuraTokens(p.side, 'machine', null);
+    return (hyperapp_1.h("div", { style: styles },
+        hyperapp_1.h("button", { class: "mini ui basic button" + (machineTokens.length === 0 || distanceTokens.length <= 0 ? ' disabled' : ''), onclick: charge }, "\u9A0E\u52D5\u524D\u9032"),
+        hyperapp_1.h("button", { class: "mini ui basic button" + (machineTokens.length === 0 || distanceTokens.length >= 10 ? ' disabled' : ''), onclick: charge }, "\u9A0E\u52D5\u5F8C\u9000")));
+}; };
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/main/components/MainProcessButtons.tsx":
 /*!******************************************************************!*\
   !*** ./src/sakuraba/apps/main/components/MainProcessButtons.tsx ***!
@@ -73876,6 +73931,7 @@ __export(__webpack_require__(/*! ./HelpWindow */ "./src/sakuraba/apps/main/compo
 __export(__webpack_require__(/*! ./ChatLogArea */ "./src/sakuraba/apps/main/components/ChatLogArea.tsx"));
 __export(__webpack_require__(/*! ./PlayerNameDisplay */ "./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx"));
 __export(__webpack_require__(/*! ./MainProcessButtons */ "./src/sakuraba/apps/main/components/MainProcessButtons.tsx"));
+__export(__webpack_require__(/*! ./MachineButtons */ "./src/sakuraba/apps/main/components/MachineButtons.tsx"));
 
 
 /***/ }),
@@ -73985,6 +74041,11 @@ var view = function (state, actions) {
     var boardModel = new models.Board(state.board);
     var selfSide = state.viewingSide;
     var opponentSide = (state.viewingSide === 'p1' ? 'p2' : 'p1');
+    // 各プレイヤーがサリヤを宿していて、かつメガミ公開済みかどうかを判定
+    var hasMachineTarot = {
+        p1: state.board.megamis.p1 && state.board.megamiOpenFlags.p1 && state.board.megamis.p1.indexOf('thallya') >= 0,
+        p2: state.board.megamis.p2 && state.board.megamiOpenFlags.p2 && state.board.megamis.p2.indexOf('thallya') >= 0
+    };
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     var cardAreaData = [
         // 対戦相手
@@ -73998,8 +74059,8 @@ var view = function (state, actions) {
         { region: 'used', side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10, top: 430, width: 450, height: 160 },
         { region: 'hidden-used', side: selfSide, title: "伏せ札", cardLayoutType: 'stacked', left: 480, top: 430, width: 170, height: 160, cardCountDisplay: true },
         { region: 'library', side: selfSide, title: "山札", cardLayoutType: 'stacked', left: 670, top: 430, width: 160, height: 160, cardCountDisplay: true },
-        { region: 'hand', side: selfSide, title: "手札", cardLayoutType: 'horizontal', left: 10, top: 600, width: 640, height: 160 },
-        { region: 'special', side: selfSide, title: "切札", cardLayoutType: 'horizontal', left: 850, top: 600, width: 330, height: 160 }
+        { region: 'hand', side: selfSide, title: "手札", cardLayoutType: 'horizontal', left: 10, top: 600, width: (hasMachineTarot[selfSide] ? 450 : 640), height: 160 },
+        { region: 'special', side: selfSide, title: "切札", cardLayoutType: 'horizontal', left: (hasMachineTarot[selfSide] ? 670 : 850), top: 600, width: 330, height: 160 }
     ];
     // 桜花決闘を開始していなければ、自陣営の全エリア非表示
     // 代わりに全体枠1つだけを表示
@@ -74056,30 +74117,28 @@ var view = function (state, actions) {
     ];
     // サリヤを宿しており、かつメガミ公開済みの場合、マシン領域と燃焼済を追加
     ['p1', 'p2'].forEach(function (side) {
-        if (state.board.megamis[side] &&
-            state.board.megamiOpenFlags[side] &&
-            state.board.megamis[side].find(function (megami) { return megami === 'thallya'; })) {
+        if (hasMachineTarot[side]) {
             sakuraTokenAreaData.push({
                 region: 'machine',
                 side: side,
                 title: 'STEAM ENGINE',
                 layoutType: 'horizontal',
-                left: (side === state.viewingSide ? 850 : 30),
-                top: (side === state.viewingSide ? 550 : 30),
-                width: 210,
-                height: 30,
-                tokenWidth: 120
+                left: (side === state.viewingSide ? 1010 : 30),
+                top: (side === state.viewingSide ? 600 : 30),
+                width: 150,
+                height: 50,
+                tokenWidth: 130
             });
             sakuraTokenAreaData.push({
                 region: 'burned',
                 side: side,
                 title: 'BURNED',
                 layoutType: 'horizontal',
-                left: (side === state.viewingSide ? 850 : 30),
-                top: (side === state.viewingSide ? 590 : 30),
-                width: 210,
-                height: 30,
-                tokenWidth: 120
+                left: (side === state.viewingSide ? 1010 : 30),
+                top: (side === state.viewingSide ? 660 : 30),
+                width: 150,
+                height: 50,
+                tokenWidth: 130
             });
         }
     });
@@ -74249,9 +74308,9 @@ var view = function (state, actions) {
         objectNodes,
         frameNodes,
         hyperapp_1.h(components.Vigor, { side: opponentSide, left: 390, top: 60 }),
-        hyperapp_1.h(components.Vigor, { side: selfSide, left: 680, top: 630 }),
+        hyperapp_1.h(components.Vigor, { side: selfSide, left: (hasMachineTarot[selfSide] ? 490 : 680), top: 630 }),
         hyperapp_1.h(components.WitheredToken, { side: opponentSide, left: 390, top: 60 }),
-        hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680, top: 630 }),
+        hyperapp_1.h(components.WitheredToken, { side: selfSide, left: (hasMachineTarot[selfSide] ? 490 : 680), top: 630 }),
         hyperapp_1.h(components.ControlPanel, null),
         hyperapp_1.h(components.ChatLogArea, { logs: state.chatLog }),
         hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),
@@ -74261,7 +74320,8 @@ var view = function (state, actions) {
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 10, width: 1200, side: utils.flipSide(selfSide) }),
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: selfSide }),
         hyperapp_1.h(components.MainProcessButtons, { left: mainProcessButtonLeft }),
-        readyObjects));
+        readyObjects,
+        state.side !== 'watcher' && hasMachineTarot[selfSide] ? hyperapp_1.h(components.MachineButtons, { side: selfSide, left: 1010, top: 720 }) : null));
 };
 exports.default = view;
 

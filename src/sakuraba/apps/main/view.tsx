@@ -91,6 +91,12 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     let selfSide = state.viewingSide;
     let opponentSide: PlayerSide = (state.viewingSide === 'p1' ? 'p2' : 'p1');
 
+    // 各プレイヤーがサリヤを宿していて、かつメガミ公開済みかどうかを判定
+    let hasMachineTarot = {
+          p1: state.board.megamis.p1 && state.board.megamiOpenFlags.p1 && state.board.megamis.p1.indexOf('thallya') >= 0
+        , p2: state.board.megamis.p2 && state.board.megamiOpenFlags.p2 && state.board.megamis.p2.indexOf('thallya') >= 0
+    }
+  
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     let cardAreaData: {
           region: CardRegion
@@ -114,8 +120,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             , { region: 'used',        side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10,   top: 430,  width: 450, height: 160 }
             , { region: 'hidden-used', side: selfSide, title: "伏せ札",   cardLayoutType: 'stacked',    left: 480,  top: 430,  width: 170, height: 160, cardCountDisplay: true }
             , { region: 'library',     side: selfSide, title: "山札",     cardLayoutType: 'stacked',    left: 670,  top: 430,  width: 160, height: 160, cardCountDisplay: true }
-            , { region: 'hand',        side: selfSide, title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 600, width: 640, height: 160 }
-            , { region: 'special',     side: selfSide, title: "切札",     cardLayoutType: 'horizontal', left: 850,  top: 600, width: 330, height: 160 }
+            , { region: 'hand',        side: selfSide, title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 600, width: (hasMachineTarot[selfSide] ? 450 : 640), height: 160 }
+            , { region: 'special',     side: selfSide, title: "切札",     cardLayoutType: 'horizontal', left: (hasMachineTarot[selfSide] ? 670 : 850),  top: 600, width: 330, height: 160 }
     ];
 
     // 桜花決闘を開始していなければ、自陣営の全エリア非表示
@@ -189,19 +195,17 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
     // サリヤを宿しており、かつメガミ公開済みの場合、マシン領域と燃焼済を追加
     ['p1', 'p2'].forEach((side: PlayerSide) => {
-        if(state.board.megamis[side] &&
-        state.board.megamiOpenFlags[side] &&
-        state.board.megamis[side].find((megami) => megami === 'thallya')){
+        if(hasMachineTarot[side]){
             sakuraTokenAreaData.push({
                   region: 'machine'
                 , side: side
                 , title: 'STEAM ENGINE'
                 , layoutType: 'horizontal'
-                , left: (side === state.viewingSide ? 850 : 30)
-                , top: (side === state.viewingSide ? 550 : 30)
-                , width: 210
-                , height: 30
-                , tokenWidth: 120
+                , left: (side === state.viewingSide ? 1010 : 30)
+                , top: (side === state.viewingSide ? 600 : 30)
+                , width: 150
+                , height: 50
+                , tokenWidth: 130
             });
 
             sakuraTokenAreaData.push({
@@ -209,11 +213,11 @@ const view: View<state.State, ActionsType> = (state, actions) => {
               , side: side
               , title: 'BURNED'
               , layoutType: 'horizontal'
-              , left: (side === state.viewingSide ? 850 : 30)
-              , top: (side === state.viewingSide ? 590 : 30)
-              , width: 210
-              , height: 30
-              , tokenWidth: 120
+              , left: (side === state.viewingSide ? 1010 : 30)
+              , top: (side === state.viewingSide ? 660 : 30)
+              , width: 150
+              , height: 50
+              , tokenWidth: 130
           });
         }
     });
@@ -417,9 +421,9 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             {objectNodes}
             {frameNodes}
             <components.Vigor side={opponentSide} left={390} top={60} />
-            <components.Vigor side={selfSide} left={680} top={630} />
+            <components.Vigor side={selfSide} left={(hasMachineTarot[selfSide] ? 490 : 680)} top={630} />
             <components.WitheredToken side={opponentSide} left={390} top={60} />
-            <components.WitheredToken side={selfSide} left={680} top={630} />
+            <components.WitheredToken side={selfSide} left={(hasMachineTarot[selfSide] ? 490 : 680)} top={630} />
             <components.ControlPanel />
             <components.ChatLogArea logs={state.chatLog} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
@@ -431,6 +435,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
             <components.MainProcessButtons left={mainProcessButtonLeft} />
             {readyObjects}
+
+            {state.side !== 'watcher' && hasMachineTarot[selfSide] ? <components.MachineButtons side={selfSide} left={1010} top={720}></components.MachineButtons> : null}
         </div>
     );
 }
