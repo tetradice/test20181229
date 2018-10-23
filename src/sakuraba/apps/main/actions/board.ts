@@ -480,6 +480,14 @@ export default {
                     actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-4'});
                     actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-4'});
                 }
+                // サリヤがいれば造花結晶とTransformカードをセット
+                if(board.megamis[state.side].find(m => m === 'thallya')){
+                    actions.addSakuraToken({side: state.side, region: 'machine', number: 5, artificial: true});
+
+                    actions.addCard({side: state.side, region: 'extra', cardId: 'transform-01'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: 'transform-02'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: 'transform-03'});
+                }
                 // クルルがいればでゅーぷりぎあを3枚セット
                 if(board.megamis[state.side].find(m => m === 'kururu')){
                     actions.addCard({side: state.side, region: 'extra', cardId: '10-kururu-o-s-3-ex1'});

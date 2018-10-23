@@ -6,7 +6,7 @@ import { CARD_DATA } from "sakuraba";
 
 export default {
     /** 桜花結晶を指定数追加する */
-    addSakuraToken: (p: {side: PlayerSide, region: SakuraTokenRegion, number: number}) => (state: state.State) => {
+    addSakuraToken: (p: {side: PlayerSide, region: SakuraTokenRegion, number: number, artificial?: boolean}) => (state: state.State) => {
         // 元の盤の状態をコピーして新しい盤を生成
         let newBoard = models.Board.clone(state.board);
 
@@ -17,6 +17,7 @@ export default {
             let objectId = `sakuraToken-${tokenCount + 1}`;
 
             let newToken = utils.createSakuraToken(objectId, p.region, p.side);
+            newToken.artificial = p.artificial;
             newBoard.objects.push(newToken);
         });
 

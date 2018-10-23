@@ -187,6 +187,38 @@ const view: View<state.State, ActionsType> = (state, actions) => {
           , { region: 'flair',    side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850,   top: 510,  width: 350, tokenWidth: 260, height: 30 }
       ];
 
+    // サリヤを宿しており、かつメガミ公開済みの場合、マシン領域と燃焼済を追加
+    ['p1', 'p2'].forEach((side: PlayerSide) => {
+        if(state.board.megamis[side] &&
+        state.board.megamiOpenFlags[side] &&
+        state.board.megamis[side].find((megami) => megami === 'thallya')){
+            sakuraTokenAreaData.push({
+                  region: 'machine'
+                , side: side
+                , title: 'STEAM ENGINE'
+                , layoutType: 'horizontal'
+                , left: (side === state.viewingSide ? 850 : 30)
+                , top: (side === state.viewingSide ? 550 : 30)
+                , width: 210
+                , height: 30
+                , tokenWidth: 120
+            });
+
+            sakuraTokenAreaData.push({
+                region: 'burned'
+              , side: side
+              , title: 'BURNED'
+              , layoutType: 'horizontal'
+              , left: (side === state.viewingSide ? 850 : 30)
+              , top: (side === state.viewingSide ? 590 : 30)
+              , width: 210
+              , height: 30
+              , tokenWidth: 120
+          });
+        }
+    });
+
+
     let frameNodes: hyperapp.Children[] = [];
     let objectNodes: hyperapp.Children[] = [];
     let cardLocations: {[id: string]: [number, number]} = {};

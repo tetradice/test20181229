@@ -107,6 +107,8 @@ export interface SakuraToken extends BoardObjectBase {
     region: SakuraTokenRegion;
     indexOfRegion: number;
     linkedCardId: string;
+
+    artificial?: boolean;
 }
 
 /** ログ1行分のデータ */

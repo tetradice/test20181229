@@ -70832,7 +70832,9 @@ exports.SAKURA_TOKEN_MAX = {
     flair: 99,
     distance: 10,
     dust: 99,
-    'on-card': 99
+    'on-card': 99,
+    machine: 5,
+    burned: 5
 };
 var MEGAMI_DATA_BASE = {
     'yurina': { name: 'ユリナ', symbol: '刀' },
@@ -70992,6 +70994,9 @@ exports.CARD_DATA = {
     '11-thallya-o-s-1': { megami: 'thallya', name: 'Alpha-Edge', ruby: 'アルファエッジ', baseType: 'special', types: ['attack'], range: '1,3,5,7', damage: '1/1', cost: '1', text: '【即再起】あなたが騎動により間合を変化させる。' },
     '11-thallya-o-s-2': { megami: 'thallya', name: 'Omega-Burst', ruby: 'オメガバースト', baseType: 'special', types: ['action', 'reaction'], cost: '4', text: 'あなたの燃焼済の造花結晶を全て回復する。 \n対応した、オーラへのダメージが「-」またはX以下の《攻撃》を打ち消す。Xはこのカードにより回復した造花結晶の個数に等しい。' },
     '11-thallya-o-s-4': { megami: 'thallya', name: 'Julia\'s BlackBox', ruby: 'ジュリアズ　ブラックボックス', baseType: 'special', types: ['action', 'fullpower'], cost: '0', text: 'あなたのマシンに造花結晶がないならば、あなたのマシンはTransFormし、あなたの燃焼済の造花結晶を2つ回復する。そうでない場合、このカードを未使用に戻す。' },
+    'transform-01': { megami: 'thallya', name: 'Form:YAKSHA', ruby: 'フォルム:ヤクシャ', baseType: 'transform', types: ['variable'], text: '【変形時】相手は次の開始フェイズにカードを1枚しか引けない。相手を畏縮させる。\n----\n【常時】あなたのマシンに造花結晶がないならば、あなたは基本動作を行えない。\n----\n【追加基本行動：Beta-Edge】\n「適正距離2,4,6,8、2/1 【攻撃後】騎動を行う」の《攻撃》を行う。' },
+    'transform-02': { megami: 'thallya', name: 'Form:NAGA', ruby: 'フォルム:ナーガ', baseType: 'transform', types: ['variable'], text: '【変形時】相手のフレアが3以上ならば、フレアが2になるように桜花結晶をダストへ移動させる。 \n----\n【追加基本行動：Gamma-Ray】\n相手の山札の一番上のカードを相手の捨て札に置く。' },
+    'transform-03': { megami: 'thallya', name: 'Form:GARUDA', ruby: 'フォルム:ガルーダ', baseType: 'transform', types: ['variable'], text: '【変形時】カードを2枚引き、このターンの間手札の上限が無くなる。 \n----\n【常時】カードを2枚引き、このターンの間手札の上限が無くなる。 \n----\n【追加基本行動：Delta-Wing】\n現在の間合が7以下ならば、ダスト→間合：1' },
     '12-raira-o-n-1': { megami: 'raira', name: '獣爪', ruby: 'じゅうそう', baseType: 'normal', types: ['attack'], range: '1-2', damage: '3/1', text: '' },
     '12-raira-o-n-2': { megami: 'raira', name: '風雷撃', ruby: 'ふうらいげき', baseType: 'normal', types: ['attack'], range: '2', damage: 'X/2', text: '【常時】Xは風神ゲージと雷神ゲージのうち、小さい方の値である。' },
     '12-raira-o-n-3': { megami: 'raira', name: '流転爪', ruby: 'るてんそう', baseType: 'normal', types: ['attack'], range: '1-2', damage: '2/1', text: '【攻撃後】あなたの捨て札にある《攻撃》カード1枚を選び、山札の一番上に置いてもよい。' },
@@ -71671,6 +71676,13 @@ exports.default = {
                     actions.addCard({ side: state.side, region: 'extra', cardId: '09-chikage-o-p-4' });
                     actions.addCard({ side: state.side, region: 'extra', cardId: '09-chikage-o-p-4' });
                 }
+                // サリヤがいれば造花結晶とTransformカードをセット
+                if (board.megamis[state.side].find(function (m) { return m === 'thallya'; })) {
+                    actions.addSakuraToken({ side: state.side, region: 'machine', number: 5, artificial: true });
+                    actions.addCard({ side: state.side, region: 'extra', cardId: 'transform-01' });
+                    actions.addCard({ side: state.side, region: 'extra', cardId: 'transform-02' });
+                    actions.addCard({ side: state.side, region: 'extra', cardId: 'transform-03' });
+                }
                 // クルルがいればでゅーぷりぎあを3枚セット
                 if (board.megamis[state.side].find(function (m) { return m === 'kururu'; })) {
                     actions.addCard({ side: state.side, region: 'extra', cardId: '10-kururu-o-s-3-ex1' });
@@ -72089,6 +72101,7 @@ exports.default = {
             var tokenCount = newBoard.objects.filter(function (obj) { return obj.type === 'sakura-token'; }).length;
             var objectId = "sakuraToken-" + (tokenCount + 1);
             var newToken = utils.createSakuraToken(objectId, p.region, p.side);
+            newToken.artificial = p.artificial;
             newBoard.objects.push(newToken);
         });
         // 領域情報更新
@@ -73099,8 +73112,6 @@ exports.MainProcessButtons = function (p) { return function (state, actions) {
         $('#MEGAMI2-SELECTION').empty().append('<option></option>');
         for (var key in sakuraba.MEGAMI_DATA) {
             var data = sakuraba.MEGAMI_DATA[key];
-            if (key === 'thallya')
-                continue;
             $('#MEGAMI1-SELECTION').append("<option value='" + key + "'>" + data.name + " (" + data.symbol + ")</option>");
             $('#MEGAMI2-SELECTION').append("<option value='" + key + "'>" + data.name + " (" + data.symbol + ")</option>");
         }
@@ -73528,7 +73539,7 @@ exports.SakuraToken = function (p) { return function (state, actions) {
         height: 26 * state.zoom + "px"
     };
     var draggable = true;
-    return hyperapp_1.h("div", { class: "sakura-token", draggable: draggable, "data-object-id": p.target.id, "data-side": p.target.side || 'none', "data-region": p.target.region, "data-linked-card-id": p.target.linkedCardId || 'none', "data-region-index": p.target.indexOfRegion, "data-dragging-count": p.draggingCount, id: 'board-object-' + p.target.id, key: 'sakura-token-' + p.target.id, style: styles });
+    return hyperapp_1.h("div", { class: "sakura-token" + (p.target.artificial ? ' artificial' : ''), draggable: draggable, "data-object-id": p.target.id, "data-side": p.target.side || 'none', "data-region": p.target.region, "data-linked-card-id": p.target.linkedCardId || 'none', "data-region-index": p.target.indexOfRegion, "data-dragging-count": p.draggingCount, id: 'board-object-' + p.target.id, key: 'sakura-token-' + p.target.id, style: styles });
 }; };
 
 
@@ -74043,6 +74054,35 @@ var view = function (state, actions) {
         { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 470, width: 350, tokenWidth: 260, height: 30 },
         { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 260, height: 30 }
     ];
+    // サリヤを宿しており、かつメガミ公開済みの場合、マシン領域と燃焼済を追加
+    ['p1', 'p2'].forEach(function (side) {
+        if (state.board.megamis[side] &&
+            state.board.megamiOpenFlags[side] &&
+            state.board.megamis[side].find(function (megami) { return megami === 'thallya'; })) {
+            sakuraTokenAreaData.push({
+                region: 'machine',
+                side: side,
+                title: 'STEAM ENGINE',
+                layoutType: 'horizontal',
+                left: (side === state.viewingSide ? 850 : 30),
+                top: (side === state.viewingSide ? 550 : 30),
+                width: 210,
+                height: 30,
+                tokenWidth: 120
+            });
+            sakuraTokenAreaData.push({
+                region: 'burned',
+                side: side,
+                title: 'BURNED',
+                layoutType: 'horizontal',
+                left: (side === state.viewingSide ? 850 : 30),
+                top: (side === state.viewingSide ? 590 : 30),
+                width: 210,
+                height: 30,
+                tokenWidth: 120
+            });
+        }
+    });
     var frameNodes = [];
     var objectNodes = [];
     var cardLocations = {};

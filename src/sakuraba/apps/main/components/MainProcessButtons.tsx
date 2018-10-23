@@ -36,7 +36,6 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         $('#MEGAMI2-SELECTION').empty().append('<option></option>');
         for(let key in sakuraba.MEGAMI_DATA){
             let data = sakuraba.MEGAMI_DATA[key];
-            if(key === 'thallya') continue;
             $('#MEGAMI1-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
             $('#MEGAMI2-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
         }
