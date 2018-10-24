@@ -39,6 +39,8 @@ export default {
         to: [PlayerSide, SakuraTokenRegion, string];
         /** 移動数 */
         moveNumber?: number;
+        /** 間合-1トークンとして動かす (造花結晶用) 省略時やfalse指定時は通常のトークンに戻る */
+        distanceMinus?: boolean;
     }) => (state: state.State) => {
         // 元の盤の状態をコピーして新しい盤を生成
         let newBoard = models.Board.clone(state.board);
@@ -58,6 +60,7 @@ export default {
             c.linkedCardId = p.to[2];
             // 領域インデックスは最大値+1
             c.indexOfRegion = maxIndex + 1;
+            c.distanceMinus = (p.distanceMinus ? true : false);
             maxIndex++;
         });
 

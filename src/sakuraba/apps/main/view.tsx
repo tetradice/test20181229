@@ -10,7 +10,7 @@ import { StackedCards } from "sakuraba/apps/common/components/StackedCards";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
 
 /** レイアウト種別 */
-type LayoutType = 'horizontal' | 'vertical' | 'stacked';
+type LayoutType = 'horizontal' | 'horizontal-distance' | 'vertical' | 'stacked';
 
 /** 各種オブジェクトを配置する領域 */
 type Params = {
@@ -64,6 +64,36 @@ function layoutObjects<T extends state.BoardObject>(
             });        
         }
     }
+
+    // 横並びで配置する場合 (間合用)
+    if(layoutType === 'horizontal-distance'){
+        let tokens = objects as state.SakuraToken[];
+        
+        // まず、間合+1トークンとして配置されている造花結晶を配置
+        tokens.filter(o => o.type === 'sakura-token' && o.artificial && !o.distanceMinus).forEach((child, i) => {
+            ret.push([child as T, cx, cy]);
+
+            cx += objectWidth;
+            cx += spacing;
+        });
+
+        // 次に、間合+1トークンとして配置されている造花結晶を配置
+        tokens.filter(o => o.type === 'sakura-token' && !o.artificial).forEach((child, i) => {
+            ret.push([child as T, cx, cy]);
+
+            cx += objectWidth;
+            cx += spacing;
+        });
+
+        // 最後に、間合-1トークンとして配置されている造花結晶を、通常の結晶に重ねるようみ配置
+        tokens.filter(o => o.type === 'sakura-token' && o.artificial && o.distanceMinus).forEach((child, i) => {
+            ret.push([child as T, cx, cy]);
+
+            cx += objectWidth;
+            cx += spacing;
+        });
+    }
+
     // 垂直に配置する場合 (padding, spacingは無視)
     if(layoutType === 'vertical'){
         objects.forEach((child, i) => {
@@ -185,7 +215,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
           , { region: 'life',     side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10,   top: 240,  width: 350, tokenWidth: 260, height: 30 }
           , { region: 'flair',    side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10,   top: 280,  width: 350, tokenWidth: 260, height: 30 }
 
-          , { region: 'distance', side: null, title: "間合",   layoutType: 'horizontal', left: 10,    top: 380,  width: 350, tokenWidth: 260, height: 30 }
+          , { region: 'distance', side: null, title: "間合",   layoutType: 'horizontal-distance', left: 10,    top: 380,  width: 350, tokenWidth: 260, height: 30 }
           , { region: 'dust',     side: null, title: "ダスト", layoutType: 'horizontal', left: 380,   top: 380,  width: 350, tokenWidth: 260, height: 30 }
 
           , { region: 'aura',     side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850,   top: 430,  width: 210, tokenWidth: 120, height: 30 }

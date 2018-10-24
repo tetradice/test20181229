@@ -108,7 +108,11 @@ export interface SakuraToken extends BoardObjectBase {
     indexOfRegion: number;
     linkedCardId: string;
 
+    /** 造花結晶である */
     artificial?: boolean;
+
+    /** 間合-1トークンである (桜花結晶に重ねる) */
+    distanceMinus?: boolean
 }
 
 /** ログ1行分のデータ */

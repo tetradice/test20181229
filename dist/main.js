@@ -72130,6 +72130,7 @@ exports.default = {
             c.linkedCardId = p.to[2];
             // 領域インデックスは最大値+1
             c.indexOfRegion = maxIndex + 1;
+            c.distanceMinus = (p.distanceMinus ? true : false);
             maxIndex++;
         });
         // 領域情報の更新
@@ -73106,11 +73107,27 @@ exports.MachineButtons = function (p) { return function (state, actions) {
             }
         });
     };
+    var rideForward = function () {
+        actions.operate({
+            log: "\u9A0E\u52D5\u524D\u9032\u3057\u307E\u3057\u305F",
+            proc: function () {
+                actions.moveSakuraToken({ from: [p.side, 'machine', null], to: [null, 'distance', null], distanceMinus: true });
+            }
+        });
+    };
+    var rideBack = function () {
+        actions.operate({
+            log: "\u9A0E\u52D5\u5F8C\u9000\u3057\u307E\u3057\u305F",
+            proc: function () {
+                actions.moveSakuraToken({ from: [p.side, 'machine', null], to: [p.side, 'machine', null] });
+            }
+        });
+    };
     var distanceTokens = boardModel.getRegionSakuraTokens(null, 'distance', null);
     var machineTokens = boardModel.getRegionSakuraTokens(p.side, 'machine', null);
     return (hyperapp_1.h("div", { style: styles },
-        hyperapp_1.h("button", { class: "mini ui basic button" + (machineTokens.length === 0 || distanceTokens.length <= 0 ? ' disabled' : ''), onclick: charge }, "\u9A0E\u52D5\u524D\u9032"),
-        hyperapp_1.h("button", { class: "mini ui basic button" + (machineTokens.length === 0 || distanceTokens.length >= 10 ? ' disabled' : ''), onclick: charge }, "\u9A0E\u52D5\u5F8C\u9000")));
+        hyperapp_1.h("button", { class: "mini ui basic button" + (machineTokens.length === 0 || distanceTokens.length <= 0 ? ' disabled' : ''), onclick: rideForward }, "\u9A0E\u52D5\u524D\u9032"),
+        hyperapp_1.h("button", { class: "mini ui basic button" + (machineTokens.length === 0 || distanceTokens.length >= 10 ? ' disabled' : ''), onclick: rideBack }, "\u9A0E\u52D5\u5F8C\u9000")));
 }; };
 
 
@@ -74019,6 +74036,28 @@ function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spa
             });
         }
     }
+    // 横並びで配置する場合 (間合用)
+    if (layoutType === 'horizontal-distance') {
+        var tokens = objects;
+        // まず、間合+1トークンとして配置されている造花結晶を配置
+        tokens.filter(function (o) { return o.type === 'sakura-token' && o.artificial && !o.distanceMinus; }).forEach(function (child, i) {
+            ret.push([child, cx, cy]);
+            cx += objectWidth;
+            cx += spacing;
+        });
+        // 次に、間合+1トークンとして配置されている造花結晶を配置
+        tokens.filter(function (o) { return o.type === 'sakura-token' && !o.artificial; }).forEach(function (child, i) {
+            ret.push([child, cx, cy]);
+            cx += objectWidth;
+            cx += spacing;
+        });
+        // 最後に、間合-1トークンとして配置されている造花結晶を、通常の結晶に重ねるようみ配置
+        tokens.filter(function (o) { return o.type === 'sakura-token' && o.artificial && o.distanceMinus; }).forEach(function (child, i) {
+            ret.push([child, cx, cy]);
+            cx += objectWidth;
+            cx += spacing;
+        });
+    }
     // 垂直に配置する場合 (padding, spacingは無視)
     if (layoutType === 'vertical') {
         objects.forEach(function (child, i) {
@@ -74109,7 +74148,7 @@ var view = function (state, actions) {
         { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 200, width: 210, tokenWidth: 120, height: 30 },
         { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 240, width: 350, tokenWidth: 260, height: 30 },
         { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10, top: 280, width: 350, tokenWidth: 260, height: 30 },
-        { region: 'distance', side: null, title: "間合", layoutType: 'horizontal', left: 10, top: 380, width: 350, tokenWidth: 260, height: 30 },
+        { region: 'distance', side: null, title: "間合", layoutType: 'horizontal-distance', left: 10, top: 380, width: 350, tokenWidth: 260, height: 30 },
         { region: 'dust', side: null, title: "ダスト", layoutType: 'horizontal', left: 380, top: 380, width: 350, tokenWidth: 260, height: 30 },
         { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 430, width: 210, tokenWidth: 120, height: 30 },
         { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 470, width: 350, tokenWidth: 260, height: 30 },
