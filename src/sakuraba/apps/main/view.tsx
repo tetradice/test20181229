@@ -69,15 +69,7 @@ function layoutObjects<T extends state.BoardObject>(
     if(layoutType === 'horizontal-distance'){
         let tokens = objects as state.SakuraToken[];
         
-        // まず、間合+1トークンとして配置されている造花結晶を配置
-        tokens.filter(o => o.type === 'sakura-token' && o.artificial && !o.distanceMinus).forEach((child, i) => {
-            ret.push([child as T, cx, cy]);
-
-            cx += objectWidth;
-            cx += spacing;
-        });
-
-        // 次に、間合+1トークンとして配置されている造花結晶を配置
+        // まず、通常の桜花結晶を配置
         tokens.filter(o => o.type === 'sakura-token' && !o.artificial).forEach((child, i) => {
             ret.push([child as T, cx, cy]);
 
@@ -85,9 +77,18 @@ function layoutObjects<T extends state.BoardObject>(
             cx += spacing;
         });
 
-        // 最後に、間合-1トークンとして配置されている造花結晶を、通常の結晶に重ねるようみ配置
-        tokens.filter(o => o.type === 'sakura-token' && o.artificial && o.distanceMinus).forEach((child, i) => {
+        // 次に、間合+1トークンとして配置されている造花結晶を配置
+        tokens.filter(o => o.type === 'sakura-token' && o.artificial && !o.distanceMinus).forEach((child, i) => {
             ret.push([child as T, cx, cy]);
+
+            cx += objectWidth;
+            cx += spacing;
+        });
+
+        // 最後に、間合-1トークンとして配置されている造花結晶を、通常の結晶に重ねるように配置
+        cx = spacing;
+        tokens.filter(o => o.type === 'sakura-token' && o.artificial && o.distanceMinus).forEach((child, i) => {
+            ret.push([child as T, cx + 1, cy + 1]);
 
             cx += objectWidth;
             cx += spacing;
@@ -300,7 +301,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         });
 
         // フレームを追加
-        frameNodes.push(<components.SakuraTokenAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} tokenCount={tokens.length} />);
+        let count = (area.region === 'distance' ? boardModel.getDistance() : tokens.length);
+        frameNodes.push(<components.SakuraTokenAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} tokenCount={count} />);
         frameNodes.push(<components.SakuraTokenAreaDroppable side={area.side} region={area.region} linkedCardId={null} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
     

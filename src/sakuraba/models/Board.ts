@@ -77,6 +77,13 @@ export class Board implements state.Board {
         return this.objects.filter(v => v.type === 'sakura-token' && v.side === side && v.region == region && v.linkedCardId == linkedCardId) as state.SakuraToken[];
     }
 
+    /** 現在の間合の値を取得 (騎動分も加味する) */
+    getDistance(): number {
+        let tokens = this.getRegionSakuraTokens(null, 'distance', null);
+
+        return tokens.filter(x => !(x.artificial && x.distanceMinus)).length - tokens.filter(x => x.artificial && x.distanceMinus).length;
+    }
+
     /** カード移動時などの領域情報一括更新 */
     updateRegionInfo(){
         let cards = this.getCards();

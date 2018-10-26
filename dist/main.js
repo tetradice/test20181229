@@ -72741,7 +72741,7 @@ exports.ControlPanel = function () { return function (state, actions) {
         // プレイヤーである場合の処理
         if (state.board.firstDrawFlags[state.side]) {
             // 最初の手札を引いたあとの場合 (桜花決闘)
-            var distanceCount = boardModel.getRegionSakuraTokens(null, 'distance', null).length;
+            var distanceCount = boardModel.getDistance();
             var dustCount = boardModel.getRegionSakuraTokens(null, 'dust', null).length;
             var myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
             var onCardTokenFound = (state.board.objects.find(function (o) { return o.type === 'sakura-token' && o.region === 'on-card'; }) ? true : false);
@@ -74039,21 +74039,22 @@ function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spa
     // 横並びで配置する場合 (間合用)
     if (layoutType === 'horizontal-distance') {
         var tokens = objects;
-        // まず、間合+1トークンとして配置されている造花結晶を配置
-        tokens.filter(function (o) { return o.type === 'sakura-token' && o.artificial && !o.distanceMinus; }).forEach(function (child, i) {
-            ret.push([child, cx, cy]);
-            cx += objectWidth;
-            cx += spacing;
-        });
-        // 次に、間合+1トークンとして配置されている造花結晶を配置
+        // まず、通常の桜花結晶を配置
         tokens.filter(function (o) { return o.type === 'sakura-token' && !o.artificial; }).forEach(function (child, i) {
             ret.push([child, cx, cy]);
             cx += objectWidth;
             cx += spacing;
         });
-        // 最後に、間合-1トークンとして配置されている造花結晶を、通常の結晶に重ねるようみ配置
-        tokens.filter(function (o) { return o.type === 'sakura-token' && o.artificial && o.distanceMinus; }).forEach(function (child, i) {
+        // 次に、間合+1トークンとして配置されている造花結晶を配置
+        tokens.filter(function (o) { return o.type === 'sakura-token' && o.artificial && !o.distanceMinus; }).forEach(function (child, i) {
             ret.push([child, cx, cy]);
+            cx += objectWidth;
+            cx += spacing;
+        });
+        // 最後に、間合-1トークンとして配置されている造花結晶を、通常の結晶に重ねるように配置
+        cx = spacing;
+        tokens.filter(function (o) { return o.type === 'sakura-token' && o.artificial && o.distanceMinus; }).forEach(function (child, i) {
+            ret.push([child, cx + 1, cy + 1]);
             cx += objectWidth;
             cx += spacing;
         });
@@ -74218,7 +74219,8 @@ var view = function (state, actions) {
             objectNodes.push(hyperapp_1.h(components.SakuraToken, { target: token, left: left, top: top, draggingCount: draggingCount }));
         });
         // フレームを追加
-        frameNodes.push(hyperapp_1.h(components.SakuraTokenAreaBackground, { side: area.side, region: area.region, title: area.title, left: area.left, top: area.top, width: area.width, height: area.height, tokenCount: tokens.length }));
+        var count = (area.region === 'distance' ? boardModel.getDistance() : tokens.length);
+        frameNodes.push(hyperapp_1.h(components.SakuraTokenAreaBackground, { side: area.side, region: area.region, title: area.title, left: area.left, top: area.top, width: area.width, height: area.height, tokenCount: count }));
         frameNodes.push(hyperapp_1.h(components.SakuraTokenAreaDroppable, { side: area.side, region: area.region, linkedCardId: null, left: area.left, top: area.top, width: area.width, height: area.height }));
     });
     // カード下に封印されているカードは別扱い
@@ -75231,6 +75233,11 @@ var Board = /** @class */ (function () {
     /** 指定した領域にある桜花結晶を一括取得 */
     Board.prototype.getRegionSakuraTokens = function (side, region, linkedCardId) {
         return this.objects.filter(function (v) { return v.type === 'sakura-token' && v.side === side && v.region == region && v.linkedCardId == linkedCardId; });
+    };
+    /** 現在の間合の値を取得 (騎動分も加味する) */
+    Board.prototype.getDistance = function () {
+        var tokens = this.getRegionSakuraTokens(null, 'distance', null);
+        return tokens.filter(function (x) { return !(x.artificial && x.distanceMinus); }).length - tokens.filter(function (x) { return x.artificial && x.distanceMinus; }).length;
     };
     /** カード移動時などの領域情報一括更新 */
     Board.prototype.updateRegionInfo = function () {

@@ -82,7 +82,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         // プレイヤーである場合の処理
         if(state.board.firstDrawFlags[state.side]){
             // 最初の手札を引いたあとの場合 (桜花決闘)
-            let distanceCount = boardModel.getRegionSakuraTokens(null, 'distance', null).length;
+            let distanceCount = boardModel.getDistance();
             let dustCount = boardModel.getRegionSakuraTokens(null, 'dust', null).length;
             let myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
             let onCardTokenFound = (state.board.objects.find(o => o.type === 'sakura-token' && o.region === 'on-card') ? true : false);
