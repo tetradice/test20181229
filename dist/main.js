@@ -70547,27 +70547,42 @@ $(function () {
             // 桜花結晶の場合
             if (object.type === 'sakura-token') {
                 var $this = $(this);
-                var side = $this.attr('data-side');
+                var tokenSide = $this.attr('data-side');
                 var linkedCardId = $this.attr('data-linked-card-id');
-                var index = parseInt($this.attr('data-region-index'));
                 var group = $this.attr('data-group');
-                var groupHandlingNumber = parseInt($this.attr('data-group-handling-number'));
-                var draggingCount = parseInt($this.attr('data-dragging-count'));
+                var draggingCount_1 = parseInt($this.attr('data-dragging-count'));
+                if (draggingCount_1 === 0)
+                    return false; // draggingCount=0はドラッグ非対象
                 // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択した桜花結晶を記憶
-                $(".area.sakura-token-region.droppable:not([data-side=" + side + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
-                dragInfo_1.default.draggingFrom = object;
-                // 移動数を記憶
-                dragInfo_1.default.sakuraTokenMoveCount = draggingCount;
-                // 自分と同じ領域で、インデックスが自分以上の要素をすべて半透明にする
-                if (index === 0) {
-                    $(".sakura-token[data-side=" + side + "][data-region=" + $this.attr('data-region') + "][data-group=" + group + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]").css('opacity', '0.4');
+                var baseSelector = ".area.sakura-token-region.droppable:not([data-side=" + tokenSide + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "])";
+                if (object.artificial) {
+                    // 造花結晶であれば、今の領域に応じて移動先が決まる
+                    if (object.region === 'distance') {
+                        // 間合からの移動の場合は、燃焼済領域にのみ移動可能
+                        $(baseSelector + "[data-region=burned]").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
+                    }
+                    else if (object.region === 'burned') {
+                        // 燃焼済領域からの移動の場合は、所持者のマシン領域にのみ移動可能
+                        $(baseSelector + "[data-side=" + tokenSide + "][data-region=machine]").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
+                    }
+                    else {
+                        // マシン領域からの移動の場合は、所持者の燃焼済、間合のどちらかに移動可能
+                        $(baseSelector + "[data-side=" + tokenSide + "][data-region=burned]," + baseSelector + "[data-region=distance]").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
+                    }
                 }
                 else {
-                    $(".sakura-token[data-side=" + side + "][data-region=" + $this.attr('data-region') + "][data-group=" + group + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]:gt(" + (index - 1) + ")").css('opacity', '0.4');
+                    // 通常の桜花結晶であれば、自身以外の領域のうち、マシンと燃焼済を除く全領域に移動可能
+                    $(baseSelector + ":not([data-region=machine]):not([data-region=burned])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
                 }
+                dragInfo_1.default.draggingFrom = object;
+                // 移動数を記憶
+                dragInfo_1.default.sakuraTokenMoveCount = draggingCount_1;
+                // 自分と同じ領域/グループで、dragCountが自分以下の要素をすべて選択扱いにする
+                var $tokens = $(".sakura-token[data-side=" + tokenSide + "][data-region=" + $this.attr('data-region') + "][data-group=" + group + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]");
+                $tokens.filter(function (i, elem) { return parseInt(elem.dataset.draggingCount) <= draggingCount_1; }).css('opacity', '0.4');
                 // ドラッグゴースト画像を設定
-                $('#sakura-token-ghost-many .count').text(draggingCount);
-                var ghost = (draggingCount >= 6 ? $('#sakura-token-ghost-many')[0] : $("#sakura-token-ghost-" + draggingCount)[0]);
+                $('#sakura-token-ghost-many .count').text(draggingCount_1);
+                var ghost = (draggingCount_1 >= 6 ? $('#sakura-token-ghost-many')[0] : $("#sakura-token-ghost-" + draggingCount_1)[0]);
                 //let ghost = $('<img src="/furuyoni_commons/others/sakura_token_ghost3.png" width="30" height="30">')[0];
                 e.originalEvent.dataTransfer.setDragImage(ghost, 0, 0);
                 // 選択状態を解除
@@ -70617,7 +70632,13 @@ $(function () {
                 var tokenRegion = region;
                 var state_1 = appActions.getState();
                 var boardModel = new models.Board(state_1.board);
-                var tokenCount = boardModel.getRegionSakuraTokens((side === 'none' ? null : side), tokenRegion, (linkedCardId === 'none' ? null : linkedCardId)).length;
+                var tokenCount = 0;
+                if (tokenRegion === 'distance') {
+                    tokenCount = boardModel.getDistance();
+                }
+                else {
+                    tokenCount = boardModel.getRegionSakuraTokens((side === 'none' ? null : side), tokenRegion, (linkedCardId === 'none' ? null : linkedCardId)).length;
+                }
                 if (tokenCount + dragInfo_1.default.sakuraTokenMoveCount > sakuraba_1.SAKURA_TOKEN_MAX[tokenRegion]) {
                     $(".area.droppable[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
                     $(".area.background[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
@@ -74092,10 +74113,10 @@ var view = function (state, actions) {
     var boardModel = new models.Board(state.board);
     var selfSide = state.viewingSide;
     var opponentSide = (state.viewingSide === 'p1' ? 'p2' : 'p1');
-    // 各プレイヤーがサリヤを宿していて、かつメガミ公開済みかどうかを判定
+    // 各プレイヤーがサリヤを宿していて、かつ決闘開始済みかどうかを判定
     var hasMachineTarot = {
-        p1: state.board.megamis.p1 && state.board.megamiOpenFlags.p1 && state.board.megamis.p1.indexOf('thallya') >= 0,
-        p2: state.board.megamis.p2 && state.board.megamiOpenFlags.p2 && state.board.megamis.p2.indexOf('thallya') >= 0
+        p1: state.board.mariganFlags.p1 && state.board.megamis.p1.indexOf('thallya') >= 0,
+        p2: state.board.mariganFlags.p2 && state.board.megamis.p2.indexOf('thallya') >= 0
     };
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     var cardAreaData = [
@@ -74103,8 +74124,8 @@ var view = function (state, actions) {
         { region: 'used', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 750, top: 200, width: 450, height: 160 },
         { region: 'hidden-used', side: opponentSide, title: null, cardLayoutType: 'stacked', left: 560, top: 200, width: 170, height: 160, cardCountDisplay: true },
         { region: 'library', side: opponentSide, title: null, cardLayoutType: 'stacked', left: 380, top: 200, width: 160, height: 160, cardCountDisplay: true },
-        { region: 'hand', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 560, top: 30, width: 640, height: 160 },
-        { region: 'special', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: 10, top: 30, width: 330, height: 160 }
+        { region: 'hand', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: (hasMachineTarot[opponentSide] ? 190 : 0) + 560, top: 30, width: (hasMachineTarot[opponentSide] ? 450 : 640), height: 160 },
+        { region: 'special', side: opponentSide, title: null, cardLayoutType: 'horizontal', left: (hasMachineTarot[opponentSide] ? 200 : 0) + 10, top: 30, width: 330, height: 160 }
         // 自分
         ,
         { region: 'used', side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10, top: 430, width: 450, height: 160 },
@@ -74166,7 +74187,7 @@ var view = function (state, actions) {
         { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 470, width: 350, tokenWidth: 260, height: 30 },
         { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 260, height: 30 }
     ];
-    // サリヤを宿しており、かつメガミ公開済みの場合、マシン領域と燃焼済を追加
+    // サリヤを宿しており、かつ決闘開始済の場合、マシン領域と燃焼済を追加
     ['p1', 'p2'].forEach(function (side) {
         if (hasMachineTarot[side]) {
             sakuraTokenAreaData.push({
@@ -74174,7 +74195,7 @@ var view = function (state, actions) {
                 side: side,
                 title: 'STEAM ENGINE',
                 layoutType: 'horizontal',
-                left: (side === state.viewingSide ? 1010 : 30),
+                left: (side === state.viewingSide ? 1010 : 50),
                 top: (side === state.viewingSide ? 600 : 30),
                 width: 150,
                 height: 50,
@@ -74185,8 +74206,8 @@ var view = function (state, actions) {
                 side: side,
                 title: 'BURNED',
                 layoutType: 'horizontal',
-                left: (side === state.viewingSide ? 1010 : 30),
-                top: (side === state.viewingSide ? 660 : 30),
+                left: (side === state.viewingSide ? 1010 : 50),
+                top: (side === state.viewingSide ? 660 : 90),
                 width: 150,
                 height: 50,
                 tokenWidth: 130
@@ -74358,10 +74379,10 @@ var view = function (state, actions) {
     return (hyperapp_1.h("div", { id: "BOARD-PLAYAREA", style: { width: const_1.BOARD_BASE_WIDTH * state.zoom + "px" } },
         objectNodes,
         frameNodes,
-        hyperapp_1.h(components.Vigor, { side: opponentSide, left: 390, top: 60 }),
-        hyperapp_1.h(components.Vigor, { side: selfSide, left: (hasMachineTarot[selfSide] ? 490 : 680), top: 630 }),
-        hyperapp_1.h(components.WitheredToken, { side: opponentSide, left: 390, top: 60 }),
-        hyperapp_1.h(components.WitheredToken, { side: selfSide, left: (hasMachineTarot[selfSide] ? 490 : 680), top: 630 }),
+        hyperapp_1.h(components.Vigor, { side: opponentSide, left: (hasMachineTarot[opponentSide] ? 190 : 0) + 390, top: 60 }),
+        hyperapp_1.h(components.Vigor, { side: selfSide, left: 680 - (hasMachineTarot[selfSide] ? 190 : 0), top: 630 }),
+        hyperapp_1.h(components.WitheredToken, { side: opponentSide, left: (hasMachineTarot[opponentSide] ? 190 : 0) + 390, top: 60 }),
+        hyperapp_1.h(components.WitheredToken, { side: selfSide, left: 680 - (hasMachineTarot[selfSide] ? 190 : 0), top: 630 }),
         hyperapp_1.h(components.ControlPanel, null),
         hyperapp_1.h(components.ChatLogArea, { logs: state.chatLog }),
         hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),

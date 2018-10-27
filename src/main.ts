@@ -698,26 +698,39 @@ $(function(){
             // 桜花結晶の場合
             if(object.type === 'sakura-token'){
                 let $this = $(this);
-                let side = $this.attr('data-side') as (PlayerSide | 'none');
+                let tokenSide = $this.attr('data-side') as (PlayerSide | 'none');
                 let linkedCardId = $this.attr('data-linked-card-id');
-                let index = parseInt($this.attr('data-region-index'));
                 let group = $this.attr('data-group') as state.SakuraTokenGroup;
-                let groupHandlingNumber = parseInt($this.attr('data-group-handling-number'));
                 let draggingCount = parseInt($this.attr('data-dragging-count'));
+                if(draggingCount === 0) return false; // draggingCount=0はドラッグ非対象
 
                 // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択した桜花結晶を記憶
-                $(`.area.sakura-token-region.droppable:not([data-side=${side}][data-region=${object.region}][data-linked-card-id=${linkedCardId}])`).css('z-index', ZIndex.HOVER_DROPPABLE);
+                let baseSelector = `.area.sakura-token-region.droppable:not([data-side=${tokenSide}][data-region=${object.region}][data-linked-card-id=${linkedCardId}])`;
+                if(object.artificial){
+                    // 造花結晶であれば、今の領域に応じて移動先が決まる
+                    
+                    if(object.region === 'distance'){
+                        // 間合からの移動の場合は、燃焼済領域にのみ移動可能
+                        $(`${baseSelector}[data-region=burned]`).css('z-index', ZIndex.HOVER_DROPPABLE);
+                    } else if(object.region === 'burned'){
+                        // 燃焼済領域からの移動の場合は、所持者のマシン領域にのみ移動可能
+                        $(`${baseSelector}[data-side=${tokenSide}][data-region=machine]`).css('z-index', ZIndex.HOVER_DROPPABLE);
+                    } else {
+                        // マシン領域からの移動の場合は、所持者の燃焼済、間合のどちらかに移動可能
+                        $(`${baseSelector}[data-side=${tokenSide}][data-region=burned],${baseSelector}[data-region=distance]`).css('z-index', ZIndex.HOVER_DROPPABLE);
+                    }
+                } else {
+                    // 通常の桜花結晶であれば、自身以外の領域のうち、マシンと燃焼済を除く全領域に移動可能
+                    $(`${baseSelector}:not([data-region=machine]):not([data-region=burned])`).css('z-index', ZIndex.HOVER_DROPPABLE);
+                }
                 dragInfo.draggingFrom = object;
 
                 // 移動数を記憶
                 dragInfo.sakuraTokenMoveCount = draggingCount;
 
-                // 自分と同じ領域で、インデックスが自分以上の要素をすべて半透明にする
-                if(index === 0){
-                    $(`.sakura-token[data-side=${side}][data-region=${$this.attr('data-region')}][data-group=${group}][data-linked-card-id=${$this.attr('data-linked-card-id')}]`).css('opacity', '0.4');
-                } else {
-                    $(`.sakura-token[data-side=${side}][data-region=${$this.attr('data-region')}][data-group=${group}][data-linked-card-id=${$this.attr('data-linked-card-id')}]:gt(${index-1})`).css('opacity', '0.4');
-                }
+                // 自分と同じ領域/グループで、dragCountが自分以下の要素をすべて選択扱いにする
+                let $tokens = $(`.sakura-token[data-side=${tokenSide}][data-region=${$this.attr('data-region')}][data-group=${group}][data-linked-card-id=${$this.attr('data-linked-card-id')}]`);
+                $tokens.filter((i, elem) => parseInt(elem.dataset.draggingCount) <= draggingCount).css('opacity', '0.4');
 
                 // ドラッグゴースト画像を設定
                 $('#sakura-token-ghost-many .count').text(draggingCount);
@@ -783,7 +796,12 @@ $(function(){
                 let tokenRegion = region as SakuraTokenRegion;
                 let state = appActions.getState();
                 let boardModel = new models.Board(state.board);
-                let tokenCount = boardModel.getRegionSakuraTokens((side === 'none' ? null : side), tokenRegion, (linkedCardId === 'none' ? null : linkedCardId)).length;
+                let tokenCount = 0;
+                if(tokenRegion === 'distance'){
+                    tokenCount = boardModel.getDistance();
+                } else {
+                    tokenCount = boardModel.getRegionSakuraTokens((side === 'none' ? null : side), tokenRegion, (linkedCardId === 'none' ? null : linkedCardId)).length;
+                }
 
                 if(tokenCount + dragInfo.sakuraTokenMoveCount > SAKURA_TOKEN_MAX[tokenRegion]){
                     $(`.area.droppable[data-side=${side}][data-region=${region}]`).addClass('over-forbidden');
