@@ -61,6 +61,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             proc: () => {
                 actions.moveSakuraToken({
                   from: from
+                , fromGroup: 'normal'
                 , to: to
                 , moveNumber: 1
                 });
@@ -82,7 +83,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         // プレイヤーである場合の処理
         if(state.board.firstDrawFlags[state.side]){
             // 最初の手札を引いたあとの場合 (桜花決闘)
-            let distanceCount = boardModel.getDistance();
+            let distanceCount = boardModel.getDistanceTokenCount();
+            let distanceNormalTokens = boardModel.getDistanceSakuraTokens('normal');
             let dustCount = boardModel.getRegionSakuraTokens(null, 'dust', null).length;
             let myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
             let onCardTokenFound = (state.board.objects.find(o => o.type === 'sakura-token' && o.region === 'on-card') ? true : false);
@@ -94,7 +96,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     <button
                     id="FORWARD-BUTTON"
                     style="padding-left: 1em; padding-right: 1em;"
-                    class={`ui button ${distanceCount >= 1 && myAuraCount < 5 ? '' : 'disabled'}`}
+                    class={`ui button ${distanceNormalTokens.length >= 1 && myAuraCount < 5 ? '' : 'disabled'}`}
                     onclick={() => basicAction([null, 'distance', null], [side, 'aura', null], '前進')}>前進</button>
                     <button
                     id="LEAVE-BUTTON"

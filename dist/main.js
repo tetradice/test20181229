@@ -72924,6 +72924,7 @@ exports.ControlPanel = function () { return function (state, actions) {
             proc: function () {
                 actions.moveSakuraToken({
                     from: from,
+                    fromGroup: 'normal',
                     to: to,
                     moveNumber: 1
                 });
@@ -72941,14 +72942,15 @@ exports.ControlPanel = function () { return function (state, actions) {
         // プレイヤーである場合の処理
         if (state.board.firstDrawFlags[state.side]) {
             // 最初の手札を引いたあとの場合 (桜花決闘)
-            var distanceCount = boardModel.getDistance();
+            var distanceCount = boardModel.getDistanceTokenCount();
+            var distanceNormalTokens = boardModel.getDistanceSakuraTokens('normal');
             var dustCount = boardModel.getRegionSakuraTokens(null, 'dust', null).length;
             var myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
             var onCardTokenFound = (state.board.objects.find(function (o) { return o.type === 'sakura-token' && o.region === 'on-card'; }) ? true : false);
             var side_1 = state.side;
             var innerCommandButtons = (hyperapp_1.h("div", null,
                 hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
-                    hyperapp_1.h("button", { id: "FORWARD-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (distanceCount >= 1 && myAuraCount < 5 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'distance', null], [side_1, 'aura', null], '前進'); } }, "\u524D\u9032"),
+                    hyperapp_1.h("button", { id: "FORWARD-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (distanceNormalTokens.length >= 1 && myAuraCount < 5 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'distance', null], [side_1, 'aura', null], '前進'); } }, "\u524D\u9032"),
                     hyperapp_1.h("button", { id: "LEAVE-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (dustCount >= 1 && distanceCount < 10 ? '' : 'disabled'), onclick: function () { return basicAction([null, 'dust', null], [null, 'distance', null], '離脱'); } }, "\u96E2\u8131")),
                 hyperapp_1.h("div", { class: "ui basic buttons", style: "margin-right: 10px;" },
                     hyperapp_1.h("button", { id: "BACK-BUTTON", style: "padding-left: 1em; padding-right: 1em;", class: "ui button " + (myAuraCount >= 1 && distanceCount < 10 ? '' : 'disabled'), onclick: function () { return basicAction([side_1, 'aura', null], [null, 'distance', null], '後退'); } }, "\u5F8C\u9000")),
@@ -75410,6 +75412,11 @@ var Board = /** @class */ (function () {
         var tokens = this.getRegionSakuraTokens(null, 'distance', null);
         return tokens.filter(function (x) { return !(x.artificial && x.distanceMinus); }).length - tokens.filter(function (x) { return x.artificial && x.distanceMinus; }).length;
     };
+    /** 現在の間合にいくつ分の結晶が置かれているかを取得 (間合-1トークン除く) */
+    Board.prototype.getDistanceTokenCount = function () {
+        var flatTokens = this.getRegionSakuraTokens(null, 'distance', null).filter(function (t) { return !t.distanceMinus; }); // 間合-1トークンを除いたすべての結晶を取得
+        return flatTokens.length;
+    };
     /** 指定数の騎動前進が実行可能かどうか */
     Board.prototype.isRideForwardEnabled = function (side, moveNumber) {
         var activeSakuraTokens = this.getDistanceSakuraTokens('normal'); // 有効な桜花結晶を取得
@@ -75417,8 +75424,7 @@ var Board = /** @class */ (function () {
     };
     /** 指定数の騎動後退が実行可能かどうか */
     Board.prototype.isRideBackEnabled = function (side, moveNumber) {
-        var flatTokens = this.getRegionSakuraTokens(null, 'distance', null).filter(function (t) { return !t.distanceMinus; }); // 間合-1トークンを除いたすべての結晶を取得
-        return flatTokens.length + moveNumber <= 10; // 上記結晶数 + 移動数 が10を超えなければ移動可能
+        return this.getDistanceTokenCount().length + moveNumber <= 10; // 上記結晶数 + 移動数 が10を超えなければ移動可能
     };
     /** カード移動時などの領域情報一括更新 */
     Board.prototype.updateRegionInfo = function () {
