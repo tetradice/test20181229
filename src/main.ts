@@ -199,6 +199,37 @@ $(function(){
         }
     });
 
+    // 間合への造花結晶ドラッグ時メニュー
+    $('#BOARD').append('<div id="CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE"></div>');
+    $.contextMenu({
+        zIndex: ZIndex.CONTEXT_MENU_VISIBLE,
+        trigger: 'none',
+        selector: '#CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE',
+        events: {
+            hide: (e) => {
+                contextMenuShowingAfterDrop = false;
+                processOnDragEnd();
+            }
+        },
+        build: function($elem: JQuery, event: JQueryEventObject){
+            console.log('contextmenu:hide', $elem.menu);
+            let currentState = appActions.getState();
+            let side = currentState.side as PlayerSide;
+            let board = new models.Board(currentState.board);
+            let items: Object = {};
+
+            items['forward'] = {name: '騎動前進', callback: () => {
+            }};
+            items['back'] = {name: '騎動後退', callback: () => {
+            }};
+            items['sep'] = '----';
+            items['cancel'] = {name: 'キャンセル', callback: () => {}};
+
+            return {items: items};
+
+        }
+    });
+
     // 畏縮トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
@@ -1038,20 +1069,29 @@ $(function(){
                     let logs: {text: string, visibility?: LogVisibility}[] = [];
                     let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region, fromLinkedCard);
                     let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion, toLinkedCard);
-
-                    // ログ内容を決定
-                    logs.push({text: `桜花結晶を${dragInfo.sakuraTokenMoveCount}つ移動しました：${fromRegionTitle} → ${toRegionTitle}`});
                     
-                    appActions.operate({
-                        log: logs,
-                        proc: () => {
-                            appActions.moveSakuraToken({
-                                from: [sakuraToken.side, sakuraToken.region, sakuraToken.linkedCardId]
-                                , to: [toSide, toRegion, toLinkedCardId]
-                                , moveNumber: dragInfo.sakuraTokenMoveCount
-                            });
-                        }
-                    });
+                    // 間合に造花結晶を移動した場合は特殊処理
+                    if (toRegion === 'distance' && sakuraToken.artificial) {
+                        contextMenuShowingAfterDrop = true;
+                        dragInfo.lastDraggingSakuraTokenBeforeContextMenu = sakuraToken;
+                        $('#CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE').contextMenu({ x: e.pageX, y: e.pageY });
+                        return false;
+                    } else {
+                        // ログ内容を決定
+                        logs.push({ text: `桜花結晶を${dragInfo.sakuraTokenMoveCount}つ移動しました：${fromRegionTitle} → ${toRegionTitle}` });
+
+                        appActions.operate({
+                            log: logs,
+                            proc: () => {
+                                appActions.moveSakuraToken({
+                                    from: [sakuraToken.side, sakuraToken.region, sakuraToken.linkedCardId]
+                                    , to: [toSide, toRegion, toLinkedCardId]
+                                    , moveNumber: dragInfo.sakuraTokenMoveCount
+                                });
+                            }
+                        });
+                    }
+
                 }
 
 

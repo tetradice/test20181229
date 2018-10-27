@@ -70093,6 +70093,33 @@ $(function () {
             return { items: items };
         }
     });
+    // 間合への造花結晶ドラッグ時メニュー
+    $('#BOARD').append('<div id="CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE"></div>');
+    $.contextMenu({
+        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
+        trigger: 'none',
+        selector: '#CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE',
+        events: {
+            hide: function (e) {
+                contextMenuShowingAfterDrop = false;
+                processOnDragEnd();
+            }
+        },
+        build: function ($elem, event) {
+            console.log('contextmenu:hide', $elem.menu);
+            var currentState = appActions.getState();
+            var side = currentState.side;
+            var board = new models.Board(currentState.board);
+            var items = {};
+            items['forward'] = { name: '騎動前進', callback: function () {
+                } };
+            items['back'] = { name: '騎動後退', callback: function () {
+                } };
+            items['sep'] = '----';
+            items['cancel'] = { name: 'キャンセル', callback: function () { } };
+            return { items: items };
+        }
+    });
     // 畏縮トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
@@ -70854,18 +70881,27 @@ $(function () {
                     var logs = [];
                     var fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken_1.side, sakuraToken_1.region, fromLinkedCard);
                     var toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide_1, toRegion_1, toLinkedCard);
-                    // ログ内容を決定
-                    logs.push({ text: "\u685C\u82B1\u7D50\u6676\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
-                    appActions.operate({
-                        log: logs,
-                        proc: function () {
-                            appActions.moveSakuraToken({
-                                from: [sakuraToken_1.side, sakuraToken_1.region, sakuraToken_1.linkedCardId],
-                                to: [toSide_1, toRegion_1, toLinkedCardId_1],
-                                moveNumber: dragInfo_1.default.sakuraTokenMoveCount
-                            });
-                        }
-                    });
+                    // 間合に造花結晶を移動した場合は特殊処理
+                    if (toRegion_1 === 'distance' && sakuraToken_1.artificial) {
+                        contextMenuShowingAfterDrop = true;
+                        dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu = sakuraToken_1;
+                        $('#CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE').contextMenu({ x: e.pageX, y: e.pageY });
+                        return false;
+                    }
+                    else {
+                        // ログ内容を決定
+                        logs.push({ text: "\u685C\u82B1\u7D50\u6676\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
+                        appActions.operate({
+                            log: logs,
+                            proc: function () {
+                                appActions.moveSakuraToken({
+                                    from: [sakuraToken_1.side, sakuraToken_1.region, sakuraToken_1.linkedCardId],
+                                    to: [toSide_1, toRegion_1, toLinkedCardId_1],
+                                    moveNumber: dragInfo_1.default.sakuraTokenMoveCount
+                                });
+                            }
+                        });
+                    }
                 }
                 // // 山札に移動した場合は特殊処理
                 // if(to === 'library'){
@@ -75253,7 +75289,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var dragInfo = {
     draggingFrom: null,
     sakuraTokenMoveCount: 0,
-    lastDraggingCardBeforeContextMenu: null
+    lastDraggingCardBeforeContextMenu: null,
+    lastDraggingSakuraTokenBeforeContextMenu: null
 };
 exports.default = dragInfo;
 
