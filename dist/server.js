@@ -105,73 +105,81 @@ exports.SAKURA_TOKEN_MAX = {
     dust: 99,
     'on-card': 99
 };
-exports.MEGAMI_DATA = {
-    'yurina': { name: 'ユリナ', symbol: '刀' }
-    //, 'yurina-a': {name: '第一章ユリナ', symbol: '古刀', base: 'yurina'}
-    ,
-    'saine': { name: 'サイネ', symbol: '薙刀' }
-    //, 'saine-a':  {name: '第二章サイネ', symbol: '琵琶', base: 'saine'}
-    ,
-    'himika': { name: 'ヒミカ', symbol: '銃' }
-    //, 'himika-a': {name: '原初ヒミカ', symbol: '炎', base: 'himika'}
-    ,
-    'tokoyo': { name: 'トコヨ', symbol: '扇' }
-    //, 'tokoyo-a': {name: '旅芸人トコヨ', symbol: '笛', base: 'tokoyo'}
-    ,
+var MEGAMI_DATA_BASE = {
+    'yurina': { name: 'ユリナ', symbol: '刀' },
+    'yurina-a1': { name: '第一章ユリナ', symbol: '古刀', base: 'yurina', anotherID: 'A1' },
+    'saine': { name: 'サイネ', symbol: '薙刀' },
+    'saine-a1': { name: '第二章サイネ', symbol: '琵琶', base: 'saine', anotherID: 'A1' },
+    'himika': { name: 'ヒミカ', symbol: '銃' },
+    'himika-a1': { name: '原初ヒミカ', symbol: '炎', base: 'himika', anotherID: 'A1' },
+    'tokoyo': { name: 'トコヨ', symbol: '扇' },
+    'tokoyo-a1': { name: '旅芸人トコヨ', symbol: '笛', base: 'tokoyo', anotherID: 'A1' },
     'oboro': { name: 'オボロ', symbol: '忍' },
     'yukihi': { name: 'ユキヒ', symbol: '傘/簪' },
     'shinra': { name: 'シンラ', symbol: '書' },
     'hagane': { name: 'ハガネ', symbol: '槌' },
     'chikage': { name: 'チカゲ', symbol: '毒' },
-    'kururu': { name: 'クルル', symbol: '絡繰' }
-    //, 'thallya':  {name: 'サリヤ', symbol: '乗騎'}
-    ,
+    'kururu': { name: 'クルル', symbol: '絡繰' },
+    'thallya': { name: 'サリヤ', symbol: '乗騎' },
     'raira': { name: 'ライラ', symbol: '爪' },
     'utsuro': { name: 'ウツロ', symbol: '鎌' }
 };
+exports.MEGAMI_DATA = MEGAMI_DATA_BASE;
 exports.CARD_DATA = {
     '01-yurina-o-n-1': { megami: 'yurina', name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: "3-4", damage: '3/1', text: '' },
+    '01-yurina-A1-n-1': { megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-n-1', name: '乱打', ruby: 'らんだ', baseType: 'normal', types: ['attack'], range: '2', damage: '2/1', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+0/+2となり、対応不可を得る。' },
     '01-yurina-o-n-2': { megami: 'yurina', name: '一閃', ruby: 'いっせん', baseType: 'normal', types: ['attack'], range: "3", damage: '2/2', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+1/+0となる。' },
     '01-yurina-o-n-3': { megami: 'yurina', name: '柄打ち', ruby: 'つかうち', baseType: 'normal', types: ['attack'], range: "1-2", damage: '2/1', text: '【攻撃後】決死-あなたのライフが3以下ならば、このターンにあなたが次に行う《攻撃》は+1/+0となる。' },
     '01-yurina-o-n-4': { megami: 'yurina', name: '居合', ruby: 'いあい', baseType: 'normal', types: ['attack', 'fullpower'], range: "2-4", damage: '4/3', text: '【常時】現在の間合が2以下ならば、この攻撃は-1/-1となる。' },
     '01-yurina-o-n-5': { megami: 'yurina', name: '足捌き', ruby: 'あしさばき', baseType: 'normal', types: ['action'], text: '現在の間合が4以上ならば、間合→ダスト：2\n現在の間合が1以下ならば、ダスト→間合：2' },
     '01-yurina-o-n-6': { megami: 'yurina', name: '圧気', ruby: 'あっき', baseType: 'normal', types: ['enhance'], capacity: '4', text: '隙\n【破棄時】攻撃『適正距離1-4、3/-』を行う。' },
+    '01-yurina-A1-n-6': { megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-n-6', name: '癇癪玉', ruby: 'かんしゃくだま ', baseType: 'normal', types: ['enhance', 'reaction'], capacity: '１', text: '【破棄時】攻撃『適正距離0-4、1/-、対応不可、【攻撃後】相手を畏縮させる』を行う。' },
     '01-yurina-o-n-7': { megami: 'yurina', name: '気炎万丈', ruby: 'きえんばんじょう', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '2', text: '【展開中】決死-あなたのライフが3以下ならば、あなたの他のメガミによる《攻撃》は+1/+1となるとともに超克を得る。' },
     '01-yurina-o-s-1': { megami: 'yurina', name: '月影落', ruby: 'つきかげおとし', baseType: 'special', cost: '7', types: ['attack'], range: '3-4', damage: '4/4', text: '' },
     '01-yurina-o-s-2': { megami: 'yurina', name: '浦波嵐', ruby: 'うらなみあらし', baseType: 'special', cost: '3', types: ['attack', 'reaction'], range: '0-10', damage: '2/-', text: '【攻撃後】対応した《攻撃》は-2/+0となる。' },
+    '01-yurina-A1-s-2': { megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-s-2', name: '不完全浦波嵐', ruby: 'ふかんぜんうらなみあらし', baseType: 'special', types: ['attack', 'reaction'], range: '0-10', damage: '3/-', cost: '5', text: '【攻撃後】対応した《攻撃》は-3/+0となる。' },
     '01-yurina-o-s-3': { megami: 'yurina', name: '浮舟宿', ruby: 'うきふねやどし', baseType: 'special', cost: '2', types: ['action'], text: 'ダスト→自オーラ：5 \n----\n【即再起】決死-あなたのライフが3以下である。' },
     '01-yurina-o-s-4': { megami: 'yurina', name: '天音揺波の底力', ruby: 'あまねゆりなのそこぢから', baseType: 'special', cost: '5', types: ['attack', 'fullpower'], range: '1-4', damage: '5/5', text: '【常時】決死-あなたのライフが3以下でないと、このカードは使用できない。' },
     '02-saine-o-n-1': { megami: 'saine', name: '八方振り', ruby: 'はっぽうぶり', baseType: 'normal', types: ['attack'], range: "4-5", damage: '2/1', text: '【攻撃後】八相-あなたのオーラが0ならば、攻撃『適正距離4-5、2/1』を行う。' },
     '02-saine-o-n-2': { megami: 'saine', name: '薙斬り', ruby: 'なぎぎり', baseType: 'normal', types: ['attack', 'reaction'], range: "4-5", damage: '3/1', text: '' },
-    '02-saine-o-n-3': { megami: 'saine', name: '返し刃', ruby: 'かえしやいば', baseType: 'normal', types: ['attack'], range: "3-5", damage: '1/1', text: '【攻撃後】このカードを対応で使用したならば、攻撃『適正距離3-5、2/1、対応不可』を行う。' },
+    '02-saine-o-n-3': { megami: 'saine', name: '返し刃', ruby: 'かえしやいば', baseType: 'normal', types: ['attack', 'reaction'], range: "3-5", damage: '1/1', text: '【攻撃後】このカードを対応で使用したならば、攻撃『適正距離3-5、2/1、対応不可』を行う。' },
+    '02-saine-A1-n-3': { megami: 'saine', anotherID: 'A1', replace: '02-saine-o-n-3', name: '氷の音', ruby: 'ひのね', baseType: 'normal', types: ['action', 'reaction'], text: '相オーラ→ダスト：1 \nこのカードを対応で使用したならば、さらに\n相オーラ→ダスト：1' },
     '02-saine-o-n-4': { megami: 'saine', name: '見切り', ruby: 'みきり', baseType: 'normal', types: ['action'], text: '【常時】八相-あなたのオーラが0ならば、このカードを《対応》を持つかのように相手の《攻撃》に割り込んで使用できる。\n間合⇔ダスト：1' },
     '02-saine-o-n-5': { megami: 'saine', name: '圏域', ruby: 'けんいき', baseType: 'normal', types: ['enhance'], capacity: '3', text: '【展開時】ダスト→間合：1\n【展開中】達人の間合は2大きくなる。' },
     '02-saine-o-n-6': { megami: 'saine', name: '衝音晶', ruby: 'しょうおんしょう', baseType: 'normal', types: ['enhance', 'reaction'], capacity: '1', text: '【展開時】対応した《攻撃》は-1/+0となる。 \n【破棄時】攻撃『適正距離0-10、1/-、対応不可』を行う。' },
+    '02-saine-A1-n-6': { megami: 'saine', anotherID: 'A1', replace: '02-saine-o-n-6', name: '伴奏', ruby: 'ばんそう', baseType: 'normal', types: ['enhance'], capacity: '4', text: '【展開中】あなたの他のメガミの切札が1枚以上使用済ならば、各ターンの最初の相手の《攻撃》は-1/+0となる。 \n【展開中】あなたのサイネの切札が1枚以上使用済ならば、各ターンにあなたが最初に使用する切札の消費は1少なくなる(0未満にはならない)。' },
     '02-saine-o-n-7': { megami: 'saine', name: '無音壁', ruby: 'むおんへき', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '5', text: '【展開中】あなたへのダメージを解決するに際し、このカードの上に置かれた桜花結晶をあなたのオーラにあるかのように扱う。' },
     '02-saine-o-s-1': { megami: 'saine', name: '律動弧戟', ruby: 'りつどうこげき', baseType: 'special', cost: '6', types: ['action'], text: '攻撃『適正距離3-4、1/1』を行う。\n攻撃『適正距離4-5、1/1』を行う。\n攻撃『適正距離3-5、2/2』を行う。' },
     '02-saine-o-s-2': { megami: 'saine', name: '響鳴共振', ruby: 'きょうめいきょうしん', baseType: 'special', cost: '8', types: ['action'], text: '【常時】このカードの消費は相手のオーラの数だけ少なくなる。\n相オーラ→間合：2' },
+    '02-saine-A1-s-2': { megami: 'saine', anotherID: 'A1', replace: '02-saine-o-s-2', name: '二重奏:弾奏氷瞑', ruby: 'にじゅうそう:だんそうひょうめい', baseType: 'special', types: ['action'], cost: '2', text: '現在のフェイズを終了する。 \n【使用済】あなたの他のメガミによる《攻撃》は+0/+1となる。 \n----\n【即再起】あなたが再構成以外でライフに1以上のダメージを受ける。' },
     '02-saine-o-s-3': { megami: 'saine', name: '音無砕氷', ruby: 'おとなしさいひょう', baseType: 'special', cost: '2', types: ['attack', 'reaction'], range: "0-10", damage: '1/1', text: '対応した《攻撃》は-1/-1となる。\n----\n【再起】八相-あなたのオーラが0である。' },
     '02-saine-o-s-4': { megami: 'saine', name: '氷雨細音の果ての果て', ruby: 'ひさめさいねのはてのはて', baseType: 'special', cost: '5', types: ['attack', 'reaction'], range: '1-5', damage: '5/5', text: '【常時】このカードは切札に対する対応でしか使用できない。' },
     '03-himika-o-n-1': { megami: 'himika', name: 'シュート', ruby: '', baseType: 'normal', types: ['attack'], range: "4-10", damage: '2/1', text: '' },
     '03-himika-o-n-2': { megami: 'himika', name: 'ラピッドファイア', ruby: '', baseType: 'normal', types: ['attack'], range: "7-8", damage: '2/1', text: '【常時】連火-このカードがこのターンに使用した3枚目以降のカードならば、この《攻撃》は+1/+1となる。' },
+    '03-himika-A1-n-2': { megami: 'himika', anotherID: 'A1', replace: '03-himika-o-n-2', name: '火炎流', ruby: 'かえんりゅう', baseType: 'normal', types: ['attack'], range: '1-3', damage: '2/1', text: '【常時】連火-このカードがこのターンに使用した3枚目以降のカードならば、この《攻撃》は+0/+1となる。' },
     '03-himika-o-n-3': { megami: 'himika', name: 'マグナムカノン', ruby: '', baseType: 'normal', types: ['attack'], range: "5-8", damage: '3/2', text: '【攻撃後】自ライフ→ダスト：1' },
     '03-himika-o-n-4': { megami: 'himika', name: 'フルバースト', ruby: '', baseType: 'normal', types: ['attack', 'fullpower'], range: "5-9", damage: '3/1', text: '【常時】この《攻撃》がダメージを与えるならば、相手は片方を選ぶのではなく両方のダメージを受ける。' },
     '03-himika-o-n-5': { megami: 'himika', name: 'バックステップ', ruby: '', baseType: 'normal', types: ['action'], text: 'カードを1枚引く。\nダスト→間合：1' },
+    '03-himika-A1-n-5': { megami: 'himika', anotherID: 'A1', replace: '03-himika-o-n-5', name: '殺意', ruby: 'さつい', baseType: 'normal', types: ['action'], text: 'あなたの手札が0枚ならば、相オーラ→ダスト：2' },
     '03-himika-o-n-6': { megami: 'himika', name: 'バックドラフト', ruby: '', baseType: 'normal', types: ['action'], text: '相手を畏縮させる。\n連火-このカードがこのターンに使用した3枚目以降のカードならば、このターンにあなたが次に行う他のメガミによる《攻撃》を+1/+1する。' },
     '03-himika-o-n-7': { megami: 'himika', name: 'スモーク', ruby: '', baseType: 'normal', types: ['enhance'], capacity: '3', text: '【展開中】カードの矢印(→)により間合にある桜花結晶は移動しない。' },
     '03-himika-o-s-1': { megami: 'himika', name: 'レッドバレット', ruby: '', baseType: 'special', cost: '0', types: ['attack'], range: '5-10', damage: '3/1', text: '' },
     '03-himika-o-s-2': { megami: 'himika', name: 'クリムゾンゼロ', ruby: '', baseType: 'special', cost: '5', types: ['attack'], range: '0-2', damage: '2/2', text: '【常時】この《攻撃》がダメージを与えるならば、相手は片方を選ぶのではなく両方のダメージを受ける。\n【常時】現在の間合が0ならば、この《攻撃》は対応不可を得る。' },
+    '03-himika-A1-s-2': { megami: 'himika', anotherID: 'A1', replace: '03-himika-o-s-2', name: '炎天・紅緋弥香', ruby: 'えんてん・くれないひみか', baseType: 'special', types: ['attack', 'fullpower'], range: '0-6', damage: 'X/X', cost: '7', text: '対応不可 \n【常時】Xは7から現在の間合を引いた値に等しい。 \n【攻撃後】あなたは敗北する。' },
     '03-himika-o-s-3': { megami: 'himika', name: 'スカーレットイマジン', ruby: '', baseType: 'special', cost: '3', types: ['action'], text: 'カードを2枚引く。その後、あなたは手札を1枚伏せ札にする。' },
     '03-himika-o-s-4': { megami: 'himika', name: 'ヴァーミリオンフィールド', ruby: '', baseType: 'special', cost: '2', types: ['action'], text: '連火-このカードがこのターンに使用した3枚目以降のカードならば、ダスト→間合：2\n----\n【再起】あなたの手札が0枚である。' },
     '04-tokoyo-o-n-1': { megami: 'tokoyo', name: '梳流し', ruby: 'すきながし', baseType: 'normal', types: ['attack'], range: '4', damage: '-/1', text: '【攻撃後】境地-あなたの集中力が2ならば、このカードを山札の上に戻す。' },
+    '04-tokoyo-A1-n-1': { megami: 'tokoyo', anotherID: 'A1', replace: '04-tokoyo-o-n-1', name: '奏流し', ruby: 'かなでながし', baseType: 'normal', types: ['attack'], range: '5', damage: '-/1', text: '【常時】あなたのトコヨの切札が1枚以上使用済ならば、この《攻撃》は対応不可を得る。 \n【攻撃後】境地-あなたの集中力が2かつ、あなたの他のメガミの切札が1枚以上使用済ならば、このカードを山札の上に置く。' },
     '04-tokoyo-o-n-2': { megami: 'tokoyo', name: '雅打ち', ruby: 'みやびうち', baseType: 'normal', types: ['attack'], range: '2-4', damage: '2/1', text: '【攻撃後】境地-あなたの集中力が2ならば、対応した切札でない《攻撃》を打ち消す。' },
     '04-tokoyo-o-n-3': { megami: 'tokoyo', name: '跳ね兎', ruby: 'はねうさぎ', baseType: 'normal', types: ['action'], text: '現在の間合が3以下ならば、ダスト→間合：2' },
     '04-tokoyo-o-n-4': { megami: 'tokoyo', name: '詩舞', ruby: 'しぶ', baseType: 'normal', types: ['action', 'reaction'], text: '集中力を1得て、以下から1つを選ぶ。\n・自フレア→自オーラ：1\n・自オーラ→間合：1' },
     '04-tokoyo-o-n-5': { megami: 'tokoyo', name: '要返し', ruby: 'かなめがえし', baseType: 'normal', types: ['action', 'fullpower'], text: '捨て札か伏せ札からカードを2枚まで選ぶ。それらのカードを好きな順で山札の底に置く。 \nダスト→自オーラ：2' },
     '04-tokoyo-o-n-6': { megami: 'tokoyo', name: '風舞台', ruby: 'かぜぶたい', baseType: 'normal', types: ['enhance'], capacity: '2', text: '【展開時】間合→自オーラ：2 \n【破棄時】自オーラ→間合：2' },
     '04-tokoyo-o-n-7': { megami: 'tokoyo', name: '晴舞台', ruby: 'はれぶたい', baseType: 'normal', types: ['enhance'], capacity: '1', text: '【破棄時】境地-あなたの集中力が2ならば、ダスト→自オーラ：2 \n【破棄時】境地-あなたは集中力を1得る。' },
+    '04-tokoyo-A1-n-7': { megami: 'tokoyo', anotherID: 'A1', replace: '04-tokoyo-o-n-7', name: '陽の音', ruby: 'ひのね', baseType: 'normal', types: ['enhance'], capacity: '2', text: '【展開時/展開中】展開時、およびあなたが《対応》カードを使用した時、その解決後にダスト→自オーラ：1 \n【展開中】相手のターンにこのカードの上の桜花結晶は移動しない。' },
     '04-tokoyo-o-s-1': { megami: 'tokoyo', name: '久遠ノ花', ruby: 'くおんのはな', baseType: 'special', types: ['attack'], range: '0-10', damage: '-/1', cost: '5', text: '【攻撃後】対応した《攻撃》を打ち消す。' },
     '04-tokoyo-o-s-2': { megami: 'tokoyo', name: '千歳ノ鳥', ruby: 'ちとせのとり', baseType: 'special', types: ['attack'], range: '3-4', damage: '2/2', cost: '2', text: '【攻撃後】山札を再構成する。 \n(その際にダメージは受けない)' },
+    '04-tokoyo-A1-s-2': { megami: 'tokoyo', anotherID: 'A1', replace: '04-tokoyo-o-s-2', name: '二重奏:吹弾陽明', ruby: 'にじゅうそう：すいだんようめい', baseType: 'special', types: ['action'], cost: '1', text: '【使用済】あなたの開始フェイズの開始時に捨て札または伏せ札からカード1枚を選び、それを山札の底に置いてもよい。 \n----\n【即再起】あなたが再構成以外でライフに1以上のダメージを受ける。' },
     '04-tokoyo-o-s-3': { megami: 'tokoyo', name: '無窮ノ風', ruby: 'むきゅうのかぜ', baseType: 'special', types: ['attack'], range: '3-8', damage: '1/1', cost: '1', text: '対応不可 \n【攻撃後】相手は手札から《攻撃》でないカード1枚を捨て札にする。それが行えない場合、相手は手札を公開する。 \n----\n【再起】境地-あなたの集中力が2である。' },
     '04-tokoyo-o-s-4': { megami: 'tokoyo', name: '常世ノ月', ruby: 'とこよのつき', baseType: 'special', types: ['action'], cost: '2', text: 'あなたの集中力は2になり、相手の集中力は0になり、相手を畏縮させる。' },
     '05-oboro-o-n-1': { megami: 'oboro', name: '鋼糸', ruby: 'こうし', baseType: 'normal', types: ['attack'], range: '3-4', damage: '2/2', text: '設置' },
@@ -389,7 +397,12 @@ exports.flipSide = flipSide;
 /** メガミの表示名を取得 */
 function getMegamiDispName(megami) {
     var data = sakuraba.MEGAMI_DATA[megami];
-    return data.name + "(" + data.symbol + ")";
+    if (data.base !== undefined) {
+        return data.name + "(" + data.symbol + ")";
+    }
+    else {
+        return data.name + "(" + data.symbol + ")";
+    }
 }
 exports.getMegamiDispName = getMegamiDispName;
 /** ログを表示できるかどうか判定 */
