@@ -1,6 +1,7 @@
 import * as _ from "lodash";
-import { Megami } from "sakuraba";
+import { Megami, CARD_DATA } from "sakuraba";
 import * as utils from "sakuraba/utils";
+import { SakuraTokenGroup } from "sakuraba/typings/state";
 
 export class Board implements state.Board {
     objects: state.Board['objects'];
@@ -77,6 +78,32 @@ export class Board implements state.Board {
         return this.objects.filter(v => v.type === 'sakura-token' && v.side === side && v.region == region && v.linkedCardId == linkedCardId) as state.SakuraToken[];
     }
 
+    /** 間合にある、指定したグループの桜花結晶を一括取得 */
+    getDistanceSakuraTokens(group: state.SakuraTokenGroup): state.SakuraToken[] {
+        return this.objects.filter(v => v.type === 'sakura-token' && v.side === null && v.region == 'distance' && v.linkedCardId == null && v.group === group) as state.SakuraToken[];
+    }
+
+    /** 現在の間合の値を取得 (騎動分も加味する) */
+    getDistance(): number {
+        let tokens = this.getRegionSakuraTokens(null, 'distance', null);
+
+        return tokens.filter(x => !(x.artificial && x.distanceMinus)).length - tokens.filter(x => x.artificial && x.distanceMinus).length;
+    }
+
+    /** 指定数の騎動前進が実行可能かどうか */
+    isRideForwardEnabled(side: PlayerSide, moveNumber: number): boolean {
+        let activeSakuraTokens = this.getDistanceSakuraTokens('normal'); // 有効な桜花結晶を取得
+
+        return moveNumber <= activeSakuraTokens.length; // 移動数 <= 有効な桜花結晶数なら移動可能
+    }
+
+    /** 指定数の騎動後退が実行可能かどうか */
+    isRideBackEnabled(side: PlayerSide, moveNumber: number): boolean {
+        let flatTokens = this.getRegionSakuraTokens(null, 'distance', null).filter(t => !t.distanceMinus); // 間合-1トークンを除いたすべての結晶を取得
+
+        return flatTokens.length + moveNumber <= 10; // 上記結晶数 + 移動数 が10を超えなければ移動可能
+    }
+
     /** カード移動時などの領域情報一括更新 */
     updateRegionInfo(){
         let cards = this.getCards();
@@ -84,7 +111,14 @@ export class Board implements state.Board {
         sideAndCardRegions.forEach(r => {
             let [side, region, linkedCardId] = r;
 
-            let regionCards = this.getRegionCards(side, region, linkedCardId).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+            let regionCards = this.getRegionCards(side, region, linkedCardId);
+            // 追加札は常にカードID順でソート、それ以外は以前の順序でソート。ただしTransformカードは後ろに並べる
+            if (region === 'extra') {
+                regionCards = _.orderBy(regionCards, ['cardId', 'asc']);
+            } else {
+                regionCards = _.orderBy(regionCards, ['baseType', 'asc'], ['indexOfRegion', 'asc']);
+            }
+
             let index = 0;
             regionCards.forEach(c => {
                 // インデックス更新
@@ -122,6 +156,50 @@ export class Board implements state.Board {
                 c.indexOfRegion = index;
                 index++;
             });
+
+            // グループ情報も更新する
+            if (region === 'distance') {
+                let normalTokens = regionSakuraTokens.filter(t => !t.artificial);
+                let artificialTokens = regionSakuraTokens.filter(t => t.artificial);
+                let distanceMinusTokens = regionSakuraTokens.filter(t => t.artificial && t.distanceMinus);
+
+                // いくつの桜花結晶が有効かを数える (通常の桜花結晶数 - 間合-1トークン数)
+                let activeNormalTokenCount = normalTokens.length - distanceMinusTokens.length;
+
+                // 造花結晶のグループを振る
+                let artificialTokensP1 = artificialTokens.filter(t => t.ownerSide === 'p1');
+                let artificialTokensP2 = artificialTokens.filter(t => t.ownerSide === 'p2');
+                artificialTokensP1.forEach((c, i) => {
+                    c.group = 'artificial-p1';
+                    c.groupTokenDraggingCount = artificialTokensP1.length; // ドラッグ時には全造花結晶をまとめて操作
+                });
+                artificialTokensP2.forEach((c, i) => {
+                    c.group = 'artificial-p2';
+                    c.groupTokenDraggingCount = artificialTokensP2.length; // ドラッグ時には全造花結晶をまとめて操作
+                });
+
+
+                // 通常の桜花結晶は、間合-1トークンの数だけ無効
+                // それ以外は有効
+                let activeIndex = 0;
+                for(let i = 0; i < normalTokens.length; i++){
+                    let c = normalTokens[i];
+                    if(i < distanceMinusTokens.length){
+                        c.group = 'inactive';
+                        c.groupTokenDraggingCount = 0; // ドラッグ不可
+                    } else {
+                        c.group = 'normal';
+                        c.groupTokenDraggingCount = activeNormalTokenCount - activeIndex;
+                        activeIndex++;
+                    }
+                }
+            } else {
+                // 通常の場合は、全トークン同じグループに属する
+                regionSakuraTokens.forEach((c, i) => {
+                    c.group = 'normal';
+                    c.groupTokenDraggingCount = regionSakuraTokens.length - i;
+                });
+            }
         });
     }
 }

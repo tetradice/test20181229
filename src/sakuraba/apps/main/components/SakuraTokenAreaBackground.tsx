@@ -23,6 +23,9 @@ export const SakuraTokenAreaBackground = (p: Param) => (state: state.State) => {
         , padding: `0`
     };
 
+    let titleBottom = 0;
+    if(state.zoom >= 0.7) titleBottom = 1;
+    if(state.zoom >= 1.0) titleBottom = 2;
 
     return (
         <div
@@ -32,8 +35,8 @@ export const SakuraTokenAreaBackground = (p: Param) => (state: state.State) => {
             data-region={p.region}
             key={`SakuraTokenAreaBackground_${p.side}_${p.region}`}
         >
-            <div class="sakura-token-count" style={{fontSize: `${(13 * state.zoom)}px`, right: `${6 * state.zoom}px`, bottom: `${3 * state.zoom}px`}}>{p.tokenCount}</div>
-            <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`, right: `${26 * state.zoom}px`, top: `${4 * state.zoom}px`}}>{p.title}</div>
+            <div class="sakura-token-count" style={{fontSize: `${(13 * state.zoom)}px`, right: `${6 * state.zoom}px`, bottom: `0px`}}>{p.tokenCount}</div>
+            <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`, right: `${26 * state.zoom}px`, bottom: `${titleBottom}px`}}>{p.title}</div>
             
         </div>
     );

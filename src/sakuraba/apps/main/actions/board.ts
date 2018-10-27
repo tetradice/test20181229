@@ -76,6 +76,14 @@ export default {
         return {board: newBoard};
     },
 
+    /** ボードの領域情報のみを更新 */
+    updateBoardRegionInfo: () => (state: state.State) => {
+        let newBoard = models.Board.clone(state.board);
+        newBoard.updateRegionInfo();
+
+        return {board: newBoard};
+    },
+
     /** ボード全体を初期化する（プレイヤー名除く） */
     resetBoard: () => (state: state.State, actions: ActionsType) => {
 
@@ -479,6 +487,14 @@ export default {
                     actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-3'});
                     actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-4'});
                     actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-4'});
+                }
+                // サリヤがいれば造花結晶とTransformカードをセット
+                if(board.megamis[state.side].find(m => m === 'thallya')){
+                    actions.addSakuraToken({side: state.side, region: 'machine', number: 5, artificial: true, ownerSide: state.side});
+
+                    actions.addCard({side: state.side, region: 'extra', cardId: 'transform-01'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: 'transform-02'});
+                    actions.addCard({side: state.side, region: 'extra', cardId: 'transform-03'});
                 }
                 // クルルがいればでゅーぷりぎあを3枚セット
                 if(board.megamis[state.side].find(m => m === 'kururu')){

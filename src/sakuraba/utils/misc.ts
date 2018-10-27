@@ -66,6 +66,7 @@ export function getDescriptionHtml(cardId: string): string{
   if(cardData.types.indexOf('variable') >= 0) typeCaptions.push("<span class='card-type-variable'>不定</span>");
   if(cardData.types.indexOf('reaction') >= 0) typeCaptions.push("<span class='card-type-reaction'>対応</span>");
   if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push("<span class='card-type-fullpower'>全力</span>");
+  if(cardData.types.indexOf('transform') >= 0) typeCaptions.push("<span class='card-type-transform'>Transform</span>");
   html += `${typeCaptions.join('/')}`;
   if(cardData.range !== undefined){
       if(cardData.rangeOpened !== undefined){
@@ -161,6 +162,12 @@ export function getSakuraTokenRegionTitle(selfSide: PlayerSide, side: PlayerSide
     }
     if(region === 'dust'){
         titleBase = "ダスト";
+    }
+    if(region === 'machine'){
+        titleBase = "マシン";
+    }
+    if(region === 'burned'){
+        titleBase = "燃焼済";
     }
     if(region === 'on-card'){
         let cardData = sakuraba.CARD_DATA[linkedCard.cardId];

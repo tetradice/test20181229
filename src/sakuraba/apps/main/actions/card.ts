@@ -278,11 +278,12 @@ export default {
             undoType: 'notBack', // Undo不可
             log: (p.lifeDecrease ? `再構成しました (ライフ-1)` : `ライフ減少なしで再構成しました`),
             proc: () => {
-                // （桜花結晶が上に乗っていない）使用済札、伏せ札をすべて山札へ移動
+                // （桜花結晶が上に乗っていない）使用済札、伏せ札をすべて山札へ移動。ただしTransformカードは除外
                 let newBoard = models.Board.clone(state.board);
                 let usedCards = newBoard.getRegionCards(p.side, 'used', null);
                 usedCards.forEach(card => {
-                    if(newBoard.getRegionSakuraTokens(p.side, 'on-card', card.id).length === 0){
+                    let data = CARD_DATA[card.cardId];
+                    if(newBoard.getRegionSakuraTokens(p.side, 'on-card', card.id).length === 0 && data.baseType !== 'transform'){
                         actions.moveCard({from: card.id, to: [p.side, 'library', null]});
                     }
                 });

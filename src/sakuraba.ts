@@ -2,8 +2,7 @@ import {Serializable, Serialize, SerializeProperty} from "ts-serializer";
 import * as moment from 'moment';
 
 // 独自型
-export type CardType = "attack" | "reaction" | "action" | "fullpower" | "enhance" | "variable";
-export type CardBaseType = 'normal' | 'special' | 'extra';
+export type CardType = "attack" | "reaction" | "action" | "fullpower" | "enhance" | "variable" | 'transform';
 
 // 領域ごとの桜花結晶最大数
 export const SAKURA_TOKEN_MAX: {[P in SakuraTokenRegion]: number} = {
@@ -13,6 +12,8 @@ export const SAKURA_TOKEN_MAX: {[P in SakuraTokenRegion]: number} = {
     , distance: 10
     , dust: 99
     , 'on-card': 99
+    , machine : 5
+    , burned : 5
 };
 
 // メガミ情報
@@ -80,8 +81,12 @@ export interface SpecialCardDataItem extends CardDataItemBase {
     cost?: string;
 }
 
+export interface TransformCardDataItem extends CardDataItemBase {
+    baseType: 'transform';
+}
 
-export type CardDataItem = NormalCardDataItem | SpecialCardDataItem;
+
+export type CardDataItem = NormalCardDataItem | SpecialCardDataItem | TransformCardDataItem;
 
 export const CARD_DATA: {[key: string]: CardDataItem} = {
       '01-yurina-o-n-1': {megami: 'yurina', name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: "3-4", damage: '3/1', text: ''}
@@ -231,6 +236,9 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
     , '11-thallya-o-s-1': {megami: 'thallya', name: 'Alpha-Edge', ruby: 'アルファエッジ', baseType: 'special', types: ['attack'], range: '1,3,5,7', damage: '1/1', cost: '1', text: '【即再起】あなたが騎動により間合を変化させる。'}
     , '11-thallya-o-s-2': {megami: 'thallya', name: 'Omega-Burst', ruby: 'オメガバースト', baseType: 'special', types: ['action', 'reaction'], cost: '4', text: 'あなたの燃焼済の造花結晶を全て回復する。 \n対応した、オーラへのダメージが「-」またはX以下の《攻撃》を打ち消す。Xはこのカードにより回復した造花結晶の個数に等しい。'}
     , '11-thallya-o-s-4': {megami: 'thallya', name: 'Julia\'s BlackBox', ruby: 'ジュリアズ　ブラックボックス', baseType: 'special', types: ['action', 'fullpower'], cost: '0', text: 'あなたのマシンに造花結晶がないならば、あなたのマシンはTransFormし、あなたの燃焼済の造花結晶を2つ回復する。そうでない場合、このカードを未使用に戻す。'}
+    , 'transform-01': {megami: 'thallya', name: 'Form:YAKSHA', ruby: 'フォルム:ヤクシャ', baseType: 'transform', types: ['transform'], text: '【変形時】相手は次の開始フェイズにカードを1枚しか引けない。相手を畏縮させる。\n----\n【常時】あなたのマシンに造花結晶がないならば、あなたは基本動作を行えない。\n----\n【追加基本行動：Beta-Edge】\n「適正距離2,4,6,8、2/1 【攻撃後】騎動を行う」の《攻撃》を行う。'}
+    , 'transform-02': {megami: 'thallya', name: 'Form:NAGA', ruby: 'フォルム:ナーガ', baseType: 'transform', types: ['transform'], text: '【変形時】相手のフレアが3以上ならば、フレアが2になるように桜花結晶をダストへ移動させる。 \n----\n【追加基本行動：Gamma-Ray】\n相手の山札の一番上のカードを相手の捨て札に置く。'}
+    , 'transform-03': {megami: 'thallya', name: 'Form:GARUDA', ruby: 'フォルム:ガルーダ', baseType: 'transform', types: ['transform'], text: '【変形時】カードを2枚引き、このターンの間手札の上限が無くなる。 \n----\n【常時】カードを2枚引き、このターンの間手札の上限が無くなる。 \n----\n【追加基本行動：Delta-Wing】\n現在の間合が7以下ならば、ダスト→間合：1'}
 
     , '12-raira-o-n-1': {megami: 'raira', name: '獣爪', ruby: 'じゅうそう', baseType: 'normal', types: ['attack'], range: '1-2', damage: '3/1', text: ''}
     , '12-raira-o-n-2': {megami: 'raira', name: '風雷撃', ruby: 'ふうらいげき', baseType: 'normal', types: ['attack'], range: '2', damage: 'X/2', text: '【常時】Xは風神ゲージと雷神ゲージのうち、小さい方の値である。'}
