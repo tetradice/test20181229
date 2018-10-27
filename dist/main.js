@@ -74196,7 +74196,7 @@ var view = function (state, actions) {
                 title: 'STEAM ENGINE',
                 layoutType: 'horizontal',
                 left: (side === state.viewingSide ? 1010 : 50),
-                top: (side === state.viewingSide ? 600 : 30),
+                top: (side === state.viewingSide ? 600 : 140),
                 width: 150,
                 height: 50,
                 tokenWidth: 130
@@ -74207,7 +74207,7 @@ var view = function (state, actions) {
                 title: 'BURNED',
                 layoutType: 'horizontal',
                 left: (side === state.viewingSide ? 1010 : 50),
-                top: (side === state.viewingSide ? 660 : 90),
+                top: (side === state.viewingSide ? 660 : 80),
                 width: 150,
                 height: 50,
                 tokenWidth: 130
