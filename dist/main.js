@@ -70108,16 +70108,17 @@ $(function () {
         build: function ($elem, event) {
             console.log('contextmenu:hide', $elem.menu);
             var currentState = appActions.getState();
+            var token = dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu;
             var boardModel = new models.Board(currentState.board);
             var side = currentState.side;
             var items = {};
-            var forwardEnabled = boardModel.isRideForwardEnabled(side, dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
-            var backEnabled = boardModel.isRideBackEnabled(side, dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
+            var forwardEnabled = boardModel.isRideForwardEnabled(token.ownerSide, dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
+            var backEnabled = boardModel.isRideBackEnabled(token.ownerSide, dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
             items['forward'] = { name: '騎動前進', disabled: !forwardEnabled, callback: function () {
-                    appActions.oprRideForward({ side: side, moveNumber: dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount });
+                    appActions.oprRideForward({ side: token.ownerSide, moveNumber: dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount });
                 } };
             items['back'] = { name: '騎動後退', disabled: !backEnabled, callback: function () {
-                    appActions.oprRideBack({ side: side, moveNumber: dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount });
+                    appActions.oprRideBack({ side: token.ownerSide, moveNumber: dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount });
                 } };
             items['sep'] = '----';
             items['cancel'] = { name: 'キャンセル', callback: function () { } };
@@ -75420,11 +75421,13 @@ var Board = /** @class */ (function () {
     /** 指定数の騎動前進が実行可能かどうか */
     Board.prototype.isRideForwardEnabled = function (side, moveNumber) {
         var activeSakuraTokens = this.getDistanceSakuraTokens('normal'); // 有効な桜花結晶を取得
-        return moveNumber <= activeSakuraTokens.length; // 移動数 <= 有効な桜花結晶数なら移動可能
+        var machineTokens = this.getRegionSakuraTokens(side, 'machine', null);
+        return machineTokens.length >= moveNumber && moveNumber <= activeSakuraTokens.length; // 造花結晶数が必要な数あり、かつ移動数 <= 有効な桜花結晶数なら移動可能
     };
     /** 指定数の騎動後退が実行可能かどうか */
     Board.prototype.isRideBackEnabled = function (side, moveNumber) {
-        return this.getDistanceTokenCount().length + moveNumber <= 10; // 上記結晶数 + 移動数 が10を超えなければ移動可能
+        var machineTokens = this.getRegionSakuraTokens(side, 'machine', null);
+        return machineTokens.length >= moveNumber && this.getDistanceTokenCount() + moveNumber <= 10; // 造花結晶数が必要な数あり、かつボード上に置かれている結晶数（間合-1トークン除く） + 移動数 が10を超えなければ移動可能
     };
     /** カード移動時などの領域情報一括更新 */
     Board.prototype.updateRegionInfo = function () {

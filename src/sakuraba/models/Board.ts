@@ -101,15 +101,15 @@ export class Board implements state.Board {
     /** 指定数の騎動前進が実行可能かどうか */
     isRideForwardEnabled(side: PlayerSide, moveNumber: number): boolean {
         let activeSakuraTokens = this.getDistanceSakuraTokens('normal'); // 有効な桜花結晶を取得
+        let machineTokens = this.getRegionSakuraTokens(side, 'machine', null);
 
-        return moveNumber <= activeSakuraTokens.length; // 移動数 <= 有効な桜花結晶数なら移動可能
+        return machineTokens.length >= moveNumber && moveNumber <= activeSakuraTokens.length; // 造花結晶数が必要な数あり、かつ移動数 <= 有効な桜花結晶数なら移動可能
     }
 
     /** 指定数の騎動後退が実行可能かどうか */
     isRideBackEnabled(side: PlayerSide, moveNumber: number): boolean {
-        
-
-        return this.getDistanceTokenCount().length + moveNumber <= 10; // 上記結晶数 + 移動数 が10を超えなければ移動可能
+        let machineTokens = this.getRegionSakuraTokens(side, 'machine', null);
+        return machineTokens.length >= moveNumber && this.getDistanceTokenCount() + moveNumber <= 10; // 造花結晶数が必要な数あり、かつボード上に置かれている結晶数（間合-1トークン除く） + 移動数 が10を超えなければ移動可能
     }
 
     /** カード移動時などの領域情報一括更新 */

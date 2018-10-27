@@ -214,17 +214,18 @@ $(function(){
         build: function($elem: JQuery, event: JQueryEventObject){
             console.log('contextmenu:hide', $elem.menu);
             let currentState = appActions.getState();
+            let token = dragInfo.lastDraggingSakuraTokenBeforeContextMenu;
             let boardModel = new models.Board(currentState.board);
             let side = currentState.side as PlayerSide;
             let items: Object = {};
-            let forwardEnabled = boardModel.isRideForwardEnabled(side, dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
-            let backEnabled = boardModel.isRideBackEnabled(side, dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
+            let forwardEnabled = boardModel.isRideForwardEnabled(token.ownerSide, dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
+            let backEnabled = boardModel.isRideBackEnabled(token.ownerSide, dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
 
             items['forward'] = {name: '騎動前進', disabled: !forwardEnabled, callback: () => {
-                appActions.oprRideForward({side: side, moveNumber: dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount});
+                appActions.oprRideForward({side: token.ownerSide, moveNumber: dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount});
             }};
             items['back'] = {name: '騎動後退', disabled: !backEnabled, callback: () => {
-                appActions.oprRideBack({side: side, moveNumber: dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount});
+                appActions.oprRideBack({side: token.ownerSide, moveNumber: dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount});
             }};
             items['sep'] = '----';
             items['cancel'] = {name: 'キャンセル', callback: () => {}};
