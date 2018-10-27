@@ -70702,6 +70702,11 @@ $(function () {
                     $(".area.card-region.droppable[data-region=special]:not([data-side=" + object.side + "][data-region=" + object.region + "]), .area.card-region.droppable[data-region=extra]:not([data-side=" + object.side + "][data-region=" + object.region + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
                     dragInfo_1.default.draggingFrom = object;
                 }
+                else if (cardData.baseType === 'transform') {
+                    // Transformカードであれば、使用済領域と追加札領域に移動可能
+                    $(".area.card-region.droppable[data-region=used]:not([data-side=" + object.side + "][data-region=" + object.region + "]), .area.card-region.droppable[data-region=extra]:not([data-side=" + object.side + "][data-region=" + object.region + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
+                    dragInfo_1.default.draggingFrom = object;
+                }
                 else {
                     // 切札以外であれば、切札を除く他領域に移動可能
                     $(".area.card-region.droppable:not([data-side=" + object.side + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "]):not([data-region=special]):not([data-region=on-card][data-linked-card-id=" + object.id + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
@@ -71217,8 +71222,8 @@ exports.Card = function (p) {
         fontSize: 1.0 + ((p.zoom - 1.0) / 2) + "em",
         lineHeight: "1.3"
     };
-    // transformの場合横にする
-    if (sakuraba.CARD_DATA[p.target.cardId].baseType === 'transform') {
+    // 使用済にあるtransformカードの場合横にする
+    if (p.target.region === 'used' && sakuraba.CARD_DATA[p.target.cardId].baseType === 'transform') {
         var oldW = styles.width;
         styles.width = styles.height;
         styles.height = oldW;
@@ -75423,12 +75428,13 @@ var Board = /** @class */ (function () {
         sideAndCardRegions.forEach(function (r) {
             var side = r[0], region = r[1], linkedCardId = r[2];
             var regionCards = _this.getRegionCards(side, region, linkedCardId);
-            // // 追加札は常にカードID順でソート、それ以外は以前の順序でソート
-            // if(region === 'extra'){
-            //     _.orderBy(regionCards, ['cardId', 'asc'], ['indexOfRegion', 'asc']);
-            // } else {
-            //_.orderBy(regionCards, ['indexOfRegion', 'asc']);
-            // }
+            // 追加札は常にカードID順でソート、それ以外は以前の順序でソート。ただしTransformカードは後ろに並べる
+            if (region === 'extra') {
+                regionCards = _.orderBy(regionCards, ['cardId', 'asc']);
+            }
+            else {
+                regionCards = _.orderBy(regionCards, ['baseType', 'asc'], ['indexOfRegion', 'asc']);
+            }
             var index = 0;
             regionCards.forEach(function (c) {
                 // インデックス更新

@@ -34,8 +34,8 @@ export const Card = (p: Param) => {
       , lineHeight: `1.3`
     };
 
-    // transformの場合横にする
-    if(sakuraba.CARD_DATA[p.target.cardId].baseType === 'transform'){
+    // 使用済にあるtransformカードの場合横にする
+    if(p.target.region === 'used' && sakuraba.CARD_DATA[p.target.cardId].baseType === 'transform'){
         let oldW = styles.width;
         styles.width = styles.height;
         styles.height = oldW;

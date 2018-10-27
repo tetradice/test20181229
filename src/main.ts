@@ -866,6 +866,10 @@ $(function(){
                     // 切札であれば、切札領域と追加札領域に移動可能
                     $(`.area.card-region.droppable[data-region=special]:not([data-side=${object.side}][data-region=${object.region}]), .area.card-region.droppable[data-region=extra]:not([data-side=${object.side}][data-region=${object.region}])`).css('z-index', ZIndex.HOVER_DROPPABLE);
                     dragInfo.draggingFrom = object;
+                } else if(cardData.baseType === 'transform'){
+                    // Transformカードであれば、使用済領域と追加札領域に移動可能
+                    $(`.area.card-region.droppable[data-region=used]:not([data-side=${object.side}][data-region=${object.region}]), .area.card-region.droppable[data-region=extra]:not([data-side=${object.side}][data-region=${object.region}])`).css('z-index', ZIndex.HOVER_DROPPABLE);
+                    dragInfo.draggingFrom = object;
                 } else {
                     // 切札以外であれば、切札を除く他領域に移動可能
                     $(`.area.card-region.droppable:not([data-side=${object.side}][data-region=${object.region}][data-linked-card-id=${linkedCardId}]):not([data-region=special]):not([data-region=on-card][data-linked-card-id=${object.id}])`).css('z-index', ZIndex.HOVER_DROPPABLE);
