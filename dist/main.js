@@ -74567,11 +74567,10 @@ var view = function (state, actions) {
         hyperapp_1.h(components.MainProcessButtons, { left: mainProcessButtonLeft }),
         readyObjects,
         state.side !== 'watcher' && hasMachineTarot[selfSide] ? hyperapp_1.h(components.MachineButtons, { side: selfSide, left: 1010, top: 720 }) : null,
-        "            ",
         state.board.megamis[selfSide] && state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[selfSide][0], left: 10, top: 430 }) : null,
-        state.board.megamis[selfSide] && state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[selfSide][1], left: 240, top: 600 }) : null,
+        state.board.megamis[selfSide] && state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[selfSide][1], left: (hasMachineTarot[selfSide] ? 40 : 240), top: 600 }) : null,
         state.board.megamis[opponentSide] && state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[opponentSide][0], left: 720, top: 200 }) : null,
-        state.board.megamis[opponentSide] && state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[opponentSide][1], left: 490, top: 30 }) : null));
+        state.board.megamis[opponentSide] && state.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[opponentSide][1], left: (hasMachineTarot[opponentSide] ? 690 : 490), top: 30 }) : null));
 };
 exports.default = view;
 
