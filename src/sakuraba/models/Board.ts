@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { Megami } from "sakuraba";
+import { Megami, CARD_DATA } from "sakuraba";
 import * as utils from "sakuraba/utils";
 import { SakuraTokenGroup } from "sakuraba/typings/state";
 
@@ -112,12 +112,12 @@ export class Board implements state.Board {
             let [side, region, linkedCardId] = r;
 
             let regionCards = this.getRegionCards(side, region, linkedCardId);
-            // 追加札は常にカードID順でソート、それ以外は以前の順序でソート
-            if(region === 'extra'){
-                _.orderBy(regionCards, ['cardId', 'asc'], ['indexOfRegion', 'asc']);
-            } else {
-                _.orderBy(regionCards, ['indexOfRegion', 'asc']);
-            }
+            // // 追加札は常にカードID順でソート、それ以外は以前の順序でソート
+            // if(region === 'extra'){
+            //     _.orderBy(regionCards, ['cardId', 'asc'], ['indexOfRegion', 'asc']);
+            // } else {
+                //_.orderBy(regionCards, ['indexOfRegion', 'asc']);
+            // }
 
             let index = 0;
             regionCards.forEach(c => {

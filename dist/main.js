@@ -71148,9 +71148,9 @@ exports.CARD_DATA = {
     '11-thallya-o-s-1': { megami: 'thallya', name: 'Alpha-Edge', ruby: 'アルファエッジ', baseType: 'special', types: ['attack'], range: '1,3,5,7', damage: '1/1', cost: '1', text: '【即再起】あなたが騎動により間合を変化させる。' },
     '11-thallya-o-s-2': { megami: 'thallya', name: 'Omega-Burst', ruby: 'オメガバースト', baseType: 'special', types: ['action', 'reaction'], cost: '4', text: 'あなたの燃焼済の造花結晶を全て回復する。 \n対応した、オーラへのダメージが「-」またはX以下の《攻撃》を打ち消す。Xはこのカードにより回復した造花結晶の個数に等しい。' },
     '11-thallya-o-s-4': { megami: 'thallya', name: 'Julia\'s BlackBox', ruby: 'ジュリアズ　ブラックボックス', baseType: 'special', types: ['action', 'fullpower'], cost: '0', text: 'あなたのマシンに造花結晶がないならば、あなたのマシンはTransFormし、あなたの燃焼済の造花結晶を2つ回復する。そうでない場合、このカードを未使用に戻す。' },
-    'transform-01': { megami: 'thallya', name: 'Form:YAKSHA', ruby: 'フォルム:ヤクシャ', baseType: 'transform', types: ['variable'], text: '【変形時】相手は次の開始フェイズにカードを1枚しか引けない。相手を畏縮させる。\n----\n【常時】あなたのマシンに造花結晶がないならば、あなたは基本動作を行えない。\n----\n【追加基本行動：Beta-Edge】\n「適正距離2,4,6,8、2/1 【攻撃後】騎動を行う」の《攻撃》を行う。' },
-    'transform-02': { megami: 'thallya', name: 'Form:NAGA', ruby: 'フォルム:ナーガ', baseType: 'transform', types: ['variable'], text: '【変形時】相手のフレアが3以上ならば、フレアが2になるように桜花結晶をダストへ移動させる。 \n----\n【追加基本行動：Gamma-Ray】\n相手の山札の一番上のカードを相手の捨て札に置く。' },
-    'transform-03': { megami: 'thallya', name: 'Form:GARUDA', ruby: 'フォルム:ガルーダ', baseType: 'transform', types: ['variable'], text: '【変形時】カードを2枚引き、このターンの間手札の上限が無くなる。 \n----\n【常時】カードを2枚引き、このターンの間手札の上限が無くなる。 \n----\n【追加基本行動：Delta-Wing】\n現在の間合が7以下ならば、ダスト→間合：1' },
+    'transform-01': { megami: 'thallya', name: 'Form:YAKSHA', ruby: 'フォルム:ヤクシャ', baseType: 'transform', types: ['transform'], text: '【変形時】相手は次の開始フェイズにカードを1枚しか引けない。相手を畏縮させる。\n----\n【常時】あなたのマシンに造花結晶がないならば、あなたは基本動作を行えない。\n----\n【追加基本行動：Beta-Edge】\n「適正距離2,4,6,8、2/1 【攻撃後】騎動を行う」の《攻撃》を行う。' },
+    'transform-02': { megami: 'thallya', name: 'Form:NAGA', ruby: 'フォルム:ナーガ', baseType: 'transform', types: ['transform'], text: '【変形時】相手のフレアが3以上ならば、フレアが2になるように桜花結晶をダストへ移動させる。 \n----\n【追加基本行動：Gamma-Ray】\n相手の山札の一番上のカードを相手の捨て札に置く。' },
+    'transform-03': { megami: 'thallya', name: 'Form:GARUDA', ruby: 'フォルム:ガルーダ', baseType: 'transform', types: ['transform'], text: '【変形時】カードを2枚引き、このターンの間手札の上限が無くなる。 \n----\n【常時】カードを2枚引き、このターンの間手札の上限が無くなる。 \n----\n【追加基本行動：Delta-Wing】\n現在の間合が7以下ならば、ダスト→間合：1' },
     '12-raira-o-n-1': { megami: 'raira', name: '獣爪', ruby: 'じゅうそう', baseType: 'normal', types: ['attack'], range: '1-2', damage: '3/1', text: '' },
     '12-raira-o-n-2': { megami: 'raira', name: '風雷撃', ruby: 'ふうらいげき', baseType: 'normal', types: ['attack'], range: '2', damage: 'X/2', text: '【常時】Xは風神ゲージと雷神ゲージのうち、小さい方の値である。' },
     '12-raira-o-n-3': { megami: 'raira', name: '流転爪', ruby: 'るてんそう', baseType: 'normal', types: ['attack'], range: '1-2', damage: '2/1', text: '【攻撃後】あなたの捨て札にある《攻撃》カード1枚を選び、山札の一番上に置いてもよい。' },
@@ -71217,6 +71217,12 @@ exports.Card = function (p) {
         fontSize: 1.0 + ((p.zoom - 1.0) / 2) + "em",
         lineHeight: "1.3"
     };
+    // transformの場合横にする
+    if (sakuraba.CARD_DATA[p.target.cardId].baseType === 'transform') {
+        var oldW = styles.width;
+        styles.width = styles.height;
+        styles.height = oldW;
+    }
     if (p.target.region === 'on-card') {
         styles.zIndex = "" + (const_1.ZIndex.SEALED_CARD - p.target.indexOfRegion);
     }
@@ -71289,6 +71295,8 @@ exports.Card = function (p) {
             typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-reaction' }, "\u5BFE"));
         if (cardData.types.indexOf('fullpower') >= 0)
             typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-fullpower' }, "\u5168"));
+        if (cardData.types.indexOf('transform') >= 0)
+            typeCaptions.push(hyperapp_1.h("span", { class: 'card-type-transform' }, "TR"));
     }
     return (hyperapp_1.h("div", { key: p.target.id, class: className, id: 'board-object-' + p.target.id, style: styles, draggable: p.draggable, "data-object-id": p.target.id, "data-side": p.target.side, "data-region": p.target.region, "data-linked-card-id": p.target.linkedCardId || 'none', onclick: p.onclick, ondblclick: p.ondblclick, oncreate: oncreate, onupdate: onupdate, "data-html": utils.getDescriptionHtml(p.target.cardId) },
         hyperapp_1.h("div", { class: "card-name" }, (p.opened ? cardData.name : '')),
@@ -72110,11 +72118,12 @@ exports.default = {
             undoType: 'notBack',
             log: (p.lifeDecrease ? "\u518D\u69CB\u6210\u3057\u307E\u3057\u305F (\u30E9\u30A4\u30D5-1)" : "\u30E9\u30A4\u30D5\u6E1B\u5C11\u306A\u3057\u3067\u518D\u69CB\u6210\u3057\u307E\u3057\u305F"),
             proc: function () {
-                // （桜花結晶が上に乗っていない）使用済札、伏せ札をすべて山札へ移動
+                // （桜花結晶が上に乗っていない）使用済札、伏せ札をすべて山札へ移動。ただしTransformカードは除外
                 var newBoard = models.Board.clone(state.board);
                 var usedCards = newBoard.getRegionCards(p.side, 'used', null);
                 usedCards.forEach(function (card) {
-                    if (newBoard.getRegionSakuraTokens(p.side, 'on-card', card.id).length === 0) {
+                    var data = sakuraba_1.CARD_DATA[card.cardId];
+                    if (newBoard.getRegionSakuraTokens(p.side, 'on-card', card.id).length === 0 && data.baseType !== 'transform') {
                         actions.moveCard({ from: card.id, to: [p.side, 'library', null] });
                     }
                 });
@@ -75414,13 +75423,12 @@ var Board = /** @class */ (function () {
         sideAndCardRegions.forEach(function (r) {
             var side = r[0], region = r[1], linkedCardId = r[2];
             var regionCards = _this.getRegionCards(side, region, linkedCardId);
-            // 追加札は常にカードID順でソート、それ以外は以前の順序でソート
-            if (region === 'extra') {
-                _.orderBy(regionCards, ['cardId', 'asc'], ['indexOfRegion', 'asc']);
-            }
-            else {
-                _.orderBy(regionCards, ['indexOfRegion', 'asc']);
-            }
+            // // 追加札は常にカードID順でソート、それ以外は以前の順序でソート
+            // if(region === 'extra'){
+            //     _.orderBy(regionCards, ['cardId', 'asc'], ['indexOfRegion', 'asc']);
+            // } else {
+            //_.orderBy(regionCards, ['indexOfRegion', 'asc']);
+            // }
             var index = 0;
             regionCards.forEach(function (c) {
                 // インデックス更新
@@ -75685,6 +75693,8 @@ function getDescriptionHtml(cardId) {
         typeCaptions.push("<span class='card-type-reaction'>対応</span>");
     if (cardData.types.indexOf('fullpower') >= 0)
         typeCaptions.push("<span class='card-type-fullpower'>全力</span>");
+    if (cardData.types.indexOf('transform') >= 0)
+        typeCaptions.push("<span class='card-type-transform'>Transform</span>");
     html += "" + typeCaptions.join('/');
     if (cardData.range !== undefined) {
         if (cardData.rangeOpened !== undefined) {
