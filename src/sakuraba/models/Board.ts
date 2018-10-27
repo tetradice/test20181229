@@ -78,11 +78,30 @@ export class Board implements state.Board {
         return this.objects.filter(v => v.type === 'sakura-token' && v.side === side && v.region == region && v.linkedCardId == linkedCardId) as state.SakuraToken[];
     }
 
+    /** 間合にある、指定したグループの桜花結晶を一括取得 */
+    getDistanceSakuraTokens(group: state.SakuraTokenGroup): state.SakuraToken[] {
+        return this.objects.filter(v => v.type === 'sakura-token' && v.side === null && v.region == 'distance' && v.linkedCardId == null && v.group === group) as state.SakuraToken[];
+    }
+
     /** 現在の間合の値を取得 (騎動分も加味する) */
     getDistance(): number {
         let tokens = this.getRegionSakuraTokens(null, 'distance', null);
 
         return tokens.filter(x => !(x.artificial && x.distanceMinus)).length - tokens.filter(x => x.artificial && x.distanceMinus).length;
+    }
+
+    /** 指定数の騎動前進が実行可能かどうか */
+    isRideForwardEnabled(side: PlayerSide, moveNumber: number): boolean {
+        let activeSakuraTokens = this.getDistanceSakuraTokens('normal'); // 有効な桜花結晶を取得
+
+        return moveNumber <= activeSakuraTokens.length; // 移動数 <= 有効な桜花結晶数なら移動可能
+    }
+
+    /** 指定数の騎動後退が実行可能かどうか */
+    isRideBackEnabled(side: PlayerSide, moveNumber: number): boolean {
+        let flatTokens = this.getRegionSakuraTokens(null, 'distance', null).filter(t => !t.distanceMinus); // 間合-1トークンを除いたすべての結晶を取得
+
+        return flatTokens.length + moveNumber <= 10; // 上記結晶数 + 移動数 が10を超えなければ移動可能
     }
 
     /** カード移動時などの領域情報一括更新 */

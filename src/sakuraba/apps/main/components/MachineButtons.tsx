@@ -14,12 +14,10 @@ export const MachineButtons = (p: {side: PlayerSide, left: number, top: number})
     };
 
     let boardModel = new models.Board(state.board);
-    let distanceTokens = boardModel.getRegionSakuraTokens(null, 'distance', null);
-    let machineTokens = boardModel.getRegionSakuraTokens(p.side, 'machine', null);
     return (
         <div style={styles}>
-            <button class={`mini ui basic button${machineTokens.length === 0 || distanceTokens.length <= 0 ? ' disabled' : ''}`} onclick={() => actions.oprRideForward({side: p.side, moveNumber: 1})}>騎動前進</button>
-            <button class={`mini ui basic button${machineTokens.length === 0 || distanceTokens.length >= 10 ? ' disabled' : ''}`} onclick={() => actions.oprRideBack({side: p.side, moveNumber: 1})}>騎動後退</button>
+            <button class={`mini ui basic button${boardModel.isRideForwardEnabled(p.side, 1) ? '' : ' disabled'}`} onclick={() => actions.oprRideForward({side: p.side, moveNumber: 1})}>騎動前進</button>
+            <button class={`mini ui basic button${boardModel.isRideBackEnabled(p.side, 1) ? '' : ' disabled'}`} onclick={() => actions.oprRideBack({side: p.side, moveNumber: 1})}>騎動後退</button>
         </div>
     );
 }

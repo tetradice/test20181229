@@ -113,8 +113,9 @@ export default {
 
     /** 騎動前進 */
     oprRideForward: (p: {side: PlayerSide, moveNumber: number}) => (state: state.State, actions: ActionsType) => {
+        let numPrefix = (p.moveNumber === 1 ? '' : `${p.moveNumber}回`);
         actions.operate({
-            log: (p.moveNumber === 1 ? `騎動前進しました` : `${p.moveNumber}回騎動前進しました`),
+            log: (p.side === state.side ? `${numPrefix}騎動前進しました` : `相手を${numPrefix}騎動前進させました`),
             proc: () => {
                 actions.moveSakuraToken({ from: [p.side, 'machine', null], to: [null, 'distance', null], distanceMinus: true, moveNumber: p.moveNumber });
             }
@@ -123,8 +124,9 @@ export default {
 
     /** 騎動後退 */
     oprRideBack: (p: {side: PlayerSide, moveNumber: number}) => (state: state.State, actions: ActionsType) => {
+        let numPrefix = (p.moveNumber === 1 ? '' : `${p.moveNumber}回`);
         actions.operate({
-            log: (p.moveNumber === 1 ? `騎動後退しました` : `${p.moveNumber}回騎動後退しました`),
+            log: (p.side === state.side ? `${numPrefix}騎動後退しました` : `相手を${numPrefix}回騎動後退させました`),
             proc: () => {
                 actions.moveSakuraToken({from: [p.side, 'machine', null], to: [null, 'distance', null], distanceMinus: false, moveNumber: p.moveNumber});
             }

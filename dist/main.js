@@ -70108,12 +70108,15 @@ $(function () {
         build: function ($elem, event) {
             console.log('contextmenu:hide', $elem.menu);
             var currentState = appActions.getState();
+            var boardModel = new models.Board(currentState.board);
             var side = currentState.side;
             var items = {};
-            items['forward'] = { name: '騎動前進', callback: function () {
+            var forwardEnabled = boardModel.isRideForwardEnabled(side, dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
+            var backEnabled = boardModel.isRideBackEnabled(side, dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
+            items['forward'] = { name: '騎動前進', disabled: !forwardEnabled, callback: function () {
                     appActions.oprRideForward({ side: side, moveNumber: dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount });
                 } };
-            items['back'] = { name: '騎動後退', callback: function () {
+            items['back'] = { name: '騎動後退', disabled: !backEnabled, callback: function () {
                     appActions.oprRideBack({ side: side, moveNumber: dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount });
                 } };
             items['sep'] = '----';
@@ -70787,18 +70790,27 @@ $(function () {
                 }
             }
             // 桜花結晶の移動で、かつ移動先の最大値を超える場合は移動不可
+            // ただし移動対象が造花結晶で、かつ有効な桜花結晶数以下であれば、特例として移動可能 (騎動前進の可能性があるため)
             if (dragInfo_1.default.draggingFrom.type === 'sakura-token') {
+                var token = dragInfo_1.default.draggingFrom;
                 var tokenRegion = region;
                 var state_1 = appActions.getState();
                 var boardModel = new models.Board(state_1.board);
                 var tokenCount = 0;
+                var rideForwardEnabled = false;
                 if (tokenRegion === 'distance') {
                     tokenCount = boardModel.getDistance();
+                    if (token.artificial) {
+                        var activeSakuraTokens = boardModel.getDistanceSakuraTokens('normal');
+                        if (token.groupTokenDraggingCount <= activeSakuraTokens.length) {
+                            rideForwardEnabled = true;
+                        }
+                    }
                 }
                 else {
                     tokenCount = boardModel.getRegionSakuraTokens((side === 'none' ? null : side), tokenRegion, (linkedCardId === 'none' ? null : linkedCardId)).length;
                 }
-                if (tokenCount + dragInfo_1.default.sakuraTokenMoveCount > sakuraba_1.SAKURA_TOKEN_MAX[tokenRegion]) {
+                if (tokenCount + dragInfo_1.default.sakuraTokenMoveCount > sakuraba_1.SAKURA_TOKEN_MAX[tokenRegion] && !rideForwardEnabled) {
                     $(".area.droppable[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
                     $(".area.background[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
                     return true;
@@ -72323,8 +72335,9 @@ exports.default = {
     }; },
     /** 騎動前進 */
     oprRideForward: function (p) { return function (state, actions) {
+        var numPrefix = (p.moveNumber === 1 ? '' : p.moveNumber + "\u56DE");
         actions.operate({
-            log: (p.moveNumber === 1 ? "\u9A0E\u52D5\u524D\u9032\u3057\u307E\u3057\u305F" : p.moveNumber + "\u56DE\u9A0E\u52D5\u524D\u9032\u3057\u307E\u3057\u305F"),
+            log: (p.side === state.side ? numPrefix + "\u9A0E\u52D5\u524D\u9032\u3057\u307E\u3057\u305F" : "\u76F8\u624B\u3092" + numPrefix + "\u9A0E\u52D5\u524D\u9032\u3055\u305B\u307E\u3057\u305F"),
             proc: function () {
                 actions.moveSakuraToken({ from: [p.side, 'machine', null], to: [null, 'distance', null], distanceMinus: true, moveNumber: p.moveNumber });
             }
@@ -72332,8 +72345,9 @@ exports.default = {
     }; },
     /** 騎動後退 */
     oprRideBack: function (p) { return function (state, actions) {
+        var numPrefix = (p.moveNumber === 1 ? '' : p.moveNumber + "\u56DE");
         actions.operate({
-            log: (p.moveNumber === 1 ? "\u9A0E\u52D5\u5F8C\u9000\u3057\u307E\u3057\u305F" : p.moveNumber + "\u56DE\u9A0E\u52D5\u5F8C\u9000\u3057\u307E\u3057\u305F"),
+            log: (p.side === state.side ? numPrefix + "\u9A0E\u52D5\u5F8C\u9000\u3057\u307E\u3057\u305F" : "\u76F8\u624B\u3092" + numPrefix + "\u56DE\u9A0E\u52D5\u5F8C\u9000\u3055\u305B\u307E\u3057\u305F"),
             proc: function () {
                 actions.moveSakuraToken({ from: [p.side, 'machine', null], to: [null, 'distance', null], distanceMinus: false, moveNumber: p.moveNumber });
             }
@@ -73263,11 +73277,9 @@ exports.MachineButtons = function (p) { return function (state, actions) {
         position: 'absolute'
     };
     var boardModel = new models.Board(state.board);
-    var distanceTokens = boardModel.getRegionSakuraTokens(null, 'distance', null);
-    var machineTokens = boardModel.getRegionSakuraTokens(p.side, 'machine', null);
     return (hyperapp_1.h("div", { style: styles },
-        hyperapp_1.h("button", { class: "mini ui basic button" + (machineTokens.length === 0 || distanceTokens.length <= 0 ? ' disabled' : ''), onclick: function () { return actions.oprRideForward({ side: p.side, moveNumber: 1 }); } }, "\u9A0E\u52D5\u524D\u9032"),
-        hyperapp_1.h("button", { class: "mini ui basic button" + (machineTokens.length === 0 || distanceTokens.length >= 10 ? ' disabled' : ''), onclick: function () { return actions.oprRideBack({ side: p.side, moveNumber: 1 }); } }, "\u9A0E\u52D5\u5F8C\u9000")));
+        hyperapp_1.h("button", { class: "mini ui basic button" + (boardModel.isRideForwardEnabled(p.side, 1) ? '' : ' disabled'), onclick: function () { return actions.oprRideForward({ side: p.side, moveNumber: 1 }); } }, "\u9A0E\u52D5\u524D\u9032"),
+        hyperapp_1.h("button", { class: "mini ui basic button" + (boardModel.isRideBackEnabled(p.side, 1) ? '' : ' disabled'), onclick: function () { return actions.oprRideBack({ side: p.side, moveNumber: 1 }); } }, "\u9A0E\u52D5\u5F8C\u9000")));
 }; };
 
 
@@ -75375,10 +75387,24 @@ var Board = /** @class */ (function () {
     Board.prototype.getRegionSakuraTokens = function (side, region, linkedCardId) {
         return this.objects.filter(function (v) { return v.type === 'sakura-token' && v.side === side && v.region == region && v.linkedCardId == linkedCardId; });
     };
+    /** 間合にある、指定したグループの桜花結晶を一括取得 */
+    Board.prototype.getDistanceSakuraTokens = function (group) {
+        return this.objects.filter(function (v) { return v.type === 'sakura-token' && v.side === null && v.region == 'distance' && v.linkedCardId == null && v.group === group; });
+    };
     /** 現在の間合の値を取得 (騎動分も加味する) */
     Board.prototype.getDistance = function () {
         var tokens = this.getRegionSakuraTokens(null, 'distance', null);
         return tokens.filter(function (x) { return !(x.artificial && x.distanceMinus); }).length - tokens.filter(function (x) { return x.artificial && x.distanceMinus; }).length;
+    };
+    /** 指定数の騎動前進が実行可能かどうか */
+    Board.prototype.isRideForwardEnabled = function (side, moveNumber) {
+        var activeSakuraTokens = this.getDistanceSakuraTokens('normal'); // 有効な桜花結晶を取得
+        return moveNumber <= activeSakuraTokens.length; // 移動数 <= 有効な桜花結晶数なら移動可能
+    };
+    /** 指定数の騎動後退が実行可能かどうか */
+    Board.prototype.isRideBackEnabled = function (side, moveNumber) {
+        var flatTokens = this.getRegionSakuraTokens(null, 'distance', null).filter(function (t) { return !t.distanceMinus; }); // 間合-1トークンを除いたすべての結晶を取得
+        return flatTokens.length + moveNumber <= 10; // 上記結晶数 + 移動数 が10を超えなければ移動可能
     };
     /** カード移動時などの領域情報一括更新 */
     Board.prototype.updateRegionInfo = function () {

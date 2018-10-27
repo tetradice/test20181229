@@ -214,13 +214,16 @@ $(function(){
         build: function($elem: JQuery, event: JQueryEventObject){
             console.log('contextmenu:hide', $elem.menu);
             let currentState = appActions.getState();
+            let boardModel = new models.Board(currentState.board);
             let side = currentState.side as PlayerSide;
             let items: Object = {};
+            let forwardEnabled = boardModel.isRideForwardEnabled(side, dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
+            let backEnabled = boardModel.isRideBackEnabled(side, dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
 
-            items['forward'] = {name: '騎動前進', callback: () => {
+            items['forward'] = {name: '騎動前進', disabled: !forwardEnabled, callback: () => {
                 appActions.oprRideForward({side: side, moveNumber: dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount});
             }};
-            items['back'] = {name: '騎動後退', callback: () => {
+            items['back'] = {name: '騎動後退', disabled: !backEnabled, callback: () => {
                 appActions.oprRideBack({side: side, moveNumber: dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount});
             }};
             items['sep'] = '----';
@@ -962,18 +965,28 @@ $(function(){
             }
 
             // 桜花結晶の移動で、かつ移動先の最大値を超える場合は移動不可
+            // ただし移動対象が造花結晶で、かつ有効な桜花結晶数以下であれば、特例として移動可能 (騎動前進の可能性があるため)
             if(dragInfo.draggingFrom.type === 'sakura-token'){
+                let token = dragInfo.draggingFrom;
+
                 let tokenRegion = region as SakuraTokenRegion;
                 let state = appActions.getState();
                 let boardModel = new models.Board(state.board);
                 let tokenCount = 0;
+                let rideForwardEnabled = false;
                 if(tokenRegion === 'distance'){
                     tokenCount = boardModel.getDistance();
+                    if(token.artificial){
+                        let activeSakuraTokens = boardModel.getDistanceSakuraTokens('normal');
+                        if(token.groupTokenDraggingCount <= activeSakuraTokens.length){
+                            rideForwardEnabled = true;
+                        }
+                    }
                 } else {
                     tokenCount = boardModel.getRegionSakuraTokens((side === 'none' ? null : side), tokenRegion, (linkedCardId === 'none' ? null : linkedCardId)).length;
                 }
-
-                if(tokenCount + dragInfo.sakuraTokenMoveCount > SAKURA_TOKEN_MAX[tokenRegion]){
+                
+                if(tokenCount + dragInfo.sakuraTokenMoveCount > SAKURA_TOKEN_MAX[tokenRegion] && !rideForwardEnabled){
                     $(`.area.droppable[data-side=${side}][data-region=${region}]`).addClass('over-forbidden');
                     $(`.area.background[data-side=${side}][data-region=${region}]`).addClass('over-forbidden');
                     return true;
