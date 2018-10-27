@@ -162,6 +162,12 @@ export function getSakuraTokenRegionTitle(selfSide: PlayerSide, side: PlayerSide
     if(region === 'dust'){
         titleBase = "ダスト";
     }
+    if(region === 'machine'){
+        titleBase = "マシン";
+    }
+    if(region === 'burned'){
+        titleBase = "燃焼済";
+    }
     if(region === 'on-card'){
         let cardData = sakuraba.CARD_DATA[linkedCard.cardId];
         titleBase = `[${cardData.name}]上`;

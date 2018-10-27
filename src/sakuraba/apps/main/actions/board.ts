@@ -490,7 +490,7 @@ export default {
                 }
                 // サリヤがいれば造花結晶とTransformカードをセット
                 if(board.megamis[state.side].find(m => m === 'thallya')){
-                    actions.addSakuraToken({side: state.side, region: 'machine', number: 5, artificial: true});
+                    actions.addSakuraToken({side: state.side, region: 'machine', number: 5, artificial: true, ownerSide: state.side});
 
                     actions.addCard({side: state.side, region: 'extra', cardId: 'transform-01'});
                     actions.addCard({side: state.side, region: 'extra', cardId: 'transform-02'});

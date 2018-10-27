@@ -558,6 +558,12 @@ function getSakuraTokenRegionTitle(selfSide, side, region, linkedCard) {
     if (region === 'dust') {
         titleBase = "ダスト";
     }
+    if (region === 'machine') {
+        titleBase = "マシン";
+    }
+    if (region === 'burned') {
+        titleBase = "燃焼済";
+    }
     if (region === 'on-card') {
         var cardData = sakuraba.CARD_DATA[linkedCard.cardId];
         titleBase = "[" + cardData.name + "]\u4E0A";
@@ -697,7 +703,8 @@ function createSakuraToken(id, region, side) {
         group: null,
         groupTokenDraggingCount: null,
         side: side,
-        linkedCardId: null
+        linkedCardId: null,
+        ownerSide: null
     };
 }
 exports.createSakuraToken = createSakuraToken;

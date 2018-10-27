@@ -203,8 +203,11 @@
             background-image: url(http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost1.png);
             z-index: 200;
         }
-        .sakura-token.artificial {
-            background-image: url(http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost1_gold.png);
+        .sakura-token.artificial.p1 {
+            background-image: url(http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost1_p1.png);
+        }
+        .sakura-token.artificial.p2 {
+            background-image: url(http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost1_p2.png);
         }
         .fbs-card.open-normal, .fbs-card.open-special {
             background-color: rgb(219, 235, 245);
@@ -465,6 +468,36 @@
     <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost5.png" width="61" height="26">
     <div class="count" style="position: absolute; right: 2px; bottom: 2px; font-size: medium; color: silver; font-weight: bold; ">4</div>
 </div>
+<div class="drag-ghost" id="artificial-token-ghost-1-p1" style="display: none; width: 80px; height: 26px; z-index: -20000; position: absolute; left: 380px; top: 380px;">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost1_p1.png" width="26" height="26">
+</div>
+<div class="drag-ghost" id="artificial-token-ghost-2-p1" style="display: none; width: 80px; height: 26px; z-index: -20000; position: absolute; left: 380px; top: 380px;">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost2_p1.png" width="35" height="26">
+</div>
+<div class="drag-ghost" id="artificial-token-ghost-3-p1" style="display: none; width: 80px; height: 26px; z-index: -20000; position: absolute; left: 380px; top: 380px;">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost3_p1.png" width="43" height="26">
+</div>
+<div class="drag-ghost" id="artificial-token-ghost-4-p1" style="display: none; width: 80px; height: 26px; z-index: -20000; position: absolute; left: 380px; top: 380px;">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost4_p1.png" width="52" height="26">
+</div>
+<div class="drag-ghost" id="artificial-token-ghost-5-p1" style="display: none; width: 80px; height: 26px; z-index: -20000; position: absolute; left: 380px; top: 380px;">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost5_p1.png" width="61" height="26">
+</div>
+<div class="drag-ghost" id="artificial-token-ghost-1-p2" style="display: none; width: 80px; height: 26px; z-index: -20000; position: absolute; left: 380px; top: 380px;">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost1_p2.png" width="26" height="26">
+</div>
+<div class="drag-ghost" id="artificial-token-ghost-2-p2" style="display: none; width: 80px; height: 26px; z-index: -20000; position: absolute; left: 380px; top: 380px;">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost2_p2.png" width="35" height="26">
+</div>
+<div class="drag-ghost" id="artificial-token-ghost-3-p2" style="display: none; width: 80px; height: 26px; z-index: -20000; position: absolute; left: 380px; top: 380px;">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost3_p2.png" width="43" height="26">
+</div>
+<div class="drag-ghost" id="artificial-token-ghost-4-p2" style="display: none; width: 80px; height: 26px; z-index: -20000; position: absolute; left: 380px; top: 380px;">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost4_p2.png" width="52" height="26">
+</div>
+<div class="drag-ghost" id="artificial-token-ghost-5-p2" style="display: none; width: 80px; height: 26px; z-index: -20000; position: absolute; left: 380px; top: 380px;">
+    <img src="http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost5_p2.png" width="61" height="26">
+</div>
 <!-- <div id="CONTROL-PANEL">
         <button class="ui basic button">直前の操作を取り消す</button>
             <button class="ui basic button" id="TURN-END-BUTTON">ターン終了</button>
@@ -724,7 +757,6 @@
             </div>
             <div class="ui error message"></div>
         </div>
-        <p>※現在のα版では、サリヤとアナザーメガミは選択できません。<p>
     </div>
 
     <div class="actions">

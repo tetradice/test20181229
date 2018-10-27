@@ -92,7 +92,14 @@ export class Board implements state.Board {
         sideAndCardRegions.forEach(r => {
             let [side, region, linkedCardId] = r;
 
-            let regionCards = this.getRegionCards(side, region, linkedCardId).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+            let regionCards = this.getRegionCards(side, region, linkedCardId);
+            // 追加札は常にカードID順でソート、それ以外は以前の順序でソート
+            if(region === 'extra'){
+                _.orderBy(regionCards, ['cardId', 'asc'], ['indexOfRegion', 'asc']);
+            } else {
+                _.orderBy(regionCards, ['indexOfRegion', 'asc']);
+            }
+
             let index = 0;
             regionCards.forEach(c => {
                 // インデックス更新
@@ -141,10 +148,17 @@ export class Board implements state.Board {
                 let activeNormalTokenCount = normalTokens.length - distanceMinusTokens.length;
 
                 // 造花結晶のグループを振る
-                artificialTokens.forEach((c, i) => {
-                    c.group = 'artificial';
-                    c.groupTokenDraggingCount = artificialTokens.length; // ドラッグ時には全造花結晶をまとめて操作
+                let artificialTokensP1 = artificialTokens.filter(t => t.ownerSide === 'p1');
+                let artificialTokensP2 = artificialTokens.filter(t => t.ownerSide === 'p2');
+                artificialTokensP1.forEach((c, i) => {
+                    c.group = 'artificial-p1';
+                    c.groupTokenDraggingCount = artificialTokensP1.length; // ドラッグ時には全造花結晶をまとめて操作
                 });
+                artificialTokensP2.forEach((c, i) => {
+                    c.group = 'artificial-p2';
+                    c.groupTokenDraggingCount = artificialTokensP2.length; // ドラッグ時には全造花結晶をまとめて操作
+                });
+
 
                 // 通常の桜花結晶は、間合-1トークンの数だけ無効
                 // それ以外は有効

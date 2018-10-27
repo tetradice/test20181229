@@ -215,12 +215,13 @@ $(function(){
             console.log('contextmenu:hide', $elem.menu);
             let currentState = appActions.getState();
             let side = currentState.side as PlayerSide;
-            let board = new models.Board(currentState.board);
             let items: Object = {};
 
             items['forward'] = {name: '騎動前進', callback: () => {
+                appActions.oprRideForward({side: side, moveNumber: dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount});
             }};
             items['back'] = {name: '騎動後退', callback: () => {
+                appActions.oprRideBack({side: side, moveNumber: dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount});
             }};
             items['sep'] = '----';
             items['cancel'] = {name: 'キャンセル', callback: () => {}};
@@ -885,16 +886,15 @@ $(function(){
                 let baseSelector = `.area.sakura-token-region.droppable:not([data-side=${tokenSide}][data-region=${object.region}][data-linked-card-id=${linkedCardId}])`;
                 if(object.artificial){
                     // 造花結晶であれば、今の領域に応じて移動先が決まる
-                    
                     if(object.region === 'distance'){
-                        // 間合からの移動の場合は、燃焼済領域にのみ移動可能
-                        $(`${baseSelector}[data-region=burned]`).css('z-index', ZIndex.HOVER_DROPPABLE);
+                        // 間合からの移動の場合は、所有者の燃焼済領域にのみ移動可能
+                        $(`${baseSelector}[data-side=${object.ownerSide}][data-region=burned]`).css('z-index', ZIndex.HOVER_DROPPABLE);
                     } else if(object.region === 'burned'){
-                        // 燃焼済領域からの移動の場合は、所持者のマシン領域にのみ移動可能
-                        $(`${baseSelector}[data-side=${tokenSide}][data-region=machine]`).css('z-index', ZIndex.HOVER_DROPPABLE);
+                        // 燃焼済領域からの移動の場合は、所有者のマシン領域にのみ移動可能
+                        $(`${baseSelector}[data-side=${object.ownerSide}][data-region=machine]`).css('z-index', ZIndex.HOVER_DROPPABLE);
                     } else {
                         // マシン領域からの移動の場合は、所持者の燃焼済、間合のどちらかに移動可能
-                        $(`${baseSelector}[data-side=${tokenSide}][data-region=burned],${baseSelector}[data-region=distance]`).css('z-index', ZIndex.HOVER_DROPPABLE);
+                        $(`${baseSelector}[data-side=${object.ownerSide}][data-region=burned],${baseSelector}[data-region=distance]`).css('z-index', ZIndex.HOVER_DROPPABLE);
                     }
                 } else {
                     // 通常の桜花結晶であれば、自身以外の領域のうち、マシンと燃焼済を除く全領域に移動可能
@@ -910,9 +910,13 @@ $(function(){
                 $tokens.filter((i, elem) => parseInt(elem.dataset.draggingCount) <= draggingCount).css('opacity', '0.4');
 
                 // ドラッグゴースト画像を設定
-                $('#sakura-token-ghost-many .count').text(draggingCount);
-                let ghost = (draggingCount >= 6 ? $('#sakura-token-ghost-many')[0] : $(`#sakura-token-ghost-${draggingCount}`)[0]);
-                //let ghost = $('<img src="/furuyoni_commons/others/sakura_token_ghost3.png" width="30" height="30">')[0];
+                let ghost: Element;
+                if(object.artificial){
+                    ghost = $(`#artificial-token-ghost-${draggingCount}-${object.ownerSide}`)[0];
+                } else {
+                    $('#sakura-token-ghost-many .count').text(draggingCount);
+                    ghost = (draggingCount >= 6 ? $('#sakura-token-ghost-many')[0] : $(`#sakura-token-ghost-${draggingCount}`)[0]);
+                }
                 (e.originalEvent as DragEvent).dataTransfer.setDragImage(ghost, 0, 0);
 
                 // 選択状態を解除
@@ -1070,7 +1074,7 @@ $(function(){
                     let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region, fromLinkedCard);
                     let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion, toLinkedCard);
                     
-                    // 間合に造花結晶を移動した場合は特殊処理
+                    // 間合に造花結晶を移動した場合は特殊処理 (騎動メニュー)
                     if (toRegion === 'distance' && sakuraToken.artificial) {
                         contextMenuShowingAfterDrop = true;
                         dragInfo.lastDraggingSakuraTokenBeforeContextMenu = sakuraToken;
@@ -1078,22 +1082,35 @@ $(function(){
                         return false;
                     } else {
                         // ログ内容を決定
-                        logs.push({ text: `桜花結晶を${dragInfo.sakuraTokenMoveCount}つ移動しました：${fromRegionTitle} → ${toRegionTitle}` });
+                        let sidePrefix = (currentState.side !== sakuraToken.ownerSide ? '相手の' : '')
+                        let tokenName = (sakuraToken.artificial ? '造花結晶' : '桜花結晶');
+                        let logText = `${sidePrefix}${tokenName}を${dragInfo.sakuraTokenMoveCount}つ移動しました：${fromRegionTitle} → ${toRegionTitle}`
+
+                        // 一部の移動ではログを変更
+                        if(sakuraToken.region === 'machine' && toRegion === 'burned'){
+                            logText = `${sidePrefix}マシンの造花結晶を${dragInfo.sakuraTokenMoveCount}つ燃焼済にしました`;
+                        }
+                        if(sakuraToken.region === 'distance' && toRegion === 'burned'){
+                            logText = `間合の造花結晶を${dragInfo.sakuraTokenMoveCount}つ燃焼済にしました`;
+                        }
+                        if(sakuraToken.region === 'burned' && toRegion === 'machine'){
+                            logText = `${sidePrefix}燃焼済の${tokenName}を${dragInfo.sakuraTokenMoveCount}つ回復しました`;
+                        }
+                        logs.push({ text: logText });
 
                         appActions.operate({
                             log: logs,
                             proc: () => {
                                 appActions.moveSakuraToken({
                                     from: [sakuraToken.side, sakuraToken.region, sakuraToken.linkedCardId]
+                                    , fromGroup: sakuraToken.group
                                     , to: [toSide, toRegion, toLinkedCardId]
                                     , moveNumber: dragInfo.sakuraTokenMoveCount
                                 });
                             }
                         });
                     }
-
                 }
-
 
                 // // 山札に移動した場合は特殊処理
                 // if(to === 'library'){

@@ -101,7 +101,7 @@ export interface Card extends BoardObjectBase {
     ownerSide: PlayerSide;
 }
 
-export type SakuraTokenGroup = 'normal' | 'inactive' | 'artificial';
+export type SakuraTokenGroup = 'normal' | 'inactive' | 'artificial-p1' | 'artificial-p2';
 
 export interface SakuraToken extends BoardObjectBase {
     type: 'sakura-token'
@@ -109,15 +109,22 @@ export interface SakuraToken extends BoardObjectBase {
     region: SakuraTokenRegion;
     indexOfRegion: number;
 
-    /** グループ (通常/無効/間合+1/間合-1) */
-    group: SakuraTokenGroup;
-
-    /** ドラッグ時に同じグループの桜花結晶をいくつ操作するか */
-    groupTokenDraggingCount: number;
     linkedCardId: string;
 
     /** 造花結晶である */
     artificial?: boolean;
+
+    /** 所有プレイヤー (造花結晶のみ) */
+    ownerSide: PlayerSide;
+
+    // 以下は一時領域情報 (updateRegionInfoで更新される)
+
+    /** グループ (通常/無効/p1造花結晶/p2造花結晶) */
+    group: SakuraTokenGroup;
+
+    /** ドラッグ時に同じグループの桜花結晶をいくつ操作するか */
+    groupTokenDraggingCount: number;
+
 
     /** 間合-1トークンである (桜花結晶に重ねる) */
     distanceMinus?: boolean

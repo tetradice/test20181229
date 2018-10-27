@@ -65,5 +65,6 @@ return {
   , groupTokenDraggingCount: null
   , side: side
   , linkedCardId: null
+  , ownerSide: null
 };
 }
