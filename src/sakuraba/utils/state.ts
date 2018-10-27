@@ -61,6 +61,8 @@ return {
   , id: id
   , region: region
   , indexOfRegion: 0
+  , group: null
+  , groupTokenDraggingCount: null
   , side: side
   , linkedCardId: null
 };

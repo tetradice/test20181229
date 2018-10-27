@@ -1,7 +1,11 @@
 import { h } from "hyperapp";
 
 /** 桜花結晶 */
-export const SakuraToken = (p: {target: state.SakuraToken, left: number, top: number, draggingCount: number}) => (state: state.State, actions) => {
+export const SakuraToken = (p: {
+    target: state.SakuraToken
+  , left: number
+  , top: number
+}) => (state: state.State, actions) => {
     let styles: Partial<CSSStyleDeclaration> = {
           left: `${p.left * state.zoom}px`
         , top: `${p.top * state.zoom}px`
@@ -18,7 +22,8 @@ export const SakuraToken = (p: {target: state.SakuraToken, left: number, top: nu
       data-region={p.target.region}
       data-linked-card-id={p.target.linkedCardId || 'none'}
       data-region-index={p.target.indexOfRegion}
-      data-dragging-count={p.draggingCount}
+      data-group={p.target.group}
+      data-dragging-count={p.target.groupTokenDraggingCount}
       id={'board-object-' + p.target.id}
       key={'sakura-token-' + p.target.id}
       style={styles}>

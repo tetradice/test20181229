@@ -394,6 +394,9 @@ $(function(){
         // ボード情報のセット
         appActions.setBoard(p.board);
 
+        // 領域情報を再更新
+        appActions.updateBoardRegionInfo();
+
         // ログ情報のセット
         appActions.setActionLogs(p.actionLogs);
         appActions.setChatLogs(p.chatLogs);
@@ -624,16 +627,17 @@ $(function(){
 
         // 桜花結晶の上にカーソルを置いたときの処理
         $('#BOARD').on('mouseenter', '.sakura-token', function(e){
-            // 自分と同じ領域で、インデックスが自分以上の要素をすべて選択扱いにする
+            // 自分と同じ領域/グループで、dragCountが自分以下の要素をすべて選択扱いにする
             let $this = $(this);
             let side = $this.attr('data-side') as (PlayerSide | 'none');
             let index = parseInt($this.attr('data-region-index'));
+            let group = $this.attr('data-group') as state.SakuraTokenGroup;
+            let draggingCount = parseInt($this.attr('data-dragging-count'));
+            if(draggingCount === 0) return false; // draggingCount=0はドラッグ非対象
 
-            if(index === 0){
-                $(`.sakura-token[data-side=${side}][data-region=${$this.attr('data-region')}][data-linked-card-id=${$this.attr('data-linked-card-id')}]`).addClass('focused');
-            } else {
-                $(`.sakura-token[data-side=${side}][data-region=${$this.attr('data-region')}][data-linked-card-id=${$this.attr('data-linked-card-id')}]:gt(${index-1})`).addClass('focused');
-            }
+            let $tokens = $(`.sakura-token[data-side=${side}][data-region=${$this.attr('data-region')}][data-group=${group}][data-linked-card-id=${$this.attr('data-linked-card-id')}]`);
+            $tokens.filter((i, elem) => parseInt(elem.dataset.draggingCount) <= draggingCount).addClass('focused');
+            return true;
         });
         $('#BOARD').on('mouseleave', '.sakura-token', function(e){
             $(`.sakura-token`).removeClass('focused');
@@ -697,6 +701,8 @@ $(function(){
                 let side = $this.attr('data-side') as (PlayerSide | 'none');
                 let linkedCardId = $this.attr('data-linked-card-id');
                 let index = parseInt($this.attr('data-region-index'));
+                let group = $this.attr('data-group') as state.SakuraTokenGroup;
+                let groupHandlingNumber = parseInt($this.attr('data-group-handling-number'));
                 let draggingCount = parseInt($this.attr('data-dragging-count'));
 
                 // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択した桜花結晶を記憶
@@ -708,9 +714,9 @@ $(function(){
 
                 // 自分と同じ領域で、インデックスが自分以上の要素をすべて半透明にする
                 if(index === 0){
-                    $(`.sakura-token[data-side=${side}][data-region=${$this.attr('data-region')}][data-linked-card-id=${$this.attr('data-linked-card-id')}]`).css('opacity', '0.4');
+                    $(`.sakura-token[data-side=${side}][data-region=${$this.attr('data-region')}][data-group=${group}][data-linked-card-id=${$this.attr('data-linked-card-id')}]`).css('opacity', '0.4');
                 } else {
-                    $(`.sakura-token[data-side=${side}][data-region=${$this.attr('data-region')}][data-linked-card-id=${$this.attr('data-linked-card-id')}]:gt(${index-1})`).css('opacity', '0.4');
+                    $(`.sakura-token[data-side=${side}][data-region=${$this.attr('data-region')}][data-group=${group}][data-linked-card-id=${$this.attr('data-linked-card-id')}]:gt(${index-1})`).css('opacity', '0.4');
                 }
 
                 // ドラッグゴースト画像を設定

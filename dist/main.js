@@ -70263,6 +70263,8 @@ $(function () {
     socket.on('onFirstTableDataReceived', function (p) {
         // ボード情報のセット
         appActions.setBoard(p.board);
+        // 領域情報を再更新
+        appActions.updateBoardRegionInfo();
         // ログ情報のセット
         appActions.setActionLogs(p.actionLogs);
         appActions.setChatLogs(p.chatLogs);
@@ -70481,16 +70483,17 @@ $(function () {
         });
         // 桜花結晶の上にカーソルを置いたときの処理
         $('#BOARD').on('mouseenter', '.sakura-token', function (e) {
-            // 自分と同じ領域で、インデックスが自分以上の要素をすべて選択扱いにする
+            // 自分と同じ領域/グループで、dragCountが自分以下の要素をすべて選択扱いにする
             var $this = $(this);
             var side = $this.attr('data-side');
             var index = parseInt($this.attr('data-region-index'));
-            if (index === 0) {
-                $(".sakura-token[data-side=" + side + "][data-region=" + $this.attr('data-region') + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]").addClass('focused');
-            }
-            else {
-                $(".sakura-token[data-side=" + side + "][data-region=" + $this.attr('data-region') + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]:gt(" + (index - 1) + ")").addClass('focused');
-            }
+            var group = $this.attr('data-group');
+            var draggingCount = parseInt($this.attr('data-dragging-count'));
+            if (draggingCount === 0)
+                return false; // draggingCount=0はドラッグ非対象
+            var $tokens = $(".sakura-token[data-side=" + side + "][data-region=" + $this.attr('data-region') + "][data-group=" + group + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]");
+            $tokens.filter(function (i, elem) { return parseInt(elem.dataset.draggingCount) <= draggingCount; }).addClass('focused');
+            return true;
         });
         $('#BOARD').on('mouseleave', '.sakura-token', function (e) {
             $(".sakura-token").removeClass('focused');
@@ -70547,6 +70550,8 @@ $(function () {
                 var side = $this.attr('data-side');
                 var linkedCardId = $this.attr('data-linked-card-id');
                 var index = parseInt($this.attr('data-region-index'));
+                var group = $this.attr('data-group');
+                var groupHandlingNumber = parseInt($this.attr('data-group-handling-number'));
                 var draggingCount = parseInt($this.attr('data-dragging-count'));
                 // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択した桜花結晶を記憶
                 $(".area.sakura-token-region.droppable:not([data-side=" + side + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
@@ -70555,10 +70560,10 @@ $(function () {
                 dragInfo_1.default.sakuraTokenMoveCount = draggingCount;
                 // 自分と同じ領域で、インデックスが自分以上の要素をすべて半透明にする
                 if (index === 0) {
-                    $(".sakura-token[data-side=" + side + "][data-region=" + $this.attr('data-region') + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]").css('opacity', '0.4');
+                    $(".sakura-token[data-side=" + side + "][data-region=" + $this.attr('data-region') + "][data-group=" + group + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]").css('opacity', '0.4');
                 }
                 else {
-                    $(".sakura-token[data-side=" + side + "][data-region=" + $this.attr('data-region') + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]:gt(" + (index - 1) + ")").css('opacity', '0.4');
+                    $(".sakura-token[data-side=" + side + "][data-region=" + $this.attr('data-region') + "][data-group=" + group + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]:gt(" + (index - 1) + ")").css('opacity', '0.4');
                 }
                 // ドラッグゴースト画像を設定
                 $('#sakura-token-ghost-many .count').text(draggingCount);
@@ -71400,6 +71405,12 @@ exports.default = {
     setBoard: function (newBoard) {
         return { board: newBoard };
     },
+    /** ボードの領域情報のみを更新 */
+    updateBoardRegionInfo: function () { return function (state) {
+        var newBoard = models.Board.clone(state.board);
+        newBoard.updateRegionInfo();
+        return { board: newBoard };
+    }; },
     /** ボード全体を初期化する（プレイヤー名除く） */
     resetBoard: function () { return function (state, actions) {
         var extended = { playerNames: state.board.playerNames };
@@ -73611,7 +73622,7 @@ exports.SakuraToken = function (p) { return function (state, actions) {
         height: 26 * state.zoom + "px"
     };
     var draggable = true;
-    return hyperapp_1.h("div", { class: "sakura-token" + (p.target.artificial ? ' artificial' : ''), draggable: draggable, "data-object-id": p.target.id, "data-side": p.target.side || 'none', "data-region": p.target.region, "data-linked-card-id": p.target.linkedCardId || 'none', "data-region-index": p.target.indexOfRegion, "data-dragging-count": p.draggingCount, id: 'board-object-' + p.target.id, key: 'sakura-token-' + p.target.id, style: styles });
+    return hyperapp_1.h("div", { class: "sakura-token" + (p.target.artificial ? ' artificial' : ''), draggable: draggable, "data-object-id": p.target.id, "data-side": p.target.side || 'none', "data-region": p.target.region, "data-linked-card-id": p.target.linkedCardId || 'none', "data-region-index": p.target.indexOfRegion, "data-group": p.target.group, "data-dragging-count": p.target.groupTokenDraggingCount, id: 'board-object-' + p.target.id, key: 'sakura-token-' + p.target.id, style: styles });
 }; };
 
 
@@ -74215,8 +74226,7 @@ var view = function (state, actions) {
             var token = ret[0];
             var left = area.left + ret[1];
             var top = area.top + ret[2];
-            var draggingCount = tokens.length - token.indexOfRegion;
-            objectNodes.push(hyperapp_1.h(components.SakuraToken, { target: token, left: left, top: top, draggingCount: draggingCount }));
+            objectNodes.push(hyperapp_1.h(components.SakuraToken, { target: token, left: left, top: top }));
         });
         // フレームを追加
         var count = (area.region === 'distance' ? boardModel.getDistance() : tokens.length);
@@ -74255,7 +74265,7 @@ var view = function (state, actions) {
             var draggingCount = tokens.length - token.indexOfRegion;
             var left = cardLocation[0] + ret[1];
             var top = cardLocation[1] + (card.side === selfSide ? 24 : (140 - 24 - 26));
-            objectNodes.push(hyperapp_1.h(components.SakuraToken, { target: token, left: left, top: top, draggingCount: draggingCount }));
+            objectNodes.push(hyperapp_1.h(components.SakuraToken, { target: token, left: left, top: top }));
         });
     });
     // カードを封印することが可能な全カードについて、ドロップ領域を配置
@@ -75278,6 +75288,41 @@ var Board = /** @class */ (function () {
                 c.indexOfRegion = index;
                 index++;
             });
+            // グループ情報も更新する
+            if (region === 'distance') {
+                var normalTokens = regionSakuraTokens.filter(function (t) { return !t.artificial; });
+                var artificialTokens_1 = regionSakuraTokens.filter(function (t) { return t.artificial; });
+                var distanceMinusTokens = regionSakuraTokens.filter(function (t) { return t.artificial && t.distanceMinus; });
+                // いくつの桜花結晶が有効かを数える (通常の桜花結晶数 - 間合-1トークン数)
+                var activeNormalTokenCount = normalTokens.length - distanceMinusTokens.length;
+                // 造花結晶のグループを振る
+                artificialTokens_1.forEach(function (c, i) {
+                    c.group = 'artificial';
+                    c.groupTokenDraggingCount = artificialTokens_1.length; // ドラッグ時には全造花結晶をまとめて操作
+                });
+                // 通常の桜花結晶は、間合-1トークンの数だけ無効
+                // それ以外は有効
+                var activeIndex = 0;
+                for (var i = 0; i < normalTokens.length; i++) {
+                    var c = normalTokens[i];
+                    if (i < distanceMinusTokens.length) {
+                        c.group = 'inactive';
+                        c.groupTokenDraggingCount = 0; // ドラッグ不可
+                    }
+                    else {
+                        c.group = 'normal';
+                        c.groupTokenDraggingCount = activeNormalTokenCount - activeIndex;
+                        activeIndex++;
+                    }
+                }
+            }
+            else {
+                // 通常の場合は、全トークン同じグループに属する
+                regionSakuraTokens.forEach(function (c, i) {
+                    c.group = 'normal';
+                    c.groupTokenDraggingCount = regionSakuraTokens.length - i;
+                });
+            }
         });
     };
     return Board;
@@ -75701,6 +75746,8 @@ function createSakuraToken(id, region, side) {
         id: id,
         region: region,
         indexOfRegion: 0,
+        group: null,
+        groupTokenDraggingCount: null,
         side: side,
         linkedCardId: null
     };

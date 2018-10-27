@@ -295,9 +295,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let token = ret[0];
             let left = area.left + ret[1];
             let top = area.top + ret[2];
-            let draggingCount = tokens.length - token.indexOfRegion;
 
-            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} draggingCount={draggingCount} />);
+            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} />);
         });
 
         // フレームを追加
@@ -345,7 +344,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let draggingCount = tokens.length - token.indexOfRegion;
             let left = cardLocation[0] + ret[1];
             let top = cardLocation[1] + (card.side === selfSide ? 24 : (140 - 24 - 26));
-            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} draggingCount={draggingCount} />);
+            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} />);
         });
     });
 

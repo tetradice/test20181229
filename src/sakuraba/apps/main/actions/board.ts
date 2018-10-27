@@ -76,6 +76,14 @@ export default {
         return {board: newBoard};
     },
 
+    /** ボードの領域情報のみを更新 */
+    updateBoardRegionInfo: () => (state: state.State) => {
+        let newBoard = models.Board.clone(state.board);
+        newBoard.updateRegionInfo();
+
+        return {board: newBoard};
+    },
+
     /** ボード全体を初期化する（プレイヤー名除く） */
     resetBoard: () => (state: state.State, actions: ActionsType) => {
 

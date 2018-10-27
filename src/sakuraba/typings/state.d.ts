@@ -101,11 +101,19 @@ export interface Card extends BoardObjectBase {
     ownerSide: PlayerSide;
 }
 
+export type SakuraTokenGroup = 'normal' | 'inactive' | 'artificial';
+
 export interface SakuraToken extends BoardObjectBase {
     type: 'sakura-token'
 
     region: SakuraTokenRegion;
     indexOfRegion: number;
+
+    /** グループ (通常/無効/間合+1/間合-1) */
+    group: SakuraTokenGroup;
+
+    /** ドラッグ時に同じグループの桜花結晶をいくつ操作するか */
+    groupTokenDraggingCount: number;
     linkedCardId: string;
 
     /** 造花結晶である */

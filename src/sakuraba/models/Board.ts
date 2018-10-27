@@ -1,6 +1,7 @@
 import * as _ from "lodash";
 import { Megami } from "sakuraba";
 import * as utils from "sakuraba/utils";
+import { SakuraTokenGroup } from "sakuraba/typings/state";
 
 export class Board implements state.Board {
     objects: state.Board['objects'];
@@ -129,6 +130,43 @@ export class Board implements state.Board {
                 c.indexOfRegion = index;
                 index++;
             });
+
+            // グループ情報も更新する
+            if (region === 'distance') {
+                let normalTokens = regionSakuraTokens.filter(t => !t.artificial);
+                let artificialTokens = regionSakuraTokens.filter(t => t.artificial);
+                let distanceMinusTokens = regionSakuraTokens.filter(t => t.artificial && t.distanceMinus);
+
+                // いくつの桜花結晶が有効かを数える (通常の桜花結晶数 - 間合-1トークン数)
+                let activeNormalTokenCount = normalTokens.length - distanceMinusTokens.length;
+
+                // 造花結晶のグループを振る
+                artificialTokens.forEach((c, i) => {
+                    c.group = 'artificial';
+                    c.groupTokenDraggingCount = artificialTokens.length; // ドラッグ時には全造花結晶をまとめて操作
+                });
+
+                // 通常の桜花結晶は、間合-1トークンの数だけ無効
+                // それ以外は有効
+                let activeIndex = 0;
+                for(let i = 0; i < normalTokens.length; i++){
+                    let c = normalTokens[i];
+                    if(i < distanceMinusTokens.length){
+                        c.group = 'inactive';
+                        c.groupTokenDraggingCount = 0; // ドラッグ不可
+                    } else {
+                        c.group = 'normal';
+                        c.groupTokenDraggingCount = activeNormalTokenCount - activeIndex;
+                        activeIndex++;
+                    }
+                }
+            } else {
+                // 通常の場合は、全トークン同じグループに属する
+                regionSakuraTokens.forEach((c, i) => {
+                    c.group = 'normal';
+                    c.groupTokenDraggingCount = regionSakuraTokens.length - i;
+                });
+            }
         });
     }
 }

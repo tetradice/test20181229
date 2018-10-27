@@ -694,6 +694,8 @@ function createSakuraToken(id, region, side) {
         id: id,
         region: region,
         indexOfRegion: 0,
+        group: null,
+        groupTokenDraggingCount: null,
         side: side,
         linkedCardId: null
     };
