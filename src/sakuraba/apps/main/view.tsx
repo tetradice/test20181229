@@ -203,26 +203,26 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
     let sakuraTokenAreaData: {
         region: SakuraTokenRegion
-      , side: PlayerSide
-      , title: string
-      , layoutType: LayoutType
-      , left: number
-      , top: number
-      , width: number
-      , tokenWidth: number
-      , height: number
-  }[] = [
-            { region: 'aura',     side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10,   top: 200,  width: 210, tokenWidth: 120, height: 30 }
-          , { region: 'life',     side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10,   top: 240,  width: 350, tokenWidth: 260, height: 30 }
-          , { region: 'flair',    side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10,   top: 280,  width: 350, tokenWidth: 260, height: 30 }
+        , side: PlayerSide
+        , title: string
+        , layoutType: LayoutType
+        , left: number
+        , top: number
+        , width: number
+        , tokenWidth: number
+        , height: number
+    }[] = [
+            { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 200, width: 220, tokenWidth: 130, height: 30 }
+            , { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 240, width: 350, tokenWidth: 260, height: 30 }
+            , { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10, top: 280, width: 350, tokenWidth: 260, height: 30 }
 
           , { region: 'distance', side: null, title: "間合",   layoutType: 'horizontal-distance', left: 10,    top: 380,  width: 350, tokenWidth: 260, height: 30 }
           , { region: 'dust',     side: null, title: "ダスト", layoutType: 'horizontal', left: 380,   top: 380,  width: 350, tokenWidth: 260, height: 30 }
 
-          , { region: 'aura',     side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850,   top: 430,  width: 210, tokenWidth: 120, height: 30 }
-          , { region: 'life',     side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850,   top: 470,  width: 350, tokenWidth: 260, height: 30 }
-          , { region: 'flair',    side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850,   top: 510,  width: 350, tokenWidth: 260, height: 30 }
-      ];
+            , { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 430, width: 220, tokenWidth: 130, height: 30 }
+            , { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 470, width: 350, tokenWidth: 260, height: 30 }
+            , { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 260, height: 30 }
+        ];
 
     // サリヤを宿しており、かつ決闘開始済の場合、マシン領域と燃焼済を追加
     ['p1', 'p2'].forEach((side: PlayerSide) => {

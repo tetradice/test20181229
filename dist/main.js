@@ -69957,6 +69957,142 @@ $(function () {
         st.zoom = 0.6;
     // アプリケーション起動
     var appActions = apps.main.run(st, document.getElementById('BOARD'));
+    var contextMenuShowingAfterDrop = false;
+    var processOnDragEnd = function () {
+        // コンテキストメニューを表示している場合、一部属性の解除を行わない
+        if (!contextMenuShowingAfterDrop) {
+            $('[draggable]').css('opacity', '1.0');
+            $('.area,.fbs-card').removeClass('over').removeClass('over-forbidden');
+        }
+        $('.area.droppable').css('z-index', -9999);
+        dragInfo_1.default.draggingFrom = null;
+    };
+    // カード移動時のメイン処理
+    var moveCardMain = function (card, toSide, toRegion, toLinkedCardId, toPosition) {
+        if (toPosition === void 0) { toPosition = 'last'; }
+        var currentState = appActions.getState();
+        // 観戦者の場合は何もしない
+        if (currentState.side === 'watcher')
+            return;
+        // 移動ログを決定
+        var logs = [];
+        var cardName = sakuraba_1.CARD_DATA[card.cardId].name;
+        var fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region);
+        var toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion);
+        // 移動元での公開状態と、移動先での公開状態を判定
+        var oldOpenState = card.openState;
+        var newOpenState = utils.judgeCardOpenState(card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
+        // ログ内容を決定
+        console.log("openState: " + oldOpenState + " => " + newOpenState);
+        if (oldOpenState === 'opened' || newOpenState === 'opened') {
+            // 公開状態から移動した場合や、公開状態へ移動した場合は、全員に名前を公開
+            logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
+        }
+        else {
+            // 上記以外の場合は、移動元と移動先の組み合わせに応じてログを決定
+            var oldMyKnown = ((card.region === 'hidden-used' || oldOpenState === 'ownerOnly') && card.side === currentState.side);
+            var newMyKnown = ((toRegion === 'hidden-used' || newOpenState === 'ownerOnly') && toSide === currentState.side);
+            var oldOpponentKnown = ((card.region === 'hidden-used' || oldOpenState === 'ownerOnly') && card.side === utils.flipSide(currentState.side));
+            var newOpponentKnown = ((toRegion === 'hidden-used' || newOpenState === 'ownerOnly') && toSide === utils.flipSide(currentState.side));
+            console.log("known: my(" + oldMyKnown + " => " + newMyKnown + "), opponent(" + oldOpponentKnown + " => " + newOpponentKnown + ")");
+            if (oldMyKnown || newMyKnown) {
+                // 自分は知っている
+                if (oldOpponentKnown || newOpponentKnown) {
+                    // 対戦相手も知っている (観戦者対応が必要)
+                    logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
+                }
+                else {
+                    // 対戦相手は知らない
+                    logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle, visibility: 'ownerOnly' });
+                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle, visibility: 'outerOnly' });
+                }
+            }
+            else {
+                // 自分は知らない
+                if (oldOpponentKnown || newOpponentKnown) {
+                    // 対戦相手は知っている (観戦者対応が必要)
+                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
+                }
+                else {
+                    // 対戦相手も知らない
+                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
+                }
+            }
+        }
+        var cardNameLogging = false;
+        // 自分のカードを操作した場合で、一定の条件を満たす場合はログを置き換える
+        if (card.side === currentState.side && toSide === currentState.side) {
+            if (card.region === 'hand' && toRegion === 'hidden-used') {
+                // 伏せ札にした場合
+                logs = [];
+                logs.push({ text: "[" + cardName + "]\u3092\u4F0F\u305B\u672D\u306B\u3057\u307E\u3057\u305F", visibility: 'ownerOnly' });
+                logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u4F0F\u305B\u672D\u306B\u3057\u307E\u3057\u305F", visibility: 'outerOnly' });
+            }
+            if (card.region === 'hand' && toRegion === 'used') {
+                // 場に出した場合
+                logs = [];
+                logs.push({ text: "[" + cardName + "]\u3092\u5834\u306B\u51FA\u3057\u307E\u3057\u305F" });
+            }
+            if (card.region === 'library' && toRegion === 'hand') {
+                // カードを1枚引いた場合
+                logs = [];
+                logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u5F15\u304D\u307E\u3057\u305F" });
+                cardNameLogging = true;
+            }
+            if (toRegion === 'library') {
+                // カードを山札へ置いた場合
+                logs = [];
+                if (toPosition === 'first') {
+                    logs.push({ text: "[" + cardName + "]\u3092\u5C71\u672D\u306E\u5E95\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'ownerOnly' });
+                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u5C71\u672D\u306E\u5E95\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'outerOnly' });
+                }
+                else {
+                    logs.push({ text: "[" + cardName + "]\u3092\u5C71\u672D\u306E\u4E0A\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'ownerOnly' });
+                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u5C71\u672D\u306E\u4E0A\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'outerOnly' });
+                }
+            }
+        }
+        appActions.operate({
+            log: logs,
+            proc: function () {
+                appActions.moveCard({
+                    from: card.id,
+                    to: [toSide, toRegion, toLinkedCardId],
+                    cardNameLogging: cardNameLogging,
+                    toPosition: toPosition
+                });
+            }
+        });
+    };
+    // 山札へのカードドラッグ時メニュー
+    $('#BOARD').append('<div id="CONTEXT-DRAG-TO-LIBRARY"></div>');
+    $.contextMenu({
+        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
+        trigger: 'none',
+        selector: '#CONTEXT-DRAG-TO-LIBRARY',
+        events: {
+            hide: function (e) {
+                contextMenuShowingAfterDrop = false;
+                processOnDragEnd();
+            }
+        },
+        build: function ($elem, event) {
+            console.log('contextmenu:hide', $elem.menu);
+            var currentState = appActions.getState();
+            var side = currentState.side;
+            var board = new models.Board(currentState.board);
+            var items = {};
+            items['toTop'] = { name: '山札の上に置く', callback: function () {
+                    moveCardMain(dragInfo_1.default.lastDraggingCardBeforeContextMenu, side, 'library', null);
+                } };
+            items['toBottom'] = { name: '山札の底に置く', callback: function () {
+                    moveCardMain(dragInfo_1.default.lastDraggingCardBeforeContextMenu, side, 'library', null, 'first');
+                } };
+            items['sep'] = '----';
+            items['cancel'] = { name: 'キャンセル', callback: function () { } };
+            return { items: items };
+        }
+    });
     // 畏縮トークンクリックメニュー
     $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
     $.contextMenu({
@@ -70434,7 +70570,6 @@ $(function () {
     });
     // ここからの処理はドラッグ＆ドロップ関係の処理のため、プレイヤーである場合のみ有効
     if (params.side !== 'watcher') {
-        var contextMenuShowingAfterDrop_1 = false;
         // 前進ボタンの上にカーソルを置いたときの処理
         $('#BOARD').on('mouseenter', '#FORWARD-BUTTON', function (e) {
             // 間合いの右端をフォーカス
@@ -70590,18 +70725,9 @@ $(function () {
             }
             return true;
         });
-        var processOnDragEnd_1 = function () {
-            // コンテキストメニューを表示している場合、一部属性の解除を行わない
-            if (!contextMenuShowingAfterDrop_1) {
-                $('[draggable]').css('opacity', '1.0');
-                $('.area,.fbs-card').removeClass('over').removeClass('over-forbidden');
-            }
-            $('.area.droppable').css('z-index', -9999);
-            dragInfo_1.default.draggingFrom = null;
-        };
         $('#BOARD').on('dragend', '.fbs-card,.sakura-token', function (e) {
             console.log('dragend', this);
-            processOnDragEnd_1();
+            processOnDragEnd();
         });
         $('#BOARD').on('dragover', '.droppable', function (e) {
             if ($(this).hasClass('over-forbidden')) {
@@ -70687,113 +70813,47 @@ $(function () {
             if (dragInfo_1.default.draggingFrom !== null) {
                 // カードを別領域に移動した場合
                 if (dragInfo_1.default.draggingFrom.type === 'card') {
-                    var card_2 = dragInfo_1.default.draggingFrom;
-                    var toSide_1 = $this.attr('data-side');
-                    var toRegion_1 = $this.attr('data-region');
+                    var card = dragInfo_1.default.draggingFrom;
+                    var toSide = $this.attr('data-side');
+                    var toRegion = $this.attr('data-region');
                     var toLinkedCardIdValue = $this.attr('data-linked-card-id');
-                    var toLinkedCardId_1 = (toLinkedCardIdValue === 'none' ? null : toLinkedCardIdValue);
+                    var toLinkedCardId = (toLinkedCardIdValue === 'none' ? null : toLinkedCardIdValue);
                     // 他のカードを封印しているカードを、動かそうとした場合はエラー
-                    var sealedCards = boardModel.getSealedCards(card_2.id);
+                    var sealedCards = boardModel.getSealedCards(card.id);
                     if (sealedCards.length >= 1) {
                         utils.messageModal("他のカードが封印されているため移動できません。");
                         return false;
                     }
                     // 桜花結晶が乗っている札を、動かそうとした場合はエラー
-                    var onCardTokens = boardModel.getRegionSakuraTokens(card_2.side, 'on-card', card_2.id);
+                    var onCardTokens = boardModel.getRegionSakuraTokens(card.side, 'on-card', card.id);
                     if (onCardTokens.length >= 1) {
                         utils.messageModal("桜花結晶が上に乗っているため移動できません。");
                         return false;
                     }
-                    // 移動ログを決定
-                    var logs = [];
-                    var cardName = sakuraba_1.CARD_DATA[card_2.cardId].name;
-                    var fromRegionTitle = utils.getCardRegionTitle(currentState.side, card_2.side, card_2.region);
-                    var toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide_1, toRegion_1);
-                    // 移動元での公開状態と、移動先での公開状態を判定
-                    var oldOpenState = card_2.openState;
-                    var newOpenState = utils.judgeCardOpenState(card_2, currentState.board.handOpenFlags[toSide_1], toSide_1, toRegion_1);
-                    // ログ内容を決定
-                    console.log("openState: " + oldOpenState + " => " + newOpenState);
-                    if (oldOpenState === 'opened' || newOpenState === 'opened') {
-                        // 公開状態から移動した場合や、公開状態へ移動した場合は、全員に名前を公開
-                        logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
+                    // 山札に移動し、かつ山札が1枚以上ある場合は特殊処理
+                    if (toRegion === 'library' && boardModel.getRegionCards(toSide, toRegion, toLinkedCardId).length >= 1) {
+                        contextMenuShowingAfterDrop = true;
+                        dragInfo_1.default.lastDraggingCardBeforeContextMenu = card;
+                        $('#CONTEXT-DRAG-TO-LIBRARY').contextMenu({ x: e.pageX, y: e.pageY });
+                        return false;
                     }
                     else {
-                        // 上記以外の場合は、移動元と移動先の組み合わせに応じてログを決定
-                        var oldMyKnown = ((card_2.region === 'hidden-used' || oldOpenState === 'ownerOnly') && card_2.side === currentState.side);
-                        var newMyKnown = ((toRegion_1 === 'hidden-used' || newOpenState === 'ownerOnly') && toSide_1 === currentState.side);
-                        var oldOpponentKnown = ((card_2.region === 'hidden-used' || oldOpenState === 'ownerOnly') && card_2.side === utils.flipSide(currentState.side));
-                        var newOpponentKnown = ((toRegion_1 === 'hidden-used' || newOpenState === 'ownerOnly') && toSide_1 === utils.flipSide(currentState.side));
-                        console.log("known: my(" + oldMyKnown + " => " + newMyKnown + "), opponent(" + oldOpponentKnown + " => " + newOpponentKnown + ")");
-                        if (oldMyKnown || newMyKnown) {
-                            // 自分は知っている
-                            if (oldOpponentKnown || newOpponentKnown) {
-                                // 対戦相手も知っている (観戦者対応が必要)
-                                logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
-                            }
-                            else {
-                                // 対戦相手は知らない
-                                logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle, visibility: 'ownerOnly' });
-                                logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle, visibility: 'outerOnly' });
-                            }
-                        }
-                        else {
-                            // 自分は知らない
-                            if (oldOpponentKnown || newOpponentKnown) {
-                                // 対戦相手は知っている (観戦者対応が必要)
-                                logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
-                            }
-                            else {
-                                // 対戦相手も知らない
-                                logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
-                            }
-                        }
+                        moveCardMain(card, toSide, toRegion, toLinkedCardId);
                     }
-                    var cardNameLogging_1 = false;
-                    // 自分のカードを操作した場合で、一定の条件を満たす場合はログを置き換える
-                    if (card_2.side === currentState.side && toSide_1 === currentState.side) {
-                        if (card_2.region === 'hand' && toRegion_1 === 'hidden-used') {
-                            // 伏せ札にした場合
-                            logs = [];
-                            logs.push({ text: "[" + cardName + "]\u3092\u4F0F\u305B\u672D\u306B\u3057\u307E\u3057\u305F", visibility: 'ownerOnly' });
-                            logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u4F0F\u305B\u672D\u306B\u3057\u307E\u3057\u305F", visibility: 'outerOnly' });
-                        }
-                        if (card_2.region === 'hand' && toRegion_1 === 'used') {
-                            // 場に出した場合
-                            logs = [];
-                            logs.push({ text: "[" + cardName + "]\u3092\u5834\u306B\u51FA\u3057\u307E\u3057\u305F" });
-                        }
-                        if (card_2.region === 'library' && toRegion_1 === 'hand') {
-                            // カードを1枚引いた場合
-                            logs = [];
-                            logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u5F15\u304D\u307E\u3057\u305F" });
-                            cardNameLogging_1 = true;
-                        }
-                    }
-                    appActions.operate({
-                        log: logs,
-                        proc: function () {
-                            appActions.moveCard({
-                                from: card_2.id,
-                                to: [toSide_1, toRegion_1, toLinkedCardId_1],
-                                cardNameLogging: cardNameLogging_1
-                            });
-                        }
-                    });
                 }
                 // 桜花結晶を別領域に移動した場合
                 if (dragInfo_1.default.draggingFrom.type === 'sakura-token') {
                     var sakuraToken_1 = dragInfo_1.default.draggingFrom;
                     var toSideValue = $this.attr('data-side');
-                    var toSide_2 = (toSideValue === 'none' ? null : toSideValue);
-                    var toRegion_2 = $this.attr('data-region');
+                    var toSide_1 = (toSideValue === 'none' ? null : toSideValue);
+                    var toRegion_1 = $this.attr('data-region');
                     var toLinkedCardIdValue = $(this).attr('data-linked-card-id');
-                    var toLinkedCardId_2 = (toLinkedCardIdValue === 'none' ? null : toLinkedCardIdValue);
+                    var toLinkedCardId_1 = (toLinkedCardIdValue === 'none' ? null : toLinkedCardIdValue);
                     var fromLinkedCard = (dragInfo_1.default.draggingFrom.linkedCardId === null ? undefined : boardModel.getCard(dragInfo_1.default.draggingFrom.linkedCardId));
-                    var toLinkedCard = (toLinkedCardId_2 === null ? undefined : boardModel.getCard(toLinkedCardId_2));
+                    var toLinkedCard = (toLinkedCardId_1 === null ? undefined : boardModel.getCard(toLinkedCardId_1));
                     var logs = [];
                     var fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken_1.side, sakuraToken_1.region, fromLinkedCard);
-                    var toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide_2, toRegion_2, toLinkedCard);
+                    var toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide_1, toRegion_1, toLinkedCard);
                     // ログ内容を決定
                     logs.push({ text: "\u685C\u82B1\u7D50\u6676\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
                     appActions.operate({
@@ -70801,7 +70861,7 @@ $(function () {
                         proc: function () {
                             appActions.moveSakuraToken({
                                 from: [sakuraToken_1.side, sakuraToken_1.region, sakuraToken_1.linkedCardId],
-                                to: [toSide_2, toRegion_2, toLinkedCardId_2],
+                                to: [toSide_1, toRegion_1, toLinkedCardId_1],
                                 moveNumber: dragInfo_1.default.sakuraTokenMoveCount
                             });
                         }
@@ -74178,12 +74238,12 @@ var view = function (state, actions) {
         }
     });
     var sakuraTokenAreaData = [
-        { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 200, width: 210, tokenWidth: 120, height: 30 },
+        { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 200, width: 220, tokenWidth: 130, height: 30 },
         { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 240, width: 350, tokenWidth: 260, height: 30 },
         { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10, top: 280, width: 350, tokenWidth: 260, height: 30 },
         { region: 'distance', side: null, title: "間合", layoutType: 'horizontal-distance', left: 10, top: 380, width: 350, tokenWidth: 260, height: 30 },
         { region: 'dust', side: null, title: "ダスト", layoutType: 'horizontal', left: 380, top: 380, width: 350, tokenWidth: 260, height: 30 },
-        { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 430, width: 210, tokenWidth: 120, height: 30 },
+        { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 430, width: 220, tokenWidth: 130, height: 30 },
         { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 470, width: 350, tokenWidth: 260, height: 30 },
         { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 260, height: 30 }
     ];
@@ -75192,7 +75252,8 @@ var ZIndex;
 Object.defineProperty(exports, "__esModule", { value: true });
 var dragInfo = {
     draggingFrom: null,
-    sakuraTokenMoveCount: 0
+    sakuraTokenMoveCount: 0,
+    lastDraggingCardBeforeContextMenu: null
 };
 exports.default = dragInfo;
 
