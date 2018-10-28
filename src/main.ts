@@ -574,6 +574,12 @@ $(function(){
 
     // ボード情報を受信した場合、メイン処理をスタート
     socket.on('onFirstTableDataReceived', (p: {board: state.Board, actionLogs: state.LogRecord[], chatLogs: state.LogRecord[]}) => {
+        // ユーザー設定のセット
+        let settingJson = localStorage.getItem('Setting');
+        if(settingJson){
+            appActions.setSetting(JSON.parse(settingJson));
+        }
+
         // ボード情報のセット
         appActions.setBoard(p.board);
 

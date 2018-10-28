@@ -17,4 +17,6 @@ export * from './HelpWindow';
 export * from './ChatLogArea';
 export * from './PlayerNameDisplay';
 export * from './MainProcessButtons';
+export * from './MegamiFace';
 export * from './MachineButtons';
+export * from './SettingWindow';

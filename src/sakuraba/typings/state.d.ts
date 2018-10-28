@@ -29,13 +29,21 @@ export interface State {
 
     actionLogVisible: boolean;
     helpVisible: boolean;
+    settingVisible: boolean;
     bgmPlaying: boolean;
+
+    setting: Setting;
 }
 
 /** ボード履歴 */
 export interface BoardHistoryItem {
     board: Board;
     appendedLogs: state.LogRecord[];
+}
+
+/** 設定 */
+export interface Setting {
+    megamiFaceViewMode: 'background1' | 'none';
 }
 
 /** 卓情報 */

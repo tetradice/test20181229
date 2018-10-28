@@ -114,6 +114,12 @@
   dependencies:
     "@types/jquery" "*"
 
+"@types/semantic-ui-checkbox@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@types/semantic-ui-checkbox/-/semantic-ui-checkbox-2.2.2.tgz#bb19b20d503103a724c9dc79f71132edb092a362"
+  dependencies:
+    "@types/jquery" "*"
+
 "@types/semantic-ui-dimmer@*":
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/@types/semantic-ui-dimmer/-/semantic-ui-dimmer-2.2.2.tgz#667185161c31d046a51a6d71097d2909829e1423"

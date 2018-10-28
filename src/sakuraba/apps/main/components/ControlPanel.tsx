@@ -258,6 +258,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     {(state.bgmPlaying ? <i class="check icon"></i> : null)}
                     BGM再生
                 </div>
+                <div class="item" onclick={() => actions.toggleSettingVisible()}>
+                    {(state.settingVisible ? <i class="check icon"></i> : null)}
+                    設定
+                </div>
                 <div class="divider"></div>
                 <div class="item" onclick={quizOpen}>
                     ミニゲーム: ふるよにミニクイズ

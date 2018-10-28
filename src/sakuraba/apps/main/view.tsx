@@ -271,6 +271,12 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let card = ret[0];
             let left = area.left + ret[1];
             let top = area.top + ret[2];
+
+            // 相手側の場合はカードの座標を逆転
+            if(area.side === opponentSide){
+                left = area.left + (area.width - ret[1] - 100);
+            }
+
             objectNodes.push(<components.BoardCard target={card} left={left} top={top} />);
 
             // 座標を記憶しておく
@@ -459,6 +465,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.ChatLogArea logs={state.chatLog} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
             <components.HelpWindow shown={state.helpVisible} />
+            <components.SettingWindow shown={state.settingVisible} />
             <components.BGMWindow shown={state.bgmPlaying} />
             {extraTokens}
             <components.PlayerNameDisplay left={10} top={10} width={1200} side={utils.flipSide(selfSide)} />
@@ -466,8 +473,11 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
             <components.MainProcessButtons left={mainProcessButtonLeft} />
             {readyObjects}
-
             {state.side !== 'watcher' && hasMachineTarot[selfSide] ? <components.MachineButtons side={selfSide} left={1010} top={720}></components.MachineButtons> : null}
+            {state.board.megamis[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][0]} left={10} top={430} /> : null}
+            {state.board.megamis[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][1]} left={(hasMachineTarot[selfSide] ? 40 : 240)} top={600} /> : null}
+            {state.board.megamis[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][0]} left={720} top={200} /> : null}
+            {state.board.megamis[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][1]} left={(hasMachineTarot[opponentSide] ? 690 : 490)} top={30} /> : null}
         </div>
     );
 }

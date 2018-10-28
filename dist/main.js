@@ -70429,6 +70429,11 @@ $(function () {
     socket.emit('requestFirstTableData', { tableId: params.tableId });
     // ボード情報を受信した場合、メイン処理をスタート
     socket.on('onFirstTableDataReceived', function (p) {
+        // ユーザー設定のセット
+        var settingJson = localStorage.getItem('Setting');
+        if (settingJson) {
+            appActions.setSetting(JSON.parse(settingJson));
+        }
         // ボード情報のセット
         appActions.setBoard(p.board);
         // 領域情報を再更新
@@ -72207,9 +72212,11 @@ var board_1 = __importDefault(__webpack_require__(/*! ./board */ "./src/sakuraba
 var actionsTemp4 = Object.assign({}, actionsTemp3, board_1.default);
 var sakuraToken_1 = __importDefault(__webpack_require__(/*! ./sakuraToken */ "./src/sakuraba/apps/main/actions/sakuraToken.ts"));
 var actionsTemp5 = Object.assign({}, actionsTemp4, sakuraToken_1.default);
+var setting_1 = __importDefault(__webpack_require__(/*! ./setting */ "./src/sakuraba/apps/main/actions/setting.ts"));
+var actionsTemp6 = Object.assign({}, actionsTemp5, setting_1.default);
 var misc_1 = __importDefault(__webpack_require__(/*! ./misc */ "./src/sakuraba/apps/main/actions/misc.ts"));
-var actionsTemp6 = Object.assign({}, actionsTemp5, misc_1.default);
-exports.actions = actionsTemp6;
+var actionsTemp7 = Object.assign({}, actionsTemp6, misc_1.default);
+exports.actions = actionsTemp7;
 
 
 /***/ }),
@@ -72235,6 +72242,9 @@ exports.default = {
     },
     toggleHelpVisible: function () { return function (state) {
         return { helpVisible: !state.helpVisible };
+    }; },
+    toggleSettingVisible: function () { return function (state) {
+        return { settingVisible: !state.settingVisible };
     }; },
     toggleBgmPlaying: function () { return function (state) {
         return { bgmPlaying: !state.bgmPlaying };
@@ -72368,6 +72378,36 @@ exports.default = {
             }
         });
     }; },
+};
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/main/actions/setting.ts":
+/*!***************************************************!*\
+  !*** ./src/sakuraba/apps/main/actions/setting.ts ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var lodash_1 = __importDefault(__webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js"));
+exports.default = {
+    /** 設定を上書き */
+    setSetting: function (newSetting) {
+        return { setting: newSetting };
+    },
+    /** メガミ表示を変更する */
+    setMegamiFaceSetting: function (value) { return function (state) {
+        var newSetting = lodash_1.default.assign({}, state.setting);
+        newSetting.megamiFaceViewMode = value;
+        return { setting: newSetting };
+    }; }
 };
 
 
@@ -73064,6 +73104,9 @@ exports.ControlPanel = function () { return function (state, actions) {
             hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleBgmPlaying(); } },
                 (state.bgmPlaying ? hyperapp_1.h("i", { class: "check icon" }) : null),
                 "BGM\u518D\u751F"),
+            hyperapp_1.h("div", { class: "item", onclick: function () { return actions.toggleSettingVisible(); } },
+                (state.settingVisible ? hyperapp_1.h("i", { class: "check icon" }) : null),
+                "\u8A2D\u5B9A"),
             hyperapp_1.h("div", { class: "divider" }),
             hyperapp_1.h("div", { class: "item", onclick: quizOpen }, "\u30DF\u30CB\u30B2\u30FC\u30E0: \u3075\u308B\u3088\u306B\u30DF\u30CB\u30AF\u30A4\u30BA"),
             hyperapp_1.h("div", { class: "divider" }),
@@ -73669,6 +73712,40 @@ exports.MariganButton = function (p) { return function (state, actions) {
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/main/components/MegamiFace.tsx":
+/*!**********************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/MegamiFace.tsx ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
+/** メガミ顔 */
+exports.MegamiFace = function (p) { return function (state, actions) {
+    // DOMを返す
+    var styles = {
+        left: p.left * state.zoom + "px",
+        top: p.top * state.zoom + "px",
+        width: 240 * 2 * state.zoom + "px",
+        height: 80 * 2 * state.zoom + "px",
+        position: 'absolute',
+        opacity: '0.1',
+        zIndex: "" + const_1.ZIndex.MEGAMI_FACE
+    };
+    var imageName = p.megami.replace('-', '_') + "_240x80.png";
+    if (p.megami === 'yukihi' && state.board.umbrellaStatus[state.side] === 'opened') {
+        imageName = 'yukihi_o_240x80.png';
+    }
+    return hyperapp_1.h("img", { style: styles, src: "http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/megami/face/" + imageName });
+}; };
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/main/components/PlanToken.tsx":
 /*!*********************************************************!*\
   !*** ./src/sakuraba/apps/main/components/PlanToken.tsx ***!
@@ -73837,6 +73914,73 @@ exports.SakuraTokenAreaDroppable = function (p) { return function (state, action
         height: p.height * state.zoom + "px"
     };
     return (hyperapp_1.h("div", { class: "area droppable sakura-token-region", style: styles, "data-side": p.side || 'none', "data-region": p.region, "data-linked-card-id": p.linkedCardId || 'none', key: "SakuraTokenAreaDroppable_" + p.side + "_" + p.region + "_" + p.linkedCardId }));
+}; };
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/main/components/SettingWindow.tsx":
+/*!*************************************************************!*\
+  !*** ./src/sakuraba/apps/main/components/SettingWindow.tsx ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
+// ウインドウの表示状態をローカルストレージに保存
+function saveWindowState(elem) {
+    var current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top') };
+    localStorage.setItem(elem.id + "-WindowState", JSON.stringify(current));
+}
+/** 設定ウインドウ */
+exports.SettingWindow = function (p) { return function (state, actions) {
+    if (p.shown) {
+        var oncreate = function (e) {
+            // ウインドウを移動可能にする
+            $(e).draggable({
+                cursor: "move",
+                opacity: 0.7,
+                stop: function () {
+                    saveWindowState(e);
+                },
+            });
+            // ウインドウの状態を復元
+            var windowStateJson = localStorage.getItem(e.id + "-WindowState");
+            if (windowStateJson) {
+                var windowState = JSON.parse(windowStateJson);
+                $(e).css(windowState);
+            }
+            else {
+                // 設定がなければ中央に配置
+                $(e).css({ left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2 });
+            }
+            $(e).find('.ui.checkbox').checkbox();
+            $(e).find('.ui.checkbox').checkbox({
+                onChange: function () {
+                    var checked = $(this).closest('.ui.checkbox').checkbox('is checked');
+                    actions.setMegamiFaceSetting(checked ? 'background1' : 'none');
+                    localStorage.setItem('Setting', JSON.stringify(actions.getState().setting));
+                }
+            });
+        };
+        return (hyperapp_1.h("div", { id: "SETTING-WINDOW", style: { position: 'absolute', width: "35rem", paddingBottom: '3rem', backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: const_1.ZIndex.FLOAT_WINDOW }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
+            hyperapp_1.h("div", { class: "ui top attached label" },
+                "\u8A2D\u5B9A",
+                hyperapp_1.h("a", { style: { display: 'block', float: 'right', padding: '2px' }, onclick: function () { return actions.toggleSettingVisible(); } },
+                    hyperapp_1.h("i", { class: "times icon" }))),
+            hyperapp_1.h("form", { class: "ui form" },
+                hyperapp_1.h("div", { class: "inline field" },
+                    hyperapp_1.h("div", { class: "ui checkbox" },
+                        hyperapp_1.h("input", { type: "checkbox", class: "hidden", checked: (state.setting.megamiFaceViewMode === 'background1' ? true : undefined) }),
+                        hyperapp_1.h("label", null, "\u30E1\u30AC\u30DF\u306E\u30D5\u30A7\u30A4\u30B9\u30A2\u30C3\u30D7\u753B\u50CF\u8868\u793A"))))));
+    }
+    else {
+        return null;
+    }
 }; };
 
 
@@ -74117,7 +74261,9 @@ __export(__webpack_require__(/*! ./HelpWindow */ "./src/sakuraba/apps/main/compo
 __export(__webpack_require__(/*! ./ChatLogArea */ "./src/sakuraba/apps/main/components/ChatLogArea.tsx"));
 __export(__webpack_require__(/*! ./PlayerNameDisplay */ "./src/sakuraba/apps/main/components/PlayerNameDisplay.tsx"));
 __export(__webpack_require__(/*! ./MainProcessButtons */ "./src/sakuraba/apps/main/components/MainProcessButtons.tsx"));
+__export(__webpack_require__(/*! ./MegamiFace */ "./src/sakuraba/apps/main/components/MegamiFace.tsx"));
 __export(__webpack_require__(/*! ./MachineButtons */ "./src/sakuraba/apps/main/components/MachineButtons.tsx"));
+__export(__webpack_require__(/*! ./SettingWindow */ "./src/sakuraba/apps/main/components/SettingWindow.tsx"));
 
 
 /***/ }),
@@ -74365,6 +74511,10 @@ var view = function (state, actions) {
             var card = ret[0];
             var left = area.left + ret[1];
             var top = area.top + ret[2];
+            // 相手側の場合はカードの座標を逆転
+            if (area.side === opponentSide) {
+                left = area.left + (area.width - ret[1] - 100);
+            }
             objectNodes.push(hyperapp_1.h(components.BoardCard, { target: card, left: left, top: top }));
             // 座標を記憶しておく
             cardLocations[card.id] = [left, top];
@@ -74524,13 +74674,18 @@ var view = function (state, actions) {
         hyperapp_1.h(components.ChatLogArea, { logs: state.chatLog }),
         hyperapp_1.h(components.ActionLogWindow, { logs: state.actionLog, shown: state.actionLogVisible }),
         hyperapp_1.h(components.HelpWindow, { shown: state.helpVisible }),
+        hyperapp_1.h(components.SettingWindow, { shown: state.settingVisible }),
         hyperapp_1.h(components.BGMWindow, { shown: state.bgmPlaying }),
         extraTokens,
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 10, width: 1200, side: utils.flipSide(selfSide) }),
         hyperapp_1.h(components.PlayerNameDisplay, { left: 10, top: 770, width: 1200, side: selfSide }),
         hyperapp_1.h(components.MainProcessButtons, { left: mainProcessButtonLeft }),
         readyObjects,
-        state.side !== 'watcher' && hasMachineTarot[selfSide] ? hyperapp_1.h(components.MachineButtons, { side: selfSide, left: 1010, top: 720 }) : null));
+        state.side !== 'watcher' && hasMachineTarot[selfSide] ? hyperapp_1.h(components.MachineButtons, { side: selfSide, left: 1010, top: 720 }) : null,
+        state.board.megamis[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[selfSide][0], left: 10, top: 430 }) : null,
+        state.board.megamis[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[selfSide][1], left: (hasMachineTarot[selfSide] ? 40 : 240), top: 600 }) : null,
+        state.board.megamis[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[opponentSide][0], left: 720, top: 200 }) : null,
+        state.board.megamis[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? hyperapp_1.h(components.MegamiFace, { megami: state.board.megamis[opponentSide][1], left: (hasMachineTarot[opponentSide] ? 690 : 490), top: 30 }) : null));
 };
 exports.default = view;
 
@@ -75312,6 +75467,7 @@ var ZIndex;
     ZIndex.TAPPED_CARD = 150;
     ZIndex.FLOAT_WINDOW = 1000;
     ZIndex.HOVER_DROPPABLE = 9999;
+    ZIndex.MEGAMI_FACE = -1;
 })(ZIndex = exports.ZIndex || (exports.ZIndex = {}));
 
 
@@ -75916,8 +76072,10 @@ function createInitialState() {
         chatLog: [],
         actionLogVisible: false,
         helpVisible: false,
+        settingVisible: false,
         bgmPlaying: false,
-        zoom: 1
+        zoom: 1,
+        setting: { megamiFaceViewMode: 'background1' }
     };
     return st;
 }

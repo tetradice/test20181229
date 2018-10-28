@@ -29,8 +29,11 @@ export function createInitialState(): state.State{
       , chatLog: []
       , actionLogVisible: false
       , helpVisible: false
+      , settingVisible: false
       , bgmPlaying: false
       , zoom: 1
+
+      , setting: {megamiFaceViewMode: 'background1'}
   }
   return st;
 }
