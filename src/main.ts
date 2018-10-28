@@ -687,6 +687,47 @@ $(function(){
                     }
                 }
 
+                // オーラで右クリック
+                if($elem.is(`.sakura-token[data-region=aura]`)){
+                    let id = $elem.attr('data-object-id');
+                    let token = board.getSakuraToken(id);
+
+                    items = {
+                        'damage': {name: (token.side === playerSide ? `${token.groupTokenDraggingCount}ダメージを受ける` :  `${token.groupTokenDraggingCount}ダメージを与える`), callback: () => {
+                            appActions.operate({
+                                log: (token.side === playerSide ? `オーラに${token.groupTokenDraggingCount}ダメージを受けました` : `相手のオーラに${token.groupTokenDraggingCount}ダメージを与えました`),
+                                proc: () => {
+                                    appActions.moveSakuraToken({
+                                          from: [token.side, token.region, token.linkedCardId]
+                                        , to: [null, 'dust', null]
+                                        , moveNumber: token.groupTokenDraggingCount
+                                    });
+                                }
+                            });
+                        }},
+                    }
+                }
+                // ライフで右クリック
+                if($elem.is(`.sakura-token[data-region=life]`)){
+                    let id = $elem.attr('data-object-id');
+                    let token = board.getSakuraToken(id);
+
+                    items = {
+                        'damage': {name: (token.side === playerSide ? `${token.groupTokenDraggingCount}ダメージを受ける` :  `${token.groupTokenDraggingCount}ダメージを与える`), callback: () => {
+                            appActions.operate({
+                                log: (token.side === playerSide ? `ライフに${token.groupTokenDraggingCount}ダメージを受けました` : `相手のライフに${token.groupTokenDraggingCount}ダメージを与えました`),
+                                proc: () => {
+                                    appActions.moveSakuraToken({
+                                          from: [token.side, token.region, token.linkedCardId]
+                                        , to: [token.side, 'flair', null]
+                                        , moveNumber: token.groupTokenDraggingCount
+                                    });
+                                }
+                            });
+                        }},
+                    }
+                }
+
                 if(items === null){
                     return false;
                 } else {
