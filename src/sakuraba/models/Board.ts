@@ -122,9 +122,9 @@ export class Board implements state.Board {
             let regionCards = this.getRegionCards(side, region, linkedCardId);
             // 追加札は常にカードID順でソート、それ以外は以前の順序でソート。ただしTransformカードは後ろに並べる
             if (region === 'extra') {
-                regionCards = _.orderBy(regionCards, ['cardId', 'asc']);
+                regionCards = _.sortBy(regionCards, [((c: state.Card) => c.cardId)]);
             } else {
-                regionCards = _.orderBy(regionCards, ['baseType', 'asc'], ['indexOfRegion', 'asc']);
+                regionCards = _.sortBy(regionCards, [((c: state.Card) => CARD_DATA[c.cardId].baseType), ((c: state.Card) => c.indexOfRegion)]);
             }
 
             let index = 0;
