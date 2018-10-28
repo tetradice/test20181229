@@ -69934,1046 +69934,1058 @@ function confirmModal(desc, yesCallback) {
         .modal('show');
 }
 $(function () {
-    // socket.ioに接続し、ラッパーを作成
-    var ioSocket = io();
-    var socket = new socket_1.ClientSocket(ioSocket);
-    // 初期ステートを生成
-    var st = utils.createInitialState();
-    st.socket = socket;
-    st.tableId = params.tableId;
-    st.side = params.side;
-    st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
-    // ズーム設定を調整
-    // コントロールパネルとチャットエリアの幅を350pxぶんは確保できるように調整
-    var sideWidth = 350;
-    var innerWidth = window.innerWidth;
-    if (const_1.BOARD_BASE_WIDTH + sideWidth > innerWidth)
-        st.zoom = 0.9;
-    if (const_1.BOARD_BASE_WIDTH * 0.9 + sideWidth > innerWidth)
-        st.zoom = 0.8;
-    if (const_1.BOARD_BASE_WIDTH * 0.8 + sideWidth > innerWidth)
-        st.zoom = 0.7;
-    if (const_1.BOARD_BASE_WIDTH * 0.7 + sideWidth > innerWidth)
-        st.zoom = 0.6;
-    // アプリケーション起動
-    var appActions = apps.main.run(st, document.getElementById('BOARD'));
-    var contextMenuShowingAfterDrop = false;
-    var processOnDragEnd = function () {
-        // コンテキストメニューを表示している場合、一部属性の解除を行わない
-        if (!contextMenuShowingAfterDrop) {
-            $('[draggable]').css('opacity', '1.0');
-            $('.area,.fbs-card').removeClass('over').removeClass('over-forbidden');
-        }
-        $('.area.droppable').css('z-index', -9999);
-        dragInfo_1.default.draggingFrom = null;
-    };
-    // カード移動時のメイン処理
-    var moveCardMain = function (card, toSide, toRegion, toLinkedCardId, toPosition) {
-        if (toPosition === void 0) { toPosition = 'last'; }
-        var currentState = appActions.getState();
-        // 観戦者の場合は何もしない
-        if (currentState.side === 'watcher')
-            return;
-        // 移動ログを決定
-        var logs = [];
-        var cardName = sakuraba_1.CARD_DATA[card.cardId].name;
-        var fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region);
-        var toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion);
-        // 移動元での公開状態と、移動先での公開状態を判定
-        var oldOpenState = card.openState;
-        var newOpenState = utils.judgeCardOpenState(card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
-        // ログ内容を決定
-        console.log("openState: " + oldOpenState + " => " + newOpenState);
-        if (oldOpenState === 'opened' || newOpenState === 'opened') {
-            // 公開状態から移動した場合や、公開状態へ移動した場合は、全員に名前を公開
-            logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
-        }
-        else {
-            // 上記以外の場合は、移動元と移動先の組み合わせに応じてログを決定
-            var oldMyKnown = ((card.region === 'hidden-used' || oldOpenState === 'ownerOnly') && card.side === currentState.side);
-            var newMyKnown = ((toRegion === 'hidden-used' || newOpenState === 'ownerOnly') && toSide === currentState.side);
-            var oldOpponentKnown = ((card.region === 'hidden-used' || oldOpenState === 'ownerOnly') && card.side === utils.flipSide(currentState.side));
-            var newOpponentKnown = ((toRegion === 'hidden-used' || newOpenState === 'ownerOnly') && toSide === utils.flipSide(currentState.side));
-            console.log("known: my(" + oldMyKnown + " => " + newMyKnown + "), opponent(" + oldOpponentKnown + " => " + newOpponentKnown + ")");
-            if (oldMyKnown || newMyKnown) {
-                // 自分は知っている
-                if (oldOpponentKnown || newOpponentKnown) {
-                    // 対戦相手も知っている (観戦者対応が必要)
-                    logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
-                }
-                else {
-                    // 対戦相手は知らない
-                    logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle, visibility: 'ownerOnly' });
-                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle, visibility: 'outerOnly' });
-                }
+    try {
+        // socket.ioに接続し、ラッパーを作成
+        var ioSocket = io();
+        var socket_2 = new socket_1.ClientSocket(ioSocket);
+        // 初期ステートを生成
+        var st = utils.createInitialState();
+        st.socket = socket_2;
+        st.tableId = params.tableId;
+        st.side = params.side;
+        st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
+        // ズーム設定を調整
+        // コントロールパネルとチャットエリアの幅を350pxぶんは確保できるように調整
+        var sideWidth = 350;
+        var innerWidth_1 = window.innerWidth;
+        if (const_1.BOARD_BASE_WIDTH + sideWidth > innerWidth_1)
+            st.zoom = 0.9;
+        if (const_1.BOARD_BASE_WIDTH * 0.9 + sideWidth > innerWidth_1)
+            st.zoom = 0.8;
+        if (const_1.BOARD_BASE_WIDTH * 0.8 + sideWidth > innerWidth_1)
+            st.zoom = 0.7;
+        if (const_1.BOARD_BASE_WIDTH * 0.7 + sideWidth > innerWidth_1)
+            st.zoom = 0.6;
+        // アプリケーション起動
+        var appActions_1 = apps.main.run(st, document.getElementById('BOARD'));
+        var contextMenuShowingAfterDrop_1 = false;
+        var processOnDragEnd_1 = function () {
+            // コンテキストメニューを表示している場合、一部属性の解除を行わない
+            if (!contextMenuShowingAfterDrop_1) {
+                $('[draggable]').css('opacity', '1.0');
+                $('.area,.fbs-card').removeClass('over').removeClass('over-forbidden');
             }
-            else {
-                // 自分は知らない
-                if (oldOpponentKnown || newOpponentKnown) {
-                    // 対戦相手は知っている (観戦者対応が必要)
-                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
-                }
-                else {
-                    // 対戦相手も知らない
-                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
-                }
-            }
-        }
-        var cardNameLogging = false;
-        // 自分のカードを操作した場合で、一定の条件を満たす場合はログを置き換える
-        if (card.side === currentState.side && toSide === currentState.side) {
-            if (card.region === 'hand' && toRegion === 'hidden-used') {
-                // 伏せ札にした場合
-                logs = [];
-                logs.push({ text: "[" + cardName + "]\u3092\u4F0F\u305B\u672D\u306B\u3057\u307E\u3057\u305F", visibility: 'ownerOnly' });
-                logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u4F0F\u305B\u672D\u306B\u3057\u307E\u3057\u305F", visibility: 'outerOnly' });
-            }
-            if (card.region === 'hand' && toRegion === 'used') {
-                // 場に出した場合
-                logs = [];
-                logs.push({ text: "[" + cardName + "]\u3092\u5834\u306B\u51FA\u3057\u307E\u3057\u305F" });
-            }
-            if (card.region === 'library' && toRegion === 'hand') {
-                // カードを1枚引いた場合
-                logs = [];
-                logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u5F15\u304D\u307E\u3057\u305F" });
-                cardNameLogging = true;
-            }
-            if (toRegion === 'library') {
-                // カードを山札へ置いた場合
-                logs = [];
-                if (toPosition === 'first') {
-                    logs.push({ text: "[" + cardName + "]\u3092\u5C71\u672D\u306E\u5E95\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'ownerOnly' });
-                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u5C71\u672D\u306E\u5E95\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'outerOnly' });
-                }
-                else {
-                    logs.push({ text: "[" + cardName + "]\u3092\u5C71\u672D\u306E\u4E0A\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'ownerOnly' });
-                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u5C71\u672D\u306E\u4E0A\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'outerOnly' });
-                }
-            }
-        }
-        appActions.operate({
-            log: logs,
-            proc: function () {
-                appActions.moveCard({
-                    from: card.id,
-                    to: [toSide, toRegion, toLinkedCardId],
-                    cardNameLogging: cardNameLogging,
-                    toPosition: toPosition
-                });
-            }
-        });
-    };
-    // 山札へのカードドラッグ時メニュー
-    $('#BOARD').append('<div id="CONTEXT-DRAG-TO-LIBRARY"></div>');
-    $.contextMenu({
-        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
-        trigger: 'none',
-        selector: '#CONTEXT-DRAG-TO-LIBRARY',
-        events: {
-            hide: function (e) {
-                contextMenuShowingAfterDrop = false;
-                processOnDragEnd();
-            }
-        },
-        build: function ($elem, event) {
-            console.log('contextmenu:hide', $elem.menu);
-            var currentState = appActions.getState();
-            var side = currentState.side;
-            var board = new models.Board(currentState.board);
-            var items = {};
-            items['toTop'] = { name: '山札の上に置く', callback: function () {
-                    moveCardMain(dragInfo_1.default.lastDraggingCardBeforeContextMenu, side, 'library', null);
-                } };
-            items['toBottom'] = { name: '山札の底に置く', callback: function () {
-                    moveCardMain(dragInfo_1.default.lastDraggingCardBeforeContextMenu, side, 'library', null, 'first');
-                } };
-            items['sep'] = '----';
-            items['cancel'] = { name: 'キャンセル', callback: function () { } };
-            return { items: items };
-        }
-    });
-    // 間合への造花結晶ドラッグ時メニュー
-    $('#BOARD').append('<div id="CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE"></div>');
-    $.contextMenu({
-        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
-        trigger: 'none',
-        selector: '#CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE',
-        events: {
-            hide: function (e) {
-                contextMenuShowingAfterDrop = false;
-                processOnDragEnd();
-            }
-        },
-        build: function ($elem, event) {
-            console.log('contextmenu:hide', $elem.menu);
-            var currentState = appActions.getState();
-            var token = dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu;
-            var boardModel = new models.Board(currentState.board);
-            var side = currentState.side;
-            var items = {};
-            var forwardEnabled = boardModel.isRideForwardEnabled(token.ownerSide, dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
-            var backEnabled = boardModel.isRideBackEnabled(token.ownerSide, dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
-            items['forward'] = { name: '騎動前進', disabled: !forwardEnabled, callback: function () {
-                    appActions.oprRideForward({ side: token.ownerSide, moveNumber: dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount });
-                } };
-            items['back'] = { name: '騎動後退', disabled: !backEnabled, callback: function () {
-                    appActions.oprRideBack({ side: token.ownerSide, moveNumber: dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount });
-                } };
-            items['sep'] = '----';
-            items['cancel'] = { name: 'キャンセル', callback: function () { } };
-            return { items: items };
-        }
-    });
-    // 畏縮トークンクリックメニュー
-    $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
-    $.contextMenu({
-        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
-        trigger: 'none',
-        selector: '#CONTEXT-WITHERED-TOKEN-CLICK',
-        build: function ($elem, event) {
-            var currentState = appActions.getState();
-            var side = currentState.side;
-            var board = new models.Board(currentState.board);
-            var items = {};
-            items['remove'] = { name: '畏縮を解除', callback: function () {
-                    appActions.oprSetWitherFlag({
-                        side: side,
-                        value: false
-                    });
-                } };
-            items['sep'] = '----';
-            items['cancel'] = { name: 'キャンセル', callback: function () { } };
-            return { items: items };
-        }
-    });
-    // 計略トークンクリックメニュー
-    $('#BOARD').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
-    $.contextMenu({
-        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
-        trigger: 'none',
-        selector: '#CONTEXT-PLAN-TOKEN-CLICK',
-        build: function ($elem, event) {
-            var currentState = appActions.getState();
-            var side = currentState.side;
-            var board = new models.Board(currentState.board);
-            var items = {};
-            var planState = board.planStatus[currentState.side];
-            if (planState === 'back-blue' || planState === 'back-red') {
-                items['open'] = { name: '計略を公開する', callback: function () {
-                        appActions.operate({
-                            log: "\u8A08\u7565\u3092\u516C\u958B\u3057\u307E\u3057\u305F -> " + (planState === 'back-blue' ? '神算' : '鬼謀'),
-                            proc: function () {
-                                appActions.setPlanState({ side: side, value: (planState === 'back-blue' ? 'blue' : 'red') });
-                            }
-                        });
-                    } };
-            }
-            else {
-                items['blue'] = { name: '次の計略を「神算」で準備する', callback: function () {
-                        appActions.operate({
-                            log: "\u6B21\u306E\u8A08\u7565\u3092\u6E96\u5099\u3057\u307E\u3057\u305F",
-                            proc: function () {
-                                appActions.setPlanState({ side: side, value: 'back-blue' });
-                            }
-                        });
-                    } };
-                items['red'] = { name: '次の計略を「鬼謀」で準備する', callback: function () {
-                        appActions.operate({
-                            log: "\u6B21\u306E\u8A08\u7565\u3092\u6E96\u5099\u3057\u307E\u3057\u305F",
-                            proc: function () {
-                                appActions.setPlanState({ side: side, value: 'back-red' });
-                            }
-                        });
-                    } };
-            }
-            items['sep'] = '----';
-            items['cancel'] = { name: 'キャンセル', callback: function () { } };
-            return { items: items };
-        }
-    });
-    // 傘トークンクリックメニュー
-    $('#BOARD').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
-    $.contextMenu({
-        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
-        trigger: 'none',
-        selector: '#CONTEXT-UMBRELLA-TOKEN-CLICK',
-        build: function ($elem, event) {
-            var currentState = appActions.getState();
-            var side = currentState.side;
-            var board = new models.Board(currentState.board);
-            var items = {};
-            var umbrellaState = board.umbrellaStatus[currentState.side];
-            if (umbrellaState === 'closed') {
-                items['open'] = { name: '傘を開く', callback: function () {
-                        appActions.operate({
-                            log: "\u5098\u3092\u958B\u304D\u307E\u3057\u305F",
-                            proc: function () {
-                                appActions.setUmbrellaState({ side: side, value: 'opened' });
-                            }
-                        });
-                    } };
-            }
-            else {
-                items['close'] = { name: '傘を閉じる', callback: function () {
-                        appActions.operate({
-                            log: "\u5098\u3092\u9589\u3058\u307E\u3057\u305F",
-                            proc: function () {
-                                appActions.setUmbrellaState({ side: side, value: 'closed' });
-                            }
-                        });
-                    } };
-            }
-            items['sep'] = '----';
-            items['cancel'] = { name: 'キャンセル', callback: function () { } };
-            return { items: items };
-        }
-    });
-    // 右クリックメニュー
-    $.contextMenu({
-        selector: '#BOARD-PLAYAREA, #BOARD-PLAYAREA *',
-        zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE_RIGHT_CLICK,
-        build: function ($elem, event) {
-            var currentState = appActions.getState();
-            var board = new models.Board(currentState.board);
-            var items = null;
-            // 観戦者は右クリックメニューを開けない
+            $('.area.droppable').css('z-index', -9999);
+            dragInfo_1.default.draggingFrom = null;
+        };
+        // カード移動時のメイン処理
+        var moveCardMain_1 = function (card, toSide, toRegion, toLinkedCardId, toPosition) {
+            if (toPosition === void 0) { toPosition = 'last'; }
+            var currentState = appActions_1.getState();
+            // 観戦者の場合は何もしない
             if (currentState.side === 'watcher')
-                return false;
-            var playerSide = currentState.side;
-            // 決闘を開始していなければ、メニューを開けない
-            if (!currentState.board.mariganFlags[playerSide]) {
-                return false;
+                return;
+            // 移動ログを決定
+            var logs = [];
+            var cardName = sakuraba_1.CARD_DATA[card.cardId].name;
+            var fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region);
+            var toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion);
+            // 移動元での公開状態と、移動先での公開状態を判定
+            var oldOpenState = card.openState;
+            var newOpenState = utils.judgeCardOpenState(card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
+            // ログ内容を決定
+            console.log("openState: " + oldOpenState + " => " + newOpenState);
+            if (oldOpenState === 'opened' || newOpenState === 'opened') {
+                // 公開状態から移動した場合や、公開状態へ移動した場合は、全員に名前を公開
+                logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
             }
-            ;
-            // 帯電解除コマンドの追加
-            var addDischargeCommand = function (items, card, addSeparator) {
-                // プレイヤーがライラを宿しており、かつ対象のカードが公開状態で、ライラのカードでもTransformカードでもない場合、帯電解除を行える
-                if (board.megamis[playerSide][0] === 'raira' || board.megamis[playerSide][1] === 'raira') {
-                    if (addSeparator) {
-                        items['sepDischarge'] = '---';
-                    }
-                    items['dischargeAndIncrementWind'] = {
-                        name: "帯電を解除し、風神ゲージを1上げる",
-                        disabled: (card.openState !== 'opened' || card.discharged || sakuraba_1.CARD_DATA[card.cardId].megami === 'raira' || sakuraba_1.CARD_DATA[card.cardId].baseType === 'transform'),
-                        callback: function () {
-                            appActions.oprDischarge({ objectId: card.id, guageType: 'wind' });
-                        }
-                    };
-                    items['dischargeAndIncrementThunder'] = {
-                        name: "帯電を解除し、雷神ゲージを1上げる",
-                        disabled: (card.openState !== 'opened' || card.discharged || sakuraba_1.CARD_DATA[card.cardId].megami === 'raira' || sakuraba_1.CARD_DATA[card.cardId].baseType === 'transform'),
-                        callback: function () {
-                            appActions.oprDischarge({ objectId: card.id, guageType: 'thunder' });
-                        }
-                    };
-                }
-            };
-            // 使用済み札で右クリック
-            if ($elem.is('.fbs-card[data-region=used]')) {
-                var id = $elem.attr('data-object-id');
-                var card = board.getCard(id);
-                items = {};
-                // 条件を満たしていれば、帯電解除コマンドを追加
-                addDischargeCommand(items, card);
-            }
-            // 切り札で右クリック
-            if ($elem.is('.fbs-card[data-region=special]')) {
-                var id_1 = $elem.attr('data-object-id');
-                var card_1 = board.getCard(id_1);
-                items = {};
-                items['flip'] = {
-                    name: (card_1.specialUsed ? '裏向きにする' : '表向きにする'),
-                    callback: function () {
-                        appActions.oprSetSpecialUsed({ objectId: id_1, value: !card_1.specialUsed });
-                    }
-                };
-                // 条件を満たしていれば、帯電解除コマンドを追加
-                addDischargeCommand(items, card_1, true);
-                // // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
-                // if(CARD_DATA[card.cardId].removable){
-                //     items['sep2'] = '---';
-                //     items['remove'] =  {
-                //         name: "ボード上から取り除く"
-                //         , callback: function() {
-                //         appActions.oprRemoveCard({objectId: id});
-                //         }
-                //     }
-                // };
-            }
-            // 集中力で右クリック
-            if ($elem.is('.fbs-vigor-card, .fbs-vigor-card *, .withered-token')) {
-                var side_1 = $elem.closest('[data-side]').attr('data-side');
-                items = {};
-                items['wither'] = {
-                    name: (board.witherFlags[side_1] ? '畏縮を解除' : '畏縮'),
-                    callback: function () { return appActions.oprSetWitherFlag({ side: side_1, value: !board.witherFlags[side_1] }); }
-                };
-            }
-            // 封印されたカードの場所で右クリック
-            var $sealedCard = $elem.closest(".fbs-card[data-region=on-card]");
-            if ($sealedCard.length >= 1) {
-                var id_2 = $sealedCard.attr('data-object-id');
-                var card = board.getCard(id_2);
-                var cardData_1 = sakuraba_1.CARD_DATA[card.cardId];
-                var linkedCard = board.getCard($sealedCard.attr('data-linked-card-id'));
-                var linkedCardData_1 = sakuraba_1.CARD_DATA[linkedCard.cardId];
-                items = {};
-                items['close'] = {
-                    name: "[" + cardData_1.name + "]\u3092\u76F8\u624B\u306E\u6368\u3066\u672D\u306B\u3059\u308B", callback: function () {
-                        appActions.operate({
-                            log: "[" + linkedCardData_1.name + "]\u306E\u4E0B\u306B\u5C01\u5370\u3055\u308C\u3066\u3044\u305F[" + cardData_1.name + "]\u3092\u3001\u76F8\u624B\u306E\u6368\u3066\u672D\u306B\u3057\u307E\u3057\u305F",
-                            proc: function () {
-                                appActions.moveCard({ from: id_2, to: [utils.flipSide(playerSide), 'used', null] });
-                            }
-                        });
-                    }
-                };
-            }
-            // 手札で右クリック
-            var $handArea = $elem.closest(".area.background[data-side=" + playerSide + "][data-region=hand]");
-            var $handCard = $elem.closest(".fbs-card[data-side=" + playerSide + "][data-region=hand]");
-            if ($handArea.length >= 1 || $handCard.length >= 1) {
-                items = {};
-                // 全手札を公開していない状態で、カードを個別に右クリックした場合、そのカードの公開/非公開操作も可能
-                if (!currentState.board.handOpenFlags[playerSide] && $handCard.length >= 1) {
-                    var id_3 = $handCard.attr('data-object-id');
-                    var card = board.getCard(id_3);
-                    var cardData_2 = sakuraba_1.CARD_DATA[card.cardId];
-                    if (currentState.board.handCardOpenFlags[playerSide][id_3]) {
-                        items['closeCard'] = {
-                            name: "[" + cardData_2.name + "]\u306E\u516C\u958B\u3092\u4E2D\u6B62\u3059\u308B", callback: function () {
-                                appActions.operate({
-                                    log: "[" + cardData_2.name + "]\u306E\u516C\u958B\u3092\u4E2D\u6B62\u3057\u307E\u3057\u305F",
-                                    proc: function () {
-                                        appActions.setHandCardOpenFlag({ side: playerSide, cardId: id_3, value: false });
-                                    }
-                                });
-                            }
-                        };
+            else {
+                // 上記以外の場合は、移動元と移動先の組み合わせに応じてログを決定
+                var oldMyKnown = ((card.region === 'hidden-used' || oldOpenState === 'ownerOnly') && card.side === currentState.side);
+                var newMyKnown = ((toRegion === 'hidden-used' || newOpenState === 'ownerOnly') && toSide === currentState.side);
+                var oldOpponentKnown = ((card.region === 'hidden-used' || oldOpenState === 'ownerOnly') && card.side === utils.flipSide(currentState.side));
+                var newOpponentKnown = ((toRegion === 'hidden-used' || newOpenState === 'ownerOnly') && toSide === utils.flipSide(currentState.side));
+                console.log("known: my(" + oldMyKnown + " => " + newMyKnown + "), opponent(" + oldOpponentKnown + " => " + newOpponentKnown + ")");
+                if (oldMyKnown || newMyKnown) {
+                    // 自分は知っている
+                    if (oldOpponentKnown || newOpponentKnown) {
+                        // 対戦相手も知っている (観戦者対応が必要)
+                        logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
                     }
                     else {
-                        items['openCard'] = {
-                            name: "[" + cardData_2.name + "]\u3092\u76F8\u624B\u306B\u516C\u958B\u3059\u308B", callback: function () {
-                                appActions.operate({
-                                    log: "[" + cardData_2.name + "]\u3092\u516C\u958B\u3057\u307E\u3057\u305F",
-                                    proc: function () {
-                                        appActions.setHandCardOpenFlag({ side: playerSide, cardId: id_3, value: true });
-                                    }
-                                });
-                            }
-                        };
+                        // 対戦相手は知らない
+                        logs.push({ text: "[" + cardName + "]\u3092\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle, visibility: 'ownerOnly' });
+                        logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle, visibility: 'outerOnly' });
                     }
-                    items['sep1'] = '---------';
-                }
-                // 全体の公開/非公開操作
-                if (currentState.board.handOpenFlags[playerSide]) {
-                    items['close'] = {
-                        name: '全手札の公開を中止する', callback: function () {
-                            appActions.operate({
-                                log: "\u624B\u672D\u306E\u516C\u958B\u3092\u4E2D\u6B62\u3057\u307E\u3057\u305F",
-                                proc: function () {
-                                    appActions.setHandOpenFlag({ side: playerSide, value: false });
-                                }
-                            });
-                        }
-                    };
                 }
                 else {
-                    items['open'] = {
-                        name: '全手札を相手に公開する', disabled: function () {
-                            var board = new models.Board(appActions.getState().board);
-                            var cards = board.getRegionCards(playerSide, 'hand', null);
-                            return cards.length === 0;
-                        }, callback: function () {
-                            appActions.operate({
-                                log: "\u624B\u672D\u3092\u516C\u958B\u3057\u307E\u3057\u305F",
-                                proc: function () {
-                                    appActions.setHandOpenFlag({ side: playerSide, value: true });
-                                }
-                            });
-                        }
-                    };
-                }
-            }
-            // 自分の山札で右クリック
-            if ($elem.is(".area.background[data-region=library][data-side=" + playerSide + "], .fbs-card[data-region=library][data-side=" + playerSide + "]")) {
-                items = {
-                    'draw': { name: '1枚引く', disabled: function () {
-                            var board = new models.Board(appActions.getState().board);
-                            var cards = board.getRegionCards(playerSide, 'library', null);
-                            return cards.length === 0;
-                        }, callback: function () {
-                            appActions.oprDraw({});
-                        } },
-                    'sep1': '---------',
-                    'reshuffle': { name: '再構成する', callback: function () {
-                            appActions.oprReshuffle({ side: playerSide, lifeDecrease: true });
-                        } },
-                    'reshuffleWithoutDamage': { name: '再構成する (ライフ減少なし)', callback: function () {
-                            appActions.oprReshuffle({ side: playerSide, lifeDecrease: false });
-                        } },
-                };
-            }
-            if (items === null) {
-                return false;
-            }
-            else {
-                return {
-                    items: items,
-                };
-            }
-        }
-    });
-    // 初期情報をリクエスト
-    socket.emit('requestFirstTableData', { tableId: params.tableId });
-    // ボード情報を受信した場合、メイン処理をスタート
-    socket.on('onFirstTableDataReceived', function (p) {
-        // ユーザー設定のセット
-        var settingJson = localStorage.getItem('Setting');
-        if (settingJson) {
-            appActions.setSetting(JSON.parse(settingJson));
-        }
-        // ボード情報のセット
-        appActions.setBoard(p.board);
-        // 領域情報を再更新
-        appActions.updateBoardRegionInfo();
-        // ログ情報のセット
-        appActions.setActionLogs(p.actionLogs);
-        appActions.setChatLogs(p.chatLogs);
-        // まだ名前が決定していなければ、名前の決定処理
-        // 観戦者かどうかで名前の処理を分ける
-        if (params.side === 'watcher') {
-            // 観戦者の場合
-            // まずログインしてきた観戦者に、観戦者セッションIDが割り当てられているかどうかを確認
-            var sessionId = localStorage.getItem("table" + params.tableId + ":watcherSessionId");
-            if (sessionId) {
-                // セッションIDがあれば、そのセッションIDでログイン
-                socket.emit('watcherLogin', { tableId: params.tableId, sessionId: sessionId });
-            }
-            else {
-                // セッションIDがなければ、新たなセッションIDを割り当てて、そのIDでログイン
-                sessionId = randomstring.generate({ readable: true, length: 16 });
-                localStorage.setItem("table" + params.tableId + ":watcherSessionId", sessionId);
-                socket.emit('watcherLogin', { tableId: params.tableId, sessionId: sessionId });
-            }
-        }
-        else {
-            // 観戦者でない場合
-            if (p.board.playerNames[params.side] === null) {
-                var playerCommonName_1 = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
-                utils.userInputModal("<p>\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u3078\u3088\u3046\u3053\u305D\u3002<br>\u3042\u306A\u305F\u306F" + playerCommonName_1 + "\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3059\u3002</p><p>\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\uFF1A</p>", function ($elem) {
-                    var playerName = $('#INPUT-MODAL input').val();
-                    if (playerName === '') {
-                        playerName = playerCommonName_1;
+                    // 自分は知らない
+                    if (oldOpponentKnown || newOpponentKnown) {
+                        // 対戦相手は知っている (観戦者対応が必要)
+                        logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
                     }
-                    appActions.operate({
-                        log: "\u5353\u306B\u53C2\u52A0\u3057\u307E\u3057\u305F",
-                        undoType: 'notBack',
-                        proc: function () {
-                            appActions.setPlayerName({ side: params.side, name: playerName });
-                        }
-                    });
-                    messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u308B\u6E96\u5099\u304C\u3067\u304D\u305F\u3089\u3001\u307E\u305A\u306F\u300C\u30E1\u30AC\u30DF\u9078\u629E\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
-                });
-            }
-        }
-    });
-    // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
-    socket.on('onBoardReceived', function (p) {
-        appActions.setBoard(p.board);
-        // 追加ログがあれば
-        if (p.appendedActionLogs !== null) {
-            // ログも追加
-            appActions.appendReceivedActionLogs(p.appendedActionLogs);
-            // 受け取ったログをtoastrで表示
-            var st_1 = appActions.getState();
-            var targetLogs = p.appendedActionLogs.filter(function (log) { return utils.logIsVisible(log, st_1.side); });
-            var msg = targetLogs.map(function (log) { return log.body; }).join('<br>');
-            var name_1 = (targetLogs[0].side === 'watcher' ? st_1.board.watchers[targetLogs[0].watcherSessionId].name : st_1.board.playerNames[targetLogs[0].side]);
-            toastr_1.default.info(msg, name_1 + ":");
-        }
-    });
-    // 観戦者名の入力を要求された
-    socket.on('requestWatcherName', function (p) {
-        utils.userInputModal("<p>\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u3078\u3088\u3046\u3053\u305D\u3002<br>\u3042\u306A\u305F\u306F\u89B3\u6226\u8005\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3059\u3002</p><p>\u89B3\u6226\u8005\u540D\uFF1A</p>", function ($elem) {
-            var playerName = $('#INPUT-MODAL input').val();
-            if (playerName === '') {
-                playerName = "\u89B3\u6226\u8005" + socket.ioSocket.id;
-            }
-            var sessionId = localStorage.getItem("table" + params.tableId + ":watcherSessionId");
-            socket.emit('watcherNameInput', { tableId: params.tableId, sessionId: sessionId, name: playerName });
-        });
-    });
-    // 観戦者ログイン成功
-    socket.on('onWatcherLoginSuccess', function (p) {
-        var sessionId = localStorage.getItem("table" + params.tableId + ":watcherSessionId");
-        appActions.setWatcherInfo({ watchers: p.watchers, currentWatcherSessionId: sessionId });
-        appActions.operate({
-            log: "\u89B3\u6226\u8005\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3057\u305F",
-            undoType: 'notBack',
-            proc: function () {
-            }
-        });
-    });
-    // 観戦者情報が更新された
-    socket.on('onWatcherChanged', function (p) {
-        appActions.setWatcherInfo({ watchers: p.watchers });
-    });
-    // ★集計
-    // すべてのカード情報を取得
-    var allCards = [];
-    for (var key in sakuraba_1.CARD_DATA) {
-        allCards.push([key, sakuraba_1.CARD_DATA[key]]);
-    }
-    {
-        var costSummary_1 = {};
-        var costSummaryCardTitles_1 = {};
-        var targetCards = allCards.filter(function (_a) {
-            var cardId = _a[0], card = _a[1];
-            return card.baseType === 'special' && card.cost !== undefined && /^[0-9]+$/.test(card.cost);
-        });
-        targetCards.forEach(function (_a) {
-            var cardId = _a[0], card = _a[1];
-            var intCost = parseInt(card.cost);
-            if (costSummary_1[intCost] === undefined)
-                costSummary_1[intCost] = 0;
-            if (costSummaryCardTitles_1[intCost] === undefined)
-                costSummaryCardTitles_1[intCost] = [];
-            costSummary_1[intCost] += 1;
-            costSummaryCardTitles_1[intCost].push(card.name);
-        });
-        console.log(costSummaryCardTitles_1);
-    }
-    {
-        var auraDamageSummary_1 = {};
-        var auraDamageSummaryCardTitles_1 = {};
-        var lifeDamageSummary_1 = {};
-        var lifeDamageSummaryCardTitles_1 = {};
-        var targetCards = allCards.filter(function (_a) {
-            var cardId = _a[0], card = _a[1];
-            return card.damage !== undefined && card.megami !== 'yukihi' && /^[0-9-]+\/[0-9-]+$/.test(card.damage);
-        });
-        targetCards.forEach(function (_a) {
-            var cardId = _a[0], card = _a[1];
-            var _b = card.damage.split('/'), auraDamage = _b[0], lifeDamage = _b[1];
-            if (auraDamageSummary_1[auraDamage] === undefined)
-                auraDamageSummary_1[auraDamage] = 0;
-            if (auraDamageSummaryCardTitles_1[auraDamage] === undefined)
-                auraDamageSummaryCardTitles_1[auraDamage] = [];
-            auraDamageSummary_1[auraDamage] += 1;
-            auraDamageSummaryCardTitles_1[auraDamage].push(card.name);
-            if (lifeDamageSummary_1[lifeDamage] === undefined)
-                lifeDamageSummary_1[lifeDamage] = 0;
-            if (lifeDamageSummaryCardTitles_1[lifeDamage] === undefined)
-                lifeDamageSummaryCardTitles_1[lifeDamage] = [];
-            lifeDamageSummary_1[lifeDamage] += 1;
-            lifeDamageSummaryCardTitles_1[lifeDamage].push(card.name);
-        });
-        console.log(auraDamageSummaryCardTitles_1);
-        console.log(lifeDamageSummaryCardTitles_1);
-    }
-    // 他のプレイヤーがチャットログを追加した場合の処理
-    socket.on('onChatLogAppended', function (p) {
-        // ログ追加
-        appActions.appendReceivedChatLogs(p.appendedChatLogs);
-        // 受け取ったログをtoastrで表示
-        var st = appActions.getState();
-        var targetLogs = p.appendedChatLogs.filter(function (log) { return utils.logIsVisible(log, st.side); });
-        var msg = targetLogs.map(function (log) { return log.body; }).join('<br>');
-        var name = (targetLogs[0].side === 'watcher' ? (st.board.watchers[targetLogs[0].watcherSessionId] ? st.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
-        toastr_1.default.success(msg, name + ":", { toastClass: 'toast chat' });
-    });
-    // toastrの標準オプションを設定
-    toastr_1.default.options = {
-        hideDuration: 300,
-        showDuration: 300
-    };
-    // 相手プレイヤーからの通知を受け取った場合、toastを時間無制限で表示
-    socket.on('onNotifyReceived', function (p) {
-        var st = appActions.getState();
-        toastr_1.default.info(p.message, st.board.playerNames[p.senderSide] + "\u3088\u308A\u901A\u77E5:", {
-            timeOut: 0,
-            extendedTimeOut: 0,
-            tapToDismiss: false,
-            closeButton: true
-        });
-    });
-    // モーダルでEnterを押下した場合、ボタンを押下したものと扱う
-    $('body').keydown(function (e) {
-        if (e.key === 'Enter') {
-            $('.modals.active .positive.button').click();
-        }
-    });
-    // ここからの処理はドラッグ＆ドロップ関係の処理のため、プレイヤーである場合のみ有効
-    if (params.side !== 'watcher') {
-        // 前進ボタンの上にカーソルを置いたときの処理
-        $('#BOARD').on('mouseenter', '#FORWARD-BUTTON', function (e) {
-            // 間合いの右端をフォーカス
-            $(".sakura-token[data-region=distance][data-dragging-count=1]").addClass('focused');
-            // 自オーラ領域をハイライト
-            $(".area.background[data-side=" + params.side + "][data-region=aura]").addClass('over');
-        });
-        // 離脱ボタンの上にカーソルを置いたときの処理
-        $('#BOARD').on('mouseenter', '#LEAVE-BUTTON', function (e) {
-            // ダストの右端をフォーカス
-            $(".sakura-token[data-region=dust][data-dragging-count=1]").addClass('focused');
-            // 間合い領域をハイライト
-            $(".area.background[data-region=distance]").addClass('over');
-        });
-        // 後退ボタンの上にカーソルを置いたときの処理
-        $('#BOARD').on('mouseenter', '#BACK-BUTTON', function (e) {
-            // 自オーラの右端をフォーカス
-            $(".sakura-token[data-side=" + params.side + "][data-region=aura][data-dragging-count=1]").addClass('focused');
-            // 間合い領域をハイライト
-            $(".area.background[data-region=distance]").addClass('over');
-        });
-        // 纏いボタンの上にカーソルを置いたときの処理
-        $('#BOARD').on('mouseenter', '#WEAR-BUTTON', function (e) {
-            // ダストの右端をフォーカス
-            $(".sakura-token[data-region=dust][data-dragging-count=1]").addClass('focused');
-            // 自オーラ領域をハイライト
-            $(".area.background[data-side=" + params.side + "][data-region=aura]").addClass('over');
-        });
-        // 宿しボタンの上にカーソルを置いたときの処理
-        $('#BOARD').on('mouseenter', '#CHARGE-BUTTON', function (e) {
-            // 自オーラの右端をフォーカス
-            $(".sakura-token[data-side=" + params.side + "][data-region=aura][data-dragging-count=1]").addClass('focused');
-            // 自フレア領域をハイライト
-            $(".area.background[data-side=" + params.side + "][data-region=flair]").addClass('over');
-        });
-        // 全付与札の桜花結晶-1ボタンの上にカーソルを置いたときの処理
-        $('#BOARD').on('mouseenter', '#ALL-ENHANCE-DECREASE-BUTTON', function (e) {
-            // カード上桜花結晶の右端をフォーカス
-            $(".sakura-token[data-region=on-card][data-dragging-count=1]").addClass('focused');
-            // ダスト領域をハイライト
-            $(".area.background[data-region=dust]").addClass('over');
-        });
-        $('#BOARD').on('mouseleave', '#FORWARD-BUTTON, #BACK-BUTTON, #CHARGE-BUTTON, #LEAVE-BUTTON, #WEAR-BUTTON, #ALL-ENHANCE-DECREASE-BUTTON', function (e) {
-            $(".sakura-token").removeClass('focused');
-            $(".area.background").removeClass('over');
-        });
-        // 桜花結晶の上にカーソルを置いたときの処理
-        $('#BOARD').on('mouseenter', '.sakura-token', function (e) {
-            // 自分と同じ領域/グループで、dragCountが自分以下の要素をすべて選択扱いにする
-            var $this = $(this);
-            var side = $this.attr('data-side');
-            var index = parseInt($this.attr('data-region-index'));
-            var group = $this.attr('data-group');
-            var draggingCount = parseInt($this.attr('data-dragging-count'));
-            if (draggingCount === 0)
-                return false; // draggingCount=0はドラッグ非対象
-            var $tokens = $(".sakura-token[data-side=" + side + "][data-region=" + $this.attr('data-region') + "][data-group=" + group + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]");
-            $tokens.filter(function (i, elem) { return parseInt(elem.dataset.draggingCount) <= draggingCount; }).addClass('focused');
-            return true;
-        });
-        $('#BOARD').on('mouseleave', '.sakura-token', function (e) {
-            $(".sakura-token").removeClass('focused');
-        });
-        // ドラッグ開始
-        $('#BOARD').on('dragstart', '.fbs-card,.sakura-token', function (e) {
-            var currentState = appActions.getState();
-            if (currentState.side === 'watcher')
-                throw "Forbidden operation for watcher"; // 観戦者は実行不可能な操作
-            if (!currentState.board.mariganFlags[params.side]) {
-                utils.messageModal('決闘を開始するまでは、カードや桜花結晶の移動は行えません。');
-                return false;
-            }
-            ;
-            //(e.originalEvent as DragEvent).dataTransfer.setDragImage($(this.closest('.draw-region'))[0], 0, 0);
-            var objectId = $(this).attr('data-object-id');
-            var object = currentState.board.objects.find(function (c) { return c.id === objectId; });
-            // カードの場合
-            if (object.type === 'card') {
-                // 封印されたカードのドラッグ移動はできない
-                if (object.region === 'on-card') {
-                    utils.messageModal('封印されたカードを移動することはできません。<br>右クリックより「相手の捨て札に送る」を選択してください。');
-                    return false;
+                    else {
+                        // 対戦相手も知らない
+                        logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle });
+                    }
                 }
-                // 桜花結晶が乗ったカードも移動できない
+            }
+            var cardNameLogging = false;
+            // 自分のカードを操作した場合で、一定の条件を満たす場合はログを置き換える
+            if (card.side === currentState.side && toSide === currentState.side) {
+                if (card.region === 'hand' && toRegion === 'hidden-used') {
+                    // 伏せ札にした場合
+                    logs = [];
+                    logs.push({ text: "[" + cardName + "]\u3092\u4F0F\u305B\u672D\u306B\u3057\u307E\u3057\u305F", visibility: 'ownerOnly' });
+                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u4F0F\u305B\u672D\u306B\u3057\u307E\u3057\u305F", visibility: 'outerOnly' });
+                }
+                if (card.region === 'hand' && toRegion === 'used') {
+                    // 場に出した場合
+                    logs = [];
+                    logs.push({ text: "[" + cardName + "]\u3092\u5834\u306B\u51FA\u3057\u307E\u3057\u305F" });
+                }
+                if (card.region === 'library' && toRegion === 'hand') {
+                    // カードを1枚引いた場合
+                    logs = [];
+                    logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u5F15\u304D\u307E\u3057\u305F" });
+                    cardNameLogging = true;
+                }
+                if (toRegion === 'library') {
+                    // カードを山札へ置いた場合
+                    logs = [];
+                    if (toPosition === 'first') {
+                        logs.push({ text: "[" + cardName + "]\u3092\u5C71\u672D\u306E\u5E95\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'ownerOnly' });
+                        logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u5C71\u672D\u306E\u5E95\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'outerOnly' });
+                    }
+                    else {
+                        logs.push({ text: "[" + cardName + "]\u3092\u5C71\u672D\u306E\u4E0A\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'ownerOnly' });
+                        logs.push({ text: "\u30AB\u30FC\u30C9\u30921\u679A\u5C71\u672D\u306E\u4E0A\u3078\u7F6E\u304D\u307E\u3057\u305F", visibility: 'outerOnly' });
+                    }
+                }
+            }
+            appActions_1.operate({
+                log: logs,
+                proc: function () {
+                    appActions_1.moveCard({
+                        from: card.id,
+                        to: [toSide, toRegion, toLinkedCardId],
+                        cardNameLogging: cardNameLogging,
+                        toPosition: toPosition
+                    });
+                }
+            });
+        };
+        // 山札へのカードドラッグ時メニュー
+        $('#BOARD').append('<div id="CONTEXT-DRAG-TO-LIBRARY"></div>');
+        $.contextMenu({
+            zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
+            trigger: 'none',
+            selector: '#CONTEXT-DRAG-TO-LIBRARY',
+            events: {
+                hide: function (e) {
+                    contextMenuShowingAfterDrop_1 = false;
+                    processOnDragEnd_1();
+                }
+            },
+            build: function ($elem, event) {
+                console.log('contextmenu:hide', $elem.menu);
+                var currentState = appActions_1.getState();
+                var side = currentState.side;
+                var board = new models.Board(currentState.board);
+                var items = {};
+                items['toTop'] = { name: '山札の上に置く', callback: function () {
+                        moveCardMain_1(dragInfo_1.default.lastDraggingCardBeforeContextMenu, side, 'library', null);
+                    } };
+                items['toBottom'] = { name: '山札の底に置く', callback: function () {
+                        moveCardMain_1(dragInfo_1.default.lastDraggingCardBeforeContextMenu, side, 'library', null, 'first');
+                    } };
+                items['sep'] = '----';
+                items['cancel'] = { name: 'キャンセル', callback: function () { } };
+                return { items: items };
+            }
+        });
+        // 間合への造花結晶ドラッグ時メニュー
+        $('#BOARD').append('<div id="CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE"></div>');
+        $.contextMenu({
+            zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
+            trigger: 'none',
+            selector: '#CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE',
+            events: {
+                hide: function (e) {
+                    contextMenuShowingAfterDrop_1 = false;
+                    processOnDragEnd_1();
+                }
+            },
+            build: function ($elem, event) {
+                console.log('contextmenu:hide', $elem.menu);
+                var currentState = appActions_1.getState();
+                var token = dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu;
                 var boardModel = new models.Board(currentState.board);
-                var tokensOnCard = boardModel.getRegionSakuraTokens(currentState.side, 'on-card', object.id);
-                if (tokensOnCard.length >= 1) {
-                    utils.messageModal('桜花結晶が乗ったカードを移動することはできません。');
+                var side = currentState.side;
+                var items = {};
+                var forwardEnabled = boardModel.isRideForwardEnabled(token.ownerSide, dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
+                var backEnabled = boardModel.isRideBackEnabled(token.ownerSide, dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
+                items['forward'] = { name: '騎動前進', disabled: !forwardEnabled, callback: function () {
+                        appActions_1.oprRideForward({ side: token.ownerSide, moveNumber: dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount });
+                    } };
+                items['back'] = { name: '騎動後退', disabled: !backEnabled, callback: function () {
+                        appActions_1.oprRideBack({ side: token.ownerSide, moveNumber: dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount });
+                    } };
+                items['sep'] = '----';
+                items['cancel'] = { name: 'キャンセル', callback: function () { } };
+                return { items: items };
+            }
+        });
+        // 畏縮トークンクリックメニュー
+        $('#BOARD').append('<div id="CONTEXT-WITHERED-TOKEN-CLICK"></div>');
+        $.contextMenu({
+            zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
+            trigger: 'none',
+            selector: '#CONTEXT-WITHERED-TOKEN-CLICK',
+            build: function ($elem, event) {
+                var currentState = appActions_1.getState();
+                var side = currentState.side;
+                var board = new models.Board(currentState.board);
+                var items = {};
+                items['remove'] = { name: '畏縮を解除', callback: function () {
+                        appActions_1.oprSetWitherFlag({
+                            side: side,
+                            value: false
+                        });
+                    } };
+                items['sep'] = '----';
+                items['cancel'] = { name: 'キャンセル', callback: function () { } };
+                return { items: items };
+            }
+        });
+        // 計略トークンクリックメニュー
+        $('#BOARD').append('<div id="CONTEXT-PLAN-TOKEN-CLICK"></div>');
+        $.contextMenu({
+            zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
+            trigger: 'none',
+            selector: '#CONTEXT-PLAN-TOKEN-CLICK',
+            build: function ($elem, event) {
+                var currentState = appActions_1.getState();
+                var side = currentState.side;
+                var board = new models.Board(currentState.board);
+                var items = {};
+                var planState = board.planStatus[currentState.side];
+                if (planState === 'back-blue' || planState === 'back-red') {
+                    items['open'] = { name: '計略を公開する', callback: function () {
+                            appActions_1.operate({
+                                log: "\u8A08\u7565\u3092\u516C\u958B\u3057\u307E\u3057\u305F -> " + (planState === 'back-blue' ? '神算' : '鬼謀'),
+                                proc: function () {
+                                    appActions_1.setPlanState({ side: side, value: (planState === 'back-blue' ? 'blue' : 'red') });
+                                }
+                            });
+                        } };
+                }
+                else {
+                    items['blue'] = { name: '次の計略を「神算」で準備する', callback: function () {
+                            appActions_1.operate({
+                                log: "\u6B21\u306E\u8A08\u7565\u3092\u6E96\u5099\u3057\u307E\u3057\u305F",
+                                proc: function () {
+                                    appActions_1.setPlanState({ side: side, value: 'back-blue' });
+                                }
+                            });
+                        } };
+                    items['red'] = { name: '次の計略を「鬼謀」で準備する', callback: function () {
+                            appActions_1.operate({
+                                log: "\u6B21\u306E\u8A08\u7565\u3092\u6E96\u5099\u3057\u307E\u3057\u305F",
+                                proc: function () {
+                                    appActions_1.setPlanState({ side: side, value: 'back-red' });
+                                }
+                            });
+                        } };
+                }
+                items['sep'] = '----';
+                items['cancel'] = { name: 'キャンセル', callback: function () { } };
+                return { items: items };
+            }
+        });
+        // 傘トークンクリックメニュー
+        $('#BOARD').append('<div id="CONTEXT-UMBRELLA-TOKEN-CLICK"></div>');
+        $.contextMenu({
+            zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE,
+            trigger: 'none',
+            selector: '#CONTEXT-UMBRELLA-TOKEN-CLICK',
+            build: function ($elem, event) {
+                var currentState = appActions_1.getState();
+                var side = currentState.side;
+                var board = new models.Board(currentState.board);
+                var items = {};
+                var umbrellaState = board.umbrellaStatus[currentState.side];
+                if (umbrellaState === 'closed') {
+                    items['open'] = { name: '傘を開く', callback: function () {
+                            appActions_1.operate({
+                                log: "\u5098\u3092\u958B\u304D\u307E\u3057\u305F",
+                                proc: function () {
+                                    appActions_1.setUmbrellaState({ side: side, value: 'opened' });
+                                }
+                            });
+                        } };
+                }
+                else {
+                    items['close'] = { name: '傘を閉じる', callback: function () {
+                            appActions_1.operate({
+                                log: "\u5098\u3092\u9589\u3058\u307E\u3057\u305F",
+                                proc: function () {
+                                    appActions_1.setUmbrellaState({ side: side, value: 'closed' });
+                                }
+                            });
+                        } };
+                }
+                items['sep'] = '----';
+                items['cancel'] = { name: 'キャンセル', callback: function () { } };
+                return { items: items };
+            }
+        });
+        // 右クリックメニュー
+        $.contextMenu({
+            selector: '#BOARD-PLAYAREA, #BOARD-PLAYAREA *',
+            zIndex: const_1.ZIndex.CONTEXT_MENU_VISIBLE_RIGHT_CLICK,
+            build: function ($elem, event) {
+                var currentState = appActions_1.getState();
+                var board = new models.Board(currentState.board);
+                var items = null;
+                // 観戦者は右クリックメニューを開けない
+                if (currentState.side === 'watcher')
+                    return false;
+                var playerSide = currentState.side;
+                // 決闘を開始していなければ、メニューを開けない
+                if (!currentState.board.mariganFlags[playerSide]) {
                     return false;
                 }
-                var $this = $(this);
-                var linkedCardId = $this.attr('data-linked-card-id');
-                this.style.opacity = '0.4'; // this / e.target is the source node.
-                var cardData = sakuraba_1.CARD_DATA[object.cardId];
-                // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択したカードを記憶
-                // (同じ領域への移動、もしくは自分に自分を封印するような処理は行えない)
-                if (cardData.baseType === 'special') {
-                    // 切札であれば、切札領域と追加札領域に移動可能
-                    $(".area.card-region.droppable[data-region=special]:not([data-side=" + object.side + "][data-region=" + object.region + "]), .area.card-region.droppable[data-region=extra]:not([data-side=" + object.side + "][data-region=" + object.region + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
-                    dragInfo_1.default.draggingFrom = object;
-                }
-                else if (cardData.baseType === 'transform') {
-                    // Transformカードであれば、使用済領域と追加札領域に移動可能
-                    $(".area.card-region.droppable[data-region=used]:not([data-side=" + object.side + "][data-region=" + object.region + "]), .area.card-region.droppable[data-region=extra]:not([data-side=" + object.side + "][data-region=" + object.region + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
-                    dragInfo_1.default.draggingFrom = object;
-                }
-                else {
-                    // 切札以外であれば、切札を除く他領域に移動可能
-                    $(".area.card-region.droppable:not([data-side=" + object.side + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "]):not([data-region=special]):not([data-region=on-card][data-linked-card-id=" + object.id + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
-                    dragInfo_1.default.draggingFrom = object;
-                }
-                // ポップアップを非表示にする
-                $('.fbs-card').popup('hide all');
-            }
-            // 桜花結晶の場合
-            if (object.type === 'sakura-token') {
-                var $this = $(this);
-                var tokenSide = $this.attr('data-side');
-                var linkedCardId = $this.attr('data-linked-card-id');
-                var group = $this.attr('data-group');
-                var draggingCount_1 = parseInt($this.attr('data-dragging-count'));
-                if (draggingCount_1 === 0)
-                    return false; // draggingCount=0はドラッグ非対象
-                // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択した桜花結晶を記憶
-                var baseSelector = ".area.sakura-token-region.droppable:not([data-side=" + tokenSide + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "])";
-                if (object.artificial) {
-                    // 造花結晶であれば、今の領域に応じて移動先が決まる
-                    if (object.region === 'distance') {
-                        // 間合からの移動の場合は、所有者の燃焼済領域にのみ移動可能
-                        $(baseSelector + "[data-side=" + object.ownerSide + "][data-region=burned]").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
-                    }
-                    else if (object.region === 'burned') {
-                        // 燃焼済領域からの移動の場合は、所有者のマシン領域にのみ移動可能
-                        $(baseSelector + "[data-side=" + object.ownerSide + "][data-region=machine]").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
-                    }
-                    else {
-                        // マシン領域からの移動の場合は、所持者の燃焼済、間合のどちらかに移動可能
-                        $(baseSelector + "[data-side=" + object.ownerSide + "][data-region=burned]," + baseSelector + "[data-region=distance]").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
-                    }
-                }
-                else {
-                    // 通常の桜花結晶であれば、自身以外の領域のうち、マシンと燃焼済を除く全領域に移動可能
-                    $(baseSelector + ":not([data-region=machine]):not([data-region=burned])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
-                }
-                dragInfo_1.default.draggingFrom = object;
-                // 移動数を記憶
-                dragInfo_1.default.sakuraTokenMoveCount = draggingCount_1;
-                // 自分と同じ領域/グループで、dragCountが自分以下の要素をすべて選択扱いにする
-                var $tokens = $(".sakura-token[data-side=" + tokenSide + "][data-region=" + $this.attr('data-region') + "][data-group=" + group + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]");
-                $tokens.filter(function (i, elem) { return parseInt(elem.dataset.draggingCount) <= draggingCount_1; }).css('opacity', '0.4');
-                // ドラッグゴースト画像を設定
-                var ghost = void 0;
-                if (object.artificial) {
-                    ghost = $("#artificial-token-ghost-" + draggingCount_1 + "-" + object.ownerSide)[0];
-                }
-                else {
-                    $('#sakura-token-ghost-many .count').text(draggingCount_1);
-                    ghost = (draggingCount_1 >= 6 ? $('#sakura-token-ghost-many')[0] : $("#sakura-token-ghost-" + draggingCount_1)[0]);
-                }
-                e.originalEvent.dataTransfer.setDragImage(ghost, 0, 0);
-                // 選択状態を解除
-                $(".sakura-token").removeClass('focused');
-            }
-            return true;
-        });
-        $('#BOARD').on('dragend', '.fbs-card,.sakura-token', function (e) {
-            console.log('dragend', this);
-            processOnDragEnd();
-        });
-        $('#BOARD').on('dragover', '.droppable', function (e) {
-            if ($(this).hasClass('over-forbidden')) {
-                e.originalEvent.dataTransfer.dropEffect = 'none'; // See the section on the DataTransfer object.
-                return false;
-            }
-            if (e.preventDefault) {
-                e.preventDefault(); // Necessary. Allows us to drop.
-            }
-            return false;
-        });
-        $('#BOARD').on('dragenter', '.area.droppable', function (e) {
-            console.log('dragenter', this);
-            var side = $(this).attr('data-side');
-            var region = $(this).attr('data-region');
-            var linkedCardId = $(this).attr('data-linked-card-id');
-            // 毒カードの移動で、かつ移動先が伏せ札の場合は移動不可
-            if (dragInfo_1.default.draggingFrom.type === 'card') {
-                var toRegion = region;
-                if (sakuraba_1.CARD_DATA[dragInfo_1.default.draggingFrom.cardId].poison && toRegion === 'hidden-used') {
-                    $(".area.droppable[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
-                    $(".area.background[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
-                    return true;
-                }
-            }
-            // 桜花結晶の移動で、かつ移動先の最大値を超える場合は移動不可
-            // ただし移動対象が造花結晶で、かつ有効な桜花結晶数以下であれば、特例として移動可能 (騎動前進の可能性があるため)
-            if (dragInfo_1.default.draggingFrom.type === 'sakura-token') {
-                var token = dragInfo_1.default.draggingFrom;
-                var tokenRegion = region;
-                var state_1 = appActions.getState();
-                var boardModel = new models.Board(state_1.board);
-                var tokenCount = 0;
-                var rideForwardEnabled = false;
-                if (tokenRegion === 'distance') {
-                    tokenCount = boardModel.getDistance();
-                    if (token.artificial) {
-                        var activeSakuraTokens = boardModel.getDistanceSakuraTokens('normal');
-                        if (token.groupTokenDraggingCount <= activeSakuraTokens.length) {
-                            rideForwardEnabled = true;
+                ;
+                // 帯電解除コマンドの追加
+                var addDischargeCommand = function (items, card, addSeparator) {
+                    // プレイヤーがライラを宿しており、かつ対象のカードが公開状態で、ライラのカードでもTransformカードでもない場合、帯電解除を行える
+                    if (board.megamis[playerSide][0] === 'raira' || board.megamis[playerSide][1] === 'raira') {
+                        if (addSeparator) {
+                            items['sepDischarge'] = '---';
                         }
+                        items['dischargeAndIncrementWind'] = {
+                            name: "帯電を解除し、風神ゲージを1上げる",
+                            disabled: (card.openState !== 'opened' || card.discharged || sakuraba_1.CARD_DATA[card.cardId].megami === 'raira' || sakuraba_1.CARD_DATA[card.cardId].baseType === 'transform'),
+                            callback: function () {
+                                appActions_1.oprDischarge({ objectId: card.id, guageType: 'wind' });
+                            }
+                        };
+                        items['dischargeAndIncrementThunder'] = {
+                            name: "帯電を解除し、雷神ゲージを1上げる",
+                            disabled: (card.openState !== 'opened' || card.discharged || sakuraba_1.CARD_DATA[card.cardId].megami === 'raira' || sakuraba_1.CARD_DATA[card.cardId].baseType === 'transform'),
+                            callback: function () {
+                                appActions_1.oprDischarge({ objectId: card.id, guageType: 'thunder' });
+                            }
+                        };
                     }
+                };
+                // 使用済み札で右クリック
+                if ($elem.is('.fbs-card[data-region=used]')) {
+                    var id = $elem.attr('data-object-id');
+                    var card = board.getCard(id);
+                    items = {};
+                    // 条件を満たしていれば、帯電解除コマンドを追加
+                    addDischargeCommand(items, card);
                 }
-                else {
-                    tokenCount = boardModel.getRegionSakuraTokens((side === 'none' ? null : side), tokenRegion, (linkedCardId === 'none' ? null : linkedCardId)).length;
-                }
-                if (tokenCount + dragInfo_1.default.sakuraTokenMoveCount > sakuraba_1.SAKURA_TOKEN_MAX[tokenRegion] && !rideForwardEnabled) {
-                    $(".area.droppable[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
-                    $(".area.background[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
-                    return true;
-                }
-            }
-            if (region === 'on-card') {
-                console.log("overcard " + linkedCardId);
-                $(".fbs-card[data-object-id=" + linkedCardId + "]").addClass('over');
-            }
-            else {
-                $(".area.background[data-side=" + side + "][data-region=" + region + "]").addClass('over');
-            }
-            return true;
-        });
-        $('#BOARD').on('dragleave', '.area.droppable', function (e) {
-            console.log('dragleave', this);
-            var side = $(this).attr('data-side');
-            var region = $(this).attr('data-region');
-            var linkedCardId = $(this).attr('data-linked-card-id');
-            if (region === 'on-card') {
-                $(".fbs-card[data-object-id=" + linkedCardId + "]").removeClass('over').removeClass('over-forbidden');
-            }
-            else {
-                $(".area.background[data-side=" + side + "][data-region=" + region + "]").removeClass('over').removeClass('over-forbidden');
-            }
-            $(".area.droppable[data-side=" + side + "][data-region=" + region + "]").removeClass('over').removeClass('over-forbidden');
-        });
-        var lastDraggingFrom = null;
-        $('#BOARD').on('drop', '.area', function (e) {
-            // this / e.target is current target element.
-            var $this = $(this);
-            // ドラッグ禁止状態の場合は処理しない
-            if ($(this).hasClass('over-forbidden')) {
-                return false;
-            }
-            // 現在のステートを取得
-            var currentState = appActions.getState();
-            var boardModel = new models.Board(currentState.board);
-            // 観戦者はドラッグできない
-            if (currentState.side === 'watcher')
-                return false;
-            if (e.stopPropagation) {
-                e.stopPropagation(); // stops the browser from redirecting.
-            }
-            if (dragInfo_1.default.draggingFrom !== null) {
-                // カードを別領域に移動した場合
-                if (dragInfo_1.default.draggingFrom.type === 'card') {
-                    var card = dragInfo_1.default.draggingFrom;
-                    var toSide = $this.attr('data-side');
-                    var toRegion = $this.attr('data-region');
-                    var toLinkedCardIdValue = $this.attr('data-linked-card-id');
-                    var toLinkedCardId = (toLinkedCardIdValue === 'none' ? null : toLinkedCardIdValue);
-                    // 他のカードを封印しているカードを、動かそうとした場合はエラー
-                    var sealedCards = boardModel.getSealedCards(card.id);
-                    if (sealedCards.length >= 1) {
-                        utils.messageModal("他のカードが封印されているため移動できません。");
-                        return false;
-                    }
-                    // 桜花結晶が乗っている札を、動かそうとした場合はエラー
-                    var onCardTokens = boardModel.getRegionSakuraTokens(card.side, 'on-card', card.id);
-                    if (onCardTokens.length >= 1) {
-                        utils.messageModal("桜花結晶が上に乗っているため移動できません。");
-                        return false;
-                    }
-                    // 山札に移動し、かつ山札が1枚以上ある場合は特殊処理
-                    if (toRegion === 'library' && boardModel.getRegionCards(toSide, toRegion, toLinkedCardId).length >= 1) {
-                        contextMenuShowingAfterDrop = true;
-                        dragInfo_1.default.lastDraggingCardBeforeContextMenu = card;
-                        $('#CONTEXT-DRAG-TO-LIBRARY').contextMenu({ x: e.pageX, y: e.pageY });
-                        return false;
-                    }
-                    else {
-                        moveCardMain(card, toSide, toRegion, toLinkedCardId);
-                    }
-                }
-                // 桜花結晶を別領域に移動した場合
-                if (dragInfo_1.default.draggingFrom.type === 'sakura-token') {
-                    var sakuraToken_1 = dragInfo_1.default.draggingFrom;
-                    var toSideValue = $this.attr('data-side');
-                    var toSide_1 = (toSideValue === 'none' ? null : toSideValue);
-                    var toRegion_1 = $this.attr('data-region');
-                    var toLinkedCardIdValue = $(this).attr('data-linked-card-id');
-                    var toLinkedCardId_1 = (toLinkedCardIdValue === 'none' ? null : toLinkedCardIdValue);
-                    var fromLinkedCard = (dragInfo_1.default.draggingFrom.linkedCardId === null ? undefined : boardModel.getCard(dragInfo_1.default.draggingFrom.linkedCardId));
-                    var toLinkedCard = (toLinkedCardId_1 === null ? undefined : boardModel.getCard(toLinkedCardId_1));
-                    var logs = [];
-                    var fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken_1.side, sakuraToken_1.region, fromLinkedCard);
-                    var toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide_1, toRegion_1, toLinkedCard);
-                    // 間合に造花結晶を移動した場合は特殊処理 (騎動メニュー)
-                    if (toRegion_1 === 'distance' && sakuraToken_1.artificial) {
-                        contextMenuShowingAfterDrop = true;
-                        dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu = sakuraToken_1;
-                        $('#CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE').contextMenu({ x: e.pageX, y: e.pageY });
-                        return false;
-                    }
-                    else {
-                        // ログ内容を決定
-                        var sidePrefix = (currentState.side !== sakuraToken_1.ownerSide ? '相手の' : '');
-                        var tokenName = (sakuraToken_1.artificial ? '造花結晶' : '桜花結晶');
-                        var logText = "" + sidePrefix + tokenName + "\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle;
-                        // 一部の移動ではログを変更
-                        if (sakuraToken_1.region === 'machine' && toRegion_1 === 'burned') {
-                            logText = sidePrefix + "\u30DE\u30B7\u30F3\u306E\u9020\u82B1\u7D50\u6676\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u71C3\u713C\u6E08\u306B\u3057\u307E\u3057\u305F";
+                // 切り札で右クリック
+                if ($elem.is('.fbs-card[data-region=special]')) {
+                    var id_1 = $elem.attr('data-object-id');
+                    var card_1 = board.getCard(id_1);
+                    items = {};
+                    items['flip'] = {
+                        name: (card_1.specialUsed ? '裏向きにする' : '表向きにする'),
+                        callback: function () {
+                            appActions_1.oprSetSpecialUsed({ objectId: id_1, value: !card_1.specialUsed });
                         }
-                        if (sakuraToken_1.region === 'distance' && toRegion_1 === 'burned') {
-                            logText = "\u9593\u5408\u306E\u9020\u82B1\u7D50\u6676\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u71C3\u713C\u6E08\u306B\u3057\u307E\u3057\u305F";
+                    };
+                    // 条件を満たしていれば、帯電解除コマンドを追加
+                    addDischargeCommand(items, card_1, true);
+                    // // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
+                    // if(CARD_DATA[card.cardId].removable){
+                    //     items['sep2'] = '---';
+                    //     items['remove'] =  {
+                    //         name: "ボード上から取り除く"
+                    //         , callback: function() {
+                    //         appActions.oprRemoveCard({objectId: id});
+                    //         }
+                    //     }
+                    // };
+                }
+                // 集中力で右クリック
+                if ($elem.is('.fbs-vigor-card, .fbs-vigor-card *, .withered-token')) {
+                    var side_1 = $elem.closest('[data-side]').attr('data-side');
+                    items = {};
+                    items['wither'] = {
+                        name: (board.witherFlags[side_1] ? '畏縮を解除' : '畏縮'),
+                        callback: function () { return appActions_1.oprSetWitherFlag({ side: side_1, value: !board.witherFlags[side_1] }); }
+                    };
+                }
+                // 封印されたカードの場所で右クリック
+                var $sealedCard = $elem.closest(".fbs-card[data-region=on-card]");
+                if ($sealedCard.length >= 1) {
+                    var id_2 = $sealedCard.attr('data-object-id');
+                    var card = board.getCard(id_2);
+                    var cardData_1 = sakuraba_1.CARD_DATA[card.cardId];
+                    var linkedCard = board.getCard($sealedCard.attr('data-linked-card-id'));
+                    var linkedCardData_1 = sakuraba_1.CARD_DATA[linkedCard.cardId];
+                    items = {};
+                    items['close'] = {
+                        name: "[" + cardData_1.name + "]\u3092\u76F8\u624B\u306E\u6368\u3066\u672D\u306B\u3059\u308B", callback: function () {
+                            appActions_1.operate({
+                                log: "[" + linkedCardData_1.name + "]\u306E\u4E0B\u306B\u5C01\u5370\u3055\u308C\u3066\u3044\u305F[" + cardData_1.name + "]\u3092\u3001\u76F8\u624B\u306E\u6368\u3066\u672D\u306B\u3057\u307E\u3057\u305F",
+                                proc: function () {
+                                    appActions_1.moveCard({ from: id_2, to: [utils.flipSide(playerSide), 'used', null] });
+                                }
+                            });
                         }
-                        if (sakuraToken_1.region === 'burned' && toRegion_1 === 'machine') {
-                            logText = sidePrefix + "\u71C3\u713C\u6E08\u306E" + tokenName + "\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u56DE\u5FA9\u3057\u307E\u3057\u305F";
+                    };
+                }
+                // 手札で右クリック
+                var $handArea = $elem.closest(".area.background[data-side=" + playerSide + "][data-region=hand]");
+                var $handCard = $elem.closest(".fbs-card[data-side=" + playerSide + "][data-region=hand]");
+                if ($handArea.length >= 1 || $handCard.length >= 1) {
+                    items = {};
+                    // 全手札を公開していない状態で、カードを個別に右クリックした場合、そのカードの公開/非公開操作も可能
+                    if (!currentState.board.handOpenFlags[playerSide] && $handCard.length >= 1) {
+                        var id_3 = $handCard.attr('data-object-id');
+                        var card = board.getCard(id_3);
+                        var cardData_2 = sakuraba_1.CARD_DATA[card.cardId];
+                        if (currentState.board.handCardOpenFlags[playerSide][id_3]) {
+                            items['closeCard'] = {
+                                name: "[" + cardData_2.name + "]\u306E\u516C\u958B\u3092\u4E2D\u6B62\u3059\u308B", callback: function () {
+                                    appActions_1.operate({
+                                        log: "[" + cardData_2.name + "]\u306E\u516C\u958B\u3092\u4E2D\u6B62\u3057\u307E\u3057\u305F",
+                                        proc: function () {
+                                            appActions_1.setHandCardOpenFlag({ side: playerSide, cardId: id_3, value: false });
+                                        }
+                                    });
+                                }
+                            };
                         }
-                        logs.push({ text: logText });
-                        appActions.operate({
-                            log: logs,
-                            proc: function () {
-                                appActions.moveSakuraToken({
-                                    from: [sakuraToken_1.side, sakuraToken_1.region, sakuraToken_1.linkedCardId],
-                                    fromGroup: sakuraToken_1.group,
-                                    to: [toSide_1, toRegion_1, toLinkedCardId_1],
-                                    moveNumber: dragInfo_1.default.sakuraTokenMoveCount
+                        else {
+                            items['openCard'] = {
+                                name: "[" + cardData_2.name + "]\u3092\u76F8\u624B\u306B\u516C\u958B\u3059\u308B", callback: function () {
+                                    appActions_1.operate({
+                                        log: "[" + cardData_2.name + "]\u3092\u516C\u958B\u3057\u307E\u3057\u305F",
+                                        proc: function () {
+                                            appActions_1.setHandCardOpenFlag({ side: playerSide, cardId: id_3, value: true });
+                                        }
+                                    });
+                                }
+                            };
+                        }
+                        items['sep1'] = '---------';
+                    }
+                    // 全体の公開/非公開操作
+                    if (currentState.board.handOpenFlags[playerSide]) {
+                        items['close'] = {
+                            name: '全手札の公開を中止する', callback: function () {
+                                appActions_1.operate({
+                                    log: "\u624B\u672D\u306E\u516C\u958B\u3092\u4E2D\u6B62\u3057\u307E\u3057\u305F",
+                                    proc: function () {
+                                        appActions_1.setHandOpenFlag({ side: playerSide, value: false });
+                                    }
                                 });
                             }
-                        });
+                        };
+                    }
+                    else {
+                        items['open'] = {
+                            name: '全手札を相手に公開する', disabled: function () {
+                                var board = new models.Board(appActions_1.getState().board);
+                                var cards = board.getRegionCards(playerSide, 'hand', null);
+                                return cards.length === 0;
+                            }, callback: function () {
+                                appActions_1.operate({
+                                    log: "\u624B\u672D\u3092\u516C\u958B\u3057\u307E\u3057\u305F",
+                                    proc: function () {
+                                        appActions_1.setHandOpenFlag({ side: playerSide, value: true });
+                                    }
+                                });
+                            }
+                        };
                     }
                 }
-                // // 山札に移動した場合は特殊処理
-                // if(to === 'library'){
-                //     lastDraggingFrom = dragInfo.draggingFrom;
-                //     contextMenuShowingAfterDrop = true;
-                //     $('#CONTEXT-DRAG-TO-LIBRARY').contextMenu({x: e.pageX, y: e.pageY});
-                //     return false;
-                // } else {
-                //     // 山札以外への移動の場合
-                //     if(dragInfo.draggingFrom.type === 'card'){
-                //         //moveCard(dragInfo.draggingFrom.region as sakuraba.CardArea, dragInfo.draggingFrom.indexOfRegion, to as sakuraba.CardArea);
-                //         return false;
-                //     }
-                //     if(dragInfo.draggingFrom.type === 'sakura-token'){
-                //         let cardId: string = null;
-                //         if(to === 'on-card'){
-                //             cardId = $(this).attr('data-card-id');
-                //         }
-                //         //moveSakuraToken(dragInfo.draggingFrom.region as sakuraba.SakuraTokenArea, to as sakuraba.SakuraTokenArea, cardId);
-                //         return false;
-                //     }
-                // }
+                // 自分の山札で右クリック
+                if ($elem.is(".area.background[data-region=library][data-side=" + playerSide + "], .fbs-card[data-region=library][data-side=" + playerSide + "]")) {
+                    items = {
+                        'draw': { name: '1枚引く', disabled: function () {
+                                var board = new models.Board(appActions_1.getState().board);
+                                var cards = board.getRegionCards(playerSide, 'library', null);
+                                return cards.length === 0;
+                            }, callback: function () {
+                                appActions_1.oprDraw({});
+                            } },
+                        'sep1': '---------',
+                        'reshuffle': { name: '再構成する', callback: function () {
+                                appActions_1.oprReshuffle({ side: playerSide, lifeDecrease: true });
+                            } },
+                        'reshuffleWithoutDamage': { name: '再構成する (ライフ減少なし)', callback: function () {
+                                appActions_1.oprReshuffle({ side: playerSide, lifeDecrease: false });
+                            } },
+                    };
+                }
+                if (items === null) {
+                    return false;
+                }
+                else {
+                    return {
+                        items: items,
+                    };
+                }
             }
-            return false;
         });
-        // ドラッグゴースト画像を1秒後に表示
-        setTimeout(function () {
-            $('.drag-ghost').show();
-        }, 1000);
+        // 初期情報をリクエスト
+        socket_2.emit('requestFirstTableData', { tableId: params.tableId });
+        // ボード情報を受信した場合、メイン処理をスタート
+        socket_2.on('onFirstTableDataReceived', function (p) {
+            // ユーザー設定のセット
+            var settingJson = localStorage.getItem('Setting');
+            if (settingJson) {
+                appActions_1.setSetting(JSON.parse(settingJson));
+            }
+            // ボード情報のセット
+            appActions_1.setBoard(p.board);
+            // 領域情報を再更新
+            appActions_1.updateBoardRegionInfo();
+            // ログ情報のセット
+            appActions_1.setActionLogs(p.actionLogs);
+            appActions_1.setChatLogs(p.chatLogs);
+            // まだ名前が決定していなければ、名前の決定処理
+            // 観戦者かどうかで名前の処理を分ける
+            if (params.side === 'watcher') {
+                // 観戦者の場合
+                // まずログインしてきた観戦者に、観戦者セッションIDが割り当てられているかどうかを確認
+                var sessionId = localStorage.getItem("table" + params.tableId + ":watcherSessionId");
+                if (sessionId) {
+                    // セッションIDがあれば、そのセッションIDでログイン
+                    socket_2.emit('watcherLogin', { tableId: params.tableId, sessionId: sessionId });
+                }
+                else {
+                    // セッションIDがなければ、新たなセッションIDを割り当てて、そのIDでログイン
+                    sessionId = randomstring.generate({ readable: true, length: 16 });
+                    localStorage.setItem("table" + params.tableId + ":watcherSessionId", sessionId);
+                    socket_2.emit('watcherLogin', { tableId: params.tableId, sessionId: sessionId });
+                }
+            }
+            else {
+                // 観戦者でない場合
+                if (p.board.playerNames[params.side] === null) {
+                    var playerCommonName_1 = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
+                    utils.userInputModal("<p>\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u3078\u3088\u3046\u3053\u305D\u3002<br>\u3042\u306A\u305F\u306F" + playerCommonName_1 + "\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3059\u3002</p><p>\u30D7\u30EC\u30A4\u30E4\u30FC\u540D\uFF1A</p>", function ($elem) {
+                        var playerName = $('#INPUT-MODAL input').val();
+                        if (playerName === '') {
+                            playerName = playerCommonName_1;
+                        }
+                        appActions_1.operate({
+                            log: "\u5353\u306B\u53C2\u52A0\u3057\u307E\u3057\u305F",
+                            undoType: 'notBack',
+                            proc: function () {
+                                appActions_1.setPlayerName({ side: params.side, name: playerName });
+                            }
+                        });
+                        messageModal("<p>\u30B2\u30FC\u30E0\u3092\u59CB\u3081\u308B\u6E96\u5099\u304C\u3067\u304D\u305F\u3089\u3001\u307E\u305A\u306F\u300C\u30E1\u30AC\u30DF\u9078\u629E\u300D\u30DC\u30BF\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p>");
+                    });
+                }
+            }
+        });
+        // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
+        socket_2.on('onBoardReceived', function (p) {
+            appActions_1.setBoard(p.board);
+            // 追加ログがあれば
+            if (p.appendedActionLogs !== null) {
+                // ログも追加
+                appActions_1.appendReceivedActionLogs(p.appendedActionLogs);
+                // 受け取ったログをtoastrで表示
+                var st_1 = appActions_1.getState();
+                var targetLogs = p.appendedActionLogs.filter(function (log) { return utils.logIsVisible(log, st_1.side); });
+                var msg = targetLogs.map(function (log) { return log.body; }).join('<br>');
+                var name_1 = (targetLogs[0].side === 'watcher' ? st_1.board.watchers[targetLogs[0].watcherSessionId].name : st_1.board.playerNames[targetLogs[0].side]);
+                toastr_1.default.info(msg, name_1 + ":");
+            }
+        });
+        // 観戦者名の入力を要求された
+        socket_2.on('requestWatcherName', function (p) {
+            utils.userInputModal("<p>\u3075\u308B\u3088\u306B\u30DC\u30FC\u30C9\u30B7\u30DF\u30E5\u30EC\u30FC\u30BF\u30FC\u3078\u3088\u3046\u3053\u305D\u3002<br>\u3042\u306A\u305F\u306F\u89B3\u6226\u8005\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3059\u3002</p><p>\u89B3\u6226\u8005\u540D\uFF1A</p>", function ($elem) {
+                var playerName = $('#INPUT-MODAL input').val();
+                if (playerName === '') {
+                    playerName = "\u89B3\u6226\u8005" + socket_2.ioSocket.id;
+                }
+                var sessionId = localStorage.getItem("table" + params.tableId + ":watcherSessionId");
+                socket_2.emit('watcherNameInput', { tableId: params.tableId, sessionId: sessionId, name: playerName });
+            });
+        });
+        // 観戦者ログイン成功
+        socket_2.on('onWatcherLoginSuccess', function (p) {
+            var sessionId = localStorage.getItem("table" + params.tableId + ":watcherSessionId");
+            appActions_1.setWatcherInfo({ watchers: p.watchers, currentWatcherSessionId: sessionId });
+            appActions_1.operate({
+                log: "\u89B3\u6226\u8005\u3068\u3057\u3066\u5353\u306B\u53C2\u52A0\u3057\u307E\u3057\u305F",
+                undoType: 'notBack',
+                proc: function () {
+                }
+            });
+        });
+        // 観戦者情報が更新された
+        socket_2.on('onWatcherChanged', function (p) {
+            appActions_1.setWatcherInfo({ watchers: p.watchers });
+        });
+        // ★集計
+        // すべてのカード情報を取得
+        var allCards = [];
+        for (var key in sakuraba_1.CARD_DATA) {
+            allCards.push([key, sakuraba_1.CARD_DATA[key]]);
+        }
+        {
+            var costSummary_1 = {};
+            var costSummaryCardTitles_1 = {};
+            var targetCards = allCards.filter(function (_a) {
+                var cardId = _a[0], card = _a[1];
+                return card.baseType === 'special' && card.cost !== undefined && /^[0-9]+$/.test(card.cost);
+            });
+            targetCards.forEach(function (_a) {
+                var cardId = _a[0], card = _a[1];
+                var intCost = parseInt(card.cost);
+                if (costSummary_1[intCost] === undefined)
+                    costSummary_1[intCost] = 0;
+                if (costSummaryCardTitles_1[intCost] === undefined)
+                    costSummaryCardTitles_1[intCost] = [];
+                costSummary_1[intCost] += 1;
+                costSummaryCardTitles_1[intCost].push(card.name);
+            });
+            console.log(costSummaryCardTitles_1);
+        }
+        {
+            var auraDamageSummary_1 = {};
+            var auraDamageSummaryCardTitles_1 = {};
+            var lifeDamageSummary_1 = {};
+            var lifeDamageSummaryCardTitles_1 = {};
+            var targetCards = allCards.filter(function (_a) {
+                var cardId = _a[0], card = _a[1];
+                return card.damage !== undefined && card.megami !== 'yukihi' && /^[0-9-]+\/[0-9-]+$/.test(card.damage);
+            });
+            targetCards.forEach(function (_a) {
+                var cardId = _a[0], card = _a[1];
+                var _b = card.damage.split('/'), auraDamage = _b[0], lifeDamage = _b[1];
+                if (auraDamageSummary_1[auraDamage] === undefined)
+                    auraDamageSummary_1[auraDamage] = 0;
+                if (auraDamageSummaryCardTitles_1[auraDamage] === undefined)
+                    auraDamageSummaryCardTitles_1[auraDamage] = [];
+                auraDamageSummary_1[auraDamage] += 1;
+                auraDamageSummaryCardTitles_1[auraDamage].push(card.name);
+                if (lifeDamageSummary_1[lifeDamage] === undefined)
+                    lifeDamageSummary_1[lifeDamage] = 0;
+                if (lifeDamageSummaryCardTitles_1[lifeDamage] === undefined)
+                    lifeDamageSummaryCardTitles_1[lifeDamage] = [];
+                lifeDamageSummary_1[lifeDamage] += 1;
+                lifeDamageSummaryCardTitles_1[lifeDamage].push(card.name);
+            });
+            console.log(auraDamageSummaryCardTitles_1);
+            console.log(lifeDamageSummaryCardTitles_1);
+        }
+        // 他のプレイヤーがチャットログを追加した場合の処理
+        socket_2.on('onChatLogAppended', function (p) {
+            // ログ追加
+            appActions_1.appendReceivedChatLogs(p.appendedChatLogs);
+            // 受け取ったログをtoastrで表示
+            var st = appActions_1.getState();
+            var targetLogs = p.appendedChatLogs.filter(function (log) { return utils.logIsVisible(log, st.side); });
+            var msg = targetLogs.map(function (log) { return log.body; }).join('<br>');
+            var name = (targetLogs[0].side === 'watcher' ? (st.board.watchers[targetLogs[0].watcherSessionId] ? st.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
+            toastr_1.default.success(msg, name + ":", { toastClass: 'toast chat' });
+        });
+        // toastrの標準オプションを設定
+        toastr_1.default.options = {
+            hideDuration: 300,
+            showDuration: 300
+        };
+        // 相手プレイヤーからの通知を受け取った場合、toastを時間無制限で表示
+        socket_2.on('onNotifyReceived', function (p) {
+            var st = appActions_1.getState();
+            toastr_1.default.info(p.message, st.board.playerNames[p.senderSide] + "\u3088\u308A\u901A\u77E5:", {
+                timeOut: 0,
+                extendedTimeOut: 0,
+                tapToDismiss: false,
+                closeButton: true
+            });
+        });
+        // モーダルでEnterを押下した場合、ボタンを押下したものと扱う
+        $('body').keydown(function (e) {
+            if (e.key === 'Enter') {
+                $('.modals.active .positive.button').click();
+            }
+        });
+        // ここからの処理はドラッグ＆ドロップ関係の処理のため、プレイヤーである場合のみ有効
+        if (params.side !== 'watcher') {
+            // 前進ボタンの上にカーソルを置いたときの処理
+            $('#BOARD').on('mouseenter', '#FORWARD-BUTTON', function (e) {
+                // 間合いの右端をフォーカス
+                $(".sakura-token[data-region=distance][data-dragging-count=1]").addClass('focused');
+                // 自オーラ領域をハイライト
+                $(".area.background[data-side=" + params.side + "][data-region=aura]").addClass('over');
+            });
+            // 離脱ボタンの上にカーソルを置いたときの処理
+            $('#BOARD').on('mouseenter', '#LEAVE-BUTTON', function (e) {
+                // ダストの右端をフォーカス
+                $(".sakura-token[data-region=dust][data-dragging-count=1]").addClass('focused');
+                // 間合い領域をハイライト
+                $(".area.background[data-region=distance]").addClass('over');
+            });
+            // 後退ボタンの上にカーソルを置いたときの処理
+            $('#BOARD').on('mouseenter', '#BACK-BUTTON', function (e) {
+                // 自オーラの右端をフォーカス
+                $(".sakura-token[data-side=" + params.side + "][data-region=aura][data-dragging-count=1]").addClass('focused');
+                // 間合い領域をハイライト
+                $(".area.background[data-region=distance]").addClass('over');
+            });
+            // 纏いボタンの上にカーソルを置いたときの処理
+            $('#BOARD').on('mouseenter', '#WEAR-BUTTON', function (e) {
+                // ダストの右端をフォーカス
+                $(".sakura-token[data-region=dust][data-dragging-count=1]").addClass('focused');
+                // 自オーラ領域をハイライト
+                $(".area.background[data-side=" + params.side + "][data-region=aura]").addClass('over');
+            });
+            // 宿しボタンの上にカーソルを置いたときの処理
+            $('#BOARD').on('mouseenter', '#CHARGE-BUTTON', function (e) {
+                // 自オーラの右端をフォーカス
+                $(".sakura-token[data-side=" + params.side + "][data-region=aura][data-dragging-count=1]").addClass('focused');
+                // 自フレア領域をハイライト
+                $(".area.background[data-side=" + params.side + "][data-region=flair]").addClass('over');
+            });
+            // 全付与札の桜花結晶-1ボタンの上にカーソルを置いたときの処理
+            $('#BOARD').on('mouseenter', '#ALL-ENHANCE-DECREASE-BUTTON', function (e) {
+                // カード上桜花結晶の右端をフォーカス
+                $(".sakura-token[data-region=on-card][data-dragging-count=1]").addClass('focused');
+                // ダスト領域をハイライト
+                $(".area.background[data-region=dust]").addClass('over');
+            });
+            $('#BOARD').on('mouseleave', '#FORWARD-BUTTON, #BACK-BUTTON, #CHARGE-BUTTON, #LEAVE-BUTTON, #WEAR-BUTTON, #ALL-ENHANCE-DECREASE-BUTTON', function (e) {
+                $(".sakura-token").removeClass('focused');
+                $(".area.background").removeClass('over');
+            });
+            // 桜花結晶の上にカーソルを置いたときの処理
+            $('#BOARD').on('mouseenter', '.sakura-token', function (e) {
+                // 自分と同じ領域/グループで、dragCountが自分以下の要素をすべて選択扱いにする
+                var $this = $(this);
+                var side = $this.attr('data-side');
+                var index = parseInt($this.attr('data-region-index'));
+                var group = $this.attr('data-group');
+                var draggingCount = parseInt($this.attr('data-dragging-count'));
+                if (draggingCount === 0)
+                    return false; // draggingCount=0はドラッグ非対象
+                var $tokens = $(".sakura-token[data-side=" + side + "][data-region=" + $this.attr('data-region') + "][data-group=" + group + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]");
+                $tokens.filter(function (i, elem) { return parseInt(elem.dataset.draggingCount) <= draggingCount; }).addClass('focused');
+                return true;
+            });
+            $('#BOARD').on('mouseleave', '.sakura-token', function (e) {
+                $(".sakura-token").removeClass('focused');
+            });
+            // ドラッグ開始
+            $('#BOARD').on('dragstart', '.fbs-card,.sakura-token', function (e) {
+                var currentState = appActions_1.getState();
+                if (currentState.side === 'watcher')
+                    throw "Forbidden operation for watcher"; // 観戦者は実行不可能な操作
+                if (!currentState.board.mariganFlags[params.side]) {
+                    utils.messageModal('決闘を開始するまでは、カードや桜花結晶の移動は行えません。');
+                    return false;
+                }
+                ;
+                //(e.originalEvent as DragEvent).dataTransfer.setDragImage($(this.closest('.draw-region'))[0], 0, 0);
+                var objectId = $(this).attr('data-object-id');
+                var object = currentState.board.objects.find(function (c) { return c.id === objectId; });
+                // カードの場合
+                if (object.type === 'card') {
+                    // 封印されたカードのドラッグ移動はできない
+                    if (object.region === 'on-card') {
+                        utils.messageModal('封印されたカードを移動することはできません。<br>右クリックより「相手の捨て札に送る」を選択してください。');
+                        return false;
+                    }
+                    // 桜花結晶が乗ったカードも移動できない
+                    var boardModel = new models.Board(currentState.board);
+                    var tokensOnCard = boardModel.getRegionSakuraTokens(currentState.side, 'on-card', object.id);
+                    if (tokensOnCard.length >= 1) {
+                        utils.messageModal('桜花結晶が乗ったカードを移動することはできません。');
+                        return false;
+                    }
+                    var $this = $(this);
+                    var linkedCardId = $this.attr('data-linked-card-id');
+                    this.style.opacity = '0.4'; // this / e.target is the source node.
+                    var cardData = sakuraba_1.CARD_DATA[object.cardId];
+                    // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択したカードを記憶
+                    // (同じ領域への移動、もしくは自分に自分を封印するような処理は行えない)
+                    if (cardData.baseType === 'special') {
+                        // 切札であれば、切札領域と追加札領域に移動可能
+                        $(".area.card-region.droppable[data-region=special]:not([data-side=" + object.side + "][data-region=" + object.region + "]), .area.card-region.droppable[data-region=extra]:not([data-side=" + object.side + "][data-region=" + object.region + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
+                        dragInfo_1.default.draggingFrom = object;
+                    }
+                    else if (cardData.baseType === 'transform') {
+                        // Transformカードであれば、使用済領域と追加札領域に移動可能
+                        $(".area.card-region.droppable[data-region=used]:not([data-side=" + object.side + "][data-region=" + object.region + "]), .area.card-region.droppable[data-region=extra]:not([data-side=" + object.side + "][data-region=" + object.region + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
+                        dragInfo_1.default.draggingFrom = object;
+                    }
+                    else {
+                        // 切札以外であれば、切札を除く他領域に移動可能
+                        $(".area.card-region.droppable:not([data-side=" + object.side + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "]):not([data-region=special]):not([data-region=on-card][data-linked-card-id=" + object.id + "])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
+                        dragInfo_1.default.draggingFrom = object;
+                    }
+                    // ポップアップを非表示にする
+                    $('.fbs-card').popup('hide all');
+                }
+                // 桜花結晶の場合
+                if (object.type === 'sakura-token') {
+                    var $this = $(this);
+                    var tokenSide = $this.attr('data-side');
+                    var linkedCardId = $this.attr('data-linked-card-id');
+                    var group = $this.attr('data-group');
+                    var draggingCount_1 = parseInt($this.attr('data-dragging-count'));
+                    if (draggingCount_1 === 0)
+                        return false; // draggingCount=0はドラッグ非対象
+                    // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択した桜花結晶を記憶
+                    var baseSelector = ".area.sakura-token-region.droppable:not([data-side=" + tokenSide + "][data-region=" + object.region + "][data-linked-card-id=" + linkedCardId + "])";
+                    if (object.artificial) {
+                        // 造花結晶であれば、今の領域に応じて移動先が決まる
+                        if (object.region === 'distance') {
+                            // 間合からの移動の場合は、所有者の燃焼済領域にのみ移動可能
+                            $(baseSelector + "[data-side=" + object.ownerSide + "][data-region=burned]").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
+                        }
+                        else if (object.region === 'burned') {
+                            // 燃焼済領域からの移動の場合は、所有者のマシン領域にのみ移動可能
+                            $(baseSelector + "[data-side=" + object.ownerSide + "][data-region=machine]").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
+                        }
+                        else {
+                            // マシン領域からの移動の場合は、所持者の燃焼済、間合のどちらかに移動可能
+                            $(baseSelector + "[data-side=" + object.ownerSide + "][data-region=burned]," + baseSelector + "[data-region=distance]").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
+                        }
+                    }
+                    else {
+                        // 通常の桜花結晶であれば、自身以外の領域のうち、マシンと燃焼済を除く全領域に移動可能
+                        $(baseSelector + ":not([data-region=machine]):not([data-region=burned])").css('z-index', const_1.ZIndex.HOVER_DROPPABLE);
+                    }
+                    dragInfo_1.default.draggingFrom = object;
+                    // 移動数を記憶
+                    dragInfo_1.default.sakuraTokenMoveCount = draggingCount_1;
+                    // 自分と同じ領域/グループで、dragCountが自分以下の要素をすべて選択扱いにする
+                    var $tokens = $(".sakura-token[data-side=" + tokenSide + "][data-region=" + $this.attr('data-region') + "][data-group=" + group + "][data-linked-card-id=" + $this.attr('data-linked-card-id') + "]");
+                    $tokens.filter(function (i, elem) { return parseInt(elem.dataset.draggingCount) <= draggingCount_1; }).css('opacity', '0.4');
+                    // ドラッグゴースト画像を設定
+                    var ghost = void 0;
+                    if (object.artificial) {
+                        ghost = $("#artificial-token-ghost-" + draggingCount_1 + "-" + object.ownerSide)[0];
+                    }
+                    else {
+                        $('#sakura-token-ghost-many .count').text(draggingCount_1);
+                        ghost = (draggingCount_1 >= 6 ? $('#sakura-token-ghost-many')[0] : $("#sakura-token-ghost-" + draggingCount_1)[0]);
+                    }
+                    e.originalEvent.dataTransfer.setDragImage(ghost, 0, 0);
+                    // 選択状態を解除
+                    $(".sakura-token").removeClass('focused');
+                }
+                return true;
+            });
+            $('#BOARD').on('dragend', '.fbs-card,.sakura-token', function (e) {
+                console.log('dragend', this);
+                processOnDragEnd_1();
+            });
+            $('#BOARD').on('dragover', '.droppable', function (e) {
+                if ($(this).hasClass('over-forbidden')) {
+                    e.originalEvent.dataTransfer.dropEffect = 'none'; // See the section on the DataTransfer object.
+                    return false;
+                }
+                if (e.preventDefault) {
+                    e.preventDefault(); // Necessary. Allows us to drop.
+                }
+                return false;
+            });
+            $('#BOARD').on('dragenter', '.area.droppable', function (e) {
+                console.log('dragenter', this);
+                var side = $(this).attr('data-side');
+                var region = $(this).attr('data-region');
+                var linkedCardId = $(this).attr('data-linked-card-id');
+                // 毒カードの移動で、かつ移動先が伏せ札の場合は移動不可
+                if (dragInfo_1.default.draggingFrom.type === 'card') {
+                    var toRegion = region;
+                    if (sakuraba_1.CARD_DATA[dragInfo_1.default.draggingFrom.cardId].poison && toRegion === 'hidden-used') {
+                        $(".area.droppable[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
+                        $(".area.background[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
+                        return true;
+                    }
+                }
+                // 桜花結晶の移動で、かつ移動先の最大値を超える場合は移動不可
+                // ただし移動対象が造花結晶で、かつ有効な桜花結晶数以下であれば、特例として移動可能 (騎動前進の可能性があるため)
+                if (dragInfo_1.default.draggingFrom.type === 'sakura-token') {
+                    var token = dragInfo_1.default.draggingFrom;
+                    var tokenRegion = region;
+                    var state_1 = appActions_1.getState();
+                    var boardModel = new models.Board(state_1.board);
+                    var tokenCount = 0;
+                    var rideForwardEnabled = false;
+                    if (tokenRegion === 'distance') {
+                        tokenCount = boardModel.getDistance();
+                        if (token.artificial) {
+                            var activeSakuraTokens = boardModel.getDistanceSakuraTokens('normal');
+                            if (token.groupTokenDraggingCount <= activeSakuraTokens.length) {
+                                rideForwardEnabled = true;
+                            }
+                        }
+                    }
+                    else {
+                        tokenCount = boardModel.getRegionSakuraTokens((side === 'none' ? null : side), tokenRegion, (linkedCardId === 'none' ? null : linkedCardId)).length;
+                    }
+                    if (tokenCount + dragInfo_1.default.sakuraTokenMoveCount > sakuraba_1.SAKURA_TOKEN_MAX[tokenRegion] && !rideForwardEnabled) {
+                        $(".area.droppable[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
+                        $(".area.background[data-side=" + side + "][data-region=" + region + "]").addClass('over-forbidden');
+                        return true;
+                    }
+                }
+                if (region === 'on-card') {
+                    console.log("overcard " + linkedCardId);
+                    $(".fbs-card[data-object-id=" + linkedCardId + "]").addClass('over');
+                }
+                else {
+                    $(".area.background[data-side=" + side + "][data-region=" + region + "]").addClass('over');
+                }
+                return true;
+            });
+            $('#BOARD').on('dragleave', '.area.droppable', function (e) {
+                console.log('dragleave', this);
+                var side = $(this).attr('data-side');
+                var region = $(this).attr('data-region');
+                var linkedCardId = $(this).attr('data-linked-card-id');
+                if (region === 'on-card') {
+                    $(".fbs-card[data-object-id=" + linkedCardId + "]").removeClass('over').removeClass('over-forbidden');
+                }
+                else {
+                    $(".area.background[data-side=" + side + "][data-region=" + region + "]").removeClass('over').removeClass('over-forbidden');
+                }
+                $(".area.droppable[data-side=" + side + "][data-region=" + region + "]").removeClass('over').removeClass('over-forbidden');
+            });
+            var lastDraggingFrom = null;
+            $('#BOARD').on('drop', '.area', function (e) {
+                // this / e.target is current target element.
+                var $this = $(this);
+                // ドラッグ禁止状態の場合は処理しない
+                if ($(this).hasClass('over-forbidden')) {
+                    return false;
+                }
+                // 現在のステートを取得
+                var currentState = appActions_1.getState();
+                var boardModel = new models.Board(currentState.board);
+                // 観戦者はドラッグできない
+                if (currentState.side === 'watcher')
+                    return false;
+                if (e.stopPropagation) {
+                    e.stopPropagation(); // stops the browser from redirecting.
+                }
+                if (dragInfo_1.default.draggingFrom !== null) {
+                    // カードを別領域に移動した場合
+                    if (dragInfo_1.default.draggingFrom.type === 'card') {
+                        var card = dragInfo_1.default.draggingFrom;
+                        var toSide = $this.attr('data-side');
+                        var toRegion = $this.attr('data-region');
+                        var toLinkedCardIdValue = $this.attr('data-linked-card-id');
+                        var toLinkedCardId = (toLinkedCardIdValue === 'none' ? null : toLinkedCardIdValue);
+                        // 他のカードを封印しているカードを、動かそうとした場合はエラー
+                        var sealedCards = boardModel.getSealedCards(card.id);
+                        if (sealedCards.length >= 1) {
+                            utils.messageModal("他のカードが封印されているため移動できません。");
+                            return false;
+                        }
+                        // 桜花結晶が乗っている札を、動かそうとした場合はエラー
+                        var onCardTokens = boardModel.getRegionSakuraTokens(card.side, 'on-card', card.id);
+                        if (onCardTokens.length >= 1) {
+                            utils.messageModal("桜花結晶が上に乗っているため移動できません。");
+                            return false;
+                        }
+                        // 山札に移動し、かつ山札が1枚以上ある場合は特殊処理
+                        if (toRegion === 'library' && boardModel.getRegionCards(toSide, toRegion, toLinkedCardId).length >= 1) {
+                            contextMenuShowingAfterDrop_1 = true;
+                            dragInfo_1.default.lastDraggingCardBeforeContextMenu = card;
+                            $('#CONTEXT-DRAG-TO-LIBRARY').contextMenu({ x: e.pageX, y: e.pageY });
+                            return false;
+                        }
+                        else {
+                            moveCardMain_1(card, toSide, toRegion, toLinkedCardId);
+                        }
+                    }
+                    // 桜花結晶を別領域に移動した場合
+                    if (dragInfo_1.default.draggingFrom.type === 'sakura-token') {
+                        var sakuraToken_1 = dragInfo_1.default.draggingFrom;
+                        var toSideValue = $this.attr('data-side');
+                        var toSide_1 = (toSideValue === 'none' ? null : toSideValue);
+                        var toRegion_1 = $this.attr('data-region');
+                        var toLinkedCardIdValue = $(this).attr('data-linked-card-id');
+                        var toLinkedCardId_1 = (toLinkedCardIdValue === 'none' ? null : toLinkedCardIdValue);
+                        var fromLinkedCard = (dragInfo_1.default.draggingFrom.linkedCardId === null ? undefined : boardModel.getCard(dragInfo_1.default.draggingFrom.linkedCardId));
+                        var toLinkedCard = (toLinkedCardId_1 === null ? undefined : boardModel.getCard(toLinkedCardId_1));
+                        var logs = [];
+                        var fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken_1.side, sakuraToken_1.region, fromLinkedCard);
+                        var toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide_1, toRegion_1, toLinkedCard);
+                        // 間合に造花結晶を移動した場合は特殊処理 (騎動メニュー)
+                        if (toRegion_1 === 'distance' && sakuraToken_1.artificial) {
+                            contextMenuShowingAfterDrop_1 = true;
+                            dragInfo_1.default.lastDraggingSakuraTokenBeforeContextMenu = sakuraToken_1;
+                            $('#CONTEXT-DRAG-ARTIFICIAL-TOKEN-TO-DISTANCE').contextMenu({ x: e.pageX, y: e.pageY });
+                            return false;
+                        }
+                        else {
+                            // ログ内容を決定
+                            var sidePrefix = (currentState.side !== sakuraToken_1.ownerSide ? '相手の' : '');
+                            var tokenName = (sakuraToken_1.artificial ? '造花結晶' : '桜花結晶');
+                            var logText = "" + sidePrefix + tokenName + "\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u79FB\u52D5\u3057\u307E\u3057\u305F\uFF1A" + fromRegionTitle + " \u2192 " + toRegionTitle;
+                            // 一部の移動ではログを変更
+                            if (sakuraToken_1.region === 'machine' && toRegion_1 === 'burned') {
+                                logText = sidePrefix + "\u30DE\u30B7\u30F3\u306E\u9020\u82B1\u7D50\u6676\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u71C3\u713C\u6E08\u306B\u3057\u307E\u3057\u305F";
+                            }
+                            if (sakuraToken_1.region === 'distance' && toRegion_1 === 'burned') {
+                                logText = "\u9593\u5408\u306E\u9020\u82B1\u7D50\u6676\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u71C3\u713C\u6E08\u306B\u3057\u307E\u3057\u305F";
+                            }
+                            if (sakuraToken_1.region === 'burned' && toRegion_1 === 'machine') {
+                                logText = sidePrefix + "\u71C3\u713C\u6E08\u306E" + tokenName + "\u3092" + dragInfo_1.default.sakuraTokenMoveCount + "\u3064\u56DE\u5FA9\u3057\u307E\u3057\u305F";
+                            }
+                            logs.push({ text: logText });
+                            appActions_1.operate({
+                                log: logs,
+                                proc: function () {
+                                    appActions_1.moveSakuraToken({
+                                        from: [sakuraToken_1.side, sakuraToken_1.region, sakuraToken_1.linkedCardId],
+                                        fromGroup: sakuraToken_1.group,
+                                        to: [toSide_1, toRegion_1, toLinkedCardId_1],
+                                        moveNumber: dragInfo_1.default.sakuraTokenMoveCount
+                                    });
+                                }
+                            });
+                        }
+                    }
+                    // // 山札に移動した場合は特殊処理
+                    // if(to === 'library'){
+                    //     lastDraggingFrom = dragInfo.draggingFrom;
+                    //     contextMenuShowingAfterDrop = true;
+                    //     $('#CONTEXT-DRAG-TO-LIBRARY').contextMenu({x: e.pageX, y: e.pageY});
+                    //     return false;
+                    // } else {
+                    //     // 山札以外への移動の場合
+                    //     if(dragInfo.draggingFrom.type === 'card'){
+                    //         //moveCard(dragInfo.draggingFrom.region as sakuraba.CardArea, dragInfo.draggingFrom.indexOfRegion, to as sakuraba.CardArea);
+                    //         return false;
+                    //     }
+                    //     if(dragInfo.draggingFrom.type === 'sakura-token'){
+                    //         let cardId: string = null;
+                    //         if(to === 'on-card'){
+                    //             cardId = $(this).attr('data-card-id');
+                    //         }
+                    //         //moveSakuraToken(dragInfo.draggingFrom.region as sakuraba.SakuraTokenArea, to as sakuraba.SakuraTokenArea, cardId);
+                    //         return false;
+                    //     }
+                    // }
+                }
+                return false;
+            });
+            // ドラッグゴースト画像を1秒後に表示
+            setTimeout(function () {
+                $('.drag-ghost').show();
+            }, 1000);
+        }
+    }
+    catch (ex) {
+        console.error(ex);
+        alert("システムエラーが発生しました。\nご迷惑をおかけして申し訳ございません。\n\n一度、ブラウザの表示を更新 (リロード) してみてください。\n表示を更新しても解決しない場合、お手数をおかけしますが、開発者までご連絡ください。");
+        $.ajax({
+            url: '/.error-send',
+            type: 'post',
+            contentType: 'application/json',
+            data: JSON.stringify({ error: ex.message, stack: ex.stack })
+        });
     }
 });
 

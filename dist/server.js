@@ -732,6 +732,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var express = __webpack_require__(/*! express */ "express");
 var socketIO = __webpack_require__(/*! socket.io */ "socket.io");
@@ -740,6 +743,8 @@ var redis = __importStar(__webpack_require__(/*! redis */ "redis"));
 var randomstring = __importStar(__webpack_require__(/*! randomstring */ "randomstring"));
 var socket_1 = __webpack_require__(/*! sakuraba/socket */ "./src/sakuraba/socket.ts");
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
+var nodemailer_1 = __importDefault(__webpack_require__(/*! nodemailer */ "nodemailer"));
+var body_parser_1 = __importDefault(__webpack_require__(/*! body-parser */ "body-parser"));
 var RedisClient = redis.createClient(process.env.REDIS_URL);
 var PORT = process.env.PORT || 3000;
 var INDEX = path.join(__dirname, '../index.html');
@@ -755,6 +760,7 @@ if (process.env.ENVIRONMENT === 'development') {
 app
     .set('views', __dirname + '/../')
     .set('view engine', 'ejs')
+    .use(body_parser_1.default.json())
     .use(express.static('public'))
     .use(express.static('node_modules'))
     .get('/dist/main.js', function (req, res) { return res.sendFile(MAIN_JS); })
@@ -813,6 +819,27 @@ app
             var watchUrl = urlBase + "/watch/" + newTableNo;
             res.json({ p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl });
         });
+    });
+})
+    .post('/.error-send', function (req, res) {
+    var sendgrid_username = process.env.SENDGRID_USERNAME;
+    var sendgrid_password = process.env.SENDGRID_PASSWORD;
+    var sendgrid_to = process.env.SENDGRID_TO;
+    var setting = {
+        host: 'smtp.sendgrid.net',
+        port: 587,
+        requiresAuth: true,
+        auth: {
+            user: sendgrid_username,
+            pass: sendgrid_password
+        }
+    };
+    var mailer = nodemailer_1.default.createTransport(setting);
+    mailer.sendMail({
+        from: 'noreply@morphball.net',
+        to: sendgrid_to,
+        subject: '[ふるよにボードシミュレーター]',
+        text: JSON.stringify(req.body)
     });
 });
 var server = app.listen(PORT, function () { return console.log("Listening on " + PORT); });
@@ -986,6 +1013,17 @@ io.on('connection', function (ioSocket) {
 
 /***/ }),
 
+/***/ "body-parser":
+/*!******************************!*\
+  !*** external "body-parser" ***!
+  \******************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("body-parser");
+
+/***/ }),
+
 /***/ "browser-sync":
 /*!*******************************!*\
   !*** external "browser-sync" ***!
@@ -1016,6 +1054,17 @@ module.exports = require("connect-browser-sync");
 /***/ (function(module, exports) {
 
 module.exports = require("express");
+
+/***/ }),
+
+/***/ "nodemailer":
+/*!*****************************!*\
+  !*** external "nodemailer" ***!
+  \*****************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("nodemailer");
 
 /***/ }),
 
