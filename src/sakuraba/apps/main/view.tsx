@@ -274,7 +274,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
             // 相手側の場合はカードの座標を逆転
             if(area.side === opponentSide){
-                left = area.left + (area.width - ret[1] - 100);
+                let minus = (card.rotated || (card.region === 'used' && CARD_DATA[card.cardId].baseType === 'transform') ? 140 : 100);
+                left = area.left + (area.width - ret[1] - minus);
             }
 
             objectNodes.push(<components.BoardCard target={card} left={left} top={top} />);

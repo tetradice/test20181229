@@ -74525,7 +74525,8 @@ var view = function (state, actions) {
             var top = area.top + ret[2];
             // 相手側の場合はカードの座標を逆転
             if (area.side === opponentSide) {
-                left = area.left + (area.width - ret[1] - 100);
+                var minus = (card.rotated || (card.region === 'used' && sakuraba_1.CARD_DATA[card.cardId].baseType === 'transform') ? 140 : 100);
+                left = area.left + (area.width - ret[1] - minus);
             }
             objectNodes.push(hyperapp_1.h(components.BoardCard, { target: card, left: left, top: top }));
             // 座標を記憶しておく
