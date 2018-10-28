@@ -21,3 +21,4 @@ export * from './MegamiFace';
 export * from './MachineButtons';
 export * from './SettingWindow';
 export * from './CardListWindow';
+export * from './MasterDistanceCaption';

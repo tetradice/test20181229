@@ -4,7 +4,7 @@ import * as models from "sakuraba/models";
 import * as utils from "sakuraba/utils";
 import * as apps from "sakuraba/apps";
 import { ClientSocket } from "sakuraba/socket";
-import { CARD_DATA, SAKURA_TOKEN_MAX, CardDataItem, SpecialCardDataItem } from "./sakuraba";
+import { CARD_DATA, SAKURA_TOKEN_MAX, CardDataItem } from "./sakuraba";
 import dragInfo from "sakuraba/dragInfo";
 import { BOARD_BASE_WIDTH, ZIndex } from "sakuraba/const";
 import * as randomstring from 'randomstring';
@@ -856,7 +856,7 @@ $(function(){
         {
         let costSummary: {[key: number]: number} = {};
         let costSummaryCardTitles: {[key: number]: string[]} = {};
-            let targetCards = allCards.filter(([cardId, card]) => card.baseType === 'special' && card.cost !== undefined && /^[0-9]+$/.test(card.cost)) as [string, SpecialCardDataItem][];
+            let targetCards = allCards.filter(([cardId, card]) => card.baseType === 'special' && card.cost !== undefined && /^[0-9]+$/.test(card.cost));
             targetCards.forEach(([cardId, card]) => {
                 let intCost = parseInt(card.cost);
                 if(costSummary[intCost] === undefined) costSummary[intCost] = 0;
