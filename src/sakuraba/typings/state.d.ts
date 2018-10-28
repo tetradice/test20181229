@@ -33,6 +33,8 @@ export interface State {
     bgmPlaying: boolean;
 
     setting: Setting;
+
+    environment: 'production' | 'development';
 }
 
 /** ボード履歴 */

@@ -12,6 +12,7 @@ import * as randomstring from 'randomstring';
 declare var params: {
     tableId: string;
     side: SheetSide;
+    environment: 'production' | 'development';
 }
 
 function messageModal(desc: string){
@@ -40,6 +41,7 @@ $(function(){
         st.tableId = params.tableId;
         st.side = params.side;
         st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
+        st.environment = params.environment;
 
         // ズーム設定を調整
         // コントロールパネルとチャットエリアの幅を350pxぶんは確保できるように調整

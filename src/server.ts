@@ -42,7 +42,7 @@ app
     RedisClient.HGET(`sakuraba:player-key-map`, req.params.key, (err, dataJson) => {
       if(dataJson !== null){
         let data = JSON.parse(dataJson);
-        res.render('board', {tableId: data.tableId, side: data.side})
+        res.render('board', {tableId: data.tableId, side: data.side, environment: process.env.ENVIRONMENT})
       } else {
         res.status(404);
         res.end('NotFound : ' + req.path);
@@ -50,7 +50,7 @@ app
     });
   })
   .get('/watch/:tableId', (req, res) => {
-    res.render('board', {tableId: req.params.tableId, side: 'watcher'})
+    res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT})
   })
 
   .post('/tables.create', (req, res) => {

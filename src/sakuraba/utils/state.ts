@@ -34,6 +34,8 @@ export function createInitialState(): state.State{
       , zoom: 1
 
       , setting: {megamiFaceViewMode: 'background1'}
+
+      , environment: 'development'
   }
   return st;
 }

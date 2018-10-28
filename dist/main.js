@@ -69944,6 +69944,7 @@ $(function () {
         st.tableId = params.tableId;
         st.side = params.side;
         st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
+        st.environment = params.environment;
         // ズーム設定を調整
         // コントロールパネルとチャットエリアの幅を350pxぶんは確保できるように調整
         var sideWidth = 350;
@@ -73378,7 +73379,6 @@ var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/sr
 var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.ts"));
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var css = __importStar(__webpack_require__(/*! ./ControlPanel.css */ "./src/sakuraba/apps/main/components/ControlPanel.css"));
-var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
 var components_1 = __webpack_require__(/*! sakuraba/apps/common/components */ "./src/sakuraba/apps/common/components/index.ts");
 var apps = __importStar(__webpack_require__(/*! sakuraba/apps */ "./src/sakuraba/apps/index.ts"));
@@ -73561,7 +73561,7 @@ exports.MainProcessButtons = function (p) { return function (state, actions) {
                                 hyperapp_1.h("i", { class: "checkmark icon" })),
                             hyperapp_1.h("div", { class: "ui black deny button", onclick: function () { actions.hide(); reject(); } }, "\u30AD\u30E3\u30F3\u30BB\u30EB")))));
             };
-            logger_1.withLogger(hyperapp_1.app)(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
+            hyperapp_1.app(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
         });
         // モーダル終了後の処理
         promise.then(function (finalState) {
@@ -74298,7 +74298,8 @@ var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hype
 var view_1 = __importDefault(__webpack_require__(/*! ./view */ "./src/sakuraba/apps/main/view.tsx"));
 var actions_1 = __webpack_require__(/*! ./actions */ "./src/sakuraba/apps/main/actions/index.ts");
 function run(state, container) {
-    return logger_1.withLogger(hyperapp_1.app)(state, actions_1.actions, view_1.default, container);
+    var appFunction = (state.environment === 'development' ? logger_1.withLogger(hyperapp_1.app) : hyperapp_1.app);
+    return appFunction(state, actions_1.actions, view_1.default, container);
 }
 exports.run = run;
 
@@ -74750,13 +74751,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
 var view_1 = __importDefault(__webpack_require__(/*! ./view */ "./src/sakuraba/apps/mariganModal/view.tsx"));
 var actions_1 = __webpack_require__(/*! ./actions */ "./src/sakuraba/apps/mariganModal/actions.ts");
 var state_1 = __webpack_require__(/*! ./state */ "./src/sakuraba/apps/mariganModal/state.ts");
 exports.State = state_1.State;
 function run(state, container) {
-    return logger_1.withLogger(hyperapp_1.app)(state, actions_1.actions, view_1.default, container);
+    return hyperapp_1.app(state, actions_1.actions, view_1.default, container);
 }
 exports.run = run;
 
@@ -74940,13 +74940,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
-var logger_1 = __webpack_require__(/*! @hyperapp/logger */ "./node_modules/@hyperapp/logger/src/index.js");
 var view_1 = __importDefault(__webpack_require__(/*! ./view */ "./src/sakuraba/apps/quizWindow/view.tsx"));
 var actions_1 = __webpack_require__(/*! ./actions */ "./src/sakuraba/apps/quizWindow/actions.ts");
 var state_1 = __webpack_require__(/*! ./state */ "./src/sakuraba/apps/quizWindow/state.ts");
 exports.State = state_1.State;
 function run(state, container) {
-    return logger_1.withLogger(hyperapp_1.app)(state, actions_1.actions, view_1.default, container);
+    return hyperapp_1.app(state, actions_1.actions, view_1.default, container);
 }
 exports.run = run;
 
@@ -76089,7 +76088,8 @@ function createInitialState() {
         settingVisible: false,
         bgmPlaying: false,
         zoom: 1,
-        setting: { megamiFaceViewMode: 'background1' }
+        setting: { megamiFaceViewMode: 'background1' },
+        environment: 'development'
     };
     return st;
 }

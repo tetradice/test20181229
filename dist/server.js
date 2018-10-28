@@ -674,7 +674,8 @@ function createInitialState() {
         settingVisible: false,
         bgmPlaying: false,
         zoom: 1,
-        setting: { megamiFaceViewMode: 'background1' }
+        setting: { megamiFaceViewMode: 'background1' },
+        environment: 'development'
     };
     return st;
 }
@@ -771,7 +772,7 @@ app
     RedisClient.HGET("sakuraba:player-key-map", req.params.key, function (err, dataJson) {
         if (dataJson !== null) {
             var data = JSON.parse(dataJson);
-            res.render('board', { tableId: data.tableId, side: data.side });
+            res.render('board', { tableId: data.tableId, side: data.side, environment: process.env.ENVIRONMENT });
         }
         else {
             res.status(404);
@@ -780,7 +781,7 @@ app
     });
 })
     .get('/watch/:tableId', function (req, res) {
-    res.render('board', { tableId: req.params.tableId, side: 'watcher' });
+    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT });
 })
     .post('/tables.create', function (req, res) {
     // 新しい卓番号を採番
