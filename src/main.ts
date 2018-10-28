@@ -372,7 +372,7 @@ $(function(){
 
             // 帯電解除コマンドの追加
             const addDischargeCommand = (items: any, card: state.Card, addSeparator?: boolean) => {
-                // プレイヤーがライラを宿しており、かつ対象のカードが公開状態の場合、帯電解除を行える
+                // プレイヤーがライラを宿しており、かつ対象のカードが公開状態で、ライラのカードでもTransformカードでもない場合、帯電解除を行える
                 if(board.megamis[playerSide][0] === 'raira' || board.megamis[playerSide][1] === 'raira'){
                     if(addSeparator){
                         items['sepDischarge'] = '---';
@@ -380,14 +380,14 @@ $(function(){
 
                     items['dischargeAndIncrementWind'] =  {
                         name: "帯電を解除し、風神ゲージを1上げる"
-                        , disabled: (card.openState !== 'opened' || card.discharged)
+                        , disabled: (card.openState !== 'opened' || card.discharged || CARD_DATA[card.cardId].megami === 'raira' || CARD_DATA[card.cardId].baseType === 'transform')
                         , callback: function() {
                             appActions.oprDischarge({objectId: card.id, guageType: 'wind'});
                         }
                     }
                     items['dischargeAndIncrementThunder'] =  {
                         name: "帯電を解除し、雷神ゲージを1上げる"
-                        , disabled: (card.openState !== 'opened' || card.discharged)
+                        , disabled: (card.openState !== 'opened' || card.discharged || CARD_DATA[card.cardId].megami === 'raira' || CARD_DATA[card.cardId].baseType === 'transform')
                         , callback: function() {
                             appActions.oprDischarge({objectId: card.id, guageType: 'thunder'});
                         }
