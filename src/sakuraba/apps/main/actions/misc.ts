@@ -13,7 +13,12 @@ export default {
         return {helpVisible: !state.helpVisible} as Partial<state.State>;
     },
 
+    toggleSettingVisible: () => (state: state.State) => {
+        return {settingVisible: !state.settingVisible} as Partial<state.State>;
+    },
+
     toggleBgmPlaying: () => (state: state.State) => {
         return {bgmPlaying: !state.bgmPlaying} as Partial<state.State>;
     }
+
 }

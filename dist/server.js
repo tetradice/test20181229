@@ -671,9 +671,10 @@ function createInitialState() {
         chatLog: [],
         actionLogVisible: false,
         helpVisible: false,
+        settingVisible: false,
         bgmPlaying: false,
         zoom: 1,
-        megamiFaceViewMode: 'background1'
+        setting: { megamiFaceViewMode: 'background1' }
     };
     return st;
 }

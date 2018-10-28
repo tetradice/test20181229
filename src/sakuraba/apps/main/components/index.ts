@@ -19,3 +19,4 @@ export * from './PlayerNameDisplay';
 export * from './MainProcessButtons';
 export * from './MegamiFace';
 export * from './MachineButtons';
+export * from './SettingWindow';
