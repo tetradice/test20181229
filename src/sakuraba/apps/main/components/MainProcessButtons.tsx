@@ -3,7 +3,6 @@ import { ActionsType } from "../actions";
 import * as sakuraba from "sakuraba";
 import * as utils from "sakuraba/utils";
 import * as css from "./ControlPanel.css"
-import { withLogger } from "@hyperapp/logger"
 import * as models from "sakuraba/models";
 import { Card, ProcessButton } from "sakuraba/apps/common/components";
 import * as apps from "sakuraba/apps";
@@ -36,7 +35,6 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         $('#MEGAMI2-SELECTION').empty().append('<option></option>');
         for(let key in sakuraba.MEGAMI_DATA){
             let data = sakuraba.MEGAMI_DATA[key];
-            if(key === 'thallya') continue;
             $('#MEGAMI1-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
             $('#MEGAMI2-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
         }
@@ -215,7 +213,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                     </div>
                 );
             }   
-            withLogger(app)(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
+            app(initialState, actDefinitions, view, document.getElementById('DECK-BUILD-MODAL'));
         });
 
         // モーダル終了後の処理

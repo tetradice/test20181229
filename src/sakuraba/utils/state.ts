@@ -30,8 +30,13 @@ export function createInitialState(): state.State{
       , actionLogVisible: false
       , turnProcessVisible: false
       , helpVisible: false
+      , settingVisible: false
       , bgmPlaying: false
       , zoom: 1
+
+      , setting: {megamiFaceViewMode: 'background1'}
+
+      , environment: 'development'
   }
   return st;
 }
@@ -62,7 +67,10 @@ return {
   , id: id
   , region: region
   , indexOfRegion: 0
+  , group: null
+  , groupTokenDraggingCount: null
   , side: side
   , linkedCardId: null
+  , ownerSide: null
 };
 }

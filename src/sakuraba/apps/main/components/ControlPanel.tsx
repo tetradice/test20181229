@@ -7,17 +7,6 @@ import toastr from "toastr";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
 import * as apps from "sakuraba/apps"
 
-
-// ルール編集メモ
-
-// 第二幕、新幕の選択
-// アンドゥ制約（山札を引いた後のUndoは可能か？）
-// ライフ制限解除
-// 原初札あり
-// デッキ枚数無制限
-
-
-
 /** コントロールパネル */
 export const ControlPanel = () => (state: state.State, actions: ActionsType) => {
     let reset = () => {
@@ -61,6 +50,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             proc: () => {
                 actions.moveSakuraToken({
                   from: from
+                , fromGroup: 'normal'
                 , to: to
                 , moveNumber: 1
                 });
@@ -82,7 +72,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         // プレイヤーである場合の処理
         if(state.board.firstDrawFlags[state.side]){
             // 最初の手札を引いたあとの場合 (桜花決闘)
-            let distanceCount = boardModel.getRegionSakuraTokens(null, 'distance', null).length;
+            let distanceCount = boardModel.getDistanceTokenCount();
+            let distanceNormalTokens = boardModel.getDistanceSakuraTokens('normal');
             let dustCount = boardModel.getRegionSakuraTokens(null, 'dust', null).length;
             let myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
             let side = state.side;
@@ -93,7 +84,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     <button
                     id="FORWARD-BUTTON"
                     style="padding-left: 1em; padding-right: 1em;"
-                    class={`ui button ${distanceCount >= 1 && myAuraCount < 5 ? '' : 'disabled'}`}
+                    class={`ui button ${distanceNormalTokens.length >= 1 && myAuraCount < 5 ? '' : 'disabled'}`}
                     onclick={() => basicAction([null, 'distance', null], [side, 'aura', null], '前進')}>前進</button>
                     <button
                     id="LEAVE-BUTTON"
@@ -254,6 +245,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     {(state.bgmPlaying ? <i class="check icon"></i> : null)}
                     BGM再生
                 </div>
+                <div class="item" onclick={() => actions.toggleSettingVisible()}>
+                    {(state.settingVisible ? <i class="check icon"></i> : null)}
+                    設定
+                </div>
                 <div class="divider"></div>
                 <div class="item" onclick={quizOpen}>
                     ミニゲーム: ふるよにミニクイズ
@@ -340,6 +335,13 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         watchSidePanel = null;
     }
 
+    // ボードサイズドロップダウン作成時処理
+    const boardSizeDropdownCreate = function(e){
+        $(e).dropdown({
+            direction: 'upward'
+        }).dropdown('set selected', Math.round(state.zoom * 10));
+    }
+
     return (
         <div id="CONTROL-PANEL" style={{left: `${BOARD_BASE_WIDTH * state.zoom + 10}px`}}>    
             {undoPanel}&nbsp;
@@ -371,7 +373,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 {watchSidePanel}
 
 <div class="ui sub header">ボードサイズ</div>
-<div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', Math.round(state.zoom * 10))}>
+<div class="ui selection dropdown" oncreate={boardSizeDropdownCreate}>
 
   <input type="hidden" name="boardSize" onchange={(e) => {return actions.setZoom(Number($(e.target).val()) * 0.1)}} />
   <i class="dropdown icon"></i>

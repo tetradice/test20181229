@@ -6,7 +6,7 @@ import { CARD_DATA } from "sakuraba";
 
 export default {
     /** 桜花結晶を指定数追加する */
-    addSakuraToken: (p: {side: PlayerSide, region: SakuraTokenRegion, number: number}) => (state: state.State) => {
+    addSakuraToken: (p: {side: PlayerSide, region: SakuraTokenRegion, number: number, artificial?: boolean, ownerSide?: PlayerSide}) => (state: state.State) => {
         // 元の盤の状態をコピーして新しい盤を生成
         let newBoard = models.Board.clone(state.board);
 
@@ -17,6 +17,8 @@ export default {
             let objectId = `sakuraToken-${tokenCount + 1}`;
 
             let newToken = utils.createSakuraToken(objectId, p.region, p.side);
+            newToken.artificial = p.artificial;
+            if(p.ownerSide) newToken.ownerSide = p.ownerSide;
             newBoard.objects.push(newToken);
         });
 
@@ -34,17 +36,25 @@ export default {
     moveSakuraToken: (p: {
         /** 移動元 */
         from: [PlayerSide, SakuraTokenRegion, string];
+        /** 移動元のグループ */
+        fromGroup?: state.SakuraTokenGroup;
         /** 移動先 */
         to: [PlayerSide, SakuraTokenRegion, string];
         /** 移動数 */
         moveNumber?: number;
+        /** 間合-1トークンとして動かす (造花結晶用) 省略時やfalse指定時は通常のトークンに戻る */
+        distanceMinus?: boolean;
     }) => (state: state.State) => {
         // 元の盤の状態をコピーして新しい盤を生成
         let newBoard = models.Board.clone(state.board);
 
         // 桜花結晶数を指定枚数移動 (省略時は0枚)
         let num = (p.moveNumber === undefined ? 1 : p.moveNumber);
-        let fromRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.from[0], p.from[1], p.from[2]).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
+        let fromRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.from[0], p.from[1], p.from[2]);
+        if(p.fromGroup){
+            fromRegionSakuraTokens = fromRegionSakuraTokens.filter(t => t.group === p.fromGroup)
+        }
+        fromRegionSakuraTokens = fromRegionSakuraTokens.sort((a, b) => a.indexOfRegion - b.indexOfRegion);
         let toRegionSakuraTokens = newBoard.getRegionSakuraTokens(p.to[0], p.to[1], p.to[2]).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
         let indexes = toRegionSakuraTokens.map(c => c.indexOfRegion);
         let maxIndex = Math.max(...indexes);
@@ -57,6 +67,7 @@ export default {
             c.linkedCardId = p.to[2];
             // 領域インデックスは最大値+1
             c.indexOfRegion = maxIndex + 1;
+            c.distanceMinus = (p.distanceMinus ? true : false);
             maxIndex++;
         });
 
@@ -98,5 +109,27 @@ export default {
                 });
             }
         });
-    }
+    },
+
+    /** 騎動前進 */
+    oprRideForward: (p: {side: PlayerSide, moveNumber: number}) => (state: state.State, actions: ActionsType) => {
+        let numPrefix = (p.moveNumber === 1 ? '' : `${p.moveNumber}回`);
+        actions.operate({
+            log: (p.side === state.side ? `${numPrefix}騎動前進しました` : `相手を${numPrefix}騎動前進させました`),
+            proc: () => {
+                actions.moveSakuraToken({ from: [p.side, 'machine', null], to: [null, 'distance', null], distanceMinus: true, moveNumber: p.moveNumber });
+            }
+        });
+    },
+
+    /** 騎動後退 */
+    oprRideBack: (p: {side: PlayerSide, moveNumber: number}) => (state: state.State, actions: ActionsType) => {
+        let numPrefix = (p.moveNumber === 1 ? '' : `${p.moveNumber}回`);
+        actions.operate({
+            log: (p.side === state.side ? `${numPrefix}騎動後退しました` : `相手を${numPrefix}回騎動後退させました`),
+            proc: () => {
+                actions.moveSakuraToken({from: [p.side, 'machine', null], to: [null, 'distance', null], distanceMinus: false, moveNumber: p.moveNumber});
+            }
+        });
+    },
 }

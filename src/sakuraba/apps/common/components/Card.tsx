@@ -32,7 +32,14 @@ export const Card = (p: Param) => {
       , height: `${140 * p.zoom}px`
       , fontSize: `${1.0 + ((p.zoom - 1.0) / 2)}em`
       , lineHeight: `1.3`
-  };
+    };
+
+    // 使用済にあるtransformカードの場合横にする
+    if(p.target.region === 'used' && sakuraba.CARD_DATA[p.target.cardId].baseType === 'transform'){
+        let oldW = styles.width;
+        styles.width = styles.height;
+        styles.height = oldW;
+    }
 
     if (p.target.region === 'on-card') {
         styles.zIndex = `${ZIndex.SEALED_CARD - p.target.indexOfRegion}`;
@@ -67,6 +74,7 @@ export const Card = (p: Param) => {
   }
   if(p.target.rotated) className += " rotated";
   if(p.reversed) className += " opponent-side"; 
+  
 
   const setPopup = (element) => {
       // SemanticUI ポップアップ初期化
@@ -98,6 +106,7 @@ export const Card = (p: Param) => {
       if(cardData.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>不</span>);
       if(cardData.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>対</span>);
       if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>全</span>);
+      if(cardData.types.indexOf('transform') >= 0) typeCaptions.push(<span class='card-type-transform'>TR</span>);
   }
   
   return (

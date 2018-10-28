@@ -8,7 +8,8 @@ import * as randomstring from 'randomstring';
 import * as sakuraba from 'sakuraba';
 import { ServerSocket } from 'sakuraba/socket';
 import * as utils from 'sakuraba/utils';
-import { EnvironmentPlugin } from 'webpack';
+import nodemailer from 'nodemailer';
+import bodyParser from 'body-parser';
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
@@ -29,6 +30,7 @@ if(process.env.ENVIRONMENT === 'development'){
 app
   .set('views', __dirname + '/../')
   .set('view engine', 'ejs')
+  .use(bodyParser.json())
   .use(express.static('public'))
   .use(express.static('node_modules'))
   .get('/dist/main.js', (req, res) => res.sendFile(MAIN_JS) )
@@ -40,7 +42,7 @@ app
     RedisClient.HGET(`sakuraba:player-key-map`, req.params.key, (err, dataJson) => {
       if(dataJson !== null){
         let data = JSON.parse(dataJson);
-        res.render('board', {tableId: data.tableId, side: data.side})
+        res.render('board', {tableId: data.tableId, side: data.side, environment: process.env.ENVIRONMENT})
       } else {
         res.status(404);
         res.end('NotFound : ' + req.path);
@@ -48,7 +50,7 @@ app
     });
   })
   .get('/watch/:tableId', (req, res) => {
-    res.render('board', {tableId: req.params.tableId, side: 'watcher'})
+    res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT})
   })
 
   .post('/tables.create', (req, res) => {
@@ -96,8 +98,29 @@ app
         res.json({p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl});
       });
     });
-  });
+  })
+  .post('/.error-send', (req, res) => {
+    let sendgrid_username   = process.env.SENDGRID_USERNAME;
+    let sendgrid_password   = process.env.SENDGRID_PASSWORD;
+    let sendgrid_to         = process.env.SENDGRID_TO;
+    let setting = {
+      host: 'smtp.sendgrid.net',
+      port: 587,
+      requiresAuth: true,
+      auth: {
+        user: sendgrid_username,
+        pass: sendgrid_password
+      }
+    };
+    let mailer = nodemailer.createTransport(setting);
 
+    mailer.sendMail({
+        from: 'noreply@morphball.net'
+      , to: sendgrid_to
+      , subject: '[ふるよにボードシミュレーター]'
+      , text: JSON.stringify(req.body)
+    });
+  });
 
 const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 

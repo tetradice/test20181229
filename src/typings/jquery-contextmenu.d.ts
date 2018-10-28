@@ -14,6 +14,7 @@ interface JQueryStatic {
         trigger?: string,
         zIndex?: number | (() => number),
         build?: ($triggerElement: JQuery, event: JQueryEventObject) => Object,
+        events?: {show?: Function, hide?: Function, activeted?: Function}
     }): any;
 }
 interface JQuery {

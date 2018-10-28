@@ -10,7 +10,7 @@ import { StackedCards } from "sakuraba/apps/common/components/StackedCards";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
 
 /** レイアウト種別 */
-type LayoutType = 'horizontal' | 'vertical' | 'stacked';
+type LayoutType = 'horizontal' | 'horizontal-distance' | 'vertical' | 'stacked';
 
 /** 各種オブジェクトを配置する領域 */
 type Params = {
@@ -64,6 +64,37 @@ function layoutObjects<T extends state.BoardObject>(
             });        
         }
     }
+
+    // 横並びで配置する場合 (間合用)
+    if(layoutType === 'horizontal-distance'){
+        let tokens = objects as state.SakuraToken[];
+        
+        // まず、通常の桜花結晶を配置
+        tokens.filter(o => o.type === 'sakura-token' && !o.artificial).forEach((child, i) => {
+            ret.push([child as T, cx, cy]);
+
+            cx += objectWidth;
+            cx += spacing;
+        });
+
+        // 次に、間合+1トークンとして配置されている造花結晶を配置
+        tokens.filter(o => o.type === 'sakura-token' && o.artificial && !o.distanceMinus).forEach((child, i) => {
+            ret.push([child as T, cx, cy]);
+
+            cx += objectWidth;
+            cx += spacing;
+        });
+
+        // 最後に、間合-1トークンとして配置されている造花結晶を、通常の結晶に重ねるように配置
+        cx = spacing;
+        tokens.filter(o => o.type === 'sakura-token' && o.artificial && o.distanceMinus).forEach((child, i) => {
+            ret.push([child as T, cx + 1, cy + 1]);
+
+            cx += objectWidth;
+            cx += spacing;
+        });
+    }
+
     // 垂直に配置する場合 (padding, spacingは無視)
     if(layoutType === 'vertical'){
         objects.forEach((child, i) => {
@@ -91,6 +122,12 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     let selfSide = state.viewingSide;
     let opponentSide: PlayerSide = (state.viewingSide === 'p1' ? 'p2' : 'p1');
 
+    // 各プレイヤーがサリヤを宿していて、かつ決闘開始済みかどうかを判定
+    let hasMachineTarot = {
+          p1: state.board.mariganFlags.p1 && state.board.megamis.p1.indexOf('thallya') >= 0
+        , p2: state.board.mariganFlags.p2 && state.board.megamis.p2.indexOf('thallya') >= 0
+    }
+  
     // 各領域ごとにフレーム、カード、桜花結晶の配置を行う
     let cardAreaData: {
           region: CardRegion
@@ -107,15 +144,15 @@ const view: View<state.State, ActionsType> = (state, actions) => {
               { region: 'used',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 750,   top: 200,  width: 450, height: 160 }
             , { region: 'hidden-used', side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 560,  top: 200,  width: 170, height: 160, cardCountDisplay: true }
             , { region: 'library',     side: opponentSide,  title: null, cardLayoutType: 'stacked',    left: 380,  top: 200,  width: 160, height: 160, cardCountDisplay: true }
-            , { region: 'hand',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 560,   top: 30, width: 640, height: 160 }
-            , { region: 'special',     side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 10,  top: 30, width: 330, height: 160 }
+            , { region: 'hand',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: (hasMachineTarot[opponentSide] ? 190 : 0) + 560, top: 30, width: (hasMachineTarot[opponentSide] ? 450 : 640), height: 160 }
+            , { region: 'special',     side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: (hasMachineTarot[opponentSide] ? 200 : 0) + 10,  top: 30, width: 330, height: 160 }
 
             // 自分
             , { region: 'used',        side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10,   top: 430,  width: 450, height: 160 }
             , { region: 'hidden-used', side: selfSide, title: "伏せ札",   cardLayoutType: 'stacked',    left: 480,  top: 430,  width: 170, height: 160, cardCountDisplay: true }
             , { region: 'library',     side: selfSide, title: "山札",     cardLayoutType: 'stacked',    left: 670,  top: 430,  width: 160, height: 160, cardCountDisplay: true }
-            , { region: 'hand',        side: selfSide, title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 600, width: 640, height: 160 }
-            , { region: 'special',     side: selfSide, title: "切札",     cardLayoutType: 'horizontal', left: 850,  top: 600, width: 330, height: 160 }
+            , { region: 'hand',        side: selfSide, title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 600, width: (hasMachineTarot[selfSide] ? 450 : 640), height: 160 }
+            , { region: 'special',     side: selfSide, title: "切札",     cardLayoutType: 'horizontal', left: (hasMachineTarot[selfSide] ? 670 : 850),  top: 600, width: 330, height: 160 }
     ];
 
     // 桜花決闘を開始していなければ、自陣営の全エリア非表示
@@ -166,26 +203,56 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
     let sakuraTokenAreaData: {
         region: SakuraTokenRegion
-      , side: PlayerSide
-      , title: string
-      , layoutType: LayoutType
-      , left: number
-      , top: number
-      , width: number
-      , tokenWidth: number
-      , height: number
-  }[] = [
-            { region: 'aura',     side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10,   top: 200,  width: 210, tokenWidth: 120, height: 30 }
-          , { region: 'life',     side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10,   top: 240,  width: 350, tokenWidth: 260, height: 30 }
-          , { region: 'flair',    side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10,   top: 280,  width: 350, tokenWidth: 260, height: 30 }
+        , side: PlayerSide
+        , title: string
+        , layoutType: LayoutType
+        , left: number
+        , top: number
+        , width: number
+        , tokenWidth: number
+        , height: number
+    }[] = [
+            { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 200, width: 220, tokenWidth: 130, height: 30 }
+            , { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 240, width: 350, tokenWidth: 260, height: 30 }
+            , { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10, top: 280, width: 350, tokenWidth: 260, height: 30 }
 
-          , { region: 'distance', side: null, title: "間合",   layoutType: 'horizontal', left: 10,    top: 380,  width: 350, tokenWidth: 260, height: 30 }
+          , { region: 'distance', side: null, title: "間合",   layoutType: 'horizontal-distance', left: 10,    top: 380,  width: 350, tokenWidth: 260, height: 30 }
           , { region: 'dust',     side: null, title: "ダスト", layoutType: 'horizontal', left: 380,   top: 380,  width: 350, tokenWidth: 260, height: 30 }
 
-          , { region: 'aura',     side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850,   top: 430,  width: 210, tokenWidth: 120, height: 30 }
-          , { region: 'life',     side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850,   top: 470,  width: 350, tokenWidth: 260, height: 30 }
-          , { region: 'flair',    side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850,   top: 510,  width: 350, tokenWidth: 260, height: 30 }
-      ];
+            , { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 430, width: 220, tokenWidth: 130, height: 30 }
+            , { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 470, width: 350, tokenWidth: 260, height: 30 }
+            , { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 260, height: 30 }
+        ];
+
+    // サリヤを宿しており、かつ決闘開始済の場合、マシン領域と燃焼済を追加
+    ['p1', 'p2'].forEach((side: PlayerSide) => {
+        if(hasMachineTarot[side]){
+            sakuraTokenAreaData.push({
+                  region: 'machine'
+                , side: side
+                , title: 'STEAM ENGINE'
+                , layoutType: 'horizontal'
+                , left: (side === state.viewingSide ? 1010 : 50)
+                , top: (side === state.viewingSide ? 600 : 140)
+                , width: 150
+                , height: 50
+                , tokenWidth: 130
+            });
+
+            sakuraTokenAreaData.push({
+                region: 'burned'
+              , side: side
+              , title: 'BURNED'
+              , layoutType: 'horizontal'
+              , left: (side === state.viewingSide ? 1010 : 50)
+              , top: (side === state.viewingSide ? 660 : 80)
+              , width: 150
+              , height: 50
+              , tokenWidth: 130
+          });
+        }
+    });
+
 
     let frameNodes: hyperapp.Children[] = [];
     let objectNodes: hyperapp.Children[] = [];
@@ -204,6 +271,13 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let card = ret[0];
             let left = area.left + ret[1];
             let top = area.top + ret[2];
+
+            // 相手側の場合はカードの座標を逆転
+            if(area.side === opponentSide){
+                let minus = (card.rotated || (card.region === 'used' && CARD_DATA[card.cardId].baseType === 'transform') ? 140 : 100);
+                left = area.left + (area.width - ret[1] - minus);
+            }
+
             objectNodes.push(<components.BoardCard target={card} left={left} top={top} />);
 
             // 座標を記憶しておく
@@ -228,13 +302,13 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let token = ret[0];
             let left = area.left + ret[1];
             let top = area.top + ret[2];
-            let draggingCount = tokens.length - token.indexOfRegion;
 
-            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} draggingCount={draggingCount} />);
+            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} />);
         });
 
         // フレームを追加
-        frameNodes.push(<components.SakuraTokenAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} tokenCount={tokens.length} />);
+        let count = (area.region === 'distance' ? boardModel.getDistance() : tokens.length);
+        frameNodes.push(<components.SakuraTokenAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} tokenCount={count} />);
         frameNodes.push(<components.SakuraTokenAreaDroppable side={area.side} region={area.region} linkedCardId={null} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
     
@@ -277,7 +351,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let draggingCount = tokens.length - token.indexOfRegion;
             let left = cardLocation[0] + ret[1];
             let top = cardLocation[1] + (card.side === selfSide ? 24 : (140 - 24 - 26));
-            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} draggingCount={draggingCount} />);
+            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} />);
         });
     });
 
@@ -384,15 +458,16 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         <div id="BOARD-PLAYAREA" style={{width: `${BOARD_BASE_WIDTH * state.zoom}px`}}>
             {objectNodes}
             {frameNodes}
-            <components.Vigor side={opponentSide} left={390} top={60} />
-            <components.Vigor side={selfSide} left={680} top={630} />
-            <components.WitheredToken side={opponentSide} left={390} top={60} />
-            <components.WitheredToken side={selfSide} left={680} top={630} />
+            <components.Vigor side={opponentSide} left={(hasMachineTarot[opponentSide] ? 190 : 0) + 390} top={60} />
+            <components.Vigor side={selfSide} left={680 - (hasMachineTarot[selfSide] ? 190 : 0)} top={630} />
+            <components.WitheredToken side={opponentSide} left={(hasMachineTarot[opponentSide] ? 190 : 0) + 390} top={60} />
+            <components.WitheredToken side={selfSide} left={680 - (hasMachineTarot[selfSide] ? 190 : 0)} top={630} />
             <components.ControlPanel />
             <components.ChatLogArea logs={state.chatLog} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
             <components.TurnProcessWindow shown={state.turnProcessVisible} />
             <components.HelpWindow shown={state.helpVisible} />
+            <components.SettingWindow shown={state.settingVisible} />
             <components.BGMWindow shown={state.bgmPlaying} />
             {extraTokens}
             <components.PlayerNameDisplay left={10} top={10} width={1200} side={utils.flipSide(selfSide)} />
@@ -400,6 +475,11 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
             <components.MainProcessButtons left={mainProcessButtonLeft} />
             {readyObjects}
+            {state.side !== 'watcher' && hasMachineTarot[selfSide] ? <components.MachineButtons side={selfSide} left={1010} top={720}></components.MachineButtons> : null}
+            {state.board.megamis[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][0]} left={10} top={430} /> : null}
+            {state.board.megamis[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][1]} left={(hasMachineTarot[selfSide] ? 40 : 240)} top={600} /> : null}
+            {state.board.megamis[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][0]} left={720} top={200} /> : null}
+            {state.board.megamis[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][1]} left={(hasMachineTarot[opponentSide] ? 690 : 490)} top={30} /> : null}
         </div>
     );
 }

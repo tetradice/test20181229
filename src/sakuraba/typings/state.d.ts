@@ -30,13 +30,23 @@ export interface State {
     actionLogVisible: boolean;
     turnProcessVisible: boolean;
     helpVisible: boolean;
+    settingVisible: boolean;
     bgmPlaying: boolean;
+
+    setting: Setting;
+
+    environment: 'production' | 'development';
 }
 
 /** ボード履歴 */
 export interface BoardHistoryItem {
     board: Board;
     appendedLogs: state.LogRecord[];
+}
+
+/** 設定 */
+export interface Setting {
+    megamiFaceViewMode: 'background1' | 'none';
 }
 
 /** 卓情報 */
@@ -49,7 +59,7 @@ export interface Board {
     /** 集中力 */
     vigors: {p1: VigorValue, p2: VigorValue};
 
-    /** 萎縮 */
+    /** 畏縮 */
     witherFlags: {p1: boolean, p2: boolean};
 
     /** メガミを公開したかどうか */
@@ -102,12 +112,33 @@ export interface Card extends BoardObjectBase {
     ownerSide: PlayerSide;
 }
 
+export type SakuraTokenGroup = 'normal' | 'inactive' | 'artificial-p1' | 'artificial-p2';
+
 export interface SakuraToken extends BoardObjectBase {
     type: 'sakura-token'
 
     region: SakuraTokenRegion;
     indexOfRegion: number;
+
     linkedCardId: string;
+
+    /** 造花結晶である */
+    artificial?: boolean;
+
+    /** 所有プレイヤー (造花結晶のみ) */
+    ownerSide: PlayerSide;
+
+    // 以下は一時領域情報 (updateRegionInfoで更新される)
+
+    /** グループ (通常/無効/p1造花結晶/p2造花結晶) */
+    group: SakuraTokenGroup;
+
+    /** ドラッグ時に同じグループの桜花結晶をいくつ操作するか */
+    groupTokenDraggingCount: number;
+
+
+    /** 間合-1トークンである (桜花結晶に重ねる) */
+    distanceMinus?: boolean
 }
 
 /** ログ1行分のデータ */

@@ -5,5 +5,6 @@ import view from './view';
 import { actions, ActionsType } from './actions';
 
 export function run(state: state.State, container: Element | null): ActionsType {
-    return withLogger(app)(state, actions, view, container);
+    let appFunction = (state.environment === 'development' ? withLogger(app) : app);
+    return appFunction(state, actions, view, container);
 }
