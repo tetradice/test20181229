@@ -941,7 +941,10 @@ $(function(){
 
                 }
 
-            return true;
+                // dataTransferにダミーデータを設定 (FireFoxでは何かをsetDataしないと動かない)
+                (e.originalEvent as DragEvent).dataTransfer.setData('text', '');
+
+                return true;
             });
 
             $('#BOARD').on('dragend', '.fbs-card,.sakura-token', function(e){
