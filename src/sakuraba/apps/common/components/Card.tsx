@@ -1,6 +1,7 @@
 import { h } from "hyperapp";
 import * as utils from "sakuraba/utils";
 import * as sakuraba from "sakuraba";
+import * as models from "sakuraba/models";
 import dragInfo from "sakuraba/dragInfo";
 import { ZIndex } from "sakuraba/const";
 
@@ -17,6 +18,9 @@ interface Param {
     opened: boolean;
     reversed?: boolean;
     useOpenedCardData?: boolean;
+
+    /** カード情報 省略した場合はカードのIDから自動取得 */
+    cardData?: models.CardData;
 
     zoom: number;
     descriptionViewable: boolean;
@@ -51,7 +55,7 @@ export const Card = (p: Param) => {
         styles.zIndex = `${ZIndex.CARD}`;
     }
 
-  let cardData = sakuraba.CARD_DATA[p.target.cardId];
+  let cardData = (p.cardData || new models.CardData(p.target.cardId));
   let className = "fbs-card";
 
   // クリック可能クラスを付与する場合
@@ -110,7 +114,7 @@ export const Card = (p: Param) => {
       if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>全</span>);
       if(cardData.types.indexOf('transform') >= 0) typeCaptions.push(<span class='card-type-transform'>TR</span>);
   }
-  
+
   return (
       <div
           key={p.target.id}
@@ -137,8 +141,8 @@ export const Card = (p: Param) => {
           {p.opened ?
           <div>
             <div style={{position: 'absolute', top: (p.reversed ? `${24 * p.zoom}px` : null), bottom: (p.reversed ? null : `${24 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{typeCaptions}</div>
-            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{(cardData.types[0] === 'enhance' ? `納${cardData.capacity}` : (p.useOpenedCardData ? cardData.rangeOpened : cardData.range))}</div>
-            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? `${4 * p.zoom}px` : null), right: (p.reversed ? null : `${4 * p.zoom}px`)}}>{(p.useOpenedCardData ? cardData.damageOpened : cardData.damage)}</div>
+            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{(cardData.types[0] === 'enhance' ? `納${cardData.capacity}` : cardData.range)}</div>
+            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? `${4 * p.zoom}px` : null), right: (p.reversed ? null : `${4 * p.zoom}px`)}}>{cardData.damage}</div>
           </div>
           : null}
           {p.handOpened ? <div style="white-space: nowrap; color: blue; position: absolute; bottom: 4px; right: 0;">【公開中】</div> : null}

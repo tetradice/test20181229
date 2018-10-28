@@ -4,6 +4,7 @@ import * as sakuraba from "sakuraba";
 import { ActionsType } from "../actions";
 import dragInfo from "sakuraba/dragInfo";
 import { Card } from "sakuraba/apps/common/components";
+import * as models from "sakuraba/models";
 
 /** カード */
 type Type = 'board' | 'modal';
@@ -85,9 +86,12 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
     if(cardData.rangeOpened !== undefined && state.board.umbrellaStatus[p.target.ownerSide] === 'opened'){
         useOpenedData = true;
     }
+
+    let boardModel = new models.Board(state.board);
     
     return (
         <Card
+            cardData={boardModel.getCardData(p.target)}
             opened={opened}
             handOpened={handOpened}
             clickableClass={clickableClass}

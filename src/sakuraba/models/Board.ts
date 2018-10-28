@@ -1,7 +1,7 @@
 import * as _ from "lodash";
-import { Megami, CARD_DATA } from "sakuraba";
+import { Megami, CARD_DATA, CardDataItem } from "sakuraba";
 import * as utils from "sakuraba/utils";
-import { SakuraTokenGroup } from "sakuraba/typings/state";
+import * as models from "sakuraba/models";
 
 export class Board implements state.Board {
     objects: state.Board['objects'];
@@ -35,6 +35,25 @@ export class Board implements state.Board {
 
     static clone(original: state.Board): Board{
         return new Board(original, true);
+    }
+
+    /** 指定したカードのカード情報を取得（複製済みでゅーぷりぎあがあればそれも考慮する） */
+    getCardData(card: state.Card): models.CardData {
+        if(card.cardId === '10-kururu-o-s-3-ex1'){ // でゅーぷりぎあ
+            // でゅーぷりぎあの場合、複製対象のカードがあるかどうかを探す
+            // (でゅーぷりぎあ所有者の切札に使用済みのいんだすとりあがあり、かつ何かのカードが封印されていれば、それを複製する)
+            // 複製しているカードがあればその情報を返す
+            let usedIndustria = this.getRegionCards(card.ownerSide, 'special', null).find(c => c.specialUsed && c.cardId === '10-kururu-o-s-3'); // いんだすとりあ
+            if(usedIndustria){
+                let sealedCards = this.getRegionCards(usedIndustria.side, 'on-card', usedIndustria.id);
+                if(sealedCards.length >= 1){
+                    return new models.CardData(card.cardId, sealedCards[0].cardId);
+                }
+            }
+        }
+
+        // でゅーぷりぎあ以外のカードか、複製元がないでゅーぷりぎあなら、通常通りカード情報を取得
+        return new models.CardData(card.cardId);
     }
 
     /** すべてのカードを取得 */

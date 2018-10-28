@@ -1,9 +1,6 @@
 import { h, app, View } from "hyperapp";
 import { actions, ActionsType } from "./actions";
 import { State } from "./state";
-import * as utils from "sakuraba/utils";
-import * as sakuraba from "sakuraba";
-import { Card } from "sakuraba/apps/common/components";
 
 import * as css from "./view.css"
 import _ from "lodash";

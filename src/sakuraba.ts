@@ -47,8 +47,9 @@ export type Megami = keyof (typeof MEGAMI_DATA_BASE);
 export const MEGAMI_DATA: {[megami: string]: MegamiDataItem} = MEGAMI_DATA_BASE;
 
 // カード情報
-interface CardDataItemBase {
+export interface CardDataItem {
     megami: Megami;
+    baseType: 'normal' | 'special' | 'transform';
     name: string;
     nameEn?: string;
     anotherID?: string;
@@ -63,6 +64,7 @@ interface CardDataItemBase {
     text: string;
     textEn?: string;
     textOpened?: string;
+    cost?: string;
 
     /** 他のカードを封印可能 */
     sealable?: boolean;
@@ -73,23 +75,6 @@ interface CardDataItemBase {
     /** 追加札かどうか */
     extra?: boolean;
 }
-
-export interface NormalCardDataItem extends CardDataItemBase {
-    baseType: 'normal';
-}
-
-
-export interface SpecialCardDataItem extends CardDataItemBase {
-    baseType: 'special';
-    cost?: string;
-}
-
-export interface TransformCardDataItem extends CardDataItemBase {
-    baseType: 'transform';
-}
-
-
-export type CardDataItem = NormalCardDataItem | SpecialCardDataItem | TransformCardDataItem;
 
 export const CARD_DATA: {[key: string]: CardDataItem} = {
       '01-yurina-o-n-1': {megami: 'yurina', name: '斬', nameEn: 'Slash', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: '3-4', damage: '3/1', text: '', textEn: ''}
