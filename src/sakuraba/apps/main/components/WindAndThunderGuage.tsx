@@ -27,7 +27,7 @@ export const WindAndThunderGuage = (p: {side: PlayerSide, wind: number, thunder:
     let buttonSectionStyles: Partial<CSSStyleDeclaration> = {
           position: 'absolute'
         , left: `${45 * state.zoom}px`
-        , width: `${150 * state.zoom}px`
+        , width: `${200 * state.zoom}px`
     };
     let buttonStyles: Partial<CSSStyleDeclaration> = {
           padding: `${2 * state.zoom}px ${8 * state.zoom}px`

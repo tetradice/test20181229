@@ -7,17 +7,6 @@ import toastr from "toastr";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
 import * as apps from "sakuraba/apps"
 
-
-// ルール編集メモ
-
-// 第二幕、新幕の選択
-// アンドゥ制約（山札を引いた後のUndoは可能か？）
-// ライフ制限解除
-// 原初札あり
-// デッキ枚数無制限
-
-
-
 /** コントロールパネル */
 export const ControlPanel = () => (state: state.State, actions: ActionsType) => {
     let reset = () => {
@@ -348,6 +337,13 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         watchSidePanel = null;
     }
 
+    // ボードサイズドロップダウン作成時処理
+    const boardSizeDropdownCreate = function(e){
+        $(e).dropdown({
+            direction: 'upward'
+        }).dropdown('set selected', Math.round(state.zoom * 10));
+    }
+
     return (
         <div id="CONTROL-PANEL" style={{left: `${BOARD_BASE_WIDTH * state.zoom + 10}px`}}>    
             {undoPanel}&nbsp;
@@ -379,7 +375,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 {watchSidePanel}
 
 <div class="ui sub header">ボードサイズ</div>
-<div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', Math.round(state.zoom * 10))}>
+<div class="ui selection dropdown" oncreate={boardSizeDropdownCreate}>
 
   <input type="hidden" name="boardSize" onchange={(e) => {return actions.setZoom(Number($(e.target).val()) * 0.1)}} />
   <i class="dropdown icon"></i>
