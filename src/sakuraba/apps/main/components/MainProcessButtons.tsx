@@ -123,13 +123,21 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                     let replacedByAnother = allCardDataItem.find(x => x.anotherID !== undefined && x.replace === key);
     
                     if(data.baseType === baseType && !data.extra){
-                        // メガミの所有カード判定 (非アナザー)
-                        if(data.megami === megami && !replacedByAnother){
-                            appendToCardIds.push(key);
-                        }
-                        // メガミの所有カード判定 (アナザー)
-                        if(data.megami === megamiData.base && (!replacedByAnother || data.anotherID === megamiData.anotherID)){
-                            appendToCardIds.push(key);
+                        if(megamiData.anotherID){
+                            // アナザーメガミである場合の所有カード判定
+                            // 通常メガミが持ち、かつアナザーで置き換えられていないカードを追加
+                            if(data.megami === megamiData.base && (data.anotherID === undefined) && !replacedByAnother){
+                                appendToCardIds.push(key);
+                            }
+                            // アナザーメガミ用のカードを追加
+                            if(data.megami === megamiData.base && (data.anotherID === megamiData.anotherID)){
+                                appendToCardIds.push(key);
+                            }
+                        } else {
+                            // 通常メガミである場合、メガミの種類が一致している通常カードを全て追加
+                            if(data.megami === megami && (data.anotherID === undefined)){
+                                appendToCardIds.push(key);
+                            }
                         }
                     }
                 }
