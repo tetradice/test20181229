@@ -92,6 +92,21 @@ export const Card = (p: Param) => {
   const oncreate = (element) => {
       //if(state.draggingFromCard !== null) return;
       setPopup(element);
+      $(element).pep({
+          shouldEase: false
+        , droppable: '.ui.segment'
+        , droppableActiveClass: 'over'
+        , overlapFunction: function($a, $b){
+            var rect1 = $a[0].getBoundingClientRect();
+            var rect2 = $b[0].getBoundingClientRect();
+
+            return (  rect2.left    > rect1.left  && 
+                      rect2.right   < rect1.right && 
+                      rect2.top     > rect1.top   && 
+                      rect2.bottom  < rect1.bottom  );
+          }
+        , revert: true
+      });
   }
   const onupdate = (element) => {
       //if(state.draggingFromCard !== null) return;
@@ -115,7 +130,6 @@ export const Card = (p: Param) => {
           class={className}
           id={'board-object-' + p.target.id}
           style={styles}
-          draggable={p.draggable}
           data-object-id={p.target.id}
           data-side={p.target.side}
           data-region={p.target.region}
