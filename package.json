@@ -9,7 +9,8 @@
     "watch:server": "webpack --watch --config webpack.config.server.ts",
     "build": "npm run build:client && npm run build:server",
     "build:client": "webpack --config webpack.config.client.ts",
-    "build:server": "webpack --config webpack.config.server.ts"
+    "build:server": "webpack --config webpack.config.server.ts",
+    "herokubuild": "cpx -v \"dist/*\" herokudist/dist && cpx -v \"*.ejs\" herokudist && cpx -v package.json herokudist && cpx -v yarn.lock herokudist && cpx -v Procfile herokudist && cpx -v index.html herokudist"
   },
   "keywords": [],
   "author": "",
@@ -50,6 +51,7 @@
     "awesome-typescript-loader": "^5.2.1",
     "browser-sync": "^2.24.4",
     "connect-browser-sync": "^2.1.0",
+    "cpx": "^1.5.0",
     "css-loader": "^0.28.11",
     "hyperapp": "^1.2.6",
     "hyperapp-debug": "^0.0.1-beta.10",
