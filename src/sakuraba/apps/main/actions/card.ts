@@ -158,13 +158,6 @@ export default {
         let board = new models.Board(state.board);
         let card = board.getCard(p.objectId);
 
-        // 他のカードが封印されている切札を、変更しようとした場合はエラー
-        let sealedCards = board.getSealedCards(card.id);
-        if(sealedCards.length >= 1){
-            utils.messageModal("他のカードが封印されているため、裏向きにできません。");
-            return;
-        }
-
         // 桜花結晶が乗っている切札を、変更しようとした場合はエラー
         let onCardTokens = board.getRegionSakuraTokens(card.side, 'on-card', card.id);
         if(onCardTokens.length >= 1){
