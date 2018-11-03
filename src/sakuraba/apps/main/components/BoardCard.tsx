@@ -55,6 +55,10 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
 
     // ボード上のカードをダブルクリックした場合の処理
     const onDoubleClickAtBoard = (element) => {
+        // 観戦者なら何もしない
+        if(state.side === 'watcher'){
+            return false;
+        };
         if(!state.board.mariganFlags[state.side]){
             utils.messageModal('決闘を開始するまでは、カードや桜花結晶の操作は行えません。');
             return false;
