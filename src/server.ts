@@ -51,7 +51,7 @@ app
     });
   })
   .get('/watch/:tableId', (req, res) => {
-    res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT})
+    res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION})
   })
 
   .post('/tables.create', (req, res) => {
