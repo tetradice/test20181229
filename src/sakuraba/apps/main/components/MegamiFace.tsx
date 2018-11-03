@@ -19,5 +19,5 @@ export const MegamiFace = (p: {megami: Megami, left: number, top: number}) => (s
     if(p.megami === 'yukihi' && state.board.umbrellaStatus[state.side] === 'opened'){
         imageName = 'yukihi_o_240x80.png';
     }
-    return <img style={styles} src={`http://inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/megami/face/${imageName}`} />;
+    return <img style={styles} src={`//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/megami/face/${imageName}`} />;
 }

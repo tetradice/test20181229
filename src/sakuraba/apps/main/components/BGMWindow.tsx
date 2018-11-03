@@ -53,8 +53,8 @@ export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: 
         };
 
         const bgmData = [
-            {key: 'sword_dance', title: '剣の舞', composer: 't.tam', siteTitle: 'フリーBGM DOVA-SYNDROME', url: 'https://dova-s.jp/bgm/play3721.html', bannerUrl: 'http://inazumaapps.info/furuyoni_simulator/deliv/banner/dova-syndrome.gif'}
-          , {key: 'elemental_dance', title: '精霊舞い', composer: '秋山裕和', siteTitle: 'フリー音楽素材 H/MIX GALLERY', url: 'http://www.hmix.net/music_gallery/image/buttle.htm', bannerUrl: 'http://inazumaapps.info/furuyoni_simulator/deliv/banner/hmix3.gif'}
+            {key: 'sword_dance', title: '剣の舞', composer: 't.tam', siteTitle: 'フリーBGM DOVA-SYNDROME', url: 'https://dova-s.jp/bgm/play3721.html', bannerUrl: '//inazumaapps.info/furuyoni_simulator/deliv/banner/dova-syndrome.gif'}
+          , {key: 'elemental_dance', title: '精霊舞い', composer: '秋山裕和', siteTitle: 'フリー音楽素材 H/MIX GALLERY', url: 'http://www.hmix.net/music_gallery/image/buttle.htm', bannerUrl: '//inazumaapps.info/furuyoni_simulator/deliv/banner/hmix3.gif'}
         ];
         const onChange = (e: Event) => {
             let bgm = document.getElementById('BGM') as HTMLAudioElement;
@@ -67,7 +67,7 @@ export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: 
 
             if(bgmItem){
                 // 新しいBGMを再生
-                bgm.src = `http://inazumaapps.info/furuyoni_simulator/deliv/bgm/${bgmItem.key}.mp3`;
+                bgm.src = `//inazumaapps.info/furuyoni_simulator/deliv/bgm/${bgmItem.key}.mp3`;
                 bgm.loop = true;
                 bgm.play();
 
