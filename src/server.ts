@@ -28,7 +28,7 @@ if(process.env.ENVIRONMENT === 'development'){
 }
 
 app
-  .set('views', __dirname + '/../view/')
+  .set('views', __dirname + '/../views/')
   .set('view engine', 'ejs')
   .use(bodyParser.json())
   .use(express.static('public'))
