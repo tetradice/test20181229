@@ -459,14 +459,28 @@ $(function(){
                     let linkedCardData = CARD_DATA[linkedCard.cardId];
                     items = {};
 
-                    items['close'] = {
-                        name: `[${cardData.name}]を相手の捨て札にする`, callback: () => {
-                            appActions.operate({
-                                log: `[${linkedCardData.name}]の下に封印されていた[${cardData.name}]を、相手の捨て札にしました`,
-                                proc: () => {
-                                    appActions.moveCard({from: id, to: [utils.flipSide(playerSide), 'used', null]});
-                                }
-                            });
+                    if(card.ownerSide === playerSide){
+                        items['sendToSelf'] = {
+                            name: `[${cardData.name}]を自分の捨て札にする`, callback: () => {
+                                appActions.operate({
+                                    log: `[${linkedCardData.name}]の下に封印されていた[${cardData.name}]を、捨て札にしました`,
+                                    proc: () => {
+                                        appActions.moveCard({from: id, to: [playerSide, 'used', null]});
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    if(card.ownerSide === utils.flipSide(playerSide)){
+                        items['sendToOpponent'] = {
+                            name: `[${cardData.name}]を相手の捨て札にする`, callback: () => {
+                                appActions.operate({
+                                    log: `[${linkedCardData.name}]の下に封印されていた[${cardData.name}]を、相手の捨て札にしました`,
+                                    proc: () => {
+                                        appActions.moveCard({from: id, to: [utils.flipSide(playerSide), 'used', null]});
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -852,7 +866,7 @@ $(function(){
                 if(object.type === 'card'){
                     // 封印されたカードのドラッグ移動はできない
                     if(object.region === 'on-card'){
-                        utils.messageModal('封印されたカードを移動することはできません。<br>右クリックより「相手の捨て札に送る」を選択してください。');
+                        utils.messageModal('封印されたカードを移動することはできません。<br>右クリックより捨て札に送ってください。');
                         return false;
                     }
 
