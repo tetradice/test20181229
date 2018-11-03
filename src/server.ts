@@ -28,14 +28,14 @@ if(process.env.ENVIRONMENT === 'development'){
 }
 
 app
-  .set('views', __dirname + '/../')
+  .set('views', __dirname + '/../view/')
   .set('view engine', 'ejs')
   .use(bodyParser.json())
   .use(express.static('public'))
   .use(express.static('node_modules'))
   .get('/dist/main.js', (req, res) => res.sendFile(MAIN_JS) )
   .get('/dist/main.js.map', (req, res) => res.sendFile(MAIN_JS_MAP) )
-  .get('/', (req, res) => res.sendFile(INDEX) )
+  .get('/', (req, res) => res.render('index', {environment: process.env.ENVIRONMENT}) )
 
   .get('/play/:key', (req, res) => {
     // キーに対応する情報の取得を試みる
