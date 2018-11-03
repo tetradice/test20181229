@@ -1123,7 +1123,7 @@ $(function(){
                             return false;
                         } else {
                             // ログ内容を決定
-                            let sidePrefix = (currentState.side !== sakuraToken.ownerSide ? '相手の' : '')
+                            let sidePrefix = (sakuraToken.ownerSide && currentState.side !== sakuraToken.ownerSide ? '相手の' : '')
                             let tokenName = (sakuraToken.artificial ? '造花結晶' : '桜花結晶');
                             let logText = `${sidePrefix}${tokenName}を${dragInfo.sakuraTokenMoveCount}つ移動しました：${fromRegionTitle} → ${toRegionTitle}`
 
