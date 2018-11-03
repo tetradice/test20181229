@@ -454,6 +454,11 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         return true;
     });
 
+    let selfSideMagemi1FaceLeft = (state.board.firstDrawFlags[selfSide] ?  10 : (10 + 820 - 480));
+    let selfSideMagemi2FaceLeft = (state.board.firstDrawFlags[selfSide] ?  (hasMachineTarot[selfSide] ? 40 : 240) : (10 + 820 - 480));
+    let opponentSideMagemi1FaceLeft = (state.board.firstDrawFlags[opponentSide] ? 720 : (380 + 820 - 480));
+    let opponentSideMagemi2FaceLeft = (state.board.firstDrawFlags[opponentSide] ? (hasMachineTarot[opponentSide] ? 690 : 490) : (380 + 820 - 480));
+
     return (
         <div id="BOARD-PLAYAREA" style={{width: `${BOARD_BASE_WIDTH * state.zoom}px`}}>
             {objectNodes}
@@ -475,10 +480,10 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.MainProcessButtons left={mainProcessButtonLeft} />
             {readyObjects}
             {state.side !== 'watcher' && hasMachineTarot[selfSide] ? <components.MachineButtons side={selfSide} left={1010} top={720}></components.MachineButtons> : null}
-            {state.board.megamis[selfSide] && state.board.megamiOpenFlags[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][0]} left={10} top={430} /> : null}
-            {state.board.megamis[selfSide] && state.board.megamiOpenFlags[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][1]} left={(hasMachineTarot[selfSide] ? 40 : 240)} top={600} /> : null}
-            {state.board.megamis[opponentSide] && state.board.megamiOpenFlags[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][0]} left={720} top={200} /> : null}
-            {state.board.megamis[opponentSide] && state.board.megamiOpenFlags[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][1]} left={(hasMachineTarot[opponentSide] ? 690 : 490)} top={30} /> : null}
+            {state.board.megamis[selfSide] && state.board.megamiOpenFlags[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][0]} left={selfSideMagemi1FaceLeft} top={430} /> : null}
+            {state.board.megamis[selfSide] && state.board.megamiOpenFlags[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][1]} left={selfSideMagemi2FaceLeft} top={600} /> : null}
+            {state.board.megamis[opponentSide] && state.board.megamiOpenFlags[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][0]} left={opponentSideMagemi1FaceLeft} top={200} /> : null}
+            {state.board.megamis[opponentSide] && state.board.megamiOpenFlags[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][1]} left={opponentSideMagemi2FaceLeft} top={30} /> : null}
         </div>
     );
 }
