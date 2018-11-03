@@ -47,8 +47,10 @@ export interface BoardHistoryItem {
 }
 
 /** 設定 */
+export type LanguageSetting = 'ja' | 'en';
 export interface Setting {
     megamiFaceViewMode: 'background1' | 'none';
+    language: LanguageSetting;
 }
 
 /** 卓情報 */
