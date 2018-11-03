@@ -256,17 +256,17 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
     , '12-raira-o-s-3-ex3': {megami: 'raira', name: '風魔天狗道', ruby: 'ふうまてんぐどう', extra: true, baseType: 'special', types: ['action', 'reaction'], cost: '4', text: 'ダスト⇔間合：5 \nあなたはこの効果で本来より少ない個数の桜花結晶を動かしてもよい。その後、このカードを取り除く。', removable: true}
 
     , '12-utsuro-o-n-1': {megami: 'utsuro', name: '円月', ruby: 'えんげつ', baseType: 'normal', types: ['attack'], range: '6-7', damage: '2/2', text: '【常時】灰塵-ダストが12以上ならば、この《攻撃》のオーラへのダメージは「-」になる。'}
-    , '12-utsuro-o-n-2': {megami: 'utsuro', name: '黒き波動', ruby: 'くろきはどう', baseType: 'normal', types: ['attack'], range: '4-7', damage: '1/2', text: '【攻撃後】相手が<オーラ>へのダメージを選んだならば、相手の手札を見てその中から1枚を選び、それを捨て札にする。'}
-    , '12-utsuro-o-n-3': {megami: 'utsuro', name: '刈取り', ruby: 'かりとり', baseType: 'normal', types: ['attack'], range: '4', damage: '-/0', text: '【攻撃後】相手は相手の<オーラ>、<フレア>、<ライフ>のいずれかから桜花結晶を合計2つ<ダスト>へ移動させる。 \n【攻撃後】相手の付与札を1枚選んでもよい。そうした場合、その付与札の上から桜花結晶を2つ<ダスト>へ送る。'}
-    , '12-utsuro-o-n-4': {megami: 'utsuro', name: '重圧', ruby: 'じゅうあつ', baseType: 'normal', types: ['action'], text: '相手は相手の<オーラ>、<フレア>、<ライフ>のいずれかから桜花結晶を1つ<ダスト>へ移動させる。 \n灰塵-ダストが12以上ならば、相手を畏縮させる。'}
-    , '12-utsuro-o-n-5': {megami: 'utsuro', name: '影の翅', ruby: 'かげのはね', baseType: 'normal', types: ['action'], text: 'このターン中、現在の<間合>は2増加し、達人の間合は2大きくなる。'}
+    , '12-utsuro-o-n-2': {megami: 'utsuro', name: '黒き波動', ruby: 'くろきはどう', baseType: 'normal', types: ['attack'], range: '4-7', damage: '1/2', text: '【攻撃後】相手がオーラへのダメージを選んだならば、相手の手札を見てその中から1枚を選び、それを捨て札にする。'}
+    , '12-utsuro-o-n-3': {megami: 'utsuro', name: '刈取り', ruby: 'かりとり', baseType: 'normal', types: ['attack'], range: '4', damage: '-/0', text: '【攻撃後】相手は相手のオーラ、フレア、ライフのいずれかから桜花結晶を合計2つダストへ移動させる。 \n【攻撃後】相手の付与札を1枚選んでもよい。そうした場合、その付与札の上から桜花結晶を2つダストへ送る。'}
+    , '12-utsuro-o-n-4': {megami: 'utsuro', name: '重圧', ruby: 'じゅうあつ', baseType: 'normal', types: ['action'], text: '相手は相手のオーラ、フレア、ライフのいずれかから桜花結晶を1つダストへ移動させる。 \n灰塵-ダストが12以上ならば、相手を畏縮させる。'}
+    , '12-utsuro-o-n-5': {megami: 'utsuro', name: '影の翅', ruby: 'かげのはね', baseType: 'normal', types: ['action'], text: 'このターン中、現在の間合は2増加し、達人の間合は2大きくなる。'}
     , '12-utsuro-o-n-6': {megami: 'utsuro', name: '影の壁', ruby: 'かげのかべ', baseType: 'normal', types: ['action', 'reaction'], text: '対応した《攻撃》は+0/-1となる。'}
-    , '12-utsuro-o-n-7': {megami: 'utsuro', name: '遺灰呪', ruby: 'いかいじゅ', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '2', text: '【展開時】相オーラ→ダスト：3 \n【破棄時】灰塵-<ダスト>が12以上ならば以下を行う。 \nダスト→相オーラ：2、相ライフ→ダスト：1'}
+    , '12-utsuro-o-n-7': {megami: 'utsuro', name: '遺灰呪', ruby: 'いかいじゅ', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '2', text: '【展開時】相オーラ→ダスト：3 \n【破棄時】灰塵-ダストが12以上ならば以下を行う。 \nダスト→相オーラ：2、相ライフ→ダスト：1'}
     , '12-utsuro-o-s-1': {megami: 'utsuro', name: '灰滅', ruby: 'ヴィミラニエ', baseType: 'special', types: ['action'], cost: '24', text: '【常時】このカードの消費はダストの数だけ少なくなる。 \n相ライフ→ダスト：3 \nこのカードを取り除く。', removable: true}
     , '12-utsuro-o-s-2': {megami: 'utsuro', name: '虚偽', ruby: 'ローシェ', baseType: 'special', types: ['enhance', 'reaction'], capacity: '3', cost: '3', text: '【展開中】相手の《攻撃》は距離縮小(近1)を得て、【攻撃後】効果が解決されない。 \n【展開中】相手の《付与》カードは納が1減少し、【破棄時】効果が解決されない。'}
     , '12-utsuro-o-s-3': {megami: 'utsuro', name: '終末', ruby: 'カニェッツ', baseType: 'special', types: ['enhance'], capacity: '3', cost: '2', text: '【展開中】あなたに1以上のダメージを与えた《攻撃》の解決後に、このカードの上の桜花結晶を全てをダストに送る。 \n【破棄時】現在のフェイズを終了する。 \n----\n【再起】灰塵-ダストが12以上である。'}
     , '12-utsuro-o-s-4': {megami: 'utsuro', name: '魔食', ruby: 'エロージャ', baseType: 'special', types: ['action'], cost: '5', text: '【使用済】あなたの開始フェイズの開始時に相手は以下のどちらかを選ぶ。\n・相オーラ→ダスト：1\n・相フレア→ダスト：2'}
-           
+                       
 };
 
 
