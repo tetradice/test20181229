@@ -16,6 +16,7 @@ export const SakuraToken = (p: {
     let draggable = true;
     return <div 
       class={`sakura-token${p.target.artificial ? (p.target.ownerSide === 'p1' ? ' artificial p1' : ' artificial p2') : ''}`}
+      draggable={draggable}
       data-object-id={p.target.id}
       data-side={p.target.side || 'none'}
       data-region={p.target.region}

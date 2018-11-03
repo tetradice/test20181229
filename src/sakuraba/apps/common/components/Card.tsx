@@ -92,51 +92,6 @@ export const Card = (p: Param) => {
   const oncreate = (element) => {
       //if(state.draggingFromCard !== null) return;
       setPopup(element);
-      
-      let $ghost: JQuery<EventTarget> = null;
-      let cPep = null;
-
-      $(element).pep({
-          initiate: function(e: Event, pep) {
-          }
-        , start: function(e: Event, pep) {
-            let $target = $(e.target);
-            $ghost = $target.clone();
-            $ghost.css('opacity', 0.6);
-            $ghost.appendTo(window.document.body);
-
-            cPep = pep;
-            $ghost.offset({left: pep.ev.x - $ghost.width() / 2, top: pep.ev.y - $ghost.height() / 2})
-          }
-        , moveTo: function(x, y){
-            $ghost.css({
-                left: x,
-                top: y
-            });
-          }
-        , stop: function(e: Event, pep){
-            $ghost.remove();
-            $ghost = null;
-
-            $('.ui.segment').removeClass('over');
-          }
-        , shouldEase: false
-        , place: false
-        , deferPlacement: true
-        , velocityMultiplier: 0
-        , droppable: '.ui.segment'
-        , droppableActiveClass: 'over'
-        , overlapFunction: function($region: JQuery<HTMLElement>, $dragging){
-            //var rect1 = $region[0].getBoundingClientRect();
-            let offset = $region.offset();
-            
-            return (  cPep.ev.x   >= offset.left  && 
-                      cPep.ev.x   <= offset.left + $region.width() && 
-                      cPep.ev.y   >= offset.top   && 
-                      cPep.ev.y   <= offset.top + $region.height()  );
-          }
-        , revert: true
-      });
   }
   const onupdate = (element) => {
       //if(state.draggingFromCard !== null) return;
@@ -160,6 +115,7 @@ export const Card = (p: Param) => {
           class={className}
           id={'board-object-' + p.target.id}
           style={styles}
+          draggable={p.draggable}
           data-object-id={p.target.id}
           data-side={p.target.side}
           data-region={p.target.region}
