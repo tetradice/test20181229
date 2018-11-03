@@ -11,7 +11,7 @@
     "build:client": "webpack --config webpack.config.client.ts",
     "build:server": "webpack --config webpack.config.server.ts",
     "herokubuild": "npm run build:client && npm run herokubuild:copy",
-    "herokubuild:copy": "cpx -v \"dist/*\" herokudist/dist && cpx -v \"*.ejs\" herokudist && cpx -v package.json herokudist && cpx -v yarn.lock herokudist && cpx -v Procfile herokudist && cpx -v index.html herokudist"
+    "herokubuild:copy": "cpx -v \"dist/*\" herokudist/dist && cpx -v \"views/*.ejs\" herokudist/views && cpx -v package.json herokudist && cpx -v yarn.lock herokudist && cpx -v Procfile herokudist && cpx -v index.html herokudist"
   },
   "keywords": [],
   "author": "",
