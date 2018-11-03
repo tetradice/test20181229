@@ -76,6 +76,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             let distanceNormalTokens = boardModel.getDistanceSakuraTokens('normal');
             let dustCount = boardModel.getRegionSakuraTokens(null, 'dust', null).length;
             let myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
+            let onCardTokenFound = (state.board.objects.find(o => o.type === 'sakura-token' && o.region === 'on-card') ? true : false);
             let side = state.side;
 
             let innerCommandButtons = (
@@ -115,9 +116,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 </div>
                 <br />
                 <button
-                    class={`ui basic button`}
+                    id="ALL-ENHANCE-DECREASE-BUTTON"
+                    class={`ui basic button ${onCardTokenFound ? '' : 'disabled'}`}
                     style="margin-top: 5px;"
-                    onclick={() => actions.toggleTurnProcessVisible()}>ターン進行処理</button>
+                    onclick={() => actions.oprRemoveSakuraTokenfromAllEnhanceCard()}>全付与札の桜花結晶-1</button>
                 </div>
             );
             // 決闘開始操作を行っていなければ、コマンドボタンはまだ表示しない

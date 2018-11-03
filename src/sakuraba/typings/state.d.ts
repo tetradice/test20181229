@@ -28,7 +28,6 @@ export interface State {
     chatLog: LogRecord[];
 
     actionLogVisible: boolean;
-    turnProcessVisible: boolean;
     helpVisible: boolean;
     settingVisible: boolean;
     bgmPlaying: boolean;

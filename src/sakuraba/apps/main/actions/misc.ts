@@ -9,9 +9,6 @@ export default {
         return {viewingSide: p.value, handViewableFromCurrentWatcher: p.handViewable} as Partial<state.State>;
     },
 
-    toggleTurnProcessVisible: () => (state: state.State) => {
-        return {turnProcessVisible: !state.turnProcessVisible} as Partial<state.State>;
-    },
     toggleHelpVisible: () => (state: state.State) => {
         return {helpVisible: !state.helpVisible} as Partial<state.State>;
     },
