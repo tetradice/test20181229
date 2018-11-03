@@ -10,6 +10,7 @@ import { ServerSocket } from 'sakuraba/socket';
 import * as utils from 'sakuraba/utils';
 import nodemailer from 'nodemailer';
 import bodyParser from 'body-parser';
+import { VERSION } from 'sakuraba/const';
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
@@ -35,14 +36,14 @@ app
   .use(express.static('node_modules'))
   .get('/dist/main.js', (req, res) => res.sendFile(MAIN_JS) )
   .get('/dist/main.js.map', (req, res) => res.sendFile(MAIN_JS_MAP) )
-  .get('/', (req, res) => res.render('index', {environment: process.env.ENVIRONMENT}) )
+  .get('/', (req, res) => res.render('index', {environment: process.env.ENVIRONMENT, version: VERSION}) )
 
   .get('/play/:key', (req, res) => {
     // キーに対応する情報の取得を試みる
     RedisClient.HGET(`sakuraba:player-key-map`, req.params.key, (err, dataJson) => {
       if(dataJson !== null){
         let data = JSON.parse(dataJson);
-        res.render('board', {tableId: data.tableId, side: data.side, environment: process.env.ENVIRONMENT})
+        res.render('board', {tableId: data.tableId, side: data.side, environment: process.env.ENVIRONMENT, version: VERSION})
       } else {
         res.status(404);
         res.end('NotFound : ' + req.path);

@@ -1,5 +1,7 @@
 export const BOARD_BASE_WIDTH = 1350;
 
+export const VERSION = '0.3.3';
+
 export namespace ZIndex {
     export const CONTEXT_MENU_VISIBLE = 9999;
     export const CONTEXT_MENU_VISIBLE_RIGHT_CLICK = 99999;
