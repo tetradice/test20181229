@@ -77,8 +77,9 @@ $(function(){
             // 移動ログを決定
             let logs: { text: string, visibility?: LogVisibility }[] = [];
             let cardName = CARD_DATA[card.cardId].name;
-            let fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region);
-            let toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion);
+            let boardModel = new models.Board(currentState.board);
+            let fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region, (card.linkedCardId ? boardModel.getCard(card.linkedCardId) : null));
+            let toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion, (toLinkedCardId ? boardModel.getCard(toLinkedCardId) : null));
 
             // 移動元での公開状態と、移動先での公開状態を判定
             let oldOpenState = card.openState;

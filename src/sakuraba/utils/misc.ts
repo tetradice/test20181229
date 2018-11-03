@@ -116,7 +116,7 @@ export function getDescriptionHtml(cardId: string): string{
 }
 
 /** カードのリージョン名を取得 */
-export function getCardRegionTitle(selfSide: PlayerSide, side: PlayerSide, region: CardRegion){
+export function getCardRegionTitle(selfSide: PlayerSide, side: PlayerSide, region: CardRegion, linkedCard: state.Card){
     let titleBase = ``;
     if(region === 'hand'){
         titleBase = "手札";
@@ -136,7 +136,11 @@ export function getCardRegionTitle(selfSide: PlayerSide, side: PlayerSide, regio
     if(region === 'extra'){
         titleBase = "追加札";
     }
-    
+    if(region === 'on-card'){
+        let cardData = sakuraba.CARD_DATA[linkedCard.cardId];
+        titleBase = `[${cardData.name}]の下`;
+    }
+
     // 相手側に移動した場合は、「相手の」をつける
     if(selfSide !== side){
         return `相手の${titleBase}`
