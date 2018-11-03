@@ -19,12 +19,13 @@ export const SAKURA_TOKEN_MAX: {[P in SakuraTokenRegion]: number} = {
 // メガミ情報
 export interface MegamiDataItem {
     name: string;
+    nameEn?: string;
     symbol: string;
     base?: string;
     anotherID?: string;
 }
 const MEGAMI_DATA_BASE = {
-      'yurina':   {name: 'ユリナ', symbol: '刀'}
+      'yurina':   {name: 'ユリナ', nameEn: 'Yurina', symbol: '刀'}
     , 'yurina-a1': {name: '第一章ユリナ', symbol: '古刀', base: 'yurina', anotherID: 'A1'}
     , 'saine':    {name: 'サイネ', symbol: '薙刀'}
     , 'saine-a1':  {name: '第二章サイネ', symbol: '琵琶', base: 'saine', anotherID: 'A1'}
@@ -49,6 +50,7 @@ export const MEGAMI_DATA: {[megami: string]: MegamiDataItem} = MEGAMI_DATA_BASE;
 interface CardDataItemBase {
     megami: Megami;
     name: string;
+    nameEn?: string;
     anotherID?: string;
     replace?: string;
     ruby?: string;
@@ -59,6 +61,7 @@ interface CardDataItemBase {
     damageOpened?: string;
     capacity?: string;
     text: string;
+    textEn?: string;
     textOpened?: string;
 
     /** 他のカードを封印可能 */
@@ -89,21 +92,21 @@ export interface TransformCardDataItem extends CardDataItemBase {
 export type CardDataItem = NormalCardDataItem | SpecialCardDataItem | TransformCardDataItem;
 
 export const CARD_DATA: {[key: string]: CardDataItem} = {
-      '01-yurina-o-n-1': {megami: 'yurina', name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: '3-4', damage: '3/1', text: ''}
-    , '01-yurina-A1-n-1': {megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-n-1', name: '乱打', ruby: 'らんだ', baseType: 'normal', types: ['attack'], range: '2', damage: '2/1', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+0/+2となり、対応不可を得る。'}
-    , '01-yurina-o-n-2': {megami: 'yurina', name: '一閃', ruby: 'いっせん', baseType: 'normal', types: ['attack'], range: '3', damage: '2/2', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+1/+0となる。'}
-    , '01-yurina-o-n-3': {megami: 'yurina', name: '柄打ち', ruby: 'つかうち', baseType: 'normal', types: ['attack'], range: '1-2', damage: '2/1', text: '【攻撃後】決死-あなたのライフが3以下ならば、このターンにあなたが次に行う《攻撃》は+1/+0となる。'}
-    , '01-yurina-o-n-4': {megami: 'yurina', name: '居合', ruby: 'いあい', baseType: 'normal', types: ['attack', 'fullpower'], range: '2-4', damage: '4/3', text: '【常時】現在の間合が2以下ならば、この攻撃は-1/-1となる。'}
-    , '01-yurina-o-n-5': {megami: 'yurina', name: '足捌き', ruby: 'あしさばき', baseType: 'normal', types: ['action'], text: '現在の間合が4以上ならば、間合→ダスト：2\n現在の間合が1以下ならば、ダスト→間合：2'}
-    , '01-yurina-o-n-6': {megami: 'yurina', name: '圧気', ruby: 'あっき', baseType: 'normal', types: ['enhance'], capacity: '2', text: '隙\n【破棄時】攻撃『適正距離1-4、3/-』を行う。'}
-    , '01-yurina-A1-n-6': {megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-n-6', name: '癇癪玉', ruby: 'かんしゃくだま ', baseType: 'normal', types: ['enhance', 'reaction'], capacity: '１', text: '【破棄時】攻撃『適正距離0-4、1/-、対応不可、【攻撃後】相手を畏縮させる』を行う。'}
-    , '01-yurina-o-n-7': {megami: 'yurina', name: '気炎万丈', ruby: 'きえんばんじょう', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '4', text: '【展開中】決死-あなたのライフが3以下ならば、あなたの他のメガミによる《攻撃》は+1/+1となるとともに超克を得る。'}
-    , '01-yurina-o-s-1': {megami: 'yurina', name: '月影落', ruby: 'つきかげおとし', baseType: 'special', types: ['attack'], range: '3-4', damage: '4/4', cost: '7', text: ''}
-    , '01-yurina-o-s-2': {megami: 'yurina', name: '浦波嵐', ruby: 'うらなみあらし', baseType: 'special', types: ['attack', 'reaction'], range: '0-10', damage: '2/-', cost: '3', text: '【攻撃後】対応した《攻撃》は-2/+0となる。'}
-    , '01-yurina-A1-s-2': {megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-s-2', name: '不完全浦波嵐', ruby: 'ふかんぜんうらなみあらし', baseType: 'special', types: ['attack', 'reaction'], range: '0-10', damage: '3/-', cost: '5', text: '【攻撃後】対応した《攻撃》は-3/+0となる。'}
-    , '01-yurina-o-s-3': {megami: 'yurina', name: '浮舟宿', ruby: 'うきふねやどし', baseType: 'special', types: ['action'], cost: '2', text: 'ダスト→自オーラ：5 \n----\n【即再起】決死-あなたのライフが3以下になる。'}
-    , '01-yurina-o-s-4': {megami: 'yurina', name: '天音揺波の底力', ruby: 'あまねゆりなのそこぢから', baseType: 'special', types: ['attack', 'fullpower'], range: '1-4', damage: '5/5', cost: '5', text: '【常時】決死-あなたのライフが3以下でないと、このカードは使用できない。'}
-
+      '01-yurina-o-n-1': {megami: 'yurina', name: '斬', nameEn: 'Slash', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: '3-4', damage: '3/1', text: '', textEn: ''}
+    , '01-yurina-A1-n-1': {megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-n-1', name: '乱打', nameEn: 'Wild Swing', ruby: 'らんだ', baseType: 'normal', types: ['attack'], range: '2', damage: '2/1', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+0/+2となり、対応不可を得る。', textEn: 'Forced: Resolve - If your Life is 3 or less, this attack gains +0/+2 and No Reactions.'}
+    , '01-yurina-o-n-2': {megami: 'yurina', name: '一閃', nameEn: 'Brandish', ruby: 'いっせん', baseType: 'normal', types: ['attack'], range: '3', damage: '2/2', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+1/+0となる。', textEn: 'Forced: Resolve - This attack gains +1/+0 if your Life is 3 or less.'}
+    , '01-yurina-o-n-3': {megami: 'yurina', name: '柄打ち', nameEn: 'Hilt Strike', ruby: 'つかうち', baseType: 'normal', types: ['attack'], range: '1-2', damage: '2/1', text: '【攻撃後】決死-あなたのライフが3以下ならば、このターンにあなたが次に行う《攻撃》は+1/+0となる。', textEn: 'After Attack: Resolve - The next attack you make this turn gains +1/+0 if your Life is 3 or less.'}
+    , '01-yurina-o-n-4': {megami: 'yurina', name: '居合', nameEn: 'Art of Drawing', ruby: 'いあい', baseType: 'normal', types: ['attack', 'fullpower'], range: '2-4', damage: '4/3', text: '【常時】現在の間合が2以下ならば、この攻撃は-1/-1となる。', textEn: 'Forced: If the current Distance is 2 or less, this attack gets -1/-1.'}
+    , '01-yurina-o-n-5': {megami: 'yurina', name: '足捌き', nameEn: 'Footwork', ruby: 'あしさばき', baseType: 'normal', types: ['action'], text: '現在の間合が4以上ならば、間合→ダスト：2\n現在の間合が1以下ならば、ダスト→間合：2', textEn: 'If the current Distance is 4 or more:\nDistance (2)→ Shadow\n\nIf the current Distance is 1 or less:\nShadow (2)→ Distance'}
+    , '01-yurina-o-n-6': {megami: 'yurina', name: '圧気', nameEn: 'Overawe', ruby: 'あっき', baseType: 'normal', types: ['enhance'], capacity: '2', text: '隙\n【破棄時】攻撃『適正距離1-4、3/-』を行う。', textEn: 'Unguarded\n\nDisenchant: You attack with "Range: 1-4, Damage: 3/-".'}
+    , '01-yurina-A1-n-6': {megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-n-6', name: '癇癪玉', nameEn: 'Outrage', ruby: 'かんしゃくだま ', baseType: 'normal', types: ['enhance', 'reaction'], capacity: '１', text: '【破棄時】攻撃『適正距離0-4、1/-、対応不可、【攻撃後】相手を畏縮させる』を行う。', textEn: 'Disenchant: You attack with "Range: 0-4, Damage: 1/-, No Reactions, After Attack: Flinch your opponent."'}
+    , '01-yurina-o-n-7': {megami: 'yurina', name: '気炎万丈', nameEn: 'Spirit of Fire', ruby: 'きえんばんじょう', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '4', text: '【展開中】決死-あなたのライフが3以下ならば、あなたの他のメガミによる《攻撃》は+1/+1となるとともに超克を得る。', textEn: 'Ongoing: Resolve - All your other Megami\'s attacks gain +1/+1 and Overwhelm if your Life is 3 or less.'}
+    , '01-yurina-o-s-1': {megami: 'yurina', name: '月影落', nameEn: 'Tsukikage Crush', ruby: 'つきかげおとし', baseType: 'special', types: ['attack'], range: '3-4', damage: '4/4', cost: '7', text: '', textEn: ''}
+    , '01-yurina-o-s-2': {megami: 'yurina', name: '浦波嵐', nameEn: 'Uranami Storm', ruby: 'うらなみあらし', baseType: 'special', types: ['attack', 'reaction'], range: '0-10', damage: '2/-', cost: '3', text: '【攻撃後】対応した《攻撃》は-2/+0となる。', textEn: 'After Attack: The attack this card was played as a Reaction to gets -2/+0.'}
+    , '01-yurina-A1-s-2': {megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-s-2', name: '不完全浦波嵐', nameEn: 'Imperfect Uranami Storm', ruby: 'ふかんぜんうらなみあらし', baseType: 'special', types: ['attack', 'reaction'], range: '0-10', damage: '3/-', cost: '5', text: '【攻撃後】対応した《攻撃》は-3/+0となる。', textEn: 'After Attack: The attack this card was played as a Reaction to gets -3/+0.'}
+    , '01-yurina-o-s-3': {megami: 'yurina', name: '浮舟宿', nameEn: 'Ukifune Serene', ruby: 'うきふねやどし', baseType: 'special', types: ['action'], cost: '2', text: 'ダスト→自オーラ：5 \n----\n【即再起】決死-あなたのライフが3以下になる。', textEn: 'Shadow (5)→ Your Aura\n----\nImmediate Resurgence: Resolve - Your Life becomes 3 or less (from 4 or more).'}
+    , '01-yurina-o-s-4': {megami: 'yurina', name: '天音揺波の底力', nameEn: 'Yurina\'s Final Blow', ruby: 'あまねゆりなのそこぢから', baseType: 'special', types: ['attack', 'fullpower'], range: '1-4', damage: '5/5', cost: '5', text: '【常時】決死-あなたのライフが3以下でないと、このカードは使用できない。', textEn: 'Forced: Resolve - You can\'t play this card unless your Life is 3 or less.'}
+            
     , '02-saine-o-n-1': {megami: 'saine', name: '八方振り', ruby: 'はっぽうぶり', baseType: 'normal', types: ['attack'], range: '4-5', damage: '2/1', text: '【攻撃後】八相-あなたのオーラが0ならば、攻撃『適正距離4-5、2/1』を行う。'}
     , '02-saine-o-n-2': {megami: 'saine', name: '薙斬り', ruby: 'なぎぎり', baseType: 'normal', types: ['attack', 'reaction'], range: '4-5', damage: '3/1', text: ''}
     , '02-saine-o-n-3': {megami: 'saine', name: '返し刃', ruby: 'かえしやいば', baseType: 'normal', types: ['attack', 'reaction'], range: '3-5', damage: '1/1', text: '【攻撃後】このカードを対応で使用したならば、攻撃『適正距離3-5、2/1、対応不可』を行う。'}
