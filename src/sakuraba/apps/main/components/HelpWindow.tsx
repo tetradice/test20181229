@@ -67,7 +67,7 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
 
         return (
             <div id="HELP-WINDOW"
-             style={{position: 'absolute', height: "23rem", width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
+             style={{position: 'absolute', width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}>
                 <div class="ui top attached label">操作説明<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleHelpVisible()}><i class="times icon"></i></a></div>
