@@ -8,6 +8,7 @@ import { CARD_DATA, SAKURA_TOKEN_MAX, CardDataItem, SpecialCardDataItem } from "
 import dragInfo from "sakuraba/dragInfo";
 import { BOARD_BASE_WIDTH, ZIndex } from "sakuraba/const";
 import * as randomstring from 'randomstring';
+import _ from "lodash";
 
 declare var params: {
     tableId: string;
@@ -368,6 +369,7 @@ $(function(){
                 // 観戦者は右クリックメニューを開けない
                 if(currentState.side === 'watcher') return false;
                 let playerSide = currentState.side;
+                let opponentSide = utils.flipSide(playerSide);
 
                 // 決闘を開始していなければ、メニューを開けない
                 if(!currentState.board.mariganFlags[playerSide]){
@@ -554,6 +556,33 @@ $(function(){
                         }
                     }
                 }
+
+                // 相手の手札で右クリック
+                if($elem.closest(`.area.background[data-side=${opponentSide}][data-region=hand], .fbs-card[data-side=${opponentSide}][data-region=hand]`).length >= 1){
+                    items = {};
+
+                    // 相手が決闘を開始している場合のみ実行可能
+                    if(currentState.board.mariganFlags[opponentSide]){
+                        let opponentHandCards = board.getRegionCards(opponentSide, 'hand', null);
+                        items['discard'] = {
+                            name: '手札1枚を無作為選んで捨て札にする'
+                            , disabled: opponentHandCards.length === 0
+                            , callback: () => {
+                                // ランダムにカードを選出
+                                let index = _.random(opponentHandCards.length - 1);
+                                let card = opponentHandCards[index];
+
+                                appActions.operate({
+                                    log: `相手の手札1枚を無作為に選び、捨て札にしました -> [${CARD_DATA[card.cardId].name}]`,
+                                    proc: () => {
+                                        appActions.moveCard({from: [opponentSide, 'hand', null], fromPosition: index, to: [opponentSide, 'used', null]});
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
                 // 自分の山札で右クリック
                 if($elem.is(`.area.background[data-region=library][data-side=${playerSide}], .fbs-card[data-region=library][data-side=${playerSide}]`)){
 

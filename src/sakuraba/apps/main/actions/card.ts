@@ -47,8 +47,8 @@ export default {
         to: [PlayerSide, CardRegion, string | null];
         /** 移動枚数 */
         moveNumber?: number;
-        /** カードをスタックの先頭から出すか末尾から出すか。オブジェクトID未指定時に適用。省略時は末尾 */
-        fromPosition?: 'first' | 'last';
+        /** カードをスタックの先頭から出すか末尾から出すか、もしくは指定インデックスのカードを出すか。オブジェクトID未指定時に適用。省略時は末尾 */
+        fromPosition?: 'first' | 'last' | number;
         /** カードをスタックの先頭に入れるか末尾に入れるか。省略時は末尾 */
         toPosition?: 'first' | 'last';
         /** カード名をアクションログに出力するか */
@@ -70,6 +70,8 @@ export default {
             let fromRegionCards = newBoard.getRegionCards(side, region, linkedCardId).sort((a, b) => a.indexOfRegion - b.indexOfRegion);
             if(p.fromPosition === 'first'){
                 fromCards = fromRegionCards.slice(0, num);
+            } else if(typeof p.fromPosition === 'number'){
+                fromCards = fromRegionCards.slice(p.fromPosition, p.fromPosition + num);
             } else {
                 fromCards = fromRegionCards.slice(num * -1);
             }
