@@ -428,16 +428,25 @@ $(function(){
                     // 条件を満たしていれば、帯電解除コマンドを追加
                     addDischargeCommand(items, card, true);
 
-                    // // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
-                    // if(CARD_DATA[card.cardId].removable){
-                    //     items['sep2'] = '---';
-                    //     items['remove'] =  {
-                    //         name: "ボード上から取り除く"
-                    //         , callback: function() {
-                    //         appActions.oprRemoveCard({objectId: id});
-                    //         }
-                    //     }
-                    // };
+                    // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
+                    if(CARD_DATA[card.cardId].removable){
+                        items['sep2'] = '---';
+                        items['remove'] =  {
+                            name: `[${CARD_DATA[card.cardId].name}]をゲームから取り除く`
+                            , callback: function() {
+                                // まだ相手が決闘を開始していなければ、この操作は禁止する
+                                // (決闘を開始する前にカードを取り除くと、更新がうまくいかずにエラーが多発する場合があるため。原因不明)
+                                if(!currentState.board.mariganFlags[utils.flipSide(playerSide)]){
+                                    utils.messageModal(`相手が決闘を開始するまでは、この操作を行うことはできません。`);
+                                    return;
+                                }
+
+                                utils.confirmModal(`ゲームから取り除いた後は、元に戻すことはできません。\nよろしいですか？`, () => {
+                                    appActions.oprRemoveCard({objectId: id});
+                                });
+                            }
+                        }
+                    };
                 }
 
                 
