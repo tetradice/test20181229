@@ -11,6 +11,7 @@ interface Param {
     top: number;
     clickableClass?: boolean;
     selected?: boolean;
+    selectedIndex?: number;
     onclick?: Function;
     ondblclick?: Function;
     opened: boolean;
@@ -127,6 +128,11 @@ export const Card = (p: Param) => {
           data-html={utils.getDescriptionHtml(p.target.cardId)}            
       >
           <div class="card-name">{(p.opened ? cardData.name : '')}</div>
+
+          {p.selectedIndex !== null && p.selectedIndex !== undefined ?
+          <div class="count" style={{position: 'absolute', width: `${20 * p.zoom}px`, height: `${32 * p.zoom}px`, top: '0', left: '0', bottom: '0', right: '0', margin: 'auto'}}>{p.selectedIndex + 1}</div>
+           : null}
+
           {p.opened ?
           <div>
             <div style={{position: 'absolute', top: (p.reversed ? `${24 * p.zoom}px` : null), bottom: (p.reversed ? null : `${24 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{typeCaptions}</div>

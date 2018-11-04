@@ -27,9 +27,10 @@ const view: View<State, ActionsType> = (state, actions) => {
         sCard.openState = 'opened';
         let top = 4;
         let left = 4 + c * (100 + 8);
-        let selected = state.selectedCards.indexOf(card) >= 0;
+        let selectedIndex = state.selectedCards.indexOf(card);
+        let selected = selectedIndex >= 0;
         
-        cardElements.push(<Card clickableClass target={card} opened descriptionViewable left={left} top={top} selected={selected} onclick={() => actions.selectCard(card)} zoom={state.zoom}></Card>);
+        cardElements.push(<Card clickableClass target={card} opened descriptionViewable left={left} top={top} selected={selected} selectedIndex={(selected ? selectedIndex : null)} onclick={() => actions.selectCard(card)} zoom={state.zoom}></Card>);
     });
 
     let selectedCount = state.selectedCards.filter(card => sakuraba.CARD_DATA[card.cardId].baseType === 'normal').length;
@@ -48,6 +49,9 @@ const view: View<State, ActionsType> = (state, actions) => {
                         <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
                             {cardElements}
                         </div>
+                    </div>
+                    <div class="description" style={{marginTop: '1em'}}>
+                        <p>※選択した順番でカードを底に置く順番が決まり、「1」と表示されているカードが一番上に置かれます。</p>
                     </div>
                 </div>
                 <div class="actions">
