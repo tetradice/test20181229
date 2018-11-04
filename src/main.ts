@@ -426,16 +426,18 @@ $(function(){
                     // 条件を満たしていれば、帯電解除コマンドを追加
                     addDischargeCommand(items, card, true);
 
-                    // // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
-                    // if(CARD_DATA[card.cardId].removable){
-                    //     items['sep2'] = '---';
-                    //     items['remove'] =  {
-                    //         name: "ボード上から取り除く"
-                    //         , callback: function() {
-                    //         appActions.oprRemoveCard({objectId: id});
-                    //         }
-                    //     }
-                    // };
+                    // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
+                    if(CARD_DATA[card.cardId].removable){
+                        items['sep2'] = '---';
+                        items['remove'] =  {
+                            name: `[${CARD_DATA[card.cardId].name}]をゲームから取り除く`
+                            , callback: function() {
+                                utils.confirmModal(`ゲームから取り除いた後は、元に戻すことはできません。\nよろしいですか？`, () => {
+                                    appActions.oprRemoveCard({objectId: id});
+                                });
+                            }
+                        }
+                    };
                 }
 
                 
