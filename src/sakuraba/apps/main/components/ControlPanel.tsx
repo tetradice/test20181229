@@ -256,6 +256,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     ミニゲーム: ふるよにミニクイズ
                 </div>
                 <div class="divider"></div>
+                <div class="item" onclick={() => location.href = "/"}>
+                    卓から離れる (トップページへ戻る)
+                </div>
+                <div class="divider"></div>
                 <div class="item" onclick={aboutThisService} style={{lineHeight: '1.5'}}>ふるよにボードシミュレーターについて <br />(バージョン、著作権情報、連絡先)</div>
             </div>
         </button>
