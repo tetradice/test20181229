@@ -5,14 +5,18 @@ export class CardData {
     /** 対象のカードID */
     cardId: string;
 
+    /** 言語 */
+    language: state.LanguageSetting;
+
     /** 複製元のカードID */
     duplicatingCardId: string | null = null;
 
     /** 傘が開いている場合の情報を使用するかどうか */
     usedOpenedCardData: boolean = false;
 
-    constructor(cardId: string, duplicatingCardId?: string){
+    constructor(cardId: string, language: state.LanguageSetting, duplicatingCardId?: string){
         this.cardId = cardId;
+        this.language = language;
         if(duplicatingCardId){
             this.duplicatingCardId = duplicatingCardId;
         }
@@ -25,11 +29,11 @@ export class CardData {
     }
     /** カード名 */
     get name(): CardDataItem['name'] {
-        return CARD_DATA[this.cardId].name;
+        return (this.language === 'en' ? CARD_DATA[this.cardId].nameEn : CARD_DATA[this.cardId].name);
     }
     /** 読み仮名 */
     get ruby(): CardDataItem['ruby'] {
-        return CARD_DATA[this.cardId].ruby;
+        return (this.language === 'en' ? '' : CARD_DATA[this.cardId].ruby);
     }
     /** 分類 (通常/切札/Transform) */
     get baseType(): CardDataItem['baseType'] {
@@ -46,14 +50,25 @@ export class CardData {
         return data.cost;
     }
 
+    /** 適正距離 (現在の傘の状態に依存する) */
+    get currentRange(): CardDataItem['range'] {
+        if(this.usedOpenedCardData){
+            return this.rangeOpened;
+        } else {
+            return this.range;
+        }
+    }
+
     /** 適正距離 */
     get range(): CardDataItem['range'] {
         let data = (this.duplicatingCardId ? CARD_DATA[this.duplicatingCardId] : CARD_DATA[this.cardId]);
-        if(this.usedOpenedCardData){
-            return data.rangeOpened;
-        } else {
-            return data.range;
-        }
+        return data.range;
+    }
+
+    /** 適正距離（傘を開いている場合） */
+    get rangeOpened(): CardDataItem['rangeOpened'] {
+        let data = (this.duplicatingCardId ? CARD_DATA[this.duplicatingCardId] : CARD_DATA[this.cardId]);
+        return data.rangeOpened;
     }
 
     /** 納 */
@@ -62,14 +77,25 @@ export class CardData {
         return data.capacity;
     }
 
+    /** ダメージ (現在の傘の状態に依存する)  */
+    get currentDamage(): CardDataItem['damage'] {
+        if(this.usedOpenedCardData){
+            return this.damageOpened;
+        } else {
+            return this.damage;
+        }
+    }
+
     /** ダメージ */
     get damage(): CardDataItem['damage'] {
         let data = (this.duplicatingCardId ? CARD_DATA[this.duplicatingCardId] : CARD_DATA[this.cardId]);
-        if(this.usedOpenedCardData){
-            return data.damageOpened;
-        } else {
-            return data.damage;
-        }
+        return data.damage;
+    }
+
+    /** ダメージ（傘を開いている場合） */
+    get damageOpened(): CardDataItem['damageOpened'] {
+        let data = (this.duplicatingCardId ? CARD_DATA[this.duplicatingCardId] : CARD_DATA[this.cardId]);
+        return data.damageOpened;
     }
 
     /** 毒フラグ */
@@ -79,6 +105,11 @@ export class CardData {
 
     /** 説明テキスト */
     get text(): CardDataItem['text'] {
-        return CARD_DATA[this.cardId].text;
+        return (this.language === 'en' ? CARD_DATA[this.cardId].textEn : CARD_DATA[this.cardId].text);
+    }
+
+    /** 説明テキスト */
+    get textOpened(): CardDataItem['textOpened'] {
+        return (this.language === 'en' ? CARD_DATA[this.cardId].textOpenedEn : CARD_DATA[this.cardId].textOpened);
     }
 }

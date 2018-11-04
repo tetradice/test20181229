@@ -1,4 +1,5 @@
 import * as sakuraba from "sakuraba";
+import * as models from "sakuraba/models";
 
 /** プレイヤーサイドを逆にする */
 export function flipSide(side: PlayerSide): PlayerSide{
@@ -49,49 +50,51 @@ export function judgeCardOpenState(
 }
 
 /** カードの説明用ポップアップHTMLを取得する */
-export function getDescriptionHtml(cardId: string): string{
-  let cardData = sakuraba.CARD_DATA[cardId];
+export function getDescriptionHtml(cardData: models.CardData): string{
   let cardTitleHtml = `<ruby><rb>${cardData.name}</rb><rp>(</rp><rt>${cardData.ruby}</rt><rp>)</rp></ruby>`
   let html = `<div class='ui header' style='margin-right: 2em;'>${cardTitleHtml}`
 
   html += `</div><div class='ui content'>`
   if(cardData.baseType === 'special'){
-    html += `<div class='ui top right attached label'>消費: ${cardData.cost}</div>`;
+    html += `<div class='ui top right attached label'>${cardData.language === 'en' ? 'Cost' : '消費'}: ${cardData.cost}</div>`;
   }
 
+  let closedSymbol = (cardData.language === 'en' ? '[C]' : '[閉]');
+  let openedSymbol = (cardData.language === 'en' ? '[O]' : '[開]');
+
   let typeCaptions = [];
-  if(cardData.types.indexOf('attack') >= 0) typeCaptions.push("<span class='card-type-attack'>攻撃</span>");
-  if(cardData.types.indexOf('action') >= 0) typeCaptions.push("<span class='card-type-action'>行動</span>");
-  if(cardData.types.indexOf('enhance') >= 0) typeCaptions.push("<span class='card-type-enhance'>付与</span>");
-  if(cardData.types.indexOf('variable') >= 0) typeCaptions.push("<span class='card-type-variable'>不定</span>");
-  if(cardData.types.indexOf('reaction') >= 0) typeCaptions.push("<span class='card-type-reaction'>対応</span>");
-  if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push("<span class='card-type-fullpower'>全力</span>");
-  if(cardData.types.indexOf('transform') >= 0) typeCaptions.push("<span class='card-type-transform'>Transform</span>");
+  if(cardData.types.indexOf('attack') >= 0) typeCaptions.push(`<span class='card-type-attack'>${cardData.language === 'en' ? 'ATK' : '攻撃'}</span>`);
+  if(cardData.types.indexOf('action') >= 0) typeCaptions.push(`<span class='card-type-action'>${cardData.language === 'en' ? 'ACT' : '行動'}</span>`);
+  if(cardData.types.indexOf('enhance') >= 0) typeCaptions.push(`<span class='card-type-enhance'>${cardData.language === 'en' ? 'ENH' : '付与'}</span>`);
+  if(cardData.types.indexOf('variable') >= 0) typeCaptions.push(`<span class='card-type-variable'>${cardData.language === 'en' ? '?' : '不定'}</span>`);
+  if(cardData.types.indexOf('reaction') >= 0) typeCaptions.push(`<span class='card-type-reaction'>${cardData.language === 'en' ? 'REA' : '対応'}</span>`);
+  if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push(`<span class='card-type-fullpower'>${cardData.language === 'en' ? 'THR' : '全力'}</span>`);
+  if(cardData.types.indexOf('transform') >= 0) typeCaptions.push(`<span class='card-type-transform'>Transform</span>`);
   html += `${typeCaptions.join('/')}`;
   if(cardData.range !== undefined){
       if(cardData.rangeOpened !== undefined){
-        html += `<span style='margin-left: 1em;'>適正距離 [閉]${cardData.range} [開]${cardData.rangeOpened}</span>`
+        html += `<span style='margin-left: 1em;'>${cardData.language === 'en' ? 'Range' : '適正距離'} ${closedSymbol}${cardData.range} ${openedSymbol}${cardData.rangeOpened}</span>`
       } else {
-        html += `<span style='margin-left: 1em;'>適正距離${cardData.range}</span>`;
+        html += `<span style='margin-left: 1em;'>${cardData.language === 'en' ? 'Range' : '適正距離'}${cardData.range}</span>`;
       }
   }
   html += `<br>`;
   if(cardData.types.indexOf('enhance') >= 0){
-      html += `納: ${cardData.capacity}<br>`;
+      html += `${cardData.language === 'en' ? 'Charge' : '納'}: ${cardData.capacity}<br>`;
   }
 
   if(cardData.damageOpened !== undefined){
     // 傘の開閉によって効果が分かれる攻撃カード
-    html += `[閉] ${cardData.damage}<br>`;
+    html += `${closedSymbol} ${cardData.damage}<br>`;
     html += `${cardData.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
     html += (cardData.text ? '<br>' : '');
-    html += `[開] ${cardData.damageOpened}<br>`;
+    html += `${openedSymbol} ${cardData.damageOpened}<br>`;
     html += `${cardData.textOpened.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
   } else if(cardData.textOpened) {
     // 傘の開閉によって効果が分かれる非攻撃カード
-    html += `[閉] ${cardData.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+    html += `${closedSymbol} ${cardData.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
     html += (cardData.text ? '<br>' : '');
-    html += `[開] ${cardData.textOpened.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+    html += `${openedSymbol} ${cardData.textOpened.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
 
   } else {
     if(cardData.damage !== undefined){
@@ -103,11 +106,11 @@ export function getDescriptionHtml(cardId: string): string{
 
   if(cardData.megami === 'kururu'){
     html = html.replace(/<([攻行付対全]+)>/g, (str, arg) => {
-        let replaced = arg.replace(/攻+/, (str2) => `<span class='card-type-attack'>${str2}</span>`)
-                          .replace(/行+/, (str2) => `<span class='card-type-action'>${str2}</span>`)
-                          .replace(/付+/, (str2) => `<span class='card-type-enhance'>${str2}</span>`)
-                          .replace(/対+/, (str2) => `<span class='card-type-reaction'>${str2}</span>`)
-                          .replace(/全+/, (str2) => `<span class='card-type-fullpower'>${str2}</span>`)
+        let replaced = arg.replace(/攻+/, (str2) => `<span class='card-type-attack'>${cardData.language === 'en' ? 'ATK ' : str2}</span>`)
+                          .replace(/行+/, (str2) => `<span class='card-type-action'>${cardData.language === 'en' ? 'ACT ' : str2}</span>`)
+                          .replace(/付+/, (str2) => `<span class='card-type-enhance'>${cardData.language === 'en' ? 'ENH ' : str2}</span>`)
+                          .replace(/対+/, (str2) => `<span class='card-type-reaction'>${cardData.language === 'en' ? 'REA ' : str2}</span>`)
+                          .replace(/全+/, (str2) => `<span class='card-type-fullpower'>${cardData.language === 'en' ? 'THR ' : str2}</span>`)
         return `<${replaced}>`;
     });
   }

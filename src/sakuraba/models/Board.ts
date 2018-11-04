@@ -38,7 +38,7 @@ export class Board implements state.Board {
     }
 
     /** 指定したカードのカード情報を取得（複製済みでゅーぷりぎあがあればそれも考慮する） */
-    getCardData(card: state.Card): models.CardData {
+    getCardData(card: state.Card, language: state.LanguageSetting): models.CardData {
         if(card.cardId === '10-kururu-o-s-3-ex1'){ // でゅーぷりぎあ
             // でゅーぷりぎあの場合、複製対象のカードがあるかどうかを探す
             // (でゅーぷりぎあ所有者の切札に使用済みのいんだすとりあがあり、かつ何かのカードが封印されていれば、それを複製する)
@@ -47,13 +47,13 @@ export class Board implements state.Board {
             if(usedIndustria){
                 let sealedCards = this.getRegionCards(usedIndustria.side, 'on-card', usedIndustria.id);
                 if(sealedCards.length >= 1){
-                    return new models.CardData(card.cardId, sealedCards[0].cardId);
+                    return new models.CardData(card.cardId, language, sealedCards[0].cardId);
                 }
             }
         }
 
         // でゅーぷりぎあ以外のカードか、複製元がないでゅーぷりぎあなら、通常通りカード情報を取得
-        return new models.CardData(card.cardId);
+        return new models.CardData(card.cardId, language);
     }
 
     /** すべてのカードを取得 */

@@ -11,6 +11,12 @@ export default {
         let newSetting = _.assign({}, state.setting);
         newSetting.megamiFaceViewMode = value;
         return {setting: newSetting} as Partial<state.State>;
-    }
+    },
 
+    /** 言語を変更する */
+    setLanguageSetting: (value: state.LanguageSetting) => (state: state.State) => {
+        let newSetting = _.assign({}, state.setting);
+        newSetting.language = value;
+        return {setting: newSetting} as Partial<state.State>;
+    }
 }

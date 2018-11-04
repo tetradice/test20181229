@@ -23,6 +23,10 @@ interface Param {
     cardData?: models.CardData;
 
     zoom: number;
+
+    /** 言語設定 cardDataを省略した場合のみ有効 */
+    language?: state.LanguageSetting;
+
     descriptionViewable: boolean;
     draggable?: boolean;
     handOpened?: boolean;
@@ -55,7 +59,7 @@ export const Card = (p: Param) => {
         styles.zIndex = `${ZIndex.CARD}`;
     }
 
-  let cardData = (p.cardData || new models.CardData(p.target.cardId));
+  let cardData = (p.cardData || new models.CardData(p.target.cardId, p.language));
   let className = "fbs-card";
 
   // クリック可能クラスを付与する場合
@@ -106,13 +110,13 @@ export const Card = (p: Param) => {
 
   let typeCaptions = [];
   if(p.opened){
-      if(cardData.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>攻</span>);
-      if(cardData.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>行</span>);
-      if(cardData.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>付</span>);
-      if(cardData.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>不</span>);
-      if(cardData.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>対</span>);
-      if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>全</span>);
-      if(cardData.types.indexOf('transform') >= 0) typeCaptions.push(<span class='card-type-transform'>TR</span>);
+      if(cardData.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>{cardData.language === 'en' ? 'ATK ' : '攻'}</span>);
+      if(cardData.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>{cardData.language === 'en' ? 'ACT ' : '行'}</span>);
+      if(cardData.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>{cardData.language === 'en' ? 'ENH ' : '付'}</span>);
+      if(cardData.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>{cardData.language === 'en' ? '? ' : '不'}</span>);
+      if(cardData.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>{cardData.language === 'en' ? 'REA ' : '対'}</span>);
+      if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>{cardData.language === 'en' ? 'THR ' : '全'}</span>);
+      if(cardData.types.indexOf('transform') >= 0) typeCaptions.push(<span class='card-type-transform'>TF</span>);
   }
 
   return (
@@ -130,7 +134,7 @@ export const Card = (p: Param) => {
           ondblclick={p.ondblclick}
           oncreate={oncreate}
           onupdate={onupdate}
-          data-html={utils.getDescriptionHtml(p.target.cardId)}            
+          data-html={utils.getDescriptionHtml(cardData)}            
       >
           <div class="card-name">{(p.opened ? cardData.name : '')}</div>
 
@@ -141,7 +145,7 @@ export const Card = (p: Param) => {
           {p.opened ?
           <div>
             <div style={{position: 'absolute', top: (p.reversed ? `${24 * p.zoom}px` : null), bottom: (p.reversed ? null : `${24 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{typeCaptions}</div>
-            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{(cardData.types[0] === 'enhance' ? `納${cardData.capacity}` : cardData.range)}</div>
+            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{(cardData.types[0] === 'enhance' ? `${cardData.language === 'en' ? 'Charge: ' : '納'}${cardData.capacity}` : cardData.range)}</div>
             <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? `${4 * p.zoom}px` : null), right: (p.reversed ? null : `${4 * p.zoom}px`)}}>{cardData.damage}</div>
           </div>
           : null}
