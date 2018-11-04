@@ -1,4 +1,4 @@
-import { CARD_DATA, CardDataItem, SpecialCardDataItem, MEGAMI_DATA } from "sakuraba";
+import { CARD_DATA, CardDataItem, MEGAMI_DATA } from "sakuraba";
 import _ from "lodash";
 import { h } from "hyperapp";
 
@@ -88,7 +88,7 @@ class QuizMakerClass {
             // 切札の消費問題
             // まずは対象となる切札カードを、消費付きですべて選出
             let targetCards = allCards.filter((card) => card.data.baseType === 'special' && card.data.cost !== undefined && /^[0-9]+$/.test(card.data.cost))
-                                      .map((card) => _.assign({}, card, {cost: parseInt((card.data as SpecialCardDataItem).cost)}));
+                                      .map((card) => _.assign({}, card, {cost: parseInt((card.data).cost)}));
 
             // 条件を指定
             let condType = pick(['lower', 'higher', 'notEqual']);
