@@ -984,7 +984,7 @@ $(function(){
                     if(object.artificial){
                         ghost = $(`#artificial-token-ghost-${draggingCount}-${object.ownerSide}`)[0];
                     } else {
-                        $('#sakura-token-ghost-many .count').text(draggingCount);
+                        $('#sakura-token-ghost-many .dragging-count').text(draggingCount);
                         ghost = (draggingCount >= 6 ? $('#sakura-token-ghost-many')[0] : $(`#sakura-token-ghost-${draggingCount}`)[0]);
                     }
                     (e.originalEvent as DragEvent).dataTransfer.setDragImage(ghost, 0, 0);
