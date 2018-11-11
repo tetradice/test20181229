@@ -819,7 +819,8 @@ $(function(){
 
         // ここからの処理はドラッグ＆ドロップ関係の処理のため、プレイヤーである場合のみ有効
         if(params.side !== 'watcher'){
-
+            let userAgent = window.navigator.userAgent.toLowerCase();
+            let isFirefox = userAgent.indexOf('firefox') >= 0;
 
             // 前進ボタンの上にカーソルを置いたときの処理
             $('#BOARD').on('mouseenter', '#FORWARD-BUTTON', function(e){
@@ -982,10 +983,10 @@ $(function(){
                     // ドラッグゴースト画像を設定
                     let ghost: Element;
                     if(object.artificial){
-                        ghost = $(`#artificial-token-ghost-${draggingCount}-${object.ownerSide}`)[0];
+                        ghost = $(`#artificial-token-ghost-${draggingCount}-${object.ownerSide}${isFirefox ? '-firefox' : ''}`)[0];
                     } else {
-                        $('#sakura-token-ghost-many .dragging-count').text(draggingCount);
-                        ghost = (draggingCount >= 6 ? $('#sakura-token-ghost-many')[0] : $(`#sakura-token-ghost-${draggingCount}`)[0]);
+                        $(`#sakura-token-ghost-many${isFirefox ? '-firefox' : ''} .dragging-count`).text(draggingCount);
+                        ghost = (draggingCount >= 6 ? $(`#sakura-token-ghost-many${isFirefox ? '-firefox' : ''}`)[0] : $(`#sakura-token-ghost-${draggingCount}${isFirefox ? '-firefox' : ''}`)[0]);
                     }
                     (e.originalEvent as DragEvent).dataTransfer.setDragImage(ghost, 0, 0);
 

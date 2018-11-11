@@ -130,7 +130,7 @@ export const Card = (p: Param) => {
           <div class="card-name">{(p.opened ? cardData.name : '')}</div>
 
           {p.selectedIndex !== null && p.selectedIndex !== undefined ?
-          <div class="count" style={{position: 'absolute', width: `${20 * p.zoom}px`, height: `${32 * p.zoom}px`, top: '0', left: '0', bottom: '0', right: '0', margin: 'auto'}}>{p.selectedIndex + 1}</div>
+          <div class="card-count-center" style={{width: `${20 * p.zoom}px`, height: `${32 * p.zoom}px`}}>{p.selectedIndex + 1}</div>
            : null}
 
           {p.opened ?

@@ -23,7 +23,7 @@
     <link rel="stylesheet" type="text/css" href="//inazumaapps.info/furuyoni_simulator/deliv/toastr/toastr.min.css">
     <style type="text/css">
         /* Prevent the text contents of draggable elements from being selectable. */
-        [draggable] {
+        [draggable], .fbs-card {
         -moz-user-select: none;
         -khtml-user-select: none;
         -webkit-user-select: none;
@@ -393,6 +393,18 @@
             right: 8px;
             bottom: 8px;
         }
+    
+        .card-count-center {
+            position: absolute;
+            font-size: x-large;
+            color: silver;
+            font-weight: bold;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin: auto;
+        }
         .sakura-token-count {
             position: absolute;
             font-size: medium;
@@ -509,23 +521,25 @@
 <div class="drag-ghost" id="artificial-token-ghost-5-p2" style="display: none; width: 80px; height: 26px; z-index: -20000; position: absolute; left: 380px; top: 380px;">
     <img src="//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost5_p2.png" width="61" height="26">
 </div>
-<!-- FireFox用に画像を背景画像としてロードしておく (FireFoxはimg要素に画像を設定してドラッグすると、初回ドラッグ時に正常に表示されない不具合があり、別途背景画像としてロードしておくことで正常に動作する) -->
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost1.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost2.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost3.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost4.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost5.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost5.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost1_p1.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost2_p1.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost3_p1.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost4_p1.png);"></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost5_p1.png);"></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost1_p2.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost2_p2.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost3_p2.png); "></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost4_p2.png);"></div>
-<div class="drag-ghost" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost5_p2.png);"></div>
+<!-- FireFox用に画像を背景画像としてもロード (FireFoxはimg要素に画像を設定してドラッグすると、初回ドラッグ時に正常に表示されない不具合があるため、代わりに背景画像としてロード) -->
+<div class="drag-ghost" id="sakura-token-ghost-1-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost1.png);  width: 26px; height: 26px; background-size: contain; "></div>
+<div class="drag-ghost" id="sakura-token-ghost-2-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost2.png);  width: 35px; height: 26px; background-size: contain; "></div>
+<div class="drag-ghost" id="sakura-token-ghost-3-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost3.png); width: 43px; height: 26px; background-size: contain; "></div>
+<div class="drag-ghost" id="sakura-token-ghost-4-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost4.png); width: 52px; height: 26px; background-size: contain; "></div>
+<div class="drag-ghost" id="sakura-token-ghost-5-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost5.png); width: 61px; height: 26px; background-size: contain; "></div>
+<div class="drag-ghost" id="sakura-token-ghost-many-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/sakura_token_ghost5.png); width: 72px; height: 26px; background-size: contain; background-repeat: no-repeat;">
+    <div class="dragging-count" style="position: absolute; right: 2px; bottom: 2px; font-size: medium; color: silver; font-weight: bold; ">4</div>    
+</div>
+<div class="drag-ghost" id="artificial-token-ghost-1-p1-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost1_p1.png); width: 26px; height: 26px; background-size: contain; "></div>
+<div class="drag-ghost" id="artificial-token-ghost-2-p1-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost2_p1.png); width: 35px; height: 26px; background-size: contain; "></div>
+<div class="drag-ghost" id="artificial-token-ghost-3-p1-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost3_p1.png); width: 43px; height: 26px; background-size: contain; "></div>
+<div class="drag-ghost" id="artificial-token-ghost-4-p1-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost4_p1.png); width: 52px; height: 26px; background-size: contain;"></div>
+<div class="drag-ghost" id="artificial-token-ghost-5-p1-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost5_p1.png); width: 61px; height: 26px; background-size: contain;"></div>
+<div class="drag-ghost" id="artificial-token-ghost-1-p2-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost1_p2.png); width: 26px; height: 26px; background-size: contain; "></div>
+<div class="drag-ghost" id="artificial-token-ghost-2-p2-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost2_p2.png); width: 35px; height: 26px; background-size: contain; "></div>
+<div class="drag-ghost" id="artificial-token-ghost-3-p2-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost3_p2.png); width: 43px; height: 26px; background-size: contain; "></div>
+<div class="drag-ghost" id="artificial-token-ghost-4-p2-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost4_p2.png); width: 52px; height: 26px; background-size: contain;"></div>
+<div class="drag-ghost" id="artificial-token-ghost-5-p2-firefox" style="display: none; position: absolute; z-index: -20000; background-image: url(//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/others/artificial_token_ghost5_p2.png); width: 61px; height: 26px; background-size: contain;"></div>
 
 <!-- <div id="CONTROL-PANEL">
         <button class="ui basic button">直前の操作を取り消す</button>
