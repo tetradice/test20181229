@@ -233,7 +233,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     };
 
     let menu = (
-        <button class="ui basic button dropdown" oncreate={dropdownCreate}>
+        <div class="ui basic button dropdown" oncreate={dropdownCreate}>
             メニュー
             <i class="dropdown icon"></i>
             <div class="menu">
@@ -262,7 +262,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <div class="divider"></div>
                 <div class="item" onclick={aboutThisService} style={{lineHeight: '1.5'}}>ふるよにボードシミュレーターについて <br />(バージョン、著作権情報、連絡先)</div>
             </div>
-        </button>
+        </div>
     );
     let undoPanel = (
         <div class="ui icon basic buttons">
