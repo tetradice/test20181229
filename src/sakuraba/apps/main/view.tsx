@@ -464,30 +464,33 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     let opponentSideMagemiSize = [480, 160];
 
     return (
-        <div id="BOARD-PLAYAREA" style={{width: `${BOARD_BASE_WIDTH * state.zoom}px`}}>
-            {objectNodes}
-            {frameNodes}
-            <components.Vigor side={opponentSide} left={(hasMachineTarot[opponentSide] ? 190 : 0) + 390} top={60} />
-            <components.Vigor side={selfSide} left={680 - (hasMachineTarot[selfSide] ? 190 : 0)} top={630} />
-            <components.WitheredToken side={opponentSide} left={(hasMachineTarot[opponentSide] ? 190 : 0) + 390} top={60} />
-            <components.WitheredToken side={selfSide} left={680 - (hasMachineTarot[selfSide] ? 190 : 0)} top={630} />
+        <div>
+            <div id="BOARD-PLAYAREA" style={{width: `${BOARD_BASE_WIDTH * state.zoom}px`}}>
+                {objectNodes}
+                {frameNodes}
+                <components.Vigor side={opponentSide} left={(hasMachineTarot[opponentSide] ? 190 : 0) + 390} top={60} />
+                <components.Vigor side={selfSide} left={680 - (hasMachineTarot[selfSide] ? 190 : 0)} top={630} />
+                <components.WitheredToken side={opponentSide} left={(hasMachineTarot[opponentSide] ? 190 : 0) + 390} top={60} />
+                <components.WitheredToken side={selfSide} left={680 - (hasMachineTarot[selfSide] ? 190 : 0)} top={630} />
+                {extraTokens}
+                <components.PlayerNameDisplay left={10} top={10} width={1200} side={utils.flipSide(selfSide)} />
+                <components.PlayerNameDisplay left={10} top={770} width={1200} side={selfSide} />
+
+                <components.MainProcessButtons left={mainProcessButtonLeft} />
+                {readyObjects}
+                {state.side !== 'watcher' && hasMachineTarot[selfSide] ? <components.MachineButtons side={selfSide} left={1010} top={720}></components.MachineButtons> : null}
+                {state.board.megamis[selfSide] && state.board.megamiOpenFlags[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][0]} left={selfSideMagemi1FaceLeft} top={selfSideMagemi1FaceTop} width={selfSideMagemiSize[0]} height={selfSideMagemiSize[1]} /> : null}
+                {state.board.megamis[selfSide] && state.board.megamiOpenFlags[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][1]} left={selfSideMagemi2FaceLeft} top={selfSideMageme2FaceTop}  width={selfSideMagemiSize[0]} height={selfSideMagemiSize[1]}/> : null}
+                {state.board.megamis[opponentSide] && state.board.megamiOpenFlags[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][0]} left={opponentSideMagemi1FaceLeft} top={200}  width={opponentSideMagemiSize[0]} height={opponentSideMagemiSize[1]}/> : null}
+                {state.board.megamis[opponentSide] && state.board.megamiOpenFlags[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][1]} left={opponentSideMagemi2FaceLeft} top={30}  width={opponentSideMagemiSize[0]} height={opponentSideMagemiSize[1]}/> : null}
+            </div>
             <components.ControlPanel />
             <components.ChatLogArea logs={state.chatLog} />
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
             <components.HelpWindow shown={state.helpVisible} />
             <components.SettingWindow shown={state.settingVisible} />
             <components.BGMWindow shown={state.bgmPlaying} />
-            {extraTokens}
-            <components.PlayerNameDisplay left={10} top={10} width={1200} side={utils.flipSide(selfSide)} />
-            <components.PlayerNameDisplay left={10} top={770} width={1200} side={selfSide} />
 
-            <components.MainProcessButtons left={mainProcessButtonLeft} />
-            {readyObjects}
-            {state.side !== 'watcher' && hasMachineTarot[selfSide] ? <components.MachineButtons side={selfSide} left={1010} top={720}></components.MachineButtons> : null}
-            {state.board.megamis[selfSide] && state.board.megamiOpenFlags[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][0]} left={selfSideMagemi1FaceLeft} top={selfSideMagemi1FaceTop} width={selfSideMagemiSize[0]} height={selfSideMagemiSize[1]} /> : null}
-            {state.board.megamis[selfSide] && state.board.megamiOpenFlags[selfSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[selfSide][1]} left={selfSideMagemi2FaceLeft} top={selfSideMageme2FaceTop}  width={selfSideMagemiSize[0]} height={selfSideMagemiSize[1]}/> : null}
-            {state.board.megamis[opponentSide] && state.board.megamiOpenFlags[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][0]} left={opponentSideMagemi1FaceLeft} top={200}  width={opponentSideMagemiSize[0]} height={opponentSideMagemiSize[1]}/> : null}
-            {state.board.megamis[opponentSide] && state.board.megamiOpenFlags[opponentSide] && state.setting.megamiFaceViewMode === 'background1' ? <components.MegamiFace megami={state.board.megamis[opponentSide][1]} left={opponentSideMagemi2FaceLeft} top={30}  width={opponentSideMagemiSize[0]} height={opponentSideMagemiSize[1]}/> : null}
         </div>
     );
 }
