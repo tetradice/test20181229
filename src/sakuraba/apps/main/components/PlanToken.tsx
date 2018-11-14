@@ -29,6 +29,7 @@ export const PlanToken = (p: {side: PlayerSide, planState: PlanState, left: numb
             onShow: function(): false | void{
                 if(dragInfo.draggingFrom !== null) return false;
             },
+            lastResort: true
         });
     }
   

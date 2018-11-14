@@ -87,6 +87,7 @@ export const Card = (p: Param) => {
 
               if(dragInfo.draggingFrom !== null) return false;
           },
+          lastResort: true
       });
   }
 

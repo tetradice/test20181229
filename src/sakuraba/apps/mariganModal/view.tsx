@@ -14,6 +14,7 @@ function setPopup(){
         delay: {show: 500, hide: 0},
         onShow: function(): false | void{
             //if(draggingFrom !== null) return false;
+            lastResort: true
         },
     });
 }
