@@ -112,6 +112,27 @@ export class Board implements state.Board {
         return machineTokens.length >= moveNumber && this.getDistanceTokenCount() + moveNumber <= 10; // 造花結晶数が必要な数あり、かつボード上に置かれている結晶数（間合-1トークン除く） + 移動数 が10を超えなければ移動可能
     }
 
+    /** 各基本動作が実行可能かどうかを一括チェック */
+    checkBasicActionEnabled(side: PlayerSide) {
+        let distanceCount = this.getDistanceTokenCount();
+        let distanceNormalTokens = this.getDistanceSakuraTokens('normal');
+        let dustCount = this.getRegionSakuraTokens(null, 'dust', null).length;
+        let myAuraCount = this.getRegionSakuraTokens(side, 'aura', null).length;
+
+        return {
+            // 前進は間合に通常の桜花結晶が1つ以上あり、オーラ5未満なら可能
+              forward: distanceNormalTokens.length >= 1 && myAuraCount < 5
+            // 離脱はダスト1以上、間合10未満なら可能
+            , leave: dustCount >= 1 && distanceCount < 10
+            // 後退はオーラ1以上、間合10未満なら可能
+            , back: myAuraCount >= 1 && distanceCount < 10
+            // 纏いはダスト1以上、オーラ5未満なら可能
+            , wear: dustCount >= 1 && myAuraCount < 5
+            // 宿しはオーラ1以上なら可能
+            , charge: myAuraCount >= 1
+        };
+    }
+
     /** カード移動時などの領域情報一括更新 */
     updateRegionInfo(){
         let cards = this.getCards();

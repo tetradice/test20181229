@@ -72,10 +72,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         // プレイヤーである場合の処理
         if(state.board.firstDrawFlags[state.side]){
             // 最初の手札を引いたあとの場合 (桜花決闘)
-            let distanceCount = boardModel.getDistanceTokenCount();
-            let distanceNormalTokens = boardModel.getDistanceSakuraTokens('normal');
-            let dustCount = boardModel.getRegionSakuraTokens(null, 'dust', null).length;
-            let myAuraCount = boardModel.getRegionSakuraTokens(state.side, 'aura', null).length;
+            let basicActionEnableState = boardModel.checkBasicActionEnabled(state.side);
             let onCardTokenFound = (state.board.objects.find(o => o.type === 'sakura-token' && o.region === 'on-card') ? true : false);
             let side = state.side;
 
@@ -85,33 +82,33 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     <button
                     id="FORWARD-BUTTON"
                     style="padding-left: 1em; padding-right: 1em;"
-                    class={`ui button ${distanceNormalTokens.length >= 1 && myAuraCount < 5 ? '' : 'disabled'}`}
+                    class={`ui button ${basicActionEnableState.forward ? '' : 'disabled'}`}
                     onclick={() => basicAction([null, 'distance', null], [side, 'aura', null], '前進')}>前進</button>
                     <button
                     id="LEAVE-BUTTON"
                     style="padding-left: 1em; padding-right: 1em;"
-                    class={`ui button ${dustCount >= 1 && distanceCount < 10 ? '' : 'disabled'}`}
+                    class={`ui button ${basicActionEnableState.leave ? '' : 'disabled'}`}
                     onclick={() => basicAction([null, 'dust', null], [null, 'distance', null], '離脱')}>離脱</button>
                 </div>
                 <div class="ui basic buttons" style="margin-right: 10px;">
                     <button
                     id="BACK-BUTTON" 
                     style="padding-left: 1em; padding-right: 1em;"
-                    class={`ui button ${myAuraCount >= 1 && distanceCount < 10 ? '' : 'disabled'}`}
+                    class={`ui button ${basicActionEnableState.back ? '' : 'disabled'}`}
                     onclick={() => basicAction([side, 'aura', null], [null, 'distance', null], '後退')}>後退</button>
                 </div>
                 <div class="ui basic buttons" style="margin-right: 10px;">
                     <button
                     id="WEAR-BUTTON" 
                     style="padding-left: 1em; padding-right: 1em;"
-                    class={`ui button ${dustCount >= 1 && myAuraCount < 5 ? '' : 'disabled'}`}
+                    class={`ui button ${basicActionEnableState.wear ? '' : 'disabled'}`}
                     onclick={() => basicAction([null, 'dust', null], [side, 'aura', null], '纏い')}>纏い</button>
                 </div>
                 <div class="ui basic buttons" style="margin-right: 10px;">
                     <button
                     id="CHARGE-BUTTON" 
                     style="padding-left: 1em; padding-right: 1em;"
-                    class={`ui button ${myAuraCount >= 1 ? '' : 'disabled'}`}
+                    class={`ui button ${basicActionEnableState.charge ? '' : 'disabled'}`}
                     onclick={() => basicAction([side, 'aura', null], [side, 'flair', null], '宿し')}>宿し</button>
                 </div>
                 <br />
