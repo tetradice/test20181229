@@ -453,8 +453,64 @@ $(function(){
                 // 集中力で右クリック
                 if($elem.is('.fbs-vigor-card, .fbs-vigor-card *, .withered-token')){
                     let side = $elem.closest('[data-side]').attr('data-side') as PlayerSide;
+                    let basicActionEnabled = board.checkBasicActionEnabled(side);
+                    
+
 
                     items = {};
+
+                    // 自分の集中力の場合、基本動作メニューも表示
+                    if(side === currentState.side){
+                        let subItems = {};
+                        subItems['forward'] = {
+                            name: '前進 <span style="font-size: smaller; color: silver;">（間合⇒オーラ）</span>'
+                            , isHtmlName: true
+                            , disabled: !basicActionEnabled.forward
+                            , callback: () => {
+                                appActions.oprBasicAction({from: [null, 'distance', null], to: [side, 'aura', null], actionTitle: '前進', costType: 'vigor'});
+                            }
+                        };
+                        subItems['leave'] = {
+                            name: '離脱 <span style="font-size: smaller; color: silver;">（ダスト⇒間合）</span>'
+                            , isHtmlName: true
+                            , disabled: !basicActionEnabled.leave
+                            , callback: () => {
+                                appActions.oprBasicAction({from: [null, 'dust', null], to: [null, 'distance', null], actionTitle: '離脱', costType: 'vigor'});
+                            }
+                        };
+                        subItems['back'] = {
+                            name: '後退 <span style="font-size: smaller; color: silver;">（オーラ⇒間合）</span>'
+                            , isHtmlName: true
+                            , disabled: !basicActionEnabled.back
+                            , callback: () => {
+                                appActions.oprBasicAction({from: [side, 'aura', null], to: [null, 'distance', null], actionTitle: '後退', costType: 'vigor'});
+    
+                            }
+                        };
+                        subItems['wear'] = {
+                            name: '纏い <span style="font-size: smaller; color: silver;">（ダスト⇒オーラ）</span>'
+                            , isHtmlName: true
+                            , disabled: !basicActionEnabled.wear
+                            , callback: () => {
+                                appActions.oprBasicAction({from: [null, 'dust', null], to: [side, 'aura', null], actionTitle: '纏い', costType: 'vigor'});
+    
+                            }
+                        };
+                        subItems['charge'] = {
+                            name: '宿し <span style="font-size: smaller; color: silver;">（オーラ⇒フレア）</span>'
+                            , isHtmlName: true
+                            , disabled: !basicActionEnabled.charge
+                            , callback: () => {
+                                appActions.oprBasicAction({from: [side, 'aura', null], to: [side, 'flair', null], actionTitle: '宿し', costType: 'vigor'});
+                            }
+                        };
+                        items['basicAction'] = {
+                            name: '集中力を使用して基本動作'
+                          , items: subItems
+                          , disabled: currentState.board.vigors[side] === 0
+                      }
+                      items['sep'] = '----';
+                    }
                     items['wither'] =  {
                         name: (board.witherFlags[side] ? '畏縮を解除' : '畏縮')
                         , callback: () => appActions.oprSetWitherFlag({side: side, value: !board.witherFlags[side]})
@@ -497,43 +553,101 @@ $(function(){
                     }
                 }
 
-                // 手札で右クリック
+                // 自分の手札で右クリック
                 let $handArea = $elem.closest(`.area.background[data-side=${playerSide}][data-region=hand]`);
                 let $handCard = $elem.closest(`.fbs-card[data-side=${playerSide}][data-region=hand]`);
                 if($handArea.length >= 1 || $handCard.length >= 1){
                     items = {};
 
-                    // 全手札を公開していない状態で、カードを個別に右クリックした場合、そのカードの公開/非公開操作も可能
-                    if(!currentState.board.handOpenFlags[playerSide] && $handCard.length >= 1){
+                    // カードを個別に右クリック
+                    if($handCard.length >= 1){
                         let id = $handCard.attr('data-object-id');
                         let card = board.getCard(id);
                         let cardData = CARD_DATA[card.cardId];
 
-                        if(currentState.board.handCardOpenFlags[playerSide][id]){
-                            items['closeCard'] = {
-                                name: `[${cardData.name}]の公開を中止する`, callback: () => {
-                                    appActions.operate({
-                                        log: `[${cardData.name}]の公開を中止しました`,
-                                        proc: () => {
-                                            appActions.setHandCardOpenFlag({side: playerSide, cardId: id, value: false});
-                                        }
-                                    });
-                                }
+                        // 伏せ札にして基本動作
+                        let basicActionEnabled = board.checkBasicActionEnabled(playerSide);
+                
+                        let subItems = {};
+                        subItems['forward'] = {
+                            name: '前進 <span style="font-size: smaller; color: silver;">（間合⇒オーラ）</span>'
+                            , isHtmlName: true
+                            , disabled: !basicActionEnabled.forward
+                            , callback: () => {
+                                appActions.oprBasicAction({from: [null, 'distance', null], to: [playerSide, 'aura', null], actionTitle: '前進', costType: 'hand', useCardId: id});
                             }
-                        } else {
-                            items['openCard'] = {
-                                name: `[${cardData.name}]を相手に公開する`, callback: () => {
-                                    appActions.operate({
-                                        log: `[${cardData.name}]を公開しました`,
-                                        proc: () => {
-                                            appActions.setHandCardOpenFlag({side: playerSide, cardId: id, value: true});
-                                        }
-                                    });
+                        };
+                        subItems['leave'] = {
+                            name: '離脱 <span style="font-size: smaller; color: silver;">（ダスト⇒間合）</span>'
+                            , isHtmlName: true
+                            , disabled: !basicActionEnabled.leave
+                            , callback: () => {
+                                appActions.oprBasicAction({from: [null, 'dust', null], to: [null, 'distance', null], actionTitle: '離脱', costType: 'hand', useCardId: id});
+                            }
+                        };
+                        subItems['back'] = {
+                            name: '後退 <span style="font-size: smaller; color: silver;">（オーラ⇒間合）</span>'
+                            , isHtmlName: true
+                            , disabled: !basicActionEnabled.back
+                            , callback: () => {
+                                appActions.oprBasicAction({from: [playerSide, 'aura', null], to: [null, 'distance', null], actionTitle: '後退', costType: 'hand', useCardId: id});
+    
+                            }
+                        };
+                        subItems['wear'] = {
+                            name: '纏い <span style="font-size: smaller; color: silver;">（ダスト⇒オーラ）</span>'
+                            , isHtmlName: true
+                            , disabled: !basicActionEnabled.wear
+                            , callback: () => {
+                                appActions.oprBasicAction({from: [null, 'dust', null], to: [playerSide, 'aura', null], actionTitle: '纏い', costType: 'hand', useCardId: id});
+    
+                            }
+                        };
+                        subItems['charge'] = {
+                            name: '宿し <span style="font-size: smaller; color: silver;">（オーラ⇒フレア）</span>'
+                            , isHtmlName: true
+                            , disabled: !basicActionEnabled.charge
+                            , callback: () => {
+                                appActions.oprBasicAction({from: [playerSide, 'aura', null], to: [playerSide, 'flair', null], actionTitle: '宿し', costType: 'hand', useCardId: id});
+    
+                            }
+                        };    
+                        items['basicAction'] = {
+                              name: '伏せ札にして基本動作'
+                            , items: subItems
+                            , disabled: cardData.poison
+                        }
+                        items['sep'] = '----';
+    
+                        // 全手札を公開していない状態であれば、そのカードの公開/非公開操作も可能
+                        if(!currentState.board.handOpenFlags[playerSide]){
+
+                            if(currentState.board.handCardOpenFlags[playerSide][id]){
+                                items['closeCard'] = {
+                                    name: `[${cardData.name}]の公開を中止する`, callback: () => {
+                                        appActions.operate({
+                                            log: `[${cardData.name}]の公開を中止しました`,
+                                            proc: () => {
+                                                appActions.setHandCardOpenFlag({side: playerSide, cardId: id, value: false});
+                                            }
+                                        });
+                                    }
+                                }
+                            } else {
+                                items['openCard'] = {
+                                    name: `[${cardData.name}]を相手に公開する`, callback: () => {
+                                        appActions.operate({
+                                            log: `[${cardData.name}]を公開しました`,
+                                            proc: () => {
+                                                appActions.setHandCardOpenFlag({side: playerSide, cardId: id, value: true});
+                                            }
+                                        });
+                                    }
                                 }
                             }
                         }
-                        items['sep1'] = '---------';
                     }
+
 
                     // 全体の公開/非公開操作
                     if(currentState.board.handOpenFlags[playerSide]){

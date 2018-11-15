@@ -15,7 +15,6 @@ import miscActions from './misc';
 let actionsTemp7 = Object.assign({}, actionsTemp6, miscActions);
 
 import { WiredActions } from 'hyperapp-types';
-import board from './board';
 
 export const actions = actionsTemp7;
 

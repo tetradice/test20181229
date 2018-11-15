@@ -200,6 +200,23 @@ export default {
         return {board: newBoard};
     },
 
+    /** 集中力を減少1 */
+    decreaseVigor: (p: {
+        /** どちら側の集中力か */
+        side: PlayerSide;
+    }) => (state: state.State, actions: ActionsType) => {
+        let newBoard = models.Board.clone(state.board);
+        if(newBoard.vigors[p.side] === 2){
+            newBoard.vigors[p.side] = 1;
+        } else if(newBoard.vigors[p.side] === 1){
+            newBoard.vigors[p.side] = 0;
+        }
+
+        return {board: newBoard};
+    },
+
+
+
     /** 畏縮フラグを変更 */
     oprSetWitherFlag: (p: {
         /** どちら側の畏縮フラグか */
@@ -430,6 +447,46 @@ export default {
         return {board: newBoard};
     },
 
+    // 基本動作
+    oprBasicAction: (p: {
+        from: [PlayerSide, SakuraTokenRegion, null]
+      , to: [PlayerSide, SakuraTokenRegion, null]
+      , actionTitle: string
+      , costType: 'vigor' | 'hand' | null
+      , useCardId?: string
+    }) => (state: state.State, actions: ActionsType) => {
+      if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
+      let side = state.side;
+      let boardModel = new models.Board(state.board);
+
+      let logs: LogParam[] = [];
+      if(p.costType === 'vigor'){
+          actions.decreaseVigor({side: side});
+          logs.push({text: `集中力を1使って${p.actionTitle}を行いました`});
+      } else if(p.costType === 'hand'){
+          let card = boardModel.getCard(p.useCardId);
+          let data = CARD_DATA[card.cardId];
+
+          actions.moveCard({from: p.useCardId, to: [state.side, 'hidden-used', null]});
+          logs.push({text: `[${data.name}]を伏せ札にして${p.actionTitle}を行いました`, visibility: 'ownerOnly'});
+          logs.push({text: `手札1枚を伏せ札にして${p.actionTitle}を行いました`, visibility: 'outerOnly'});
+      } else {
+          logs.push({text: `${p.actionTitle}を行いました`});
+      }
+      
+      actions.operate({
+          log: logs,
+          proc: () => {
+              actions.moveSakuraToken({
+                    from: p.from
+                  , fromGroup: 'normal'
+                  , to: p.to
+                  , moveNumber: 1
+              });
+          }
+      });
+    },
+
     /** 最初の手札を引く */
     oprFirstDraw: () => (state: state.State, actions: ActionsType) => {
         actions.operate({
@@ -451,7 +508,7 @@ export default {
             }
         });
     },
-    
+
     /** 桜花結晶などを配置する */
     oprBoardSetup: () => (state: state.State, actions: ActionsType) => {
         actions.operate({

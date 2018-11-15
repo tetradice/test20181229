@@ -40,24 +40,6 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     let boardModel = new models.Board(board);
     let deckBuilded = (state.side !== 'watcher' && boardModel.getSideCards(state.side).length >= 1);
 
-    // 基本動作
-    let basicAction = (from: [PlayerSide, SakuraTokenRegion, null], to: [PlayerSide, SakuraTokenRegion, null], title: string) => {
-        let logs: {text: string, visibility?: LogVisibility}[] = [];
-        logs.push({text: `${title}を行いました`});
-        
-        actions.operate({
-            log: logs,
-            proc: () => {
-                actions.moveSakuraToken({
-                  from: from
-                , fromGroup: 'normal'
-                , to: to
-                , moveNumber: 1
-                });
-            }
-        });
-    }
-
     // コマンドボタンの決定
     let commandButtons: Children = null;
 
@@ -83,33 +65,33 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     id="FORWARD-BUTTON"
                     style="padding-left: 1em; padding-right: 1em;"
                     class={`ui button ${basicActionEnableState.forward ? '' : 'disabled'}`}
-                    onclick={() => basicAction([null, 'distance', null], [side, 'aura', null], '前進')}>前進</button>
+                    onclick={() => actions.oprBasicAction({from: [null, 'distance', null], to: [side, 'aura', null], actionTitle: '前進', costType: null})}>前進</button>
                     <button
                     id="LEAVE-BUTTON"
                     style="padding-left: 1em; padding-right: 1em;"
                     class={`ui button ${basicActionEnableState.leave ? '' : 'disabled'}`}
-                    onclick={() => basicAction([null, 'dust', null], [null, 'distance', null], '離脱')}>離脱</button>
+                    onclick={() => actions.oprBasicAction({from: [null, 'dust', null], to: [null, 'distance', null], actionTitle: '離脱', costType: null})}>離脱</button>
                 </div>
                 <div class="ui basic buttons" style="margin-right: 10px;">
                     <button
                     id="BACK-BUTTON" 
                     style="padding-left: 1em; padding-right: 1em;"
                     class={`ui button ${basicActionEnableState.back ? '' : 'disabled'}`}
-                    onclick={() => basicAction([side, 'aura', null], [null, 'distance', null], '後退')}>後退</button>
+                    onclick={() => actions.oprBasicAction({from: [side, 'aura', null], to: [null, 'distance', null], actionTitle: '後退', costType: null})}>後退</button>
                 </div>
                 <div class="ui basic buttons" style="margin-right: 10px;">
                     <button
                     id="WEAR-BUTTON" 
                     style="padding-left: 1em; padding-right: 1em;"
                     class={`ui button ${basicActionEnableState.wear ? '' : 'disabled'}`}
-                    onclick={() => basicAction([null, 'dust', null], [side, 'aura', null], '纏い')}>纏い</button>
+                    onclick={() => actions.oprBasicAction({from: [null, 'dust', null], to: [side, 'aura', null], actionTitle: '纏い', costType: null})}>纏い</button>
                 </div>
                 <div class="ui basic buttons" style="margin-right: 10px;">
                     <button
                     id="CHARGE-BUTTON" 
                     style="padding-left: 1em; padding-right: 1em;"
                     class={`ui button ${basicActionEnableState.charge ? '' : 'disabled'}`}
-                    onclick={() => basicAction([side, 'aura', null], [side, 'flair', null], '宿し')}>宿し</button>
+                    onclick={() => actions.oprBasicAction({from: [side, 'aura', null], to: [side, 'flair', null], actionTitle: '宿し', costType: null})}>宿し</button>
                 </div>
                 <br />
                 <button
