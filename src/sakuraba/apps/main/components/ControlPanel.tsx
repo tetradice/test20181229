@@ -231,6 +231,9 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     設定
                 </div>
                 <div class="divider"></div>
+                <div class="item" onclick={() => actions.toggleCardListVisible()}>
+                    カードリスト
+                </div>
                 <div class="item" onclick={quizOpen}>
                     ミニゲーム: ふるよにミニクイズ
                 </div>

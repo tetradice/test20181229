@@ -30,7 +30,10 @@ export interface State {
     actionLogVisible: boolean;
     helpVisible: boolean;
     settingVisible: boolean;
+    cardListVisible: boolean;
     bgmPlaying: boolean;
+
+    cardListSelectedMegami: Megami;
 
     setting: Setting;
 

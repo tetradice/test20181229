@@ -30,8 +30,11 @@ export function createInitialState(): state.State{
       , actionLogVisible: false
       , helpVisible: false
       , settingVisible: false
+      , cardListVisible: false
       , bgmPlaying: false
       , zoom: 1
+
+      , cardListSelectedMegami: 'yurina'
 
       , setting: {megamiFaceViewMode: 'background1'}
 

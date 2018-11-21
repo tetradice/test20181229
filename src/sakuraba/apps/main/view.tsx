@@ -489,6 +489,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             <components.ActionLogWindow logs={state.actionLog} shown={state.actionLogVisible} />
             <components.HelpWindow shown={state.helpVisible} />
             <components.SettingWindow shown={state.settingVisible} />
+            <components.CardListWindow shown={state.cardListVisible} />
             <components.BGMWindow shown={state.bgmPlaying} />
 
         </div>
