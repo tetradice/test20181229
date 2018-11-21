@@ -693,7 +693,7 @@ $(function(){
                     let token = board.getSakuraToken(id);
 
                     items = {
-                        'damage': {name: (token.side === playerSide ? `${token.groupTokenDraggingCount}ダメージを受ける` :  `${token.groupTokenDraggingCount}ダメージを与える`), callback: () => {
+                        'damage': {name: (token.side === playerSide ? `オーラに${token.groupTokenDraggingCount}ダメージ` :  `相手のオーラに${token.groupTokenDraggingCount}ダメージ`), callback: () => {
                             appActions.operate({
                                 log: (token.side === playerSide ? `オーラに${token.groupTokenDraggingCount}ダメージを受けました` : `相手のオーラに${token.groupTokenDraggingCount}ダメージを与えました`),
                                 proc: () => {
@@ -713,7 +713,7 @@ $(function(){
                     let token = board.getSakuraToken(id);
 
                     items = {
-                        'damage': {name: (token.side === playerSide ? `${token.groupTokenDraggingCount}ダメージを受ける` :  `${token.groupTokenDraggingCount}ダメージを与える`), callback: () => {
+                        'damage': {name: (token.side === playerSide ? `ライフに${token.groupTokenDraggingCount}ダメージ` :  `相手のライフに${token.groupTokenDraggingCount}ダメージ`), callback: () => {
                             appActions.operate({
                                 log: (token.side === playerSide ? `ライフに${token.groupTokenDraggingCount}ダメージを受けました` : `相手のライフに${token.groupTokenDraggingCount}ダメージを与えました`),
                                 proc: () => {
