@@ -450,41 +450,48 @@ export default {
     // 基本動作
     oprBasicAction: (p: {
         from: [PlayerSide, SakuraTokenRegion, null]
-      , to: [PlayerSide, SakuraTokenRegion, null]
-      , actionTitle: string
-      , costType: 'vigor' | 'hand' | null
-      , useCardId?: string
+        , to: [PlayerSide, SakuraTokenRegion, null]
+        , actionTitle: string
+        , costType: 'vigor' | 'hand' | null
+        , useCardId?: string
     }) => (state: state.State, actions: ActionsType) => {
-      if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
-      let side = state.side;
-      let boardModel = new models.Board(state.board);
+        if (state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
+        let side = state.side;
+        let boardModel = new models.Board(state.board);
 
-      let logs: LogParam[] = [];
-      if(p.costType === 'vigor'){
-          actions.decreaseVigor({side: side});
-          logs.push({text: `集中力を1使って${p.actionTitle}を行いました`});
-      } else if(p.costType === 'hand'){
-          let card = boardModel.getCard(p.useCardId);
-          let data = CARD_DATA[card.cardId];
+        let logs: LogParam[] = [];
+        if (p.costType === 'vigor') {
+            logs.push({ text: `集中力を1使って${p.actionTitle}を行いました` });
+        } else if (p.costType === 'hand') {
+            let card = boardModel.getCard(p.useCardId);
+            let data = CARD_DATA[card.cardId];
 
-          actions.moveCard({from: p.useCardId, to: [state.side, 'hidden-used', null]});
-          logs.push({text: `[${data.name}]を伏せ札にして${p.actionTitle}を行いました`, visibility: 'ownerOnly'});
-          logs.push({text: `手札1枚を伏せ札にして${p.actionTitle}を行いました`, visibility: 'outerOnly'});
-      } else {
-          logs.push({text: `${p.actionTitle}を行いました`});
-      }
-      
-      actions.operate({
-          log: logs,
-          proc: () => {
-              actions.moveSakuraToken({
+            logs.push({ text: `[${data.name}]を伏せ札にして${p.actionTitle}を行いました`, visibility: 'ownerOnly' });
+            logs.push({ text: `手札1枚を伏せ札にして${p.actionTitle}を行いました`, visibility: 'outerOnly' });
+        } else {
+            logs.push({ text: `${p.actionTitle}を行いました` });
+        }
+
+        actions.operate({
+            log: logs,
+            proc: () => {
+                if (state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
+
+                // コスト消費
+                if (p.costType === 'vigor') {
+                    actions.decreaseVigor({ side: side });
+                } else if (p.costType === 'hand') {
+                    actions.moveCard({ from: p.useCardId, to: [state.side, 'hidden-used', null] });
+                }
+
+                actions.moveSakuraToken({
                     from: p.from
-                  , fromGroup: 'normal'
-                  , to: p.to
-                  , moveNumber: 1
-              });
-          }
-      });
+                    , fromGroup: 'normal'
+                    , to: p.to
+                    , moveNumber: 1
+                });
+            }
+        });
     },
 
     /** 最初の手札を引く */

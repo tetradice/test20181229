@@ -376,7 +376,7 @@ $(function(){
                     return false;
                 };
 
-                // 帯電解除コマンドの追加
+                // 帯電解除コマンドを追加する関数
                 const addDischargeCommand = (items: any, card: state.Card, addSeparator?: boolean) => {
                     // プレイヤーがライラを宿しており、かつ対象のカードが公開状態で、ライラのカードでもTransformカードでもない場合、帯電解除を行える
                     if(board.megamis[playerSide][0] === 'raira' || board.megamis[playerSide][1] === 'raira'){
@@ -399,6 +399,55 @@ $(function(){
                             }
                         }
                     }
+                };
+
+                // 基本動作コマンドを追加する関数
+                const makeBasicActionCommandItems = (side: PlayerSide, costType: 'hand' | 'vigor', useCardId?: string) => {
+                    let basicActionEnabled = board.checkBasicActionEnabled(side);
+                    let subItems = {};
+                    subItems['forward'] = {
+                        name: '前進 <span style="font-size: smaller; color: silver;">（間合⇒オーラ）</span>'
+                        , isHtmlName: true
+                        , disabled: !basicActionEnabled.forward
+                        , callback: () => {
+                            appActions.oprBasicAction({from: [null, 'distance', null], to: [side, 'aura', null], actionTitle: '前進', costType: costType, useCardId: useCardId});
+                        }
+                    };
+                    subItems['leave'] = {
+                        name: '離脱 <span style="font-size: smaller; color: silver;">（ダスト⇒間合）</span>'
+                        , isHtmlName: true
+                        , disabled: !basicActionEnabled.leave
+                        , callback: () => {
+                            appActions.oprBasicAction({from: [null, 'dust', null], to: [null, 'distance', null], actionTitle: '離脱', costType: costType, useCardId: useCardId});
+                        }
+                    };
+                    subItems['back'] = {
+                        name: '後退 <span style="font-size: smaller; color: silver;">（オーラ⇒間合）</span>'
+                        , isHtmlName: true
+                        , disabled: !basicActionEnabled.back
+                        , callback: () => {
+                            appActions.oprBasicAction({from: [side, 'aura', null], to: [null, 'distance', null], actionTitle: '後退', costType: costType, useCardId: useCardId});
+
+                        }
+                    };
+                    subItems['wear'] = {
+                        name: '纏い <span style="font-size: smaller; color: silver;">（ダスト⇒オーラ）</span>'
+                        , isHtmlName: true
+                        , disabled: !basicActionEnabled.wear
+                        , callback: () => {
+                            appActions.oprBasicAction({from: [null, 'dust', null], to: [side, 'aura', null], actionTitle: '纏い', costType: costType, useCardId: useCardId});
+
+                        }
+                    };
+                    subItems['charge'] = {
+                        name: '宿し <span style="font-size: smaller; color: silver;">（オーラ⇒フレア）</span>'
+                        , isHtmlName: true
+                        , disabled: !basicActionEnabled.charge
+                        , callback: () => {
+                            appActions.oprBasicAction({from: [side, 'aura', null], to: [side, 'flair', null], actionTitle: '宿し', costType: costType, useCardId: useCardId});
+                        }
+                    };
+                    return subItems;
                 };
 
                 // 使用済み札で右クリック
@@ -453,7 +502,6 @@ $(function(){
                 // 集中力で右クリック
                 if($elem.is('.fbs-vigor-card, .fbs-vigor-card *, .withered-token')){
                     let side = $elem.closest('[data-side]').attr('data-side') as PlayerSide;
-                    let basicActionEnabled = board.checkBasicActionEnabled(side);
                     
 
 
@@ -461,52 +509,9 @@ $(function(){
 
                     // 自分の集中力の場合、基本動作メニューも表示
                     if(side === currentState.side){
-                        let subItems = {};
-                        subItems['forward'] = {
-                            name: '前進 <span style="font-size: smaller; color: silver;">（間合⇒オーラ）</span>'
-                            , isHtmlName: true
-                            , disabled: !basicActionEnabled.forward
-                            , callback: () => {
-                                appActions.oprBasicAction({from: [null, 'distance', null], to: [side, 'aura', null], actionTitle: '前進', costType: 'vigor'});
-                            }
-                        };
-                        subItems['leave'] = {
-                            name: '離脱 <span style="font-size: smaller; color: silver;">（ダスト⇒間合）</span>'
-                            , isHtmlName: true
-                            , disabled: !basicActionEnabled.leave
-                            , callback: () => {
-                                appActions.oprBasicAction({from: [null, 'dust', null], to: [null, 'distance', null], actionTitle: '離脱', costType: 'vigor'});
-                            }
-                        };
-                        subItems['back'] = {
-                            name: '後退 <span style="font-size: smaller; color: silver;">（オーラ⇒間合）</span>'
-                            , isHtmlName: true
-                            , disabled: !basicActionEnabled.back
-                            , callback: () => {
-                                appActions.oprBasicAction({from: [side, 'aura', null], to: [null, 'distance', null], actionTitle: '後退', costType: 'vigor'});
-    
-                            }
-                        };
-                        subItems['wear'] = {
-                            name: '纏い <span style="font-size: smaller; color: silver;">（ダスト⇒オーラ）</span>'
-                            , isHtmlName: true
-                            , disabled: !basicActionEnabled.wear
-                            , callback: () => {
-                                appActions.oprBasicAction({from: [null, 'dust', null], to: [side, 'aura', null], actionTitle: '纏い', costType: 'vigor'});
-    
-                            }
-                        };
-                        subItems['charge'] = {
-                            name: '宿し <span style="font-size: smaller; color: silver;">（オーラ⇒フレア）</span>'
-                            , isHtmlName: true
-                            , disabled: !basicActionEnabled.charge
-                            , callback: () => {
-                                appActions.oprBasicAction({from: [side, 'aura', null], to: [side, 'flair', null], actionTitle: '宿し', costType: 'vigor'});
-                            }
-                        };
                         items['basicAction'] = {
                             name: '集中力を使用して基本動作'
-                          , items: subItems
+                          , items: makeBasicActionCommandItems(side, 'vigor')
                           , disabled: currentState.board.vigors[side] === 0
                       }
                       items['sep'] = '----';
@@ -566,55 +571,9 @@ $(function(){
                         let cardData = CARD_DATA[card.cardId];
 
                         // 伏せ札にして基本動作
-                        let basicActionEnabled = board.checkBasicActionEnabled(playerSide);
-                
-                        let subItems = {};
-                        subItems['forward'] = {
-                            name: '前進 <span style="font-size: smaller; color: silver;">（間合⇒オーラ）</span>'
-                            , isHtmlName: true
-                            , disabled: !basicActionEnabled.forward
-                            , callback: () => {
-                                appActions.oprBasicAction({from: [null, 'distance', null], to: [playerSide, 'aura', null], actionTitle: '前進', costType: 'hand', useCardId: id});
-                            }
-                        };
-                        subItems['leave'] = {
-                            name: '離脱 <span style="font-size: smaller; color: silver;">（ダスト⇒間合）</span>'
-                            , isHtmlName: true
-                            , disabled: !basicActionEnabled.leave
-                            , callback: () => {
-                                appActions.oprBasicAction({from: [null, 'dust', null], to: [null, 'distance', null], actionTitle: '離脱', costType: 'hand', useCardId: id});
-                            }
-                        };
-                        subItems['back'] = {
-                            name: '後退 <span style="font-size: smaller; color: silver;">（オーラ⇒間合）</span>'
-                            , isHtmlName: true
-                            , disabled: !basicActionEnabled.back
-                            , callback: () => {
-                                appActions.oprBasicAction({from: [playerSide, 'aura', null], to: [null, 'distance', null], actionTitle: '後退', costType: 'hand', useCardId: id});
-    
-                            }
-                        };
-                        subItems['wear'] = {
-                            name: '纏い <span style="font-size: smaller; color: silver;">（ダスト⇒オーラ）</span>'
-                            , isHtmlName: true
-                            , disabled: !basicActionEnabled.wear
-                            , callback: () => {
-                                appActions.oprBasicAction({from: [null, 'dust', null], to: [playerSide, 'aura', null], actionTitle: '纏い', costType: 'hand', useCardId: id});
-    
-                            }
-                        };
-                        subItems['charge'] = {
-                            name: '宿し <span style="font-size: smaller; color: silver;">（オーラ⇒フレア）</span>'
-                            , isHtmlName: true
-                            , disabled: !basicActionEnabled.charge
-                            , callback: () => {
-                                appActions.oprBasicAction({from: [playerSide, 'aura', null], to: [playerSide, 'flair', null], actionTitle: '宿し', costType: 'hand', useCardId: id});
-    
-                            }
-                        };    
                         items['basicAction'] = {
                               name: '伏せ札にして基本動作'
-                            , items: subItems
+                            , items: makeBasicActionCommandItems(playerSide, 'hand', id)
                             , disabled: cardData.poison
                         }
                         items['sep'] = '----';
