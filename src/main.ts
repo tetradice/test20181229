@@ -9,6 +9,9 @@ import dragInfo from "sakuraba/dragInfo";
 import { BOARD_BASE_WIDTH, ZIndex } from "sakuraba/const";
 import * as randomstring from 'randomstring';
 import _ from "lodash";
+import i18next from 'i18next';
+import Backend from 'i18next-locize-backend';
+import languageDetector from 'i18next-browser-languagedetector';
 
 declare var params: {
     tableId: string;
@@ -32,6 +35,22 @@ function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery
 
 $(function(){
     try {
+        // 言語設定の初期化
+        i18next
+            .use(Backend)
+            .use(languageDetector)
+            .init({
+                  fallbackLng: 'en'
+                , defaultNS: 'common'
+                , ns: ['common']
+                , debug: true
+                , backend: {
+                      projectId: '5dfcd5bf-69f5-4e2c-b607-66b6ad4836ec'
+                    , apiKey: '87c9d00e-9d23-4072-be37-1e574fca92e3'
+                    , referenceLng: 'en'
+                }
+            });
+
         // socket.ioに接続し、ラッパーを作成
         const ioSocket = io();
         const socket = new ClientSocket(ioSocket);

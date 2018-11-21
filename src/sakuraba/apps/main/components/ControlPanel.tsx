@@ -6,6 +6,7 @@ import * as models from "sakuraba/models";
 import toastr from "toastr";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
 import * as apps from "sakuraba/apps"
+import i18next from 'i18next';
 
 /** コントロールパネル */
 export const ControlPanel = () => (state: state.State, actions: ActionsType) => {
