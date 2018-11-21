@@ -15,6 +15,19 @@ function saveWindowState(elem: HTMLElement){
 /** カードリストウインドウ */
 export const CardListWindow = (p: {shown: boolean}) => (state: state.State, actions: ActionsType) => {
     if(p.shown){
+        const setPopup = (elem) => {
+            // SemanticUI ポップアップ初期化
+            $(elem).find('[data-html]').popup({
+                hoverable: true,
+                delay: {show: 500, hide: 0},
+                onShow: function(): false | void{
+                    if(dragInfo.draggingFrom !== null) return false;
+                },
+                lastResort: true
+            });
+
+        };
+
         const oncreate = (e) => {
             // ウインドウを移動可能にする
             $(e).draggable({
@@ -35,16 +48,14 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
                 $(e).css({left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2});
             }
 
-            // SemanticUI ポップアップ初期化
-            $(e).find('[data-html]').popup({
-                hoverable: true,
-                delay: {show: 500, hide: 0},
-                onShow: function(): false | void{
-                    if(dragInfo.draggingFrom !== null) return false;
-                },
-                lastResort: true
-            });
+            setPopup(e);
+
         };
+        const onupdate = (e) => {
+            setPopup(e);
+        };
+
+
         let options: JSX.Element[] = [];
         for(let key in MEGAMI_DATA){
             let data = MEGAMI_DATA[key];
@@ -89,7 +100,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
                         </div>
                     </div>
                 </div>
-                <table class="ui small celled table" style={{background: `transparent`}}>
+                <table class="ui small celled selectable table" style={{background: `transparent`}}>
                     <thead>
                     <tr>
                         <th>名称</th>
@@ -109,7 +120,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
             <div id="CARD-LIST-WINDOW"
              style={{position: 'absolute', width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
               class="ui segment draggable ui-widget-content resizable"
-              oncreate={oncreate}>
+              oncreate={oncreate} onupdate={onupdate}>
                 <div class="ui top attached label">カードリスト<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleCardListVisible()}><i class="times icon"></i></a></div>
                 {contentDiv}
             </div>
