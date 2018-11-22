@@ -54,6 +54,7 @@
     "connect-browser-sync": "^2.1.0",
     "cpx": "^1.5.0",
     "css-loader": "^0.28.11",
+    "emotion": "^9.2.12",
     "hyperapp": "^1.2.6",
     "hyperapp-debug": "^0.0.1-beta.10",
     "hyperapp-devtools": "^0.3.0",

@@ -5,6 +5,7 @@ import { ActionsType } from "../actions";
 import { ZIndex } from "sakuraba/const";
 import { MEGAMI_DATA, CARD_DATA, CardDataItem, Megami } from "sakuraba";
 import dragInfo from "sakuraba/dragInfo";
+import { css } from 'emotion'
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -77,7 +78,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
                 <tr class={c.baseType === 'special' ? 'warning' : null} data-html={utils.getDescriptionHtml(cardIds[i])}>
                     <td>{c.name}</td>
                     <td>{(typeCaptions.length === 2 ? [typeCaptions[0], '/', typeCaptions[1]] : typeCaptions[0])}</td>
-                    <td>{c.range}</td>
+                    <td>{(c.rangeOpened ? `[閉]${c.range} [開]${c.rangeOpened}` : c.range)}</td>
                     <td>{(c.baseType === 'special' ? c.cost : '')}</td>
                 </tr>
             )
@@ -89,8 +90,15 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
             actions.changeCardListSelectedMegami($(e.target).val() as Megami);
         };
 
+        const cardSetCss = css`
+            position: absolute;
+            right: 1em;
+            color: silver;
+            font-size: smaller;
+        `;
+
         contentDiv = (
-            <div style={{overflowY: 'scroll', maxHeight: "85vh", paddingRight: "1em"}}>
+            <div style={{overflowY: 'auto', maxHeight: "85vh", paddingRight: "1em"}}>
                 <div class="ui form">
                     <div class="inline fields">
                         <div class="field">
@@ -98,6 +106,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
                                 {options}
                             </select>
                         </div>
+                        <div class={cardSetCss}>カードセット: 新幕 シーズン2</div>
                     </div>
                 </div>
                 <table class="ui small celled selectable table" style={{background: `transparent`}}>
