@@ -90,9 +90,9 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
         };
 
         contentDiv = (
-            <div>
+            <div style={{overflowY: 'scroll', maxHeight: "85vh", paddingRight: "1em"}}>
                 <div class="ui form">
-                    <div class="fields">
+                    <div class="inline fields">
                         <div class="field">
                             <select onchange={onchange}>
                                 {options}
@@ -103,10 +103,10 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
                 <table class="ui small celled selectable table" style={{background: `transparent`}}>
                     <thead>
                     <tr>
-                        <th>名称</th>
-                        <th>タイプ</th>
-                        <th>適正距離</th>
-                        <th>消費</th>
+                        <th class="seven wide">名称</th>
+                        <th class="four wide">タイプ</th>
+                        <th class="three wide">適正距離</th>
+                        <th class="two wide">消費</th>
                     </tr>
                     </thead>
                     <tbody>
