@@ -265,7 +265,7 @@ export default {
         // 使用済み札の下に封印されたカードが1枚でもあれば、再構成はできない
         let usedCards = boardModel.getRegionCards(p.side, 'used', null);
         if(usedCards.find(c => boardModel.getSealedCards(c.id).length >= 1)){
-            utils.messageModal('使用済み札の下に封印されているカードがあるため、再構成を行えません。<br>先に封印されているカードを取り除いてください。');
+            utils.messageModal('使用済み札の下に封印されているカードがあるため、再構成を行えません。<br>先に封印されているカードを取り除いてください。<br>(封印されているカードを右クリックすることで、捨て札に送ることができます)');
             return;
         }
         

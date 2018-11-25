@@ -1235,7 +1235,7 @@ $(function(){
                         // 他のカードを封印しているカードを、動かそうとした場合はエラー
                         let sealedCards = boardModel.getSealedCards(card.id);
                         if(sealedCards.length >= 1){
-                            utils.messageModal("他のカードが封印されているため移動できません。");
+                            utils.messageModal("他のカードが封印されているため移動できません。<br>封印されたカードを右クリックして、捨て札に送ってください。");
                             return false;
                         }
                         // 桜花結晶が乗っている札を、動かそうとした場合はエラー
