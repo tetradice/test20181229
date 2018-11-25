@@ -5,7 +5,8 @@ import { Megami, CARD_DATA } from "sakuraba";
 import cardActions from './card';
 import { ActionsType } from ".";
 
-type LogParam = {text: string, visibility?: LogVisibility};
+type LogValue = [string, object];
+type LogParam = {text: string | LogValue, visibility?: LogVisibility};
 
 export default {
     /** 複数の操作を行い、必要に応じてUndo履歴、ログを設定。同時にソケットに変更後ボードを送信 */
@@ -21,7 +22,7 @@ export default {
         /**
          * 操作ログに記録する内容
          */
-        log?: string | string[] | LogParam[];
+        log?: string | string[] | LogValue | LogValue[] | LogParam[];
 
         /**
          * 実行する処理の内容
@@ -101,7 +102,7 @@ export default {
 
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         let appendLogs: state.LogRecord[] = [];
-        let newActionLogs = actions.appendActionLog({text: `直前の操作を取り消しました`}).actionLog;
+        let newActionLogs = actions.appendActionLog({text: ['log:直前の操作を取り消しました', null]}).actionLog;
         let appendedLogs = [newActionLogs[newActionLogs.length - 1]];
 
         if(state.socket){
@@ -166,16 +167,11 @@ export default {
         let oldValue = state.board.vigors[p.side];
 
         // ログの内容を設定 (増加か減少かで変更)
-        let logText: string;
+        let logText: LogValue;
         if(p.value >= oldValue){
-            logText = `集中力を${p.value - oldValue}増やしました`;
+            logText = [(p.side !== state.side ? 'log:Oの集中力をN増やしました' : 'log:集中力をN増やしました'), {count: p.value - oldValue, opponent: state.board.playerNames[p.side]}];
         } else {
-            logText = `集中力を${oldValue - p.value}減らしました`;
-        }
-
-        // 他の人の集中力を変更した場合
-        if(p.side !== state.side){
-            logText = `${state.board.playerNames[p.side]}の` + logText;
+            logText = [(p.side !== state.side ? 'log:Oの集中力をN減らしました' : 'log:集中力をN減らしました'), {count: oldValue - p.value, opponent: state.board.playerNames[p.side]}];
         }
 
         // 実行
@@ -225,19 +221,11 @@ export default {
         value: boolean;
     }) => (state: state.State, actions: ActionsType) => {
         // ログの内容を設定
-        let logText: string;
+        let logText: LogValue;
         if(p.value){
-            if(p.side !== state.side){
-                logText = `${state.board.playerNames[p.side]}を畏縮させました`;
-            } else {
-                logText = `畏縮しました`;
-            }
+            logText = [(p.side !== state.side ? 'log:Oを畏縮させました' : 'log:畏縮しました'), {opponent: state.board.playerNames[p.side]}];
         } else {
-            if(p.side !== state.side){
-                logText = `${state.board.playerNames[p.side]}の畏縮を解除しました`;
-            } else {
-                logText = `畏縮を解除しました`;
-            }
+            logText = [(p.side !== state.side ? 'log:Oの萎縮を解除しました' : 'log:畏縮を解除しました'), {opponent: state.board.playerNames[p.side]}];
         }
 
         // 実行
@@ -461,15 +449,15 @@ export default {
 
         let logs: LogParam[] = [];
         if (p.costType === 'vigor') {
-            logs.push({ text: `集中力を1使って${p.actionTitle}を行いました` });
+            logs.push({ text: ['log:集中力を1使ってACTを行いました', {action: p.actionTitle}]});
         } else if (p.costType === 'hand') {
             let card = boardModel.getCard(p.useCardId);
             let data = CARD_DATA[card.cardId];
 
-            logs.push({ text: `[${data.name}]を伏せ札にして${p.actionTitle}を行いました`, visibility: 'ownerOnly' });
-            logs.push({ text: `手札1枚を伏せ札にして${p.actionTitle}を行いました`, visibility: 'outerOnly' });
+            logs.push({ text: ['log:[CARDNAME]を伏せ札にしてACTを行いました', {cardName: data.name, action: p.actionTitle}], visibility: 'ownerOnly' });
+            logs.push({ text: ['log:手札1枚を伏せ札にしてACTを行いました', {action: p.actionTitle}], visibility: 'outerOnly' });
         } else {
-            logs.push({ text: `${p.actionTitle}を行いました` });
+            logs.push({ text: ['log:ACTを行いました', {action: p.actionTitle}] });
         }
 
         actions.operate({
@@ -507,7 +495,7 @@ export default {
                 actions.shuffle({side: state.side});
 
                 // 山札を3枚引く
-                actions.appendActionLog({text: `最初の手札3枚を引きました`});
+                actions.appendActionLog({text: ['log:最初の手札N枚を引きました', {count: 3}]});
                 actions.draw({number: 3, cardNameLogging: true});
 
                 // 最初の手札を引いたフラグをセット
@@ -529,7 +517,7 @@ export default {
                 actions.addSakuraToken({side: state.side, region: 'aura', number: 3});
                 actions.addSakuraToken({side: state.side, region: 'life', number: 10});
                 actions.setVigor({side: state.side, value: 0});
-                actions.appendActionLog({text: '桜花結晶と集中力を配置しました', visibility: 'shown'});
+                actions.appendActionLog({text: ['log:桜花結晶と集中力を配置しました', null], visibility: 'shown'});
 
                 // まだ間合が置かれていなければセット
                 if(board.getRegionSakuraTokens(null, 'distance', null).length === 0){

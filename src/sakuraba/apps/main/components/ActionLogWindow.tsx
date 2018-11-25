@@ -3,6 +3,7 @@ import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
 import { ZIndex } from "sakuraba/const";
+import { t } from "i18next";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -24,9 +25,13 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
             let timeStr = (logTime.isSame(now, 'date') ? logTime.format('H:mm') : logTime.format('YYYY/M/D H:mm'));
             let bodyStyle = (log.visibility === 'ownerOnly' ? {color: 'green'} : null);
             let name = (log.side === 'watcher' ? (state.board.watchers[log.watcherSessionId] ? state.board.watchers[log.watcherSessionId].name : '?') : state.board.playerNames[log.side]);
+
+            // ログが多言語化に対応していれば、i18nextを通す
+            let logText = (Array.isArray(log.body) ? t(log.body[0], log.body[1]) : log.body);
+
             logElements.push(
                 <div>
-                {name}: <span style={bodyStyle}>{log.body}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
+                {name}: <span style={bodyStyle}>{logText}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
                 </div>
             )
         });

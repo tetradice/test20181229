@@ -6,7 +6,7 @@ export default {
         return {actionLogVisible: !state.actionLogVisible};
     },
 
-    appendActionLog: (p: {text: string, visibility?: LogVisibility}) => (state: state.State) => {
+    appendActionLog: (p: {text: string | [string, object], visibility?: LogVisibility}) => (state: state.State) => {
         let append: state.LogRecord = {
               body: p.text
             , time: moment().format()

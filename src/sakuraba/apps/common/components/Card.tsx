@@ -4,6 +4,7 @@ import * as sakuraba from "sakuraba";
 import * as models from "sakuraba/models";
 import dragInfo from "sakuraba/dragInfo";
 import { ZIndex } from "sakuraba/const";
+import { t } from 'i18next';
 
 /** カード */
 interface Param {
@@ -110,13 +111,13 @@ export const Card = (p: Param) => {
 
   let typeCaptions = [];
   if(p.opened){
-      if(cardData.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>{cardData.language === 'en' ? 'ATK ' : '攻'}</span>);
-      if(cardData.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>{cardData.language === 'en' ? 'ACT ' : '行'}</span>);
-      if(cardData.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>{cardData.language === 'en' ? 'ENH ' : '付'}</span>);
-      if(cardData.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>{cardData.language === 'en' ? '? ' : '不'}</span>);
-      if(cardData.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>{cardData.language === 'en' ? 'REA ' : '対'}</span>);
-      if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>{cardData.language === 'en' ? 'THR ' : '全'}</span>);
-      if(cardData.types.indexOf('transform') >= 0) typeCaptions.push(<span class='card-type-transform'>TF</span>);
+      if(cardData.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>{t('攻')}</span>);
+      if(cardData.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>{t('行')}</span>);
+      if(cardData.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>{t('付')}</span>);
+      if(cardData.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>{t('不')}</span>);
+      if(cardData.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>{t('対')}</span>);
+      if(cardData.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>{t('全')}</span>);
+      if(cardData.types.indexOf('transform') >= 0) typeCaptions.push(<span class='card-type-transform'>{t('TF')}</span>);
   }
 
   return (
@@ -145,11 +146,11 @@ export const Card = (p: Param) => {
           {p.opened ?
           <div>
             <div style={{position: 'absolute', top: (p.reversed ? `${24 * p.zoom}px` : null), bottom: (p.reversed ? null : `${24 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{typeCaptions}</div>
-            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{(cardData.types[0] === 'enhance' ? `${cardData.language === 'en' ? 'Charge: ' : '納'}${cardData.capacity}` : cardData.range)}</div>
+            <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null)}}>{(cardData.types[0] === 'enhance' ? t('納N', {capacity: cardData.capacity}) : cardData.range)}</div>
             <div style={{position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? `${4 * p.zoom}px` : null), right: (p.reversed ? null : `${4 * p.zoom}px`)}}>{cardData.damage}</div>
           </div>
           : null}
-          {p.handOpened ? <div style="white-space: nowrap; color: blue; position: absolute; bottom: 4px; right: 0;">【公開中】</div> : null}
+          {p.handOpened ? <div style="white-space: nowrap; color: blue; position: absolute; bottom: 4px; right: 0;">{t('【公開中】')}</div> : null}
       </div>
   );
 }

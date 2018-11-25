@@ -3,6 +3,7 @@ import * as models from "sakuraba/models";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from ".";
 import { CARD_DATA } from "sakuraba";
+import { t } from "i18next";
 
 export default {
     /** カードを1枚追加する */
@@ -134,7 +135,7 @@ export default {
     /** 山札からカードを引く操作実行 */
     oprDraw: (p: {number?: number, cardNameLogging?: boolean}) => (state: state.State, actions: ActionsType) => {
         actions.operate({
-            log: `カードを${(p.number === undefined ? 1 : p.number)}枚引きました`,
+            log: ['log:カードをN枚引きました', {count: (p.number === undefined ? 1 : p.number)}],
             proc: () => {
                 actions.draw(p);
             }
@@ -163,12 +164,12 @@ export default {
         // 桜花結晶が乗っている切札を、変更しようとした場合はエラー
         let onCardTokens = board.getRegionSakuraTokens(card.side, 'on-card', card.id);
         if(onCardTokens.length >= 1){
-            utils.messageModal("桜花結晶が上に乗っている切札は、裏向きにできません。");
+            utils.messageModal(t("桜花結晶が上に乗っている切札は、裏向きにできません。"));
             return;
         }
 
         actions.operate({
-            log: (p.value ? `切札[${CARD_DATA[card.cardId].name}]を表向きにしました` : `切札[${CARD_DATA[card.cardId].name}]を裏返しました`),
+            log: [(p.value ? 'log:切札[CARDNAME]を表向きにしました' : 'log:切札[CARDNAME]を裏返しました'), {cardName: CARD_DATA[card.cardId].name}],
             proc: () => {
                 actions.setSpecialUsed(p);
             }
@@ -194,7 +195,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            log: `[${CARD_DATA[card.cardId].name}]をボード上から取り除きました`,
+            log: ['log:[CARDNAME]をボード上から取り除きました', {cardName: CARD_DATA[card.cardId].name}],
             proc: () => {
                 actions.removeCard(p);
             }
@@ -221,7 +222,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            log: `[${CARD_DATA[card.cardId].name}]の帯電を解除し、${p.guageType === 'wind' ? '風神' : '雷神'}ゲージを1上げました`,
+            log: ['log:[CARDNAME]の帯電を解除し、GUAGEを1上げました', {cardName: CARD_DATA[card.cardId].name, guage: [(p.guageType === 'wind' ? '風神ゲージ' : '雷神ゲージ'), null]}],
             proc: () => {
                 // 帯電解除
                 actions.discharge(p);
@@ -265,7 +266,7 @@ export default {
         // 使用済み札の下に封印されたカードが1枚でもあれば、再構成はできない
         let usedCards = boardModel.getRegionCards(p.side, 'used', null);
         if(usedCards.find(c => boardModel.getSealedCards(c.id).length >= 1)){
-            utils.messageModal('使用済み札の下に封印されているカードがあるため、再構成を行えません。<br>先に封印されているカードを取り除いてください。<br>(封印されているカードを右クリックすることで、捨て札に送ることができます)');
+            utils.messageModal(t('使用済み札の下に封印されているカードがあるため、再構成を行えません。').replace(/\n/g, '<br>'));
             return;
         }
         

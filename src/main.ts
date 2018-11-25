@@ -9,7 +9,7 @@ import dragInfo from "sakuraba/dragInfo";
 import { BOARD_BASE_WIDTH, ZIndex } from "sakuraba/const";
 import * as randomstring from 'randomstring';
 import _ from "lodash";
-import i18next from 'i18next';
+import i18next, { t } from 'i18next';
 import Backend from 'i18next-locize-backend';
 import languageDetector from 'i18next-browser-languagedetector';
 
@@ -35,21 +35,6 @@ function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery
 
 $(function(){
     try {
-        // 言語設定の初期化
-        i18next
-            .use(Backend)
-            .use(languageDetector)
-            .init({
-                  fallbackLng: 'en'
-                , defaultNS: 'common'
-                , ns: ['common']
-                , debug: true
-                , backend: {
-                      projectId: '5dfcd5bf-69f5-4e2c-b607-66b6ad4836ec'
-                    , apiKey: '87c9d00e-9d23-4072-be37-1e574fca92e3'
-                    , referenceLng: 'en'
-                }
-            });
 
         // socket.ioに接続し、ラッパーを作成
         const ioSocket = io();
@@ -74,6 +59,22 @@ $(function(){
 
         // アプリケーション起動
         let appActions = apps.main.run(st, document.getElementById('BOARD'));
+
+        // 言語設定の初期化
+        i18next
+            .use(Backend)
+            .use(languageDetector)
+            .init({
+                  fallbackLng: 'en'
+                , defaultNS: 'common'
+                , ns: ['common', 'log']
+                , debug: true
+                , backend: {
+                      projectId: '5dfcd5bf-69f5-4e2c-b607-66b6ad4836ec'
+                    , apiKey: '87c9d00e-9d23-4072-be37-1e574fca92e3'
+                    , referenceLng: 'en'
+                }
+            }, () => (appActions.setLanguageSetting('ja')));
 
         let contextMenuShowingAfterDrop: boolean = false;    
         const processOnDragEnd = () => {
@@ -830,8 +831,9 @@ $(function(){
                 // 受け取ったログをtoastrで表示
                 let st = appActions.getState();
                 let targetLogs = p.appendedActionLogs.filter((log) => utils.logIsVisible(log, st.side));
-                let msg = targetLogs.map((log) => log.body).join('<br>');
+                let msg = targetLogs.map((log) => Array.isArray(log.body) ? t(log.body[0], log.body[1]) : log.body).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
                 let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+
                 toastr.info(msg, `${name}:`);
             }
 
