@@ -26,12 +26,9 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
             let bodyStyle = (log.visibility === 'ownerOnly' ? {color: 'green'} : null);
             let name = (log.side === 'watcher' ? (state.board.watchers[log.watcherSessionId] ? state.board.watchers[log.watcherSessionId].name : '?') : state.board.playerNames[log.side]);
 
-            // ログが多言語化に対応していれば、i18nextを通す
-            let logText = (Array.isArray(log.body) ? t(log.body[0], log.body[1]) : log.body);
-
             logElements.push(
                 <div>
-                {name}: <span style={bodyStyle}>{logText}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
+                {name}: <span style={bodyStyle}>{utils.translateLog(log.body)}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
                 </div>
             )
         });

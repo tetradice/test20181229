@@ -5,7 +5,6 @@ import { Megami, CARD_DATA } from "sakuraba";
 import cardActions from './card';
 import { ActionsType } from ".";
 
-type LogValue = [string, object];
 type LogParam = {text: string | LogValue, visibility?: LogVisibility};
 
 export default {
@@ -35,7 +34,7 @@ export default {
         if(p.log !== undefined){
             if(typeof p.log === 'string'){
                 actions.appendActionLog({text: p.log});
-            } else if(p.log.length >= 1){
+            } else if(Array.isArray(p.log) && p.log.length >= 1){
                 if(typeof p.log[0] === 'string'){
                     (p.log as string[]).forEach((text) => actions.appendActionLog({text: text}));
                 } else {
@@ -454,7 +453,7 @@ export default {
             let card = boardModel.getCard(p.useCardId);
             let data = CARD_DATA[card.cardId];
 
-            logs.push({ text: ['log:[CARDNAME]を伏せ札にしてACTを行いました', {cardName: data.name, action: p.actionTitle}], visibility: 'ownerOnly' });
+            logs.push({ text: ['log:[CARDNAME]を伏せ札にしてACTを行いました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}, action: p.actionTitle}], visibility: 'ownerOnly' });
             logs.push({ text: ['log:手札1枚を伏せ札にしてACTを行いました', {action: p.actionTitle}], visibility: 'outerOnly' });
         } else {
             logs.push({ text: ['log:ACTを行いました', {action: p.actionTitle}] });

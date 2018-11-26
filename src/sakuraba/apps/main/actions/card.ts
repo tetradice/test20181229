@@ -195,7 +195,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            log: ['log:[CARDNAME]をボード上から取り除きました', {cardName: CARD_DATA[card.cardId].name}],
+            log: ['log:[CARDNAME]をボード上から取り除きました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}}],
             proc: () => {
                 actions.removeCard(p);
             }
@@ -222,7 +222,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            log: ['log:[CARDNAME]の帯電を解除し、GUAGEを1上げました', {cardName: CARD_DATA[card.cardId].name, guage: [(p.guageType === 'wind' ? '風神ゲージ' : '雷神ゲージ'), null]}],
+            log: ['log:[CARDNAME]の帯電を解除し、GUAGEを1上げました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}, guage: [(p.guageType === 'wind' ? '風神ゲージ' : '雷神ゲージ'), null]}],
             proc: () => {
                 // 帯電解除
                 actions.discharge(p);

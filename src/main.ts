@@ -831,7 +831,7 @@ $(function(){
                 // 受け取ったログをtoastrで表示
                 let st = appActions.getState();
                 let targetLogs = p.appendedActionLogs.filter((log) => utils.logIsVisible(log, st.side));
-                let msg = targetLogs.map((log) => Array.isArray(log.body) ? t(log.body[0], log.body[1]) : log.body).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
+                let msg = targetLogs.map((log) => utils.translateLog(log.body)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
                 let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
 
                 toastr.info(msg, `${name}:`);

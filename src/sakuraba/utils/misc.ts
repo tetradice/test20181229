@@ -1,5 +1,6 @@
 import * as sakuraba from "sakuraba";
 import * as models from "sakuraba/models";
+import { t } from "i18next";
 
 /** プレイヤーサイドを逆にする */
 export function flipSide(side: PlayerSide): PlayerSide{
@@ -186,5 +187,27 @@ export function getSakuraTokenRegionTitle(selfSide: PlayerSide, side: PlayerSide
         return `相手の${titleBase}`
     } else {
         return titleBase;
+    }
+}
+
+
+// ログテキストオブジェクトを翻訳する (パラメータの中に翻訳対象オブジェクトが含まれていれば再帰的に翻訳)
+export function translateLog(log: LogValue): string{
+    if(typeof log === 'string'){
+        return log;
+    } else if(Array.isArray(log)){
+        let [key, givenParams] = log;
+
+        let params = {};
+        for(let k in givenParams){
+            params[k] = translateLog(givenParams[k]); // 再帰処理
+        }
+        return t(key, params);
+    } else {
+        if(log.type === 'cardName'){
+            let cardData = new models.CardData(log['cardId'], 'ja');
+            return cardData.name;
+        }
+        return undefined;
     }
 }
