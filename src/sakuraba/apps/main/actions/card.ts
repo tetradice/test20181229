@@ -169,7 +169,7 @@ export default {
         }
 
         actions.operate({
-            log: [(p.value ? 'log:切札[CARDNAME]を表向きにしました' : 'log:切札[CARDNAME]を裏返しました'), {cardName: CARD_DATA[card.cardId].name}],
+            log: [(p.value ? 'log:切札[CARDNAME]を表向きにしました' : 'log:切札[CARDNAME]を裏返しました'), {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}}],
             proc: () => {
                 actions.setSpecialUsed(p);
             }
@@ -272,7 +272,7 @@ export default {
         
         actions.operate({
             undoType: 'notBack', // Undo不可
-            log: (p.lifeDecrease ? `再構成しました (ライフ-1)` : `ライフ減少なしで再構成しました`),
+            log: [(p.lifeDecrease ? `log:再構成しました(ライフ-1)` : `log:ライフ減少なしで再構成しました`), null],
             proc: () => {
                 // （桜花結晶が上に乗っていない）使用済札、伏せ札をすべて山札へ移動。ただしTransformカードは除外
                 let newBoard = models.Board.clone(state.board);

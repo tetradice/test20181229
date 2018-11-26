@@ -83,7 +83,7 @@ export default {
      */
     oprRemoveSakuraTokenfromAllEnhanceCard: () => (state: state.State, actions: ActionsType) => {
         actions.operate({
-            log: `全付与札の桜花結晶を-1しました`,
+            log: ['log:全付与札の桜花結晶を-1しました', null],
             proc: () => {
                 let boardModel = new models.Board(state.board);
 
