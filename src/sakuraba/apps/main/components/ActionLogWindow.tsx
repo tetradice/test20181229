@@ -78,7 +78,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) =>
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}
               onupdate={onupdate}>
-                <div class="ui top attached label">操作ログ<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleActionLogVisible()}><i class="times icon"></i></a></div>
+                <div class="ui top attached label">{t('操作ログ')}<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleActionLogVisible()}><i class="times icon"></i></a></div>
                 <div id="ACTION-LOG-AREA">{logElements}</div>
             </div>
         )

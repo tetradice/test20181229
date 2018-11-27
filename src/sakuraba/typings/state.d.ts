@@ -152,4 +152,5 @@ export interface LogRecord {
     side?: SheetSide;
     watcherSessionId?: string;
     visibility: LogVisibility;
+    indent?: boolean;
 }

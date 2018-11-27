@@ -3,6 +3,7 @@ import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
 import { ZIndex } from "sakuraba/const";
+import { t } from "i18next";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -86,7 +87,7 @@ export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: 
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}
               ondestroy={ondestroy}>
-                <div class="ui top attached label">BGM再生<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleBgmPlaying()}><i class="times icon"></i></a></div>
+                <div class="ui top attached label">{t('BGM再生')}<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleBgmPlaying()}><i class="times icon"></i></a></div>
                 <div>
                     <div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', '-')}>
 
@@ -94,7 +95,7 @@ export const BGMWindow = (p: {shown: boolean}) => (state: state.State, actions: 
                         <i class="dropdown icon"></i>
                         <div class="default text"></div>
                         <div class="menu">
-                            <div class="item" data-value="-">(曲を選択)</div>
+                            <div class="item" data-value="-">{t('(曲を選択)')}</div>
                             {bgmData.map(item => <div class="item" data-value={item.key}><i class="music icon"></i> {item.title}</div>)}
                         </div>
                     </div>

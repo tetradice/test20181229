@@ -1,4 +1,5 @@
 import { h } from "hyperapp";
+import { t } from "i18next";
 
 /** 領域枠 */
 interface Param {
@@ -39,7 +40,7 @@ export const CardAreaBackground = (p: Param) => (state: state.State) => {
         >
             <div class="area-title" style={{fontSize: `${(15 * state.zoom)}px`, right: `${8 * state.zoom}px`, top: `${4 * state.zoom}px`}}>{p.title}</div>
             <div class="card-count">{p.cardCount}</div>
-            {handOpened ? <div style="color: blue; position: absolute; bottom: 4px; right: 4px;">【手札公開中】</div> : null}
+            {handOpened ? <div style="color: blue; position: absolute; bottom: 4px; right: 4px;">{t('【手札公開中】')}</div> : null}
         </div>
     );
 }

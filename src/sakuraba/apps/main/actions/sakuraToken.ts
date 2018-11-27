@@ -104,7 +104,7 @@ export default {
                     console.log(tokens);
                     if(tokens.length === 1){
                         let cardData = CARD_DATA[card.cardId];
-                        actions.appendActionLog({text: `-> [${cardData.name}]の上の桜花結晶数が0になりました`});
+                        actions.appendActionLog({indent: true, text: ['log:[CARDNAME]の上の桜花結晶数が0になりました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}}]});
                     }
                 });
             }
@@ -113,9 +113,22 @@ export default {
 
     /** 騎動前進 */
     oprRideForward: (p: {side: PlayerSide, moveNumber: number}) => (state: state.State, actions: ActionsType) => {
-        let numPrefix = (p.moveNumber === 1 ? '' : `${p.moveNumber}回`);
+        let log: LogValue;
+        if(p.moveNumber === 1){
+            if(p.side === state.side){
+                log = ['log:騎動前進しました', null];
+            } else {
+                log = ['log:相手を騎動前進させました', null];
+            }
+        } else {
+            if(p.side === state.side){
+                log = ['log:N回騎動前進しました', {count: p.moveNumber}];
+            } else {
+                log = ['log:相手をN回騎動前進させました', {count: p.moveNumber}];
+            }
+        }
         actions.operate({
-            log: (p.side === state.side ? `${numPrefix}騎動前進しました` : `相手を${numPrefix}騎動前進させました`),
+            log: log,
             proc: () => {
                 actions.moveSakuraToken({ from: [p.side, 'machine', null], to: [null, 'distance', null], distanceMinus: true, moveNumber: p.moveNumber });
             }
@@ -124,9 +137,22 @@ export default {
 
     /** 騎動後退 */
     oprRideBack: (p: {side: PlayerSide, moveNumber: number}) => (state: state.State, actions: ActionsType) => {
-        let numPrefix = (p.moveNumber === 1 ? '' : `${p.moveNumber}回`);
+        let log: LogValue;
+        if(p.moveNumber === 1){
+            if(p.side === state.side){
+                log = ['log:騎動後退しました', null];
+            } else {
+                log = ['log:相手を騎動後退させました', null];
+            }
+        } else {
+            if(p.side === state.side){
+                log = ['log:N回騎動後退しました', {count: p.moveNumber}];
+            } else {
+                log = ['log:相手をN回騎動後退させました', {count: p.moveNumber}];
+            }
+        }
         actions.operate({
-            log: (p.side === state.side ? `${numPrefix}騎動後退しました` : `相手を${numPrefix}回騎動後退させました`),
+            log: log,
             proc: () => {
                 actions.moveSakuraToken({from: [p.side, 'machine', null], to: [null, 'distance', null], distanceMinus: false, moveNumber: p.moveNumber});
             }
