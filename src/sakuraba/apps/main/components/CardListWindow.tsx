@@ -6,6 +6,7 @@ import { ZIndex } from "sakuraba/const";
 import { MEGAMI_DATA, CARD_DATA, CardDataItem, Megami } from "sakuraba";
 import dragInfo from "sakuraba/dragInfo";
 import { css } from 'emotion'
+import { t } from "i18next";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -67,18 +68,18 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
         let cardIds = utils.getMegamiCardIds(state.cardListSelectedMegami, null, true);
         cardIds.map(id => CARD_DATA[id]).forEach((c, i) => {
             let typeCaptions = [];
-            if(c.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>攻撃</span>);
-            if(c.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>行動</span>);
-            if(c.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>付与</span>);
-            if(c.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>不定</span>);
-            if(c.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>対応</span>);
-            if(c.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>全力</span>);
+            if(c.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>{t('攻撃')}</span>);
+            if(c.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>{t('行動')}</span>);
+            if(c.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>{t('付与')}</span>);
+            if(c.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>{t('不定')}</span>);
+            if(c.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>{t('対応')}</span>);
+            if(c.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>{t('全力')}</span>);
 
             trs.push(
                 <tr class={c.baseType === 'special' ? 'warning' : null} data-html={utils.getDescriptionHtml(cardIds[i])}>
                     <td>{c.name}</td>
                     <td>{(typeCaptions.length === 2 ? [typeCaptions[0], '/', typeCaptions[1]] : typeCaptions[0])}</td>
-                    <td>{(c.rangeOpened ? `[閉]${c.range} [開]${c.rangeOpened}` : c.range)}</td>
+                    <td>{(c.rangeOpened ? `${t('[閉]')}${c.range} ${t('[開]')}${c.rangeOpened}` : c.range)}</td>
                     <td>{(c.baseType === 'special' ? c.cost : '')}</td>
                 </tr>
             )
@@ -106,16 +107,16 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
                                 {options}
                             </select>
                         </div>
-                        <div class={cardSetCss}>カードセット: 新幕 シーズン2</div>
+                        <div class={cardSetCss}>{t('カードセット')}: {t('cardset:新幕 シーズン2')}</div>
                     </div>
                 </div>
                 <table class="ui small celled selectable table" style={{background: `transparent`}}>
                     <thead>
                     <tr>
-                        <th class="seven wide">名称</th>
-                        <th class="four wide">タイプ</th>
-                        <th class="three wide">適正距離</th>
-                        <th class="two wide">消費</th>
+                        <th class="seven wide">{t('名称')}</th>
+                        <th class="four wide">{t('タイプ')}</th>
+                        <th class="three wide">{t('適正距離')}</th>
+                        <th class="two wide">{t('消費')}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -130,7 +131,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
              style={{position: 'absolute', width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate} onupdate={onupdate}>
-                <div class="ui top attached label">カードリスト<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleCardListVisible()}><i class="times icon"></i></a></div>
+                <div class="ui top attached label">{t('カードリスト')}<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleCardListVisible()}><i class="times icon"></i></a></div>
                 {contentDiv}
             </div>
         )

@@ -61,12 +61,12 @@ export const ChatLogArea = (p: {logs: state.LogRecord[]}) => (state: state.State
             class="ui segment"
             oncreate={oncreate}
             onupdate={onupdate}>
-            <div class="ui top attached label">チャット</div>
+            <div class="ui top attached label">{t('チャット')}</div>
             <div id="CHAT-LOG-AREA">{logElements}</div>
             <div id="CHAT-INPUT-AREA">
                 <div class="ui action fluid input">
                     <input type="text" />
-                    <button class="ui button" onclick={onSend}>送信</button>
+                    <button class="ui button" onclick={onSend}>{t('送信')}</button>
                 </div>
             </div>
         </div>
