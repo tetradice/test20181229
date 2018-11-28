@@ -6,14 +6,14 @@ import * as models from "sakuraba/models";
 import toastr from "toastr";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
 import * as apps from "sakuraba/apps"
-import i18next from 'i18next';
+import i18next, { t } from 'i18next';
 
 /** コントロールパネル */
 export const ControlPanel = () => (state: state.State, actions: ActionsType) => {
     let reset = () => {
-        utils.confirmModal('卓を初期状態に戻します。（操作ログは初期化されません）<br>この操作は相手プレイヤーに確認を取ってから行ってください。<br><br>よろしいですか？', () => {
+        utils.confirmModal(t('卓を初期状態に戻します。（操作ログは初期化されません）<br>この操作は相手プレイヤーに確認を取ってから行ってください。<br><br>よろしいですか？'), () => {
             actions.operate({
-                log: `ボードリセットを行いました`,
+                log: ['log:ボードリセットを行いました', null],
                 proc: () => {
                     actions.resetBoard();
                 }
@@ -26,10 +26,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         let side = state.side;
 
         $('#INPUT-MODAL input').val(state.board.playerNames[state.side]);
-        utils.userInputModal(`<p>新しいプレイヤー名を入力してください。</p>`, ($elem) => {
+        utils.userInputModal(`<p>${t('新しいプレイヤー名を入力してください。')}</p>`, ($elem) => {
             let playerName = $('#INPUT-MODAL input').val() as string;
             actions.operate({
-                log: `プレイヤー名を変更しました`,
+                log: ['log:プレイヤー名を変更しました', null],
                 proc: () => {
                     actions.setPlayerName({side: side, name: playerName});
                 }
@@ -48,7 +48,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         // 観戦者である場合の処理
         commandButtons = (
             <div class={css.commandButtons}>
-            <div class={css.currentPhase}>- 観戦 -</div>
+            <div class={css.currentPhase}>{t('- 観戦 -')}</div>
             </div>
         );
     } else {
@@ -109,7 +109,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
             commandButtons = (
                 <div class={css.commandButtons}>
-                <div class={css.currentPhase}>- 桜花決闘 -</div>
+                <div class={css.currentPhase}>{t'(- 桜花決闘 -')}</div>
                 {innerCommandButtons}
 
                 </div>
@@ -117,13 +117,13 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         } else if(state.board.megamiOpenFlags[state.side]){
             commandButtons = (
                 <div class={css.commandButtons}>
-                <div class={css.currentPhase}>- 眼前構築 -</div>
+                <div class={css.currentPhase}>{t'(- 眼前構築 -')}</div>
                 </div>
             );
         } else if(state.board.playerNames[state.side] !== null){
             commandButtons = (
                 <div class={css.commandButtons}>
-                <div class={css.currentPhase}>- 双掌繚乱 -</div>
+                <div class={css.currentPhase}>{t'(- 双掌繚乱 -')}</div>
                 </div>
             );
         }
@@ -139,7 +139,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             megamiCaptionP1 = ` - ${utils.getMegamiDispName(board.megamis.p1[0])}、${utils.getMegamiDispName(board.megamis.p1[1])}`
         } else {
             // プレイヤー1のメガミ名を表示不可能な場合
-            megamiCaptionP1 = ` - ？？？、？？？`
+            megamiCaptionP1 = ` - ${t('メガミ名-？？？、？？？')}`
         }
     }
     if(board.megamis.p2 !== null){
@@ -148,7 +148,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             megamiCaptionP2 = ` - ${utils.getMegamiDispName(board.megamis.p2[0])}、${utils.getMegamiDispName(board.megamis.p2[1])}`
         } else {
             // プレイヤー2のメガミ名を表示不可能な場合
-            megamiCaptionP2 = ` - ？？？、？？？`
+            megamiCaptionP2 = ` - ${t('メガミ名-？？？、？？？')}`
         }
     }
 
@@ -169,8 +169,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
     // 通知
     let notifyData = [
-        {message: 'ターンを終了しました', key: 'turnEnd'},
-        {message: '対応します', key: 'reaction'},
+        {message: t('通知-ターンを終了しました'), key: 'turnEnd'},
+        {message: t('通知-対応します'), key: 'reaction'},
     ];
     let notifyValueChanged = (e) => {
         let val = $(e.target).val();
@@ -192,7 +192,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: notifyItem.message});
 
         // 送信完了
-        toastr.success(`${opponentName}へ通知しました。`, '', {timeOut: 5000});
+        toastr.success(t('Oへ通知しました。', {opponent: opponentName}), '', {timeOut: 5000});
 
         // ドロップダウンを元に戻す
         $('[name=notifyType]').closest('.dropdown').dropdown('set selected', '-');
@@ -214,33 +214,33 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
     let menu = (
         <div class="ui basic button dropdown" oncreate={dropdownCreate}>
-            メニュー
+            {t('メニュー')}
             <i class="dropdown icon"></i>
             <div class="menu">
                 {state.side === 'watcher' ? null : <div class="item" onclick={playerNameChange}>プレイヤー名の変更</div>}
                 {state.side === 'watcher' ? null : <div class="item" onclick={reset}>ボードリセット (初期化)</div>}
                 <div class="item" onclick={() => actions.toggleActionLogVisible()}>
                     {(state.actionLogVisible ? <i class="check icon"></i> : null)}
-                    操作ログを表示
+                    {t('操作ログを表示')}
                                 </div>
                 <div class="item" onclick={() => actions.toggleBgmPlaying()}>
                     {(state.bgmPlaying ? <i class="check icon"></i> : null)}
-                    BGM再生
+                    {t('BGM再生')}
                 </div>
                 <div class="item" onclick={() => actions.toggleSettingVisible()}>
                     {(state.settingVisible ? <i class="check icon"></i> : null)}
-                    設定
+                    {t('設定')}
                 </div>
                 <div class="divider"></div>
                 <div class="item" onclick={() => actions.toggleCardListVisible()}>
-                    カードリスト
+                    {t('カードリスト')}
                 </div>
                 <div class="item" onclick={quizOpen}>
-                    ミニゲーム: ふるよにミニクイズ
+                    {t('ミニゲーム-ふるよにミニクイズ')}
                 </div>
                 <div class="divider"></div>
                 <div class="item" onclick={() => location.href = "/"}>
-                    卓から離れる (トップページへ戻る)
+                    {t('卓から離れる')}
                 </div>
                 <div class="divider"></div>
                 <div class="item" onclick={aboutThisService} style={{lineHeight: '1.5'}}>ふるよにボードシミュレーターについて <br />(バージョン、著作権情報、連絡先)</div>

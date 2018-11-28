@@ -3,6 +3,7 @@ import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
+import { t } from "i18next";
 
 /** チャット */
 export const ChatLogArea = (p: {logs: state.LogRecord[]}) => (state: state.State, actions: ActionsType) => {
