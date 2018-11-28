@@ -109,7 +109,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
             commandButtons = (
                 <div class={css.commandButtons}>
-                <div class={css.currentPhase}>{t('(- 桜花決闘 -')}</div>
+                <div class={css.currentPhase}>{t('- 桜花決闘 -')}</div>
                 {innerCommandButtons}
 
                 </div>
@@ -117,13 +117,13 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         } else if(state.board.megamiOpenFlags[state.side]){
             commandButtons = (
                 <div class={css.commandButtons}>
-                <div class={css.currentPhase}>{t('(- 眼前構築 -')}</div>
+                <div class={css.currentPhase}>{t('- 眼前構築 -')}</div>
                 </div>
             );
         } else if(state.board.playerNames[state.side] !== null){
             commandButtons = (
                 <div class={css.commandButtons}>
-                <div class={css.currentPhase}>{t('(- 双掌繚乱 -')}</div>
+                <div class={css.currentPhase}>{t('- 双掌繚乱 -')}</div>
                 </div>
             );
         }
