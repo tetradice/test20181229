@@ -5,6 +5,7 @@ import { ActionsType } from "../actions";
 import dragInfo from "sakuraba/dragInfo";
 import { Card } from "sakuraba/apps/common/components";
 import * as models from "sakuraba/models";
+import { t } from "i18next";
 
 /** カード */
 type Type = 'board' | 'modal';
