@@ -67,7 +67,7 @@ $(function(){
             .init({
                   fallbackLng: 'en'
                 , defaultNS: 'common'
-                , ns: ['common', 'log', 'cardset']
+                , ns: ['common', 'log', 'cardset', 'help-window']
                 , debug: true
                 , backend: {
                       projectId: '5dfcd5bf-69f5-4e2c-b607-66b6ad4836ec'

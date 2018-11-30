@@ -6,6 +6,7 @@ import * as css from "./ControlPanel.css"
 import * as models from "sakuraba/models";
 import { Card, ProcessButton } from "sakuraba/apps/common/components";
 import * as apps from "sakuraba/apps";
+import { t } from "i18next";
 
 
 /** 処理を進めるためのボタンを表示 */
@@ -50,7 +51,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         let megami2Rule: SemanticUI.Form.Field = {
               identifier: 'megami2'
             , rules: [
-                {type: 'originalMegamiEqual', prompt: '同じメガミを選択することはできません。'}
+                {type: 'originalMegamiEqual', prompt: t('同じメガミを選択することはできません。')}
             ]
         };
         $('#MEGAMI-SELECT-MODAL .ui.form').form({
@@ -77,7 +78,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
             let megamis = [$('#MEGAMI1-SELECTION').val() as sakuraba.Megami, $('#MEGAMI2-SELECTION').val() as sakuraba.Megami];
 
             actions.operate({
-                log: `メガミを選択しました`,
+                log: ['log:メガミを選択しました', null],
                 proc: () => {
                     //actions.appendActionLog({text: `-> ${utils.getMegamiDispName(megamis[0])}、${utils.getMegamiDispName(megamis[1])}`, hidden: true});
                     actions.setMegamis({side: side, megami1: megamis[0], megami2: megamis[1]});
@@ -200,21 +201,21 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                         <div class="ui modal visible active">
                             <div class="content">
                                 <div class="description" style={{marginBottom: '2em'}}>
-                                    <p>使用するカードを選択してください。</p>
+                                    <p>{t('使用するカードを選択してください。')}</p>
                                 </div>
                                 <div class={css.outer}>
                                     <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
                                         {cardElements}
                                     </div>
                                 </div>
-                                <div class={css.countCaption}>通常札: <span style={normalCardCountStyles}>{normalCardCount}</span>/7　　切札: <span style={specialCardCountStyles}>{specialCardCount}</span>/3</div>
+                                <div class={css.countCaption}>{t('通常札')}: <span style={normalCardCountStyles}>{normalCardCount}</span>/7　　{t('切札')}: <span style={specialCardCountStyles}>{specialCardCount}</span>/3</div>
                             </div>
                             <div class="actions">
                                 <div class={okButtonClass} onclick={() => {actions.hide(); resolve(deckBuildState)}}>
-                                    決定 <i class="checkmark icon"></i>
+                                    {t('決定')} <i class="checkmark icon"></i>
                                 </div>
                                 <div class="ui black deny button" onclick={() => {actions.hide(); reject()}}>
-                                    キャンセル
+                                {t('キャンセル')}
                                 </div>
                             </div>
                         </div>
@@ -228,7 +229,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         promise.then((finalState: typeof initialState) => {
             // 確定した場合、デッキを保存
             actions.operate({
-                log: `デッキを構築しました`,
+                log: ['log:デッキを構築しました', null],
                 proc: () => {
                     actions.setDeckCards({cardIds: finalState.selectedCardIds});
                 }
@@ -242,19 +243,19 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
         let side = state.side;
 
-        utils.confirmModal('選択したメガミ2柱を公開します。<br><br>この操作を行うと、それ以降メガミの変更は行えません。<br>よろしいですか？', () => {
+        utils.confirmModal(utils.nl2br(t('選択したメガミ2柱を公開します。この操作を行うと、それ以降メガミの変更は行えません。よろしいですか？')), () => {
             actions.operate({
-                log: `選択したメガミを公開しました`,
+                log: ['log:選択したメガミを公開しました', null],
                 undoType: 'notBack',
                 proc: () => {
-                    actions.appendActionLog({text: `-> ${utils.getMegamiDispName(board.megamis[state.side][0])}、${utils.getMegamiDispName(board.megamis[state.side][1])}`});
+                    actions.appendActionLog({indent: true, text: ['メガミ名-MEGAMI1、MEGAMI2', {megami1: utils.getMegamiDispName(board.megamis[state.side][0]), megami2: utils.getMegamiDispName(board.megamis[state.side][1])}]});
                     actions.setMegamiOpenFlag({side: side, value: true});
                 }
             });
         });
     };
     let firstHandSet = () => {
-        utils.confirmModal('手札を引くと、それ以降デッキの変更は行えません。<br>よろしいですか？', () => {
+        utils.confirmModal(utils.nl2br(t('手札を引くと、それ以降デッキの変更は行えません。よろしいですか？')), () => {
             actions.oprFirstDraw();
         });
     };
@@ -285,7 +286,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                 // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
                 actions.operate({
                     undoType: 'notBack',
-                    log: `手札${selectedCards.length}枚を山札の底に置き、同じ枚数のカードを引き直しました`,
+                    log: ['log:手札N枚を山札の底に置き、同じ枚数のカードを引き直しました', {count: selectedCards.length}],
                     proc: () => {
                         // 選択したカードを山札の底に移動
                         selectedCards.forEach(card => {

@@ -3,6 +3,7 @@ import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
 import { ZIndex } from "sakuraba/const";
+import { t } from "i18next";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -39,27 +40,26 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
         } else if(!state.board.mariganFlags[state.side]){
             contentDiv = (
                 <div>
-                    <h4><i class="icon question circle outline"></i>決闘準備中の操作方法</h4>
-                    <p>ボード上に表示されたボタンを押して、準備を進めてください。<br />
-                    メガミ選択、デッキ構築、手札の引き直しが終わると決闘開始となります。</p>
+                    <h4><i class="icon question circle outline"></i>{t('help-window:決闘準備中の操作方法')}</h4>
+                    <p>{utils.nl2brJsx(t('help-window:ボード上に表示されたボタンを押して、準備を進めてください。メガミ選択、デッキ構築、手札の引き直しが終わると決闘開始となります。'))}</p>
                 </div>
             );
         } else {
             let rairaFound = state.board.megamis[state.side][0] === 'raira' || state.board.megamis[state.side][1] === 'raira';
             contentDiv = (
                 <div>
-                    <h4><i class="icon question circle outline"></i>決闘中の操作方法</h4>
-                    <p><strong>カード/桜花結晶をドラッグ:</strong> 移動<br />
-                        <strong>山札をダブルクリック:</strong> カードを1枚引く<br />
-                        <strong>切札をダブルクリック:</strong> 切札を表向き(使用済み)にする
+                    <h4><i class="icon question circle outline"></i>{t('help-window:決闘中の操作方法')}</h4>
+                    <p><strong>{t('help-window:カード/桜花結晶をドラッグ')}:</strong> {t('help-window:移動')}<br />
+                        <strong>{t('help-window:山札をダブルクリック')}:</strong> {t('help-window:カードを1枚引く')}<br />
+                        <strong>{t('help-window:切札をダブルクリック')}:</strong> {t('help-window:切札を表向き(使用済み)にする')}
                 </p>
                     <ul>
-                        <li>再構成を行うときは、自分の山札の上で右クリック</li>
-                        <li>畏縮させるときは、集中力の上で右クリック</li>
-                        <li>手札を相手に公開するときは、手札の上で右クリック</li>
-                        <li>カードを封印したい時には、使用済み領域にある封印先のカードの上にドラッグ<br />（[論破]などの一部カードにのみ封印可能）</li>
-                        <li>カードをゲームから取り除きたい場合は、追加札領域へ移動<br />（[風魔招来孔]などの一部カードのみ実行可能）</li>
-                        {rairaFound ? <li>カードの帯電を解除したい場合は、表向きのカードの上で右クリック</li> : null}
+                        <li>{utils.nl2brJsx(t('help-window:再構成を行うときは、自分の山札の上で右クリック'))}</li>
+                        <li>{utils.nl2brJsx(t('help-window:畏縮させるときは、集中力の上で右クリック'))}</li>
+                        <li>{utils.nl2brJsx(t('help-window:手札を相手に公開するときは、手札の上で右クリック'))}</li>
+                        <li>{utils.nl2brJsx(t('help-window:カードを封印したい時には、使用済み領域にある封印先のカードの上にドラッグ（[論破]などの一部カードにのみ封印可能）'))}</li>
+                        <li>{utils.nl2brJsx(t('help-window:カードをゲームから取り除きたい場合は、追加札領域へ移動（[風魔招来孔]などの一部カードのみ実行可能）'))}</li>
+                        {rairaFound ? <li>{utils.nl2brJsx(t('help-window:カードの帯電を解除したい場合は、表向きのカードの上で右クリック'))}</li> : null}
                     </ul>
                 </div>
             );
@@ -70,7 +70,7 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
              style={{position: 'absolute', width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}>
-                <div class="ui top attached label">操作説明<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleHelpVisible()}><i class="times icon"></i></a></div>
+                <div class="ui top attached label">{t('操作説明')}<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleHelpVisible()}><i class="times icon"></i></a></div>
                 {contentDiv}
             </div>
         )

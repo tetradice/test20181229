@@ -213,7 +213,10 @@ export function translateLog(log: LogValue): string{
     }
 }
 
-// 
+export function nl2br(str: string): string {
+    return str.replace(/\n/g, '<br>');
+}
+
 export function nl2brJsx(str: string): hyperapp.Children[] {
     let lines = str.split(/\n/g);
     let ret: hyperapp.Children[] = [];
