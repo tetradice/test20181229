@@ -3,6 +3,7 @@ import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
 import { ZIndex } from "sakuraba/const";
+import { t } from "i18next";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -58,12 +59,12 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
              style={{position: 'absolute', width: "35rem", paddingBottom: '3rem', backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
               class="ui segment draggable ui-widget-content resizable"
               oncreate={oncreate}>
-                <div class="ui top attached label">設定<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleSettingVisible()}><i class="times icon"></i></a></div>
+                <div class="ui top attached label">{t('設定')}<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleSettingVisible()}><i class="times icon"></i></a></div>
                 <form class="ui form">
                     <div class="inline field">
                         <div class={`ui checkbox`} data-key="MEGAMI-FACE-VIEW-MODE">
                             <input type="checkbox" class="hidden" checked={(state.setting.megamiFaceViewMode === 'background1' ? true : undefined)} />
-                            <label>メガミのフェイスアップ画像表示</label>
+                            <label>{t('メガミのフェイスアップ画像表示')}</label>
                         </div>
                     </div>
                     <div class="inline field">

@@ -290,7 +290,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                     proc: () => {
                         // 選択したカードを山札の底に移動
                         selectedCards.forEach(card => {
-                            actions.moveCard({from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: '山札へ戻す'});
+                            actions.moveCard({from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: t('log:CardNamePrefix-山札へ戻す')});
                         });
 
                         // 手札n枚を引く
@@ -304,18 +304,18 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                     }
                 })
 
-                utils.messageModal("桜花決闘を開始しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
+                utils.messageModal(utils.nl2br(t("桜花決闘を開始しました。場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。")));
             });
         };
 
         const notMarigan = () => {
-            utils.confirmModal("手札の引き直しを行わずに、決闘を開始します。<br>よろしいですか？", () => {
+            utils.confirmModal(utils.nl2br(t("手札の引き直しを行わずに、決闘を開始します。よろしいですか？")), () => {
                 // マリガンフラグON
                 actions.setMariganFlag({side: side, value: true});
 
                 // 盤面のカードや桜花結晶などを配置して、メッセージを表示
                 actions.oprBoardSetup({});
-                utils.messageModal("桜花決闘を開始しました。<br>場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。");
+                utils.messageModal(utils.nl2br(t("桜花決闘を開始しました。場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。")));
 
             });
 
@@ -323,16 +323,16 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
 
         processButtons = (
             <div>
-                <ProcessButton left={p.left} top={top1} zoom={state.zoom} onclick={marigan} primary>手札を引き直して決闘を開始</ProcessButton>
-                <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={notMarigan}>決闘を開始</ProcessButton>
+                <ProcessButton left={p.left} top={top1} zoom={state.zoom} onclick={marigan} primary>{t('手札を引き直して決闘を開始')}</ProcessButton>
+                <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={notMarigan}>{t('決闘を開始')}</ProcessButton>
             </div>
         );
     } else if(state.board.megamiOpenFlags[state.side]){
         // 選択したメガミを公開済みの場合
         processButtons = (
             <div>
-                <ProcessButton left={p.left} top={top1} zoom={state.zoom} onclick={deckBuild} primary={!deckBuilded}>デッキ構築</ProcessButton>
-                {deckBuilded ? <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={firstHandSet} primary disabled={!deckBuilded}>最初の手札を引く</ProcessButton> : null}
+                <ProcessButton left={p.left} top={top1} zoom={state.zoom} onclick={deckBuild} primary={!deckBuilded}>{t('デッキ構築')}</ProcessButton>
+                {deckBuilded ? <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={firstHandSet} primary disabled={!deckBuilded}>{t('最初の手札を引く')}</ProcessButton> : null}
             </div>
         );
     } else if(state.board.playerNames[state.side] !== null) {
@@ -341,8 +341,8 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
 
         processButtons = (
             <div>
-                <ProcessButton left={p.left} top={top1} zoom={state.zoom} onclick={megamiSelect} primary={!megamiSelected}>メガミ選択</ProcessButton>
-                {megamiSelected ? <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={megamiOpen} primary  disabled={!megamiSelected}>選択したメガミを公開</ProcessButton> : null}
+                <ProcessButton left={p.left} top={top1} zoom={state.zoom} onclick={megamiSelect} primary={!megamiSelected}>{t('メガミ選択')}</ProcessButton>
+                {megamiSelected ? <ProcessButton left={p.left} top={top2} zoom={state.zoom} onclick={megamiOpen} primary  disabled={!megamiSelected}>{t('選択したメガミを公開')}</ProcessButton> : null}
             </div>
         );
     }

@@ -6,6 +6,7 @@ import * as sakuraba from "sakuraba";
 import { Card } from "sakuraba/apps/common/components";
 
 import * as css from "./view.css"
+import { t } from "i18next";
 
 /** ポップアップ初期化 */
 function setPopup(){
@@ -44,7 +45,7 @@ const view: View<State, ActionsType> = (state, actions) => {
             <div class="ui modal visible active">
                 <div class="content">
                     <div class="description" style={{marginBottom: '2em'}}>
-                        <p>山札の底に戻すカードを選択してください。（この操作は一度しか行えません）</p>
+                        <p>{t('山札の底に戻すカードを選択してください。（この操作は一度しか行えません）')}</p>
                     </div>
                     <div class={css.outer}>
                         <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
@@ -52,15 +53,15 @@ const view: View<State, ActionsType> = (state, actions) => {
                         </div>
                     </div>
                     <div class="description" style={{marginTop: '1em'}}>
-                        <p>※選択した順番でカードを底に置く順番が決まり、「1」と表示されているカードが一番上に置かれます。</p>
+                        <p>{t('※選択した順番でカードを底に置く順番が決まり、「1」と表示されているカードが一番上に置かれます。')}</p>
                     </div>
                 </div>
                 <div class="actions">
                     <div class={okButtonClass} onclick={() => {actions.hide(); state.promiseResolve(state.selectedCards)}}>
-                        決定 <i class="checkmark icon"></i>
+                        {t('決定')} <i class="checkmark icon"></i>
                     </div>
                     <div class="ui black deny button" onclick={() => {actions.hide(); state.promiseReject()}}>
-                        キャンセル
+                        {t('キャンセル')}
                     </div>
                 </div>
             </div>

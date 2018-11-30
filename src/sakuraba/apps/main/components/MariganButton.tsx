@@ -3,6 +3,7 @@ import { ActionsType } from "../actions";
 import * as apps from "sakuraba/apps";
 import * as models from "sakuraba/models";
 import { resolve } from "url";
+import { t } from "i18next";
 
 /** 手札の引き直しボタン */
 export const MariganButton = (p: {left: number, top: number}) => (state: state.State, actions: ActionsType) => {
@@ -49,5 +50,5 @@ export const MariganButton = (p: {left: number, top: number}) => (state: state.S
         // });
     }
 
-    return <button style={styles} class={`ui basic button`} onclick={onClick}><span style={{color: 'blue'}}>手札を引き直す</span></button>;
+    return <button style={styles} class={`ui basic button`} onclick={onClick}><span style={{color: 'blue'}}>{t('手札を引き直す')}</span></button>;
 }

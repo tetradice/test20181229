@@ -8,6 +8,7 @@ import { CARD_DATA, MEGAMI_DATA } from "sakuraba";
 import { MegamiTarots } from "sakuraba/apps/common/components";
 import { StackedCards } from "sakuraba/apps/common/components/StackedCards";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
+import { t } from "i18next";
 
 /** レイアウト種別 */
 type LayoutType = 'horizontal' | 'horizontal-distance' | 'vertical' | 'stacked';
@@ -148,11 +149,11 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             , { region: 'special',     side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: (hasMachineTarot[opponentSide] ? 200 : 0) + 10,  top: 30, width: 330, height: 160 }
 
             // 自分
-            , { region: 'used',        side: selfSide, title: "使用済み", cardLayoutType: 'horizontal', left: 10,   top: 430,  width: 450, height: 160 }
-            , { region: 'hidden-used', side: selfSide, title: "伏せ札",   cardLayoutType: 'stacked',    left: 480,  top: 430,  width: 170, height: 160, cardCountDisplay: true }
-            , { region: 'library',     side: selfSide, title: "山札",     cardLayoutType: 'stacked',    left: 670,  top: 430,  width: 160, height: 160, cardCountDisplay: true }
-            , { region: 'hand',        side: selfSide, title: "手札",     cardLayoutType: 'horizontal', left: 10,   top: 600, width: (hasMachineTarot[selfSide] ? 450 : 640), height: 160 }
-            , { region: 'special',     side: selfSide, title: "切札",     cardLayoutType: 'horizontal', left: (hasMachineTarot[selfSide] ? 670 : 850),  top: 600, width: 330, height: 160 }
+            , { region: 'used',        side: selfSide, title: t("領域名-使用済み"), cardLayoutType: 'horizontal', left: 10,   top: 430,  width: 450, height: 160 }
+            , { region: 'hidden-used', side: selfSide, title: t("領域名-伏せ札"),   cardLayoutType: 'stacked',    left: 480,  top: 430,  width: 170, height: 160, cardCountDisplay: true }
+            , { region: 'library',     side: selfSide, title: t("領域名-山札"),     cardLayoutType: 'stacked',    left: 670,  top: 430,  width: 160, height: 160, cardCountDisplay: true }
+            , { region: 'hand',        side: selfSide, title: t("領域名-手札"),     cardLayoutType: 'horizontal', left: 10,   top: 600, width: (hasMachineTarot[selfSide] ? 450 : 640), height: 160 }
+            , { region: 'special',     side: selfSide, title: t("領域名-切札"),     cardLayoutType: 'horizontal', left: (hasMachineTarot[selfSide] ? 670 : 850),  top: 600, width: 330, height: 160 }
     ];
 
     // 桜花決闘を開始していなければ、自陣営の全エリア非表示
@@ -191,7 +192,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             cardAreaData.push({
                   region: 'extra'
                 , side: side
-                , title: (side === state.viewingSide ? '追加札' : '')
+                , title: (side === state.viewingSide ? t("領域名-追加札") : '')
                 , cardLayoutType: 'vertical'
                 , left: 1220
                 , top: (side === state.viewingSide ? 430 : 30)
@@ -212,16 +213,16 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         , tokenWidth: number
         , height: number
     }[] = [
-            { region: 'aura', side: opponentSide, title: "オーラ", layoutType: 'horizontal', left: 10, top: 200, width: 220, tokenWidth: 130, height: 30 }
-            , { region: 'life', side: opponentSide, title: "ライフ", layoutType: 'horizontal', left: 10, top: 240, width: 350, tokenWidth: 260, height: 30 }
-            , { region: 'flair', side: opponentSide, title: "フレア", layoutType: 'horizontal', left: 10, top: 280, width: 350, tokenWidth: 260, height: 30 }
+            { region: 'aura', side: opponentSide, title: t("領域名-オーラ"), layoutType: 'horizontal', left: 10, top: 200, width: 220, tokenWidth: 130, height: 30 }
+            , { region: 'life', side: opponentSide, title: t("領域名-ライフ"), layoutType: 'horizontal', left: 10, top: 240, width: 350, tokenWidth: 260, height: 30 }
+            , { region: 'flair', side: opponentSide, title: t("領域名-フレア"), layoutType: 'horizontal', left: 10, top: 280, width: 350, tokenWidth: 260, height: 30 }
 
-          , { region: 'distance', side: null, title: "間合",   layoutType: 'horizontal-distance', left: 10,    top: 380,  width: 350, tokenWidth: 260, height: 30 }
-          , { region: 'dust',     side: null, title: "ダスト", layoutType: 'horizontal', left: 380,   top: 380,  width: 350, tokenWidth: 260, height: 30 }
+          , { region: 'distance', side: null, title: t("領域名-間合"),   layoutType: 'horizontal-distance', left: 10,    top: 380,  width: 350, tokenWidth: 260, height: 30 }
+          , { region: 'dust',     side: null, title: t("領域名-ダスト"), layoutType: 'horizontal', left: 380,   top: 380,  width: 350, tokenWidth: 260, height: 30 }
 
-            , { region: 'aura', side: selfSide, title: "オーラ", layoutType: 'horizontal', left: 850, top: 430, width: 220, tokenWidth: 130, height: 30 }
-            , { region: 'life', side: selfSide, title: "ライフ", layoutType: 'horizontal', left: 850, top: 470, width: 350, tokenWidth: 260, height: 30 }
-            , { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 260, height: 30 }
+            , { region: 'aura', side: selfSide, title: t("領域名-オーラ"), layoutType: 'horizontal', left: 850, top: 430, width: 220, tokenWidth: 130, height: 30 }
+            , { region: 'life', side: selfSide, title: t("領域名-ライフ"), layoutType: 'horizontal', left: 850, top: 470, width: 350, tokenWidth: 260, height: 30 }
+            , { region: 'flair', side: selfSide, title: t("領域名-フレア"), layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 260, height: 30 }
         ];
 
     // サリヤを宿しており、かつ決闘開始済の場合、マシン領域と燃焼済を追加

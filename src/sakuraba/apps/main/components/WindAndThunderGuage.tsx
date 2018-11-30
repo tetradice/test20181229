@@ -1,6 +1,7 @@
 import { h } from "hyperapp";
 import { ActionsType } from "../actions";
 import _ from "lodash";
+import { t } from "i18next";
 
 /** 風雷ゲージ */
 export const WindAndThunderGuage = (p: {side: PlayerSide, wind: number, thunder: number, left: number, top: number}) => (state: state.State, actions: ActionsType) => {
@@ -39,7 +40,7 @@ export const WindAndThunderGuage = (p: {side: PlayerSide, wind: number, thunder:
 
     const incrementWind = () => {
         actions.operate({
-            log: `風神ゲージを1上げました`,
+            log: ['log:GAUGEを1上げました', {gauge: ['風神ゲージ', null]}],
             proc: () => {
                 actions.incrementWindGuage({side: p.side});
             }
@@ -47,7 +48,7 @@ export const WindAndThunderGuage = (p: {side: PlayerSide, wind: number, thunder:
     };
     const incrementThunder = () => {
         actions.operate({
-            log: `雷神ゲージを1上げました`,
+            log: ['log:GAUGEを1上げました', {gauge: ['雷神ゲージ', null]}],
             proc: () => {
                 actions.incrementThunderGuage({side: p.side});
             }
@@ -55,7 +56,7 @@ export const WindAndThunderGuage = (p: {side: PlayerSide, wind: number, thunder:
     };
     const doubleThunder = () => {
         actions.operate({
-            log: `雷神ゲージを2倍にしました`,
+            log: ['log:GAUGEを2倍にしました', {gauge: ['雷神ゲージ', null]}],
             proc: () => {
                 actions.doubleThunderGuage({side: p.side});
             }
@@ -63,7 +64,7 @@ export const WindAndThunderGuage = (p: {side: PlayerSide, wind: number, thunder:
     };
     const resetWind = () => {
         actions.operate({
-            log: `風神ゲージを0に戻しました`,
+            log: ['log:GAUGEを0に戻しました', {gauge: ['風神ゲージ', null]}],
             proc: () => {
                 actions.resetWindGauge({side: p.side});
             }
@@ -71,7 +72,7 @@ export const WindAndThunderGuage = (p: {side: PlayerSide, wind: number, thunder:
     };
     const resetThunder = () => {
         actions.operate({
-            log: `雷神ゲージを0に戻しました`,
+            log: ['log:GAUGEを0に戻しました', {gauge: ['雷神ゲージ', null]}],
             proc: () => {
                 actions.resetThunderGauge({side: p.side});
             }
@@ -84,7 +85,7 @@ export const WindAndThunderGuage = (p: {side: PlayerSide, wind: number, thunder:
             (
                 <div style={buttonSectionStyles}>
                     <button class={`mini ui basic button${p.wind >= 20 ? ' disabled' : ''}`} style={leftButtonStyles} onclick={incrementWind}>+1</button>
-                    <button class={`mini ui basic button${p.wind === 0 ? ' disabled' : ''}`} style={buttonStyles} onclick={resetWind}>0に戻す</button>
+                    <button class={`mini ui basic button${p.wind === 0 ? ' disabled' : ''}`} style={buttonStyles} onclick={resetWind}>{t('0に戻す')}</button>
                 </div>
             )
             : null
@@ -94,8 +95,8 @@ export const WindAndThunderGuage = (p: {side: PlayerSide, wind: number, thunder:
             (
                 <div style={buttonSectionStyles}>
                     <button class={`mini ui basic button${p.thunder >= 20 ? ' disabled' : ''}`} style={leftButtonStyles} onclick={incrementThunder}>+1</button>
-                    <button class={`mini ui basic button${p.thunder >= 20 ? ' disabled' : ''}`} style={buttonStyles} onclick={doubleThunder}>2倍</button>
-                    <button class={`mini ui basic button${p.thunder === 0 ? ' disabled' : ''}`} style={buttonStyles} onclick={resetThunder}>0に戻す</button>
+                    <button class={`mini ui basic button${p.thunder >= 20 ? ' disabled' : ''}`} style={buttonStyles} onclick={doubleThunder}>{t('2倍')}</button>
+                    <button class={`mini ui basic button${p.thunder === 0 ? ' disabled' : ''}`} style={buttonStyles} onclick={resetThunder}>{t('0に戻す')}</button>
                 </div>
             )
             : null
@@ -105,12 +106,12 @@ export const WindAndThunderGuage = (p: {side: PlayerSide, wind: number, thunder:
     return (
         <div style={styles}>
             <div style={{height: `${23 * state.zoom}px`}}>
-                <div style={captionStyles}>風</div>
+                <div style={captionStyles}>{t('Symbol-風')}</div>
                 <div style={numberStyles}>{p.wind}</div>
                 {windButtons}
             </div>
             <div style={{height: `${23 * state.zoom}px`}}>
-                <div style={captionStyles}>雷</div>
+                <div style={captionStyles}>{t('Symbol-雷')}</div>
                 <div style={numberStyles}>{p.thunder}</div>
                 {thunderButtons}
             </div>
