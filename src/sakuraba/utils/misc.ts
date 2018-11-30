@@ -1,6 +1,7 @@
 import * as sakuraba from "sakuraba";
 import * as models from "sakuraba/models";
 import { t } from "i18next";
+import { h } from "hyperapp";
 
 /** プレイヤーサイドを逆にする */
 export function flipSide(side: PlayerSide): PlayerSide{
@@ -210,4 +211,20 @@ export function translateLog(log: LogValue): string{
         }
         return undefined;
     }
+}
+
+// 
+export function nl2brJsx(str: string): hyperapp.Children[] {
+    let lines = str.split(/\n/g);
+    let ret: hyperapp.Children[] = [];
+    let firstLine = true;
+    lines.forEach(line => {
+        if(!firstLine){
+            ret.push(h('br'));
+        }
+        ret.push(line);
+        firstLine = false;
+    });
+
+    return ret;
 }

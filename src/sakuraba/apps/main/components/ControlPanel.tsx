@@ -136,7 +136,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     if(board.megamis.p1 !== null){
         if(state.side === 'p1' || board.megamiOpenFlags.p1){
             // プレイヤー1のメガミ名を表示可能な場合 (自分がプレイヤー1である or プレイヤー1のメガミが公開されている)
-            megamiCaptionP1 = ` - ${utils.getMegamiDispName(board.megamis.p1[0])}、${utils.getMegamiDispName(board.megamis.p1[1])}`
+            megamiCaptionP1 = ` - ${t('メガミ名-MEGAMI1、MEGAMI2', {megami1: utils.getMegamiDispName(board.megamis.p1[0]), megami2: utils.getMegamiDispName(board.megamis.p1[1])})}`
         } else {
             // プレイヤー1のメガミ名を表示不可能な場合
             megamiCaptionP1 = ` - ${t('メガミ名-？？？、？？？')}`
@@ -145,7 +145,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     if(board.megamis.p2 !== null){
         if(state.side === 'p2' || board.megamiOpenFlags.p2){
             // プレイヤー2のメガミ名を表示可能な場合 (自分がプレイヤー2である or プレイヤー2のメガミが公開されている)
-            megamiCaptionP2 = ` - ${utils.getMegamiDispName(board.megamis.p2[0])}、${utils.getMegamiDispName(board.megamis.p2[1])}`
+            megamiCaptionP2 = ` - ${t('メガミ名-MEGAMI1、MEGAMI2', {megami1: utils.getMegamiDispName(board.megamis.p2[0]), megami2: utils.getMegamiDispName(board.megamis.p2[1])})}`
         } else {
             // プレイヤー2のメガミ名を表示不可能な場合
             megamiCaptionP2 = ` - ${t('メガミ名-？？？、？？？')}`
@@ -217,8 +217,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             {t('メニュー')}
             <i class="dropdown icon"></i>
             <div class="menu">
-                {state.side === 'watcher' ? null : <div class="item" onclick={playerNameChange}>プレイヤー名の変更</div>}
-                {state.side === 'watcher' ? null : <div class="item" onclick={reset}>ボードリセット (初期化)</div>}
+                {state.side === 'watcher' ? null : <div class="item" onclick={playerNameChange}>{t('プレイヤー名の変更')}</div>}
+                {state.side === 'watcher' ? null : <div class="item" onclick={reset}>{t('ボードリセット')}</div>}
                 <div class="item" onclick={() => actions.toggleActionLogVisible()}>
                     {(state.actionLogVisible ? <i class="check icon"></i> : null)}
                     {t('操作ログを表示')}
@@ -243,7 +243,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     {t('卓から離れる')}
                 </div>
                 <div class="divider"></div>
-                <div class="item" onclick={aboutThisService} style={{lineHeight: '1.5'}}>ふるよにボードシミュレーターについて <br />(バージョン、著作権情報、連絡先)</div>
+                <div class="item" onclick={aboutThisService} style={{lineHeight: '1.5'}}>{utils.nl2brJsx(t('ふるよにボードシミュレーターについて(バージョン、著作権情報、連絡先)'))}</div>
             </div>
         </div>
     );
@@ -255,7 +255,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     );
     let notifyPanel = (
         <div>
-            <div class="ui sub header">相手プレイヤーへ通知</div>
+            <div class="ui sub header">{t('相手プレイヤーへ通知')}</div>
             <div class="ui selection dropdown" oncreate={(e) => $(e).dropdown('set selected', '-')}>
 
                 <input type="hidden" name="notifyType" onchange={notifyValueChanged} />
@@ -266,7 +266,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     {notifyData.map(item => <div class="item" data-value={item.key}>{item.message}</div>)}
                 </div>
             </div>
-            <button class="ui basic button disabled" id="NOTIFY-SEND-BUTTON" onclick={notify}>送信</button>
+            <button class="ui basic button disabled" id="NOTIFY-SEND-BUTTON" onclick={notify}>{t('送信')}</button>
         </div>
     );
 
@@ -289,17 +289,17 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
     let watchSidePanel = (
         <div>
-            <div class="ui sub header">視点</div>
+            <div class="ui sub header">{t('視点')}</div>
             <div class="ui selection dropdown" style={{width: '20em'}} oncreate={(e) => $(e).dropdown('set selected', 'p1')}>
 
                 <input type="hidden" name="watchSide" onchange={watchSideChanged} />
                 <i class="dropdown icon"></i>
                 <div class="default text"></div>
                 <div class="menu">
-                    <div class="item" data-value="p1">プレイヤー1側</div>
-                    <div class="item" data-value="p1-handviewing">プレイヤー1側（手札も見る）</div>
-                    <div class="item" data-value="p2">プレイヤー2側</div>
-                    <div class="item" data-value="p2-handviewing">プレイヤー2側（手札も見る）</div>
+                    <div class="item" data-value="p1">{t('プレイヤー1側')}</div>
+                    <div class="item" data-value="p1-handviewing">{t('プレイヤー1側（手札も見る）')}</div>
+                    <div class="item" data-value="p2">{t('プレイヤー2側')}</div>
+                    <div class="item" data-value="p2-handviewing">{t('プレイヤー2側（手札も見る）')}</div>
                 </div>
             </div>
         </div>
@@ -308,7 +308,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     let helpButton = (
         <button class="ui basic button" onclick={() => actions.toggleHelpVisible()}>
         <i class="icon question circle outline"></i>
-        操作説明
+        {t('操作説明')}
         </button>
     );
     // 観戦者の場合元に戻すボタン、操作説明ボタン、通知パネルの表示はなし
@@ -344,15 +344,15 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             <table class="ui definition table" style={{ width: '95%', fontSize: 'small' }}>
                 <tbody>
                     <tr>
-                        <td class="collapsing">プレイヤー1</td>
+                        <td class="collapsing">{t('プレイヤー1')}</td>
                         <td style={state.side === 'p1' ? {color: 'blue'} : null}>{board.playerNames.p1} {megamiCaptionP1}</td>
                     </tr>
                     <tr>
-                        <td>プレイヤー2</td>
+                        <td>{t('プレイヤー2')}</td>
                         <td style={state.side === 'p2' ? {color: 'blue'} : null}>{board.playerNames.p2} {megamiCaptionP2}</td>
                     </tr>
                     <tr>
-                        <td>観戦者</td>
+                        <td>{t('観戦者')}</td>
                         <td>{watcherNameElements}</td>
                     </tr>
                 </tbody>
@@ -361,7 +361,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 {notifyPanel}
 {watchSidePanel}
 
-<div class="ui sub header">ボードサイズ</div>
+<div class="ui sub header">{t('ボードサイズ')}</div>
 <div class="ui selection dropdown" oncreate={boardSizeDropdownCreate}>
 
   <input type="hidden" name="boardSize" onchange={(e) => {return actions.setZoom(Number($(e.target).val()) * 0.1)}} />

@@ -1,4 +1,5 @@
 import _ from "lodash";
+import i18next = require("i18next");
 
 export default {
     /** 設定を上書き */
@@ -17,6 +18,9 @@ export default {
     setLanguageSetting: (value: state.LanguageSetting) => (state: state.State) => {
         let newSetting = _.assign({}, state.setting);
         newSetting.language = value;
+
+        i18next.changeLanguage(value);
+
         return {setting: newSetting} as Partial<state.State>;
     }
 }
