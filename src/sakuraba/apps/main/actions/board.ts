@@ -438,7 +438,7 @@ export default {
     oprBasicAction: (p: {
         from: [PlayerSide, SakuraTokenRegion, null]
         , to: [PlayerSide, SakuraTokenRegion, null]
-        , actionTitle: string
+        , actionTitleKey: string
         , costType: 'vigor' | 'hand' | null
         , useCardId?: string
     }) => (state: state.State, actions: ActionsType) => {
@@ -446,17 +446,19 @@ export default {
         let side = state.side;
         let boardModel = new models.Board(state.board);
 
+        let actionTitle
+
         let logs: LogParam[] = [];
         if (p.costType === 'vigor') {
-            logs.push({ text: ['log:集中力を1使ってACTを行いました', {action: p.actionTitle}]});
+            logs.push({ text: ['log:集中力を1使ってACTを行いました', {action: [p.actionTitleKey, null]}]});
         } else if (p.costType === 'hand') {
             let card = boardModel.getCard(p.useCardId);
             let data = CARD_DATA[card.cardId];
 
-            logs.push({ text: ['log:[CARDNAME]を伏せ札にしてACTを行いました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}, action: p.actionTitle}], visibility: 'ownerOnly' });
-            logs.push({ text: ['log:手札1枚を伏せ札にしてACTを行いました', {action: p.actionTitle}], visibility: 'outerOnly' });
+            logs.push({ text: ['log:[CARDNAME]を伏せ札にしてACTを行いました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}, action: [p.actionTitleKey, null]}], visibility: 'ownerOnly' });
+            logs.push({ text: ['log:手札1枚を伏せ札にしてACTを行いました', {action: [p.actionTitleKey, null]}], visibility: 'outerOnly' });
         } else {
-            logs.push({ text: ['log:ACTを行いました', {action: p.actionTitle}] });
+            logs.push({ text: ['log:ACTを行いました', {action: [p.actionTitleKey, null]}] });
         }
 
         actions.operate({

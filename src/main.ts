@@ -96,7 +96,7 @@ $(function(){
             if (currentState.side === 'watcher') return;
 
             // 移動ログを決定
-            let logs: { text: string, visibility?: LogVisibility }[] = [];
+            let logs: { text: LogValue, visibility?: LogVisibility }[] = [];
             let cardName = CARD_DATA[card.cardId].name;
             let boardModel = new models.Board(currentState.board);
             let fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region, (card.linkedCardId ? boardModel.getCard(card.linkedCardId) : null));
@@ -107,10 +107,12 @@ $(function(){
             let newOpenState = utils.judgeCardOpenState(card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
 
             // ログ内容を決定
-            console.log(`openState: ${oldOpenState} => ${newOpenState}`);
+            let logCardNameParam = {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId};
+            let logParam = {from: fromRegionTitle, to: toRegionTitle};
+            let logParamWithCardName = {cardName: logCardNameParam, from: fromRegionTitle, to: toRegionTitle};
             if (oldOpenState === 'opened' || newOpenState === 'opened') {
                 // 公開状態から移動した場合や、公開状態へ移動した場合は、全員に名前を公開
-                logs.push({ text: `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}` });
+                logs.push({ text: ['log:[CARDNAME]を移動しました：FROM → TO', logParamWithCardName]});
 
 
             } else {
@@ -125,20 +127,20 @@ $(function(){
                     // 自分は知っている
                     if (oldOpponentKnown || newOpponentKnown) {
                         // 対戦相手も知っている (観戦者対応が必要)
-                        logs.push({ text: `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}` });
+                        logs.push({ text: ['log:[CARDNAME]を移動しました：FROM → TO', logParamWithCardName]});
                     } else {
                         // 対戦相手は知らない
-                        logs.push({ text: `[${cardName}]を移動しました：${fromRegionTitle} → ${toRegionTitle}`, visibility: 'ownerOnly' });
-                        logs.push({ text: `カードを1枚移動しました：${fromRegionTitle} → ${toRegionTitle}`, visibility: 'outerOnly' });
+                        logs.push({ text: ['log:[CARDNAME]を移動しました：FROM → TO', logParamWithCardName], visibility: 'ownerOnly'});
+                        logs.push({ text: ['log:カードを1枚移動しました：FROM → TO', logParam], visibility: 'outerOnly'});
                     }
                 } else {
                     // 自分は知らない
                     if (oldOpponentKnown || newOpponentKnown) {
                         // 対戦相手は知っている (観戦者対応が必要)
-                        logs.push({ text: `カードを1枚移動しました：${fromRegionTitle} → ${toRegionTitle}` });
+                        logs.push({ text: ['log:カードを1枚移動しました：FROM → TO', logParam]});
                     } else {
                         // 対戦相手も知らない
-                        logs.push({ text: `カードを1枚移動しました：${fromRegionTitle} → ${toRegionTitle}` });
+                        logs.push({ text: ['log:カードを1枚移動しました：FROM → TO', logParam]});
                     }
                 }
 
@@ -150,29 +152,29 @@ $(function(){
                 if (card.region === 'hand' && toRegion === 'hidden-used') {
                     // 伏せ札にした場合
                     logs = [];
-                    logs.push({ text: `[${cardName}]を伏せ札にしました`, visibility: 'ownerOnly' });
-                    logs.push({ text: `カードを1枚伏せ札にしました`, visibility: 'outerOnly' });
+                    logs.push({ text: ['log:[CARDNAME]を伏せ札にしました', {cardName: logCardNameParam}], visibility: 'ownerOnly' });
+                    logs.push({ text: ['log:カードを1枚伏せ札にしました', null], visibility: 'outerOnly' });
                 }
                 if (card.region === 'hand' && toRegion === 'used') {
                     // 場に出した場合
                     logs = [];
-                    logs.push({ text: `[${cardName}]を場に出しました` });
+                    logs.push({ text: ['log:[CARDNAME]を場に出しました', {cardName: logCardNameParam}] });
                 }
                 if (card.region === 'library' && toRegion === 'hand') {
                     // カードを1枚引いた場合
                     logs = [];
-                    logs.push({ text: `カードを1枚引きました` });
+                    logs.push({ text: ['log:カードを1枚引きました', null] });
                     cardNameLogging = true;
                 }
                 if (toRegion === 'library') {
                     // カードを山札へ置いた場合
                     logs = [];
                     if (toPosition === 'first') {
-                        logs.push({ text: `[${cardName}]を山札の底へ置きました`, visibility: 'ownerOnly' });
-                        logs.push({ text: `カードを1枚山札の底へ置きました`, visibility: 'outerOnly' });
+                        logs.push({ text: ['log:[CARDNAME]を山札の底へ置きました', logCardNameParam], visibility: 'ownerOnly' });
+                        logs.push({ text: ['log:カードを1枚山札の底へ置きました', null], visibility: 'outerOnly' });
                     } else {
-                        logs.push({ text: `[${cardName}]を山札の上へ置きました`, visibility: 'ownerOnly' });
-                        logs.push({ text: `カードを1枚山札の上へ置きました`, visibility: 'outerOnly' });
+                        logs.push({ text: ['log:[CARDNAME]を山札の上へ置きました', logCardNameParam], visibility: 'ownerOnly' });
+                        logs.push({ text: ['log:カードを1枚山札の上へ置きました', null], visibility: 'outerOnly' });
                     }
                 }
             }
@@ -210,14 +212,14 @@ $(function(){
                 let board = new models.Board(currentState.board);
                 let items: Object = {};
 
-                items['toTop'] = {name: '山札の上に置く', callback: () => {
+                items['toTop'] = {name: t('山札の上に置く'), callback: () => {
                     moveCardMain(dragInfo.lastDraggingCardBeforeContextMenu, side, 'library', null);
                 }};
-                items['toBottom'] = {name: '山札の底に置く', callback: () => {
+                items['toBottom'] = {name: t('山札の底に置く'), callback: () => {
                     moveCardMain(dragInfo.lastDraggingCardBeforeContextMenu, side, 'library', null, 'first');
                 }};
                 items['sep'] = '----';
-                items['cancel'] = {name: 'キャンセル', callback: () => {}};
+                items['cancel'] = {name: t('キャンセル'), callback: () => {}};
 
                 return {items: items};
 
@@ -246,14 +248,14 @@ $(function(){
                 let forwardEnabled = boardModel.isRideForwardEnabled(token.ownerSide, dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
                 let backEnabled = boardModel.isRideBackEnabled(token.ownerSide, dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount);
 
-                items['forward'] = {name: '騎動前進', disabled: !forwardEnabled, callback: () => {
+                items['forward'] = {name: t('騎動前進'), disabled: !forwardEnabled, callback: () => {
                     appActions.oprRideForward({side: token.ownerSide, moveNumber: dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount});
                 }};
-                items['back'] = {name: '騎動後退', disabled: !backEnabled, callback: () => {
+                items['back'] = {name: t('騎動後退'), disabled: !backEnabled, callback: () => {
                     appActions.oprRideBack({side: token.ownerSide, moveNumber: dragInfo.lastDraggingSakuraTokenBeforeContextMenu.groupTokenDraggingCount});
                 }};
                 items['sep'] = '----';
-                items['cancel'] = {name: 'キャンセル', callback: () => {}};
+                items['cancel'] = {name: t('キャンセル'), callback: () => {}};
 
                 return {items: items};
 
@@ -272,14 +274,14 @@ $(function(){
                 let board = new models.Board(currentState.board);
                 let items: Object = {};
 
-                items['remove'] = {name: '畏縮を解除', callback: () => {
+                items['remove'] = {name: t('畏縮を解除'), callback: () => {
                     appActions.oprSetWitherFlag({
                         side: side
                         , value: false
                     });
                 }};
                 items['sep'] = '----';
-                items['cancel'] = {name: 'キャンセル', callback: () => {}};
+                items['cancel'] = {name: t('キャンセル'), callback: () => {}};
 
                 return {items: items};
 
@@ -300,26 +302,26 @@ $(function(){
 
                 let planState = board.planStatus[currentState.side];
                 if(planState === 'back-blue' || planState === 'back-red'){
-                    items['open'] = {name: '計略を公開する', callback: () => {
+                    items['open'] = {name: t('計略を公開する'), callback: () => {
                         appActions.operate({
-                            log: `計略を公開しました -> ${planState === 'back-blue' ? '神算' : '鬼謀'}`,
+                            log: ['log:計略を公開しました -> PLAN', {plan: (planState === 'back-blue' ? ['神算', null] : ['鬼謀', null])}],  // `計略を公開しました -> ${planState === 'back-blue' ? '神算' : '鬼謀'}`,
                             proc: () => {
                                 appActions.setPlanState({side: side, value: (planState === 'back-blue' ? 'blue' : 'red')});
                             }
                         });
                     }};
                 } else {
-                    items['blue'] = {name: '次の計略を「神算」で準備する', callback: () => {
+                    items['blue'] = {name: t('次の計略を「PLAN」で準備する', {plan: t('神算')}), callback: () => {
                         appActions.operate({
-                            log: `次の計略を準備しました`,
+                            log: ['log:次の計略を準備しました', null],
                             proc: () => {
                                 appActions.setPlanState({side: side, value: 'back-blue'});
                             }
                         });
                     }};
-                    items['red'] = {name: '次の計略を「鬼謀」で準備する', callback: () => {
+                    items['red'] = {name: t('次の計略を「PLAN」で準備する', {plan: t('鬼謀')}), callback: () => {
                         appActions.operate({
-                            log: `次の計略を準備しました`,
+                            log: ['log:次の計略を準備しました', null],
                             proc: () => {
                                 appActions.setPlanState({side: side, value: 'back-red'});
                             }
@@ -328,7 +330,7 @@ $(function(){
                 }
 
                 items['sep'] = '----';
-                items['cancel'] = {name: 'キャンセル', callback: () => {}};
+                items['cancel'] = {name: t('キャンセル'), callback: () => {}};
 
                 return {items: items};
 
@@ -349,18 +351,18 @@ $(function(){
 
                 let umbrellaState = board.umbrellaStatus[currentState.side];
                 if(umbrellaState === 'closed'){
-                    items['open'] = {name: '傘を開く', callback: () => {
+                    items['open'] = {name: t('傘を開く'), callback: () => {
                         appActions.operate({
-                            log: `傘を開きました`,
+                            log: ['log:傘を開きました', null],
                             proc: () => {
                                 appActions.setUmbrellaState({side: side, value: 'opened'});
                             }
                         });
                     }};
                 } else {
-                    items['close'] = {name: '傘を閉じる', callback: () => {
+                    items['close'] = {name: t('傘を閉じる'), callback: () => {
                         appActions.operate({
-                            log: `傘を閉じました`,
+                            log: ['log:傘を閉じました', null],
                             proc: () => {
                                 appActions.setUmbrellaState({side: side, value: 'closed'});
                             }
@@ -369,7 +371,7 @@ $(function(){
                 }
 
                 items['sep'] = '----';
-                items['cancel'] = {name: 'キャンセル', callback: () => {}};
+                items['cancel'] = {name: t('キャンセル'), callback: () => {}};
 
                 return {items: items};
 
@@ -405,14 +407,14 @@ $(function(){
                         }
 
                         items['dischargeAndIncrementWind'] =  {
-                            name: "帯電を解除し、風神ゲージを1上げる"
+                            name: t('帯電を解除し、GAUGEを1上げる', {gauge: t('風神ゲージ')})
                             , disabled: (card.openState !== 'opened' || card.discharged || CARD_DATA[card.cardId].megami === 'raira' || CARD_DATA[card.cardId].baseType === 'transform')
                             , callback: function() {
                                 appActions.oprDischarge({objectId: card.id, guageType: 'wind'});
                             }
                         }
                         items['dischargeAndIncrementThunder'] =  {
-                            name: "帯電を解除し、雷神ゲージを1上げる"
+                            name: t('帯電を解除し、GAUGEを1上げる', {gauge: t('雷神ゲージ')})
                             , disabled: (card.openState !== 'opened' || card.discharged || CARD_DATA[card.cardId].megami === 'raira' || CARD_DATA[card.cardId].baseType === 'transform')
                             , callback: function() {
                                 appActions.oprDischarge({objectId: card.id, guageType: 'thunder'});
@@ -426,45 +428,45 @@ $(function(){
                     let basicActionEnabled = board.checkBasicActionEnabled(side);
                     let subItems = {};
                     subItems['forward'] = {
-                        name: '前進 <span style="font-size: smaller; color: silver;">（間合⇒オーラ）</span>'
+                        name: `${t('前進')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域-間合'), to: t('領域-オーラ')})}</span>`
                         , isHtmlName: true
                         , disabled: !basicActionEnabled.forward
                         , callback: () => {
-                            appActions.oprBasicAction({from: [null, 'distance', null], to: [side, 'aura', null], actionTitle: '前進', costType: costType, useCardId: useCardId});
+                            appActions.oprBasicAction({from: [null, 'distance', null], to: [side, 'aura', null], actionTitleKey: '前進', costType: costType, useCardId: useCardId});
                         }
                     };
                     subItems['leave'] = {
-                        name: '離脱 <span style="font-size: smaller; color: silver;">（ダスト⇒間合）</span>'
+                        name: `${t('離脱')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域-ダスト'), to: t('領域-間合')})}</span>`
                         , isHtmlName: true
                         , disabled: !basicActionEnabled.leave
                         , callback: () => {
-                            appActions.oprBasicAction({from: [null, 'dust', null], to: [null, 'distance', null], actionTitle: '離脱', costType: costType, useCardId: useCardId});
+                            appActions.oprBasicAction({from: [null, 'dust', null], to: [null, 'distance', null], actionTitleKey: '離脱', costType: costType, useCardId: useCardId});
                         }
                     };
                     subItems['back'] = {
-                        name: '後退 <span style="font-size: smaller; color: silver;">（オーラ⇒間合）</span>'
+                        name: `${t('後退')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域-オーラ'), to: t('領域-間合')})}</span>`
                         , isHtmlName: true
                         , disabled: !basicActionEnabled.back
                         , callback: () => {
-                            appActions.oprBasicAction({from: [side, 'aura', null], to: [null, 'distance', null], actionTitle: '後退', costType: costType, useCardId: useCardId});
+                            appActions.oprBasicAction({from: [side, 'aura', null], to: [null, 'distance', null], actionTitleKey: '後退', costType: costType, useCardId: useCardId});
 
                         }
                     };
                     subItems['wear'] = {
-                        name: '纏い <span style="font-size: smaller; color: silver;">（ダスト⇒オーラ）</span>'
+                        name: `${t('纏い')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域-ダスト'), to: t('領域-オーラ')})}</span>`
                         , isHtmlName: true
                         , disabled: !basicActionEnabled.wear
                         , callback: () => {
-                            appActions.oprBasicAction({from: [null, 'dust', null], to: [side, 'aura', null], actionTitle: '纏い', costType: costType, useCardId: useCardId});
+                            appActions.oprBasicAction({from: [null, 'dust', null], to: [side, 'aura', null], actionTitleKey: '纏い', costType: costType, useCardId: useCardId});
 
                         }
                     };
                     subItems['charge'] = {
-                        name: '宿し <span style="font-size: smaller; color: silver;">（オーラ⇒フレア）</span>'
+                        name: `${t('宿し')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域-オーラ'), to: t('領域-フレア')})}</span>`
                         , isHtmlName: true
                         , disabled: !basicActionEnabled.charge
                         , callback: () => {
-                            appActions.oprBasicAction({from: [side, 'aura', null], to: [side, 'flair', null], actionTitle: '宿し', costType: costType, useCardId: useCardId});
+                            appActions.oprBasicAction({from: [side, 'aura', null], to: [side, 'flair', null], actionTitleKey: '宿し', costType: costType, useCardId: useCardId});
                         }
                     };
                     return subItems;
@@ -488,7 +490,7 @@ $(function(){
                     
                     items = {};
                     items['flip'] =  {
-                        name: (card.specialUsed ? '裏向きにする' : '表向きにする')
+                        name: (card.specialUsed ? t('裏向きにする') : t('表向きにする'))
                     , callback: function() {
                         appActions.oprSetSpecialUsed({objectId: id, value: !card.specialUsed});
                     }
@@ -501,16 +503,16 @@ $(function(){
                     if(CARD_DATA[card.cardId].removable){
                         items['sep2'] = '---';
                         items['remove'] =  {
-                            name: `[${CARD_DATA[card.cardId].name}]をゲームから取り除く`
+                            name: t('[CARDNAME]をゲームから取り除く', {cardName: CARD_DATA[card.cardId].name})
                             , callback: function() {
                                 // まだ相手が決闘を開始していなければ、この操作は禁止する
                                 // (決闘を開始する前にカードを取り除くと、更新がうまくいかずにエラーが多発する場合があるため。原因不明)
                                 if(!currentState.board.mariganFlags[utils.flipSide(playerSide)]){
-                                    utils.messageModal(`相手が決闘を開始するまでは、この操作を行うことはできません。`);
+                                    utils.messageModal(utils.nl2br(t('相手が決闘を開始するまでは、この操作を行うことはできません。')));
                                     return;
                                 }
 
-                                utils.confirmModal(`ゲームから取り除いた後は、元に戻すことはできません。\nよろしいですか？`, () => {
+                                utils.confirmModal(utils.nl2br(t('ゲームから取り除いた後は、元に戻すことはできません。よろしいですか？')), () => {
                                     appActions.oprRemoveCard({objectId: id});
                                 });
                             }
@@ -530,14 +532,14 @@ $(function(){
                     // 自分の集中力の場合、基本動作メニューも表示
                     if(side === currentState.side){
                         items['basicAction'] = {
-                            name: '集中力を使用して基本動作'
+                            name: t('集中力を使用して基本動作')
                           , items: makeBasicActionCommandItems(side, 'vigor')
                           , disabled: currentState.board.vigors[side] === 0
                       }
                       items['sep'] = '----';
                     }
                     items['wither'] =  {
-                        name: (board.witherFlags[side] ? '畏縮を解除' : '畏縮')
+                        name: (board.witherFlags[side] ? t('畏縮を解除') : t('コマンド-畏縮'))
                         , callback: () => appActions.oprSetWitherFlag({side: side, value: !board.witherFlags[side]})
                     }
                 }
@@ -554,9 +556,9 @@ $(function(){
 
                     if(card.ownerSide === playerSide){
                         items['sendToSelf'] = {
-                            name: `[${cardData.name}]を自分の捨て札にする`, callback: () => {
+                            name: t('[CARDNAME]を自分の捨て札にする', {cardName: cardData.name}), callback: () => {
                                 appActions.operate({
-                                    log: `[${linkedCardData.name}]の下に封印されていた[${cardData.name}]を、捨て札にしました`,
+                                    log: ['log:[LINKEDCARDNAME]の下に封印されていた[CARDNAME]を、捨て札にしました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: id}, linkedCardName: {type: 'cardName', cardSet: 'na-s2', cardId: linkedCard.cardId}}], 
                                     proc: () => {
                                         appActions.moveCard({from: id, to: [playerSide, 'used', null]});
                                     }
@@ -566,9 +568,9 @@ $(function(){
                     }
                     if(card.ownerSide === utils.flipSide(playerSide)){
                         items['sendToOpponent'] = {
-                            name: `[${cardData.name}]を相手の捨て札にする`, callback: () => {
+                            name: t('[CARDNAME]を相手の捨て札にする', {cardName: cardData.name}), callback: () => {
                                 appActions.operate({
-                                    log: `[${linkedCardData.name}]の下に封印されていた[${cardData.name}]を、相手の捨て札にしました`,
+                                    log: ['log:[LINKEDCARDNAME]の下に封印されていた[CARDNAME]を、相手の捨て札にしました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: id}, linkedCardName: {type: 'cardName', cardSet: 'na-s2', cardId: linkedCard.cardId}}], 
                                     proc: () => {
                                         appActions.moveCard({from: id, to: [utils.flipSide(playerSide), 'used', null]});
                                     }
@@ -592,7 +594,7 @@ $(function(){
 
                         // 伏せ札にして基本動作
                         items['basicAction'] = {
-                              name: '伏せ札にして基本動作'
+                              name: t('伏せ札にして基本動作')
                             , items: makeBasicActionCommandItems(playerSide, 'hand', id)
                             , disabled: cardData.poison
                         }
@@ -603,9 +605,9 @@ $(function(){
 
                             if(currentState.board.handCardOpenFlags[playerSide][id]){
                                 items['closeCard'] = {
-                                    name: `[${cardData.name}]の公開を中止する`, callback: () => {
+                                    name: t('[CARDNAME]の公開を中止する', {cardName: cardData.name}), callback: () => {
                                         appActions.operate({
-                                            log: `[${cardData.name}]の公開を中止しました`,
+                                            log: ['log:[CARDNAME]の公開を中止しました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: id}}], 
                                             proc: () => {
                                                 appActions.setHandCardOpenFlag({side: playerSide, cardId: id, value: false});
                                             }
@@ -614,9 +616,9 @@ $(function(){
                                 }
                             } else {
                                 items['openCard'] = {
-                                    name: `[${cardData.name}]を相手に公開する`, callback: () => {
+                                    name: t('[CARDNAME]を相手に公開する', {cardName: cardData.name}), callback: () => {
                                         appActions.operate({
-                                            log: `[${cardData.name}]を公開しました`,
+                                            log: ['log:[CARDNAME]を公開しました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: id}}], 
                                             proc: () => {
                                                 appActions.setHandCardOpenFlag({side: playerSide, cardId: id, value: true});
                                             }
@@ -631,9 +633,9 @@ $(function(){
                     // 全体の公開/非公開操作
                     if(currentState.board.handOpenFlags[playerSide]){
                         items['close'] = {
-                            name: '全手札の公開を中止する', callback: () => {
+                            name: t('全手札の公開を中止する'), callback: () => {
                                 appActions.operate({
-                                    log: `手札の公開を中止しました`,
+                                    log: ['log:手札の公開を中止しました', null],
                                     proc: () => {
                                         appActions.setHandOpenFlag({side: playerSide, value: false});
                                     }
@@ -642,14 +644,14 @@ $(function(){
                         }
                     } else {
                         items['open'] = {
-                            name: '全手札を相手に公開する', disabled: () => {
+                            name: t('全手札を相手に公開する'), disabled: () => {
                                 let board = new models.Board(appActions.getState().board);
                 
                                 let cards = board.getRegionCards(playerSide, 'hand', null);
                                 return cards.length === 0;
                             }, callback: () => {
                                 appActions.operate({
-                                    log: `手札を公開しました`,
+                                    log: ['log:手札を公開しました'],
                                     proc: () => {
                                         appActions.setHandOpenFlag({side: playerSide, value: true});
                                     }
@@ -667,7 +669,7 @@ $(function(){
                     if(currentState.board.mariganFlags[opponentSide]){
                         let opponentHandCards = board.getRegionCards(opponentSide, 'hand', null);
                         items['discard'] = {
-                            name: '手札1枚を無作為選んで捨て札にする'
+                            name: t('手札1枚を無作為に選んで捨て札にする')
                             , disabled: opponentHandCards.length === 0
                             , callback: () => {
                                 // ランダムにカードを選出
@@ -675,7 +677,7 @@ $(function(){
                                 let card = opponentHandCards[index];
 
                                 appActions.operate({
-                                    log: `相手の手札1枚を無作為に選び、捨て札にしました -> [${CARD_DATA[card.cardId].name}]`,
+                                    log: ['log:相手の手札1枚を無作為に選び、捨て札にしました -> [CARDNAME]', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}}],
                                     proc: () => {
                                         appActions.moveCard({from: [opponentSide, 'hand', null], fromPosition: index, to: [opponentSide, 'used', null]});
                                     }
@@ -689,7 +691,7 @@ $(function(){
                 if($elem.is(`.area.background[data-region=library][data-side=${playerSide}], .fbs-card[data-region=library][data-side=${playerSide}]`)){
 
                     items = {
-                        'draw': {name: '1枚引く', disabled: () => {
+                        'draw': {name: t('1枚引く'), disabled: () => {
                             let board = new models.Board(appActions.getState().board);
             
                             let cards = board.getRegionCards(playerSide, 'library', null);
@@ -698,10 +700,10 @@ $(function(){
                             appActions.oprDraw({});
                         }},
                         'sep1': '---------',
-                        'reshuffle': {name: '再構成する', callback: () => {
+                        'reshuffle': {name: t('再構成する'), callback: () => {
                             appActions.oprReshuffle({side: playerSide, lifeDecrease: true});
                         }},
-                        'reshuffleWithoutDamage': {name: '再構成する (ライフ減少なし)', callback: () => {
+                        'reshuffleWithoutDamage': {name: t('再構成する(ライフ減少なし)'), callback: () => {
                             appActions.oprReshuffle({side: playerSide, lifeDecrease: false});
                         }},
                     }
@@ -713,9 +715,9 @@ $(function(){
                     let token = board.getSakuraToken(id);
 
                     items = {
-                        'damage': {name: (token.side === playerSide ? `オーラに${token.groupTokenDraggingCount}ダメージ` :  `相手のオーラに${token.groupTokenDraggingCount}ダメージ`), callback: () => {
+                        'damage': {name: (token.side === playerSide ? t('オーラにNダメージ', {count: token.groupTokenDraggingCount}) : t('相手のオーラにNダメージ', {count: token.groupTokenDraggingCount})), callback: () => {
                             appActions.operate({
-                                log: (token.side === playerSide ? `オーラに${token.groupTokenDraggingCount}ダメージを受けました` : `相手のオーラに${token.groupTokenDraggingCount}ダメージを与えました`),
+                                log: (token.side === playerSide ? ['log:オーラにNダメージを受けました', {count: token.groupTokenDraggingCount}] : ['log:相手のオーラにNダメージを与えました', {count: token.groupTokenDraggingCount}] ),
                                 proc: () => {
                                     appActions.moveSakuraToken({
                                           from: [token.side, token.region, token.linkedCardId]
@@ -733,9 +735,9 @@ $(function(){
                     let token = board.getSakuraToken(id);
 
                     items = {
-                        'damage': {name: (token.side === playerSide ? `ライフに${token.groupTokenDraggingCount}ダメージ` :  `相手のライフに${token.groupTokenDraggingCount}ダメージ`), callback: () => {
+                        'damage': {name: (token.side === playerSide ? t('ライフにNダメージ', {count: token.groupTokenDraggingCount}) :  t('相手のライフにNダメージ', {count: token.groupTokenDraggingCount})), callback: () => {
                             appActions.operate({
-                                log: (token.side === playerSide ? `ライフに${token.groupTokenDraggingCount}ダメージを受けました` : `相手のライフに${token.groupTokenDraggingCount}ダメージを与えました`),
+                                log: (token.side === playerSide ? ['log:ライフにNダメージを受けました', {count: token.groupTokenDraggingCount}] : ['log:相手のライフにNダメージを与えました', {count: token.groupTokenDraggingCount}]),
                                 proc: () => {
                                     appActions.moveSakuraToken({
                                           from: [token.side, token.region, token.linkedCardId]
@@ -1029,7 +1031,7 @@ $(function(){
                 if(currentState.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
 
                 if(!currentState.board.mariganFlags[params.side]){
-                    utils.messageModal('決闘を開始するまでは、カードや桜花結晶の移動は行えません。');
+                    utils.messageModal(t('modal:決闘を開始するまでは、カードや桜花結晶の移動は行えません。'));
                     return false;
                 };
 
@@ -1041,7 +1043,7 @@ $(function(){
                 if(object.type === 'card'){
                     // 封印されたカードのドラッグ移動はできない
                     if(object.region === 'on-card'){
-                        utils.messageModal('封印されたカードを移動することはできません。<br>右クリックより捨て札に送ってください。');
+                        utils.messageModal(t('modal:封印されたカードを移動することはできません。右クリックより捨て札に送ってください。'));
                         return false;
                     }
 
@@ -1049,7 +1051,7 @@ $(function(){
                     let boardModel = new models.Board(currentState.board);
                     let tokensOnCard = boardModel.getRegionSakuraTokens(currentState.side, 'on-card', object.id);
                     if(tokensOnCard.length >= 1){
-                        utils.messageModal('桜花結晶が乗ったカードを移動することはできません。');
+                        utils.messageModal(t('modal:桜花結晶が乗ったカードを移動することはできません。'));
                         return false;
                     }
 
