@@ -9,6 +9,8 @@ type CardOpenState = 'opened' | 'ownerOnly' | 'hidden';
 type PlanState = null | 'back-blue' | 'back-red' | 'blue' | 'red';
 type UmbrellaState = null | 'closed' | 'opened';
 
+type CardSet = 'na-s2' | 'na-s3';
+
 type VigorValue = 0 | 1 | 2;
 
 /** 観戦者情報 */

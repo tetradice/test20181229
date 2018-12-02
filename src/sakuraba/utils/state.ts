@@ -7,6 +7,7 @@ export function createInitialState(): state.State{
           , playerNames: {p1: null, p2: null}
           , watchers: {}
           , megamis: {p1: null, p2: null}
+          , cardSet: 'na-s2'
           , vigors: {p1: null, p2: null}
           , witherFlags: {p1: false, p2: false}
           

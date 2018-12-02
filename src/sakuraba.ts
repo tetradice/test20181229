@@ -1,5 +1,6 @@
 import {Serializable, Serialize, SerializeProperty} from "ts-serializer";
 import * as moment from 'moment';
+import _ from "lodash";
 
 // 独自型
 export type CardType = "attack" | "reaction" | "action" | "fullpower" | "enhance" | "variable" | 'transform';
@@ -88,7 +89,9 @@ export interface TransformCardDataItem extends CardDataItemBase {
 
 export type CardDataItem = NormalCardDataItem | SpecialCardDataItem | TransformCardDataItem;
 
-export const CARD_DATA: {[key: string]: CardDataItem} = {
+export const CARD_DATA: {[key in CardSet]: {[key: string]: CardDataItem} } = {} as any;
+
+CARD_DATA['na-s2'] = {
       '01-yurina-o-n-1': {megami: 'yurina', name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: '3-4', damage: '3/1', text: ''}
     , '01-yurina-A1-n-1': {megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-n-1', name: '乱打', ruby: 'らんだ', baseType: 'normal', types: ['attack'], range: '2', damage: '2/1', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+0/+2となり、対応不可を得る。'}
     , '01-yurina-o-n-2': {megami: 'yurina', name: '一閃', ruby: 'いっせん', baseType: 'normal', types: ['attack'], range: '3', damage: '2/2', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+1/+0となる。'}
@@ -268,6 +271,8 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
     , '12-utsuro-o-s-4': {megami: 'utsuro', name: '魔食', ruby: 'エロージャ', baseType: 'special', types: ['action'], cost: '5', text: '【使用済】あなたの開始フェイズの開始時に相手は以下のどちらかを選ぶ。\n・相オーラ→ダスト：1\n・相フレア→ダスト：2'}
                        
 };
+
+CARD_DATA['na-s3'] = _.extend({}, CARD_DATA['na-s2']);
 
 
 // socket.io用イベント
