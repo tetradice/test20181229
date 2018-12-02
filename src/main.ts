@@ -428,7 +428,7 @@ $(function(){
                     let basicActionEnabled = board.checkBasicActionEnabled(side);
                     let subItems = {};
                     subItems['forward'] = {
-                        name: `${t('前進')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域-間合'), to: t('領域-オーラ')})}</span>`
+                        name: `${t('前進')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域名-間合'), to: t('領域名-オーラ')})}</span>`
                         , isHtmlName: true
                         , disabled: !basicActionEnabled.forward
                         , callback: () => {
@@ -436,7 +436,7 @@ $(function(){
                         }
                     };
                     subItems['leave'] = {
-                        name: `${t('離脱')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域-ダスト'), to: t('領域-間合')})}</span>`
+                        name: `${t('離脱')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域名-ダスト'), to: t('領域名-間合')})}</span>`
                         , isHtmlName: true
                         , disabled: !basicActionEnabled.leave
                         , callback: () => {
@@ -444,7 +444,7 @@ $(function(){
                         }
                     };
                     subItems['back'] = {
-                        name: `${t('後退')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域-オーラ'), to: t('領域-間合')})}</span>`
+                        name: `${t('後退')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域名-オーラ'), to: t('領域名-間合')})}</span>`
                         , isHtmlName: true
                         , disabled: !basicActionEnabled.back
                         , callback: () => {
@@ -453,7 +453,7 @@ $(function(){
                         }
                     };
                     subItems['wear'] = {
-                        name: `${t('纏い')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域-ダスト'), to: t('領域-オーラ')})}</span>`
+                        name: `${t('纏い')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域名-ダスト'), to: t('領域名-オーラ')})}</span>`
                         , isHtmlName: true
                         , disabled: !basicActionEnabled.wear
                         , callback: () => {
@@ -462,7 +462,7 @@ $(function(){
                         }
                     };
                     subItems['charge'] = {
-                        name: `${t('宿し')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域-オーラ'), to: t('領域-フレア')})}</span>`
+                        name: `${t('宿し')} <span style="font-size: smaller; color: silver;">${t('（FROM⇒TO）', {from: t('領域名-オーラ'), to: t('領域名-フレア')})}</span>`
                         , isHtmlName: true
                         , disabled: !basicActionEnabled.charge
                         , callback: () => {
