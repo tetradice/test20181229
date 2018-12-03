@@ -800,21 +800,21 @@ $(function(){
             } else {
                 // 観戦者でない場合
                 if(p.board.playerNames[params.side] === null){
-                    let playerCommonName = (params.side === 'p1' ? 'プレイヤー1' : 'プレイヤー2');
-                    utils.userInputModal(`<p>ふるよにボードシミュレーターへようこそ。<br>あなたは${playerCommonName}として卓に参加します。</p><p>プレイヤー名：</p>`, ($elem) => {
+                    let playerCommonName = (params.side === 'p1' ? t('プレイヤー1') : t('プレイヤー2'));
+                    utils.userInputModal(`<p>${t('dialog:ふるよにボードシミュレーターへようこそ。あなたはSIDEとして卓に参加します。')}</p><p>${t('プレイヤー名：')}</p>`, ($elem) => {
                         let playerName = $('#INPUT-MODAL input').val() as string;
                         if(playerName === ''){
                             playerName = playerCommonName;
                         }
                         appActions.operate({
-                            log: `卓に参加しました`,
+                            log: ['log:卓に参加しました', null],
                             undoType: 'notBack',
                             proc: () => {
                                 appActions.setPlayerName({side: params.side as PlayerSide, name: playerName});
                             }
                         });
         
-                        messageModal(`<p>ゲームを始める準備ができたら、まずは「メガミ選択」ボタンをクリックしてください。</p>`);
+                        utils.showModal(t('dialog:ゲームを始める準備ができたら、まずは「メガミ選択」ボタンをクリックしてください。'));
                     });
                 }
             }
@@ -843,10 +843,10 @@ $(function(){
 
         // 観戦者名の入力を要求された
         socket.on('requestWatcherName', (p) => {
-            utils.userInputModal(`<p>ふるよにボードシミュレーターへようこそ。<br>あなたは観戦者として卓に参加します。</p><p>観戦者名：</p>`, ($elem) => {
+            utils.userInputModal(`<p>${t('dialog:ふるよにボードシミュレーターへようこそ。あなたは観戦者として卓に参加します。')}</p><p>${t('観戦者名：')}</p>`, ($elem) => {
                 let playerName = $('#INPUT-MODAL input').val() as string;
                 if(playerName === ''){
-                    playerName = `観戦者${socket.ioSocket.id}`;
+                    playerName = `${t('観戦者')} ${socket.ioSocket.id}`;
                 }
                 let sessionId = localStorage.getItem(`table${params.tableId}:watcherSessionId`);
                 socket.emit('watcherNameInput', {tableId: params.tableId, sessionId: sessionId, name: playerName});
@@ -858,7 +858,7 @@ $(function(){
             let sessionId = localStorage.getItem(`table${params.tableId}:watcherSessionId`);
             appActions.setWatcherInfo({watchers: p.watchers, currentWatcherSessionId: sessionId});
             appActions.operate({
-                log: `観戦者として卓に参加しました`,
+                log: ['log:観戦者として卓に参加しました', null],
                 undoType: 'notBack',
                 proc: () => {
                 }
@@ -938,7 +938,7 @@ $(function(){
         // 相手プレイヤーからの通知を受け取った場合、toastを時間無制限で表示
         socket.on('onNotifyReceived', (p: {senderSide: PlayerSide, message: string}) => {
             let st = appActions.getState();
-            toastr.info(p.message, `${st.board.playerNames[p.senderSide]}より通知:`, {
+            toastr.info(p.message, t('NAMEより通知:', {name: st.board.playerNames[p.senderSide]}), {
                 timeOut: 0
                 , extendedTimeOut: 0
                 , tapToDismiss: false
@@ -1031,7 +1031,7 @@ $(function(){
                 if(currentState.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
 
                 if(!currentState.board.mariganFlags[params.side]){
-                    utils.messageModal(t('modal:決闘を開始するまでは、カードや桜花結晶の移動は行えません。'));
+                    utils.messageModal(t('dialog:決闘を開始するまでは、カードや桜花結晶の移動は行えません。'));
                     return false;
                 };
 
@@ -1043,7 +1043,7 @@ $(function(){
                 if(object.type === 'card'){
                     // 封印されたカードのドラッグ移動はできない
                     if(object.region === 'on-card'){
-                        utils.messageModal(t('modal:封印されたカードを移動することはできません。右クリックより捨て札に送ってください。'));
+                        utils.messageModal(t('dialog:封印されたカードを移動することはできません。右クリックより捨て札に送ってください。'));
                         return false;
                     }
 
@@ -1051,7 +1051,7 @@ $(function(){
                     let boardModel = new models.Board(currentState.board);
                     let tokensOnCard = boardModel.getRegionSakuraTokens(currentState.side, 'on-card', object.id);
                     if(tokensOnCard.length >= 1){
-                        utils.messageModal(t('modal:桜花結晶が乗ったカードを移動することはできません。'));
+                        utils.messageModal(t('dialog:桜花結晶が乗ったカードを移動することはできません。'));
                         return false;
                     }
 
@@ -1258,13 +1258,13 @@ $(function(){
                         // 他のカードを封印しているカードを、動かそうとした場合はエラー
                         let sealedCards = boardModel.getSealedCards(card.id);
                         if(sealedCards.length >= 1){
-                            utils.messageModal("他のカードが封印されているため移動できません。<br>封印されたカードを右クリックして、捨て札に送ってください。");
+                            utils.messageModal(t("dialog:他のカードが封印されているため移動できません。封印されたカードを右クリックして、捨て札に送ってください。"));
                             return false;
                         }
                         // 桜花結晶が乗っている札を、動かそうとした場合はエラー
                         let onCardTokens = boardModel.getRegionSakuraTokens(card.side, 'on-card', card.id);
                         if(onCardTokens.length >= 1){
-                            utils.messageModal("桜花結晶が上に乗っているため移動できません。");
+                            utils.messageModal(t("dialog:桜花結晶が上に乗っているため移動できません。"));
                             return false;
                         }
 
@@ -1291,7 +1291,7 @@ $(function(){
                         let fromLinkedCard = (dragInfo.draggingFrom.linkedCardId === null ? undefined :  boardModel.getCard(dragInfo.draggingFrom.linkedCardId));
                         let toLinkedCard = (toLinkedCardId === null ? undefined : boardModel.getCard(toLinkedCardId));
 
-                        let logs: {text: string, visibility?: LogVisibility}[] = [];
+                        let logs: {text: LogValue, visibility?: LogVisibility}[] = [];
                         let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region, fromLinkedCard);
                         let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion, toLinkedCard);
                         
@@ -1303,21 +1303,22 @@ $(function(){
                             return false;
                         } else {
                             // ログ内容を決定
-                            let sidePrefix = (sakuraToken.ownerSide && currentState.side !== sakuraToken.ownerSide ? '相手の' : '')
-                            let tokenName = (sakuraToken.artificial ? '造花結晶' : '桜花結晶');
-                            let logText = `${sidePrefix}${tokenName}を${dragInfo.sakuraTokenMoveCount}つ移動しました：${fromRegionTitle} → ${toRegionTitle}`
+                            let tokenName = (sakuraToken.artificial ? t('造花結晶') : t('桜花結晶'));
+                            let isOpponent = sakuraToken.ownerSide && currentState.side !== sakuraToken.ownerSide;
+                            let log: LogValue = [(isOpponent ? 'log:相手のTOKENをNつ移動しました：FROM → TO' : 'log:TOKENをNつ移動しました：FROM → TO'), {count: dragInfo.sakuraTokenMoveCount, from: fromRegionTitle, to: toRegionTitle, token: tokenName}];
+                            
 
                             // 一部の移動ではログを変更
                             if(sakuraToken.region === 'machine' && toRegion === 'burned'){
-                                logText = `${sidePrefix}マシンの造花結晶を${dragInfo.sakuraTokenMoveCount}つ燃焼済にしました`;
+                                log = [(isOpponent ? 'log:相手のマシンの造花結晶をNつ燃焼済にしました' : 'log:マシンの造花結晶をNつ燃焼済にしました'), {count: dragInfo.sakuraTokenMoveCount, token: tokenName}];
                             }
                             if(sakuraToken.region === 'distance' && toRegion === 'burned'){
-                                logText = `間合の造花結晶を${dragInfo.sakuraTokenMoveCount}つ燃焼済にしました`;
+                                log = ['log:間合の造花結晶をNつ燃焼済にしました', {count: dragInfo.sakuraTokenMoveCount, token: tokenName}];
                             }
                             if(sakuraToken.region === 'burned' && toRegion === 'machine'){
-                                logText = `${sidePrefix}燃焼済の${tokenName}を${dragInfo.sakuraTokenMoveCount}つ回復しました`;
+                                log = [(isOpponent ? 'log:相手の燃焼済の造花結晶をNつ回復しました' : 'log:燃焼済の造花結晶をNつ回復しました'), {count: dragInfo.sakuraTokenMoveCount, token: tokenName}];
                             }
-                            logs.push({ text: logText });
+                            logs.push({ text: log });
 
                             appActions.operate({
                                 log: logs,
@@ -1370,7 +1371,7 @@ $(function(){
         }
     } catch(ex) {
         console.error(ex);
-        alert("システムエラーが発生しました。\nご迷惑をおかけして申し訳ございません。\n\n一度、ブラウザの表示を更新 (リロード) してみてください。\n表示を更新しても解決しない場合、お手数をおかけしますが、開発者までご連絡ください。");
+        alert(t("システムエラーが発生しました。\nご迷惑をおかけして申し訳ございません。\n\n一度、ブラウザの表示を更新 (リロード) してみてください。\n表示を更新しても解決しない場合、お手数をおかけしますが、開発者までご連絡ください。"));
         $.ajax({
               url: '/.error-send'
             , type: 'post'
