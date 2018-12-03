@@ -508,11 +508,11 @@ $(function(){
                                 // まだ相手が決闘を開始していなければ、この操作は禁止する
                                 // (決闘を開始する前にカードを取り除くと、更新がうまくいかずにエラーが多発する場合があるため。原因不明)
                                 if(!currentState.board.mariganFlags[utils.flipSide(playerSide)]){
-                                    utils.messageModal(utils.nl2br(t('相手が決闘を開始するまでは、この操作を行うことはできません。')));
+                                    utils.messageModal(t('dialog:相手が決闘を開始するまでは、この操作を行うことはできません。'));
                                     return;
                                 }
 
-                                utils.confirmModal(utils.nl2br(t('ゲームから取り除いた後は、元に戻すことはできません。よろしいですか？')), () => {
+                                utils.confirmModal(t('dialog:ゲームから取り除いた後は、元に戻すことはできません。よろしいですか？'), () => {
                                     appActions.oprRemoveCard({objectId: id});
                                 });
                             }
@@ -814,7 +814,7 @@ $(function(){
                             }
                         });
         
-                        utils.showModal(t('dialog:ゲームを始める準備ができたら、まずは「メガミ選択」ボタンをクリックしてください。'));
+                        utils.messageModal(t('dialog:ゲームを始める準備ができたら、まずは「メガミ選択」ボタンをクリックしてください。'));
                     });
                 }
             }
@@ -1371,7 +1371,7 @@ $(function(){
         }
     } catch(ex) {
         console.error(ex);
-        alert(t("システムエラーが発生しました。\nご迷惑をおかけして申し訳ございません。\n\n一度、ブラウザの表示を更新 (リロード) してみてください。\n表示を更新しても解決しない場合、お手数をおかけしますが、開発者までご連絡ください。"));
+        alert(t("システムエラーが発生しました。"));
         $.ajax({
               url: '/.error-send'
             , type: 'post'

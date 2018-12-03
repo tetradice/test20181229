@@ -11,7 +11,7 @@ import i18next, { t } from 'i18next';
 /** コントロールパネル */
 export const ControlPanel = () => (state: state.State, actions: ActionsType) => {
     let reset = () => {
-        utils.confirmModal(t('卓を初期状態に戻します。（操作ログは初期化されません）<br>この操作は相手プレイヤーに確認を取ってから行ってください。<br><br>よろしいですか？'), () => {
+        utils.confirmModal(t('dialog:卓を初期状態に戻します。（操作ログは初期化されません）この操作は相手プレイヤーに確認を取ってから行ってください。よろしいですか？'), () => {
             actions.operate({
                 log: ['log:ボードリセットを行いました', null],
                 proc: () => {
@@ -66,33 +66,33 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     id="FORWARD-BUTTON"
                     style="padding-left: 1em; padding-right: 1em;"
                     class={`ui button ${basicActionEnableState.forward ? '' : 'disabled'}`}
-                    onclick={() => actions.oprBasicAction({from: [null, 'distance', null], to: [side, 'aura', null], actionTitle: '前進', costType: null})}>{i18next.t('前進')}</button>
+                    onclick={() => actions.oprBasicAction({from: [null, 'distance', null], to: [side, 'aura', null], actionTitleKey: '前進', costType: null})}>{i18next.t('前進')}</button>
                     <button
                     id="LEAVE-BUTTON"
                     style="padding-left: 1em; padding-right: 1em;"
                     class={`ui button ${basicActionEnableState.leave ? '' : 'disabled'}`}
-                    onclick={() => actions.oprBasicAction({from: [null, 'dust', null], to: [null, 'distance', null], actionTitle: '離脱', costType: null})}>{i18next.t('離脱')}</button>
+                    onclick={() => actions.oprBasicAction({from: [null, 'dust', null], to: [null, 'distance', null], actionTitleKey: '離脱', costType: null})}>{i18next.t('離脱')}</button>
                 </div>
                 <div class="ui basic buttons" style="margin-right: 10px;">
                     <button
                     id="BACK-BUTTON" 
                     style="padding-left: 1em; padding-right: 1em;"
                     class={`ui button ${basicActionEnableState.back ? '' : 'disabled'}`}
-                    onclick={() => actions.oprBasicAction({from: [side, 'aura', null], to: [null, 'distance', null], actionTitle: '後退', costType: null})}>{i18next.t('後退')}</button>
+                    onclick={() => actions.oprBasicAction({from: [side, 'aura', null], to: [null, 'distance', null], actionTitleKey: '後退', costType: null})}>{i18next.t('後退')}</button>
                 </div>
                 <div class="ui basic buttons" style="margin-right: 10px;">
                     <button
                     id="WEAR-BUTTON" 
                     style="padding-left: 1em; padding-right: 1em;"
                     class={`ui button ${basicActionEnableState.wear ? '' : 'disabled'}`}
-                    onclick={() => actions.oprBasicAction({from: [null, 'dust', null], to: [side, 'aura', null], actionTitle: '纏い', costType: null})}>{i18next.t('纏い')}</button>
+                    onclick={() => actions.oprBasicAction({from: [null, 'dust', null], to: [side, 'aura', null], actionTitleKey: '纏い', costType: null})}>{i18next.t('纏い')}</button>
                 </div>
                 <div class="ui basic buttons" style="margin-right: 10px;">
                     <button
                     id="CHARGE-BUTTON" 
                     style="padding-left: 1em; padding-right: 1em;"
                     class={`ui button ${basicActionEnableState.charge ? '' : 'disabled'}`}
-                    onclick={() => actions.oprBasicAction({from: [side, 'aura', null], to: [side, 'flair', null], actionTitle: '宿し', costType: null})}>{i18next.t('宿し')}</button>
+                    onclick={() => actions.oprBasicAction({from: [side, 'aura', null], to: [side, 'flair', null], actionTitleKey: '宿し', costType: null})}>{i18next.t('宿し')}</button>
                 </div>
                 <br />
                 <button

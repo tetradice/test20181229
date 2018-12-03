@@ -164,7 +164,7 @@ export default {
         // 桜花結晶が乗っている切札を、変更しようとした場合はエラー
         let onCardTokens = board.getRegionSakuraTokens(card.side, 'on-card', card.id);
         if(onCardTokens.length >= 1){
-            utils.messageModal(t("桜花結晶が上に乗っている切札は、裏向きにできません。"));
+            utils.messageModal(t("dialog:桜花結晶が上に乗っている切札は、裏向きにできません。"));
             return;
         }
 
@@ -266,7 +266,7 @@ export default {
         // 使用済み札の下に封印されたカードが1枚でもあれば、再構成はできない
         let usedCards = boardModel.getRegionCards(p.side, 'used', null);
         if(usedCards.find(c => boardModel.getSealedCards(c.id).length >= 1)){
-            utils.messageModal(t('使用済み札の下に封印されているカードがあるため、再構成を行えません。').replace(/\n/g, '<br>'));
+            utils.messageModal(t('dialog:使用済み札の下に封印されているカードがあるため、再構成を行えません。'));
             return;
         }
         

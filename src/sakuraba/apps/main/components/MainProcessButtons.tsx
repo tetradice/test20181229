@@ -243,7 +243,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
         let side = state.side;
 
-        utils.confirmModal(utils.nl2br(t('選択したメガミ2柱を公開します。この操作を行うと、それ以降メガミの変更は行えません。よろしいですか？')), () => {
+        utils.confirmModal(t('dialog:選択したメガミ2柱を公開します。この操作を行うと、それ以降メガミの変更は行えません。よろしいですか？'), () => {
             actions.operate({
                 log: ['log:選択したメガミを公開しました', null],
                 undoType: 'notBack',
@@ -255,7 +255,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         });
     };
     let firstHandSet = () => {
-        utils.confirmModal(utils.nl2br(t('手札を引くと、それ以降デッキの変更は行えません。よろしいですか？')), () => {
+        utils.confirmModal(t('dialog:手札を引くと、それ以降デッキの変更は行えません。よろしいですか？'), () => {
             actions.oprFirstDraw();
         });
     };
@@ -304,18 +304,18 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                     }
                 })
 
-                utils.messageModal(utils.nl2br(t("桜花決闘を開始しました。場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。")));
+                utils.messageModal(t("dialog:桜花決闘を開始しました。場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。"));
             });
         };
 
         const notMarigan = () => {
-            utils.confirmModal(utils.nl2br(t("手札の引き直しを行わずに、決闘を開始します。よろしいですか？")), () => {
+            utils.confirmModal(t("dialog:手札の引き直しを行わずに、決闘を開始します。よろしいですか？"), () => {
                 // マリガンフラグON
                 actions.setMariganFlag({side: side, value: true});
 
                 // 盤面のカードや桜花結晶などを配置して、メッセージを表示
                 actions.oprBoardSetup({});
-                utils.messageModal(utils.nl2br(t("桜花決闘を開始しました。場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。")));
+                utils.messageModal(t("dialog:桜花決闘を開始しました。場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。"));
 
             });
 

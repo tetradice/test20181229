@@ -62,7 +62,7 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
             return false;
         };
         if(!state.board.mariganFlags[state.side]){
-            utils.messageModal(t('決闘を開始するまでは、カードや桜花結晶の操作は行えません。'));
+            utils.messageModal(t('dialog:決闘を開始するまでは、カードや桜花結晶の操作は行えません。'));
             return false;
         };
         const data = sakuraba.CARD_DATA[p.target.cardId];
