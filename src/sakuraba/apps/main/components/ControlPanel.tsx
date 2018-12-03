@@ -26,7 +26,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         let side = state.side;
 
         $('#INPUT-MODAL input').val(state.board.playerNames[state.side]);
-        utils.userInputModal(`<p>${t('新しいプレイヤー名を入力してください。')}</p>`, ($elem) => {
+        utils.userInputModal(`<p>${t('dialog:新しいプレイヤー名を入力してください。')}</p>`, ($elem) => {
             let playerName = $('#INPUT-MODAL input').val() as string;
             actions.operate({
                 log: ['log:プレイヤー名を変更しました', null],

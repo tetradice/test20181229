@@ -45,7 +45,7 @@ const view: View<State, ActionsType> = (state, actions) => {
             <div class="ui modal visible active">
                 <div class="content">
                     <div class="description" style={{marginBottom: '2em'}}>
-                        <p>{t('山札の底に戻すカードを選択してください。（この操作は一度しか行えません）')}</p>
+                        <p>{utils.nl2brJsx(t('dialog:山札の底に戻すカードを選択してください。（この操作は一度しか行えません）'))}</p>
                     </div>
                     <div class={css.outer}>
                         <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">

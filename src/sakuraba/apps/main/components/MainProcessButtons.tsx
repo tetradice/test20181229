@@ -201,7 +201,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                         <div class="ui modal visible active">
                             <div class="content">
                                 <div class="description" style={{marginBottom: '2em'}}>
-                                    <p>{t('使用するカードを選択してください。')}</p>
+                                    <p>{utils.nl2brJsx(t('dialog:使用するカードを選択してください。'))}</p>
                                 </div>
                                 <div class={css.outer}>
                                     <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
