@@ -231,7 +231,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             sakuraTokenAreaData.push({
                   region: 'machine'
                 , side: side
-                , title: 'STEAM ENGINE'
+                , title: t('STEAM ENGINE')
                 , layoutType: 'horizontal'
                 , left: (side === state.viewingSide ? 1010 : 50)
                 , top: (side === state.viewingSide ? 600 : 140)
@@ -243,7 +243,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             sakuraTokenAreaData.push({
                 region: 'burned'
               , side: side
-              , title: 'BURNED'
+              , title: t('BURNED')
               , layoutType: 'horizontal'
               , left: (side === state.viewingSide ? 1010 : 50)
               , top: (side === state.viewingSide ? 660 : 80)
