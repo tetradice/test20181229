@@ -36,7 +36,7 @@ export function createInitialState(): state.State{
       
       , cardListSelectedMegami: 'yurina'
 
-      , setting: {megamiFaceViewMode: 'background1', language: 'ja'}
+      , setting: {megamiFaceViewMode: 'background1'}
 
       , environment: 'development'
   }

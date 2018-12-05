@@ -14,6 +14,7 @@ import { VERSION } from 'sakuraba/const';
 import i18next = require('i18next');
 import FilesystemBackend = require('i18next-node-fs-backend');
 import i18nextMiddleware = require('i18next-express-middleware');
+import webpackNodeExternals = require('webpack-node-externals');
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
@@ -44,6 +45,8 @@ i18next
       }
   });
 
+
+
 app
   .set('views', __dirname + '/../views/')
   .set('view engine', 'ejs')
@@ -55,24 +58,39 @@ app
   .get('/locales/resources.json', i18nextMiddleware.getResourcesHandler(i18next, {})) // serves resources for consumers (browser)
 
   .get('/dist/main.js', (req, res) => res.sendFile(MAIN_JS) )
-  .get('/dist/main.js.map', (req, res) => res.sendFile(MAIN_JS_MAP) )
-  .get('/', (req, res) => res.render('index', {environment: process.env.ENVIRONMENT, version: VERSION}) )
+  .get('/dist/main.js.map', (req, res) => res.sendFile(MAIN_JS_MAP) );
 
-  .get('/play/:key', (req, res) => {
+  // プレイヤーとして卓URLにアクセスしたときの処理
+  const playerRoute = (req: express.Request, res: express.Response, lang: string) => {
     // キーに対応する情報の取得を試みる
     RedisClient.HGET(`sakuraba:player-key-map`, req.params.key, (err, dataJson) => {
       if(dataJson !== null){
         let data = JSON.parse(dataJson);
-        res.render('board', {tableId: data.tableId, side: data.side, environment: process.env.ENVIRONMENT, version: VERSION})
+        res.render('board', {tableId: data.tableId, side: data.side, environment: process.env.ENVIRONMENT, version: VERSION, lang: lang})
       } else {
         res.status(404);
         res.end('NotFound : ' + req.path);
       }
     });
+  };
+app
+  // 卓URL (プレイヤー)
+  .get('/:lang/play/:key', (req, res) => {
+    playerRoute(req, res, req.params.lang);
+  })
+  .get('/play/:key', (req, res) => {
+    playerRoute(req, res, 'ja');
+  })
+  // 卓URL (観戦者用)
+  .get('/:lang/watch/:tableId', (req, res) => {
+    res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: req.params.lang})
   })
   .get('/watch/:tableId', (req, res) => {
-    res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION})
+    res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja'})
   })
+  // トップページ
+  .get('/:lang', (req, res) => res.render('index', {environment: process.env.ENVIRONMENT, version: VERSION, lang: req.params.lang}) )
+  .get('/', (req, res) => res.render('index', {environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja'}) )
 
   .post('/tables.create', (req, res) => {
     // 新しい卓番号を採番

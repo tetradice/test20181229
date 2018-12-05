@@ -99,7 +99,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                     id="ALL-ENHANCE-DECREASE-BUTTON"
                     class={`ui basic button ${onCardTokenFound ? '' : 'disabled'}`}
                     style="margin-top: 5px;"
-                    onclick={() => actions.oprRemoveSakuraTokenfromAllEnhanceCard()}>全付与札の桜花結晶-1</button>
+                    onclick={() => actions.oprRemoveSakuraTokenfromAllEnhanceCard()}>{t('全付与札の桜花結晶-1')}</button>
                 </div>
             );
             // 決闘開始操作を行っていなければ、コマンドボタンはまだ表示しない

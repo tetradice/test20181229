@@ -43,14 +43,6 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                     localStorage.setItem('Setting', JSON.stringify(actions.getState().setting));
                 }
             });
-            $(e).find('.ui.checkbox[data-key=LANGUAGE]').checkbox({
-                onChange: function(){
-                    let checked = $(this).closest('.ui.checkbox').checkbox('is checked');
-                    
-                    actions.setLanguageSetting(checked ? 'en' : 'ja');
-                    localStorage.setItem('Setting', JSON.stringify(actions.getState().setting));
-                }
-            });
         };
         
 
@@ -65,12 +57,6 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                         <div class={`ui checkbox`} data-key="MEGAMI-FACE-VIEW-MODE">
                             <input type="checkbox" class="hidden" checked={(state.setting.megamiFaceViewMode === 'background1' ? true : undefined)} />
                             <label>{t('メガミのフェイスアップ画像表示')}</label>
-                        </div>
-                    </div>
-                    <div class="inline field">
-                        <div class={`ui checkbox`} data-key="LANGUAGE">
-                            <input type="checkbox" class="hidden" checked={(state.setting.language === 'en' ? true : undefined)} />
-                            <label>英語</label>
                         </div>
                     </div>
                 </form>
