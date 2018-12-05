@@ -11,6 +11,9 @@ import * as utils from 'sakuraba/utils';
 import nodemailer from 'nodemailer';
 import bodyParser from 'body-parser';
 import { VERSION } from 'sakuraba/const';
+import i18next = require('i18next');
+import FilesystemBackend = require('i18next-node-fs-backend');
+import i18nextMiddleware = require('i18next-express-middleware');
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
@@ -28,12 +31,29 @@ if(process.env.ENVIRONMENT === 'development'){
   app.use(connectBrowserSync(browserSync(browserSyncConfigurations)));
 }
 
+i18next
+  .use(FilesystemBackend)
+  .init({
+      debug: true
+    , ns: ['common']
+    , defaultNS: 'common'
+    , lng: 'ja'
+    , fallbackLng: 'ja'
+    , backend: {
+        loadPath: './locales/{{lng}}/{{ns}}.json',
+      }
+  });
+
 app
   .set('views', __dirname + '/../views/')
   .set('view engine', 'ejs')
   .use(bodyParser.json())
   .use(express.static('public'))
   .use(express.static('node_modules'))
+  .use(i18nextMiddleware.handle(i18next, {ignoreRoutes: ['/dist']}))
+  
+  .get('/locales/resources.json', i18nextMiddleware.getResourcesHandler(i18next, {})) // serves resources for consumers (browser)
+
   .get('/dist/main.js', (req, res) => res.sendFile(MAIN_JS) )
   .get('/dist/main.js.map', (req, res) => res.sendFile(MAIN_JS_MAP) )
   .get('/', (req, res) => res.render('index', {environment: process.env.ENVIRONMENT, version: VERSION}) )

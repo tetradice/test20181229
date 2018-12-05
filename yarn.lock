@@ -101,7 +101,7 @@
     "@types/node" "*"
     "@types/range-parser" "*"
 
-"@types/express@^4.16.0":
+"@types/express@*", "@types/express@^4.16.0":
   version "4.16.0"
   resolved "https://registry.yarnpkg.com/@types/express/-/express-4.16.0.tgz#6d8bc42ccaa6f35cf29a2b7c3333cb47b5a32a19"
   dependencies:
@@ -113,9 +113,30 @@
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@types/i18next-browser-languagedetector/-/i18next-browser-languagedetector-2.0.1.tgz#35490253884b15311c54108697d5a7147a75df95"
 
+"@types/i18next-express-middleware@^0.0.33":
+  version "0.0.33"
+  resolved "http://registry.npmjs.org/@types/i18next-express-middleware/-/i18next-express-middleware-0.0.33.tgz#1c5625f123eaae126de3b43626ef9a04bc6ad482"
+  dependencies:
+    "@types/express" "*"
+    "@types/i18next" "*"
+
+"@types/i18next-node-fs-backend@^0.0.30":
+  version "0.0.30"
+  resolved "https://registry.yarnpkg.com/@types/i18next-node-fs-backend/-/i18next-node-fs-backend-0.0.30.tgz#7454f8e923798a2ebf16309befcfdfde32e90a7c"
+  dependencies:
+    "@types/i18next" "^2"
+
+"@types/i18next@*":
+  version "12.1.0"
+  resolved "https://registry.yarnpkg.com/@types/i18next/-/i18next-12.1.0.tgz#7c3fd3dbe03f9531147033773bbd0ca4f474a180"
+
 "@types/i18next@^11.9.3":
   version "11.9.3"
   resolved "https://registry.yarnpkg.com/@types/i18next/-/i18next-11.9.3.tgz#04d84c6539908ad69665d26d8967f942d1638550"
+
+"@types/i18next@^2":
+  version "2.3.41"
+  resolved "https://registry.yarnpkg.com/@types/i18next/-/i18next-2.3.41.tgz#5a3ebdcb4942052ca2ef71c4f6341438c57cb18c"
 
 "@types/jquery@*", "@types/jquery@^3.3.2":
   version "3.3.12"
@@ -1319,6 +1340,13 @@ cookie@0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.3.1.tgz#e7e0a1f9ef43b4c8ba925c5c5a96e806d16873bb"
 
+cookies@0.7.1:
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/cookies/-/cookies-0.7.1.tgz#7c8a615f5481c61ab9f16c833731bcb8f663b99b"
+  dependencies:
+    depd "~1.1.1"
+    keygrip "~1.0.2"
+
 copy-concurrently@^1.0.0:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/copy-concurrently/-/copy-concurrently-1.0.5.tgz#92297398cae34937fcafd6ec8139c18051f0b5e0"
@@ -2394,9 +2422,22 @@ i18next-browser-languagedetector@^2.2.4:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/i18next-browser-languagedetector/-/i18next-browser-languagedetector-2.2.4.tgz#b02412d7ab15d7d74e1b1317d67d8a244b219ee3"
 
+i18next-express-middleware@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/i18next-express-middleware/-/i18next-express-middleware-1.5.0.tgz#02dd5dbeb3b8e00f7c837ca6724e07257cb9a340"
+  dependencies:
+    cookies "0.7.1"
+
 i18next-locize-backend@^1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/i18next-locize-backend/-/i18next-locize-backend-1.6.0.tgz#4a95c19fa2bee623c1d61ce5a80a76a123f7ff92"
+
+i18next-node-fs-backend@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/i18next-node-fs-backend/-/i18next-node-fs-backend-2.1.0.tgz#b0ad55eb8671b4dedbd21fe434fb50e964a4ece2"
+  dependencies:
+    js-yaml "3.12.0"
+    json5 "2.0.0"
 
 i18next@^12.0.0:
   version "12.0.0"
@@ -2751,7 +2792,7 @@ js-tokens@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-3.0.2.tgz#9866df395102130e38f7f996bceb65443209c25b"
 
-js-yaml@^3.9.0:
+js-yaml@3.12.0, js-yaml@^3.9.0:
   version "3.12.0"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.12.0.tgz#eaed656ec8344f10f527c6bfa1b6e2244de167d1"
   dependencies:
@@ -2777,6 +2818,12 @@ json-schema-traverse@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/json-schema-traverse/-/json-schema-traverse-0.4.1.tgz#69f6a87d9513ab8bb8fe63bdb0979c448e684660"
 
+json5@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/json5/-/json5-2.0.0.tgz#b61abf97aa178c4b5853a66cc8eecafd03045d78"
+  dependencies:
+    minimist "^1.2.0"
+
 json5@^0.5.0:
   version "0.5.1"
   resolved "http://registry.npmjs.org/json5/-/json5-0.5.1.tgz#1eade7acc012034ad84e2396767ead9fa5495821"
@@ -2796,6 +2843,10 @@ jsonfile@^3.0.0:
 jsonify@~0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/jsonify/-/jsonify-0.0.0.tgz#2c74b6ee41d93ca51b7b5aaee8f503631d252a73"
+
+keygrip@~1.0.2:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/keygrip/-/keygrip-1.0.3.tgz#399d709f0aed2bab0a059e0cdd3a5023a053e1dc"
 
 kind-of@^3.0.2, kind-of@^3.0.3, kind-of@^3.2.0:
   version "3.2.2"
