@@ -7,6 +7,19 @@ export function flipSide(side: PlayerSide): PlayerSide{
   return side;
 }
 
+/** 指定したカードセットに対応するメガミのキー一覧を取得 */
+export function getMegamiKeys(cardSet: CardSet): sakuraba.Megami[]{
+    let keys: sakuraba.Megami[] = [];
+    for(let key in sakuraba.MEGAMI_DATA){
+        let megami = sakuraba.MEGAMI_DATA[key as sakuraba.Megami];
+        if(megami.notExistCardSets === undefined || megami.notExistCardSets.indexOf(cardSet) === -1){
+            keys.push(key as sakuraba.Megami);
+        }
+    }
+
+    return keys;
+}
+
 /** メガミの表示名を取得 */
 export function getMegamiDispName(megami: sakuraba.Megami): string{
     let data = sakuraba.MEGAMI_DATA[megami];

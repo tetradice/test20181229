@@ -33,7 +33,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         // ドロップダウンの選択肢を設定
         $('#MEGAMI1-SELECTION').empty().append('<option></option>');
         $('#MEGAMI2-SELECTION').empty().append('<option></option>');
-        for(let key in sakuraba.MEGAMI_DATA){
+        for(let key of utils.getMegamiKeys(state.board.cardSet)){
             let data = sakuraba.MEGAMI_DATA[key];
             $('#MEGAMI1-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
             $('#MEGAMI2-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);

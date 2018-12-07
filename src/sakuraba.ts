@@ -23,6 +23,7 @@ export interface MegamiDataItem {
     symbol: string;
     base?: string;
     anotherID?: string;
+    notExistCardSets?: CardSet[];
 }
 const MEGAMI_DATA_BASE = {
       'yurina':   {name: 'ユリナ', symbol: '刀'}
@@ -42,9 +43,12 @@ const MEGAMI_DATA_BASE = {
     , 'thallya':  {name: 'サリヤ', symbol: '乗騎'}
     , 'raira':    {name: 'ライラ', symbol: '爪'}
     , 'utsuro':   {name: 'ウツロ', symbol: '鎌'}
+    , 'utsuro-a1':   {name: '終章ウツロ', symbol: '塵', notExistCardSets: ['na-s2'] as CardSet[]}
+    , 'honoka':   {name: 'ホノカ', symbol: '旗'}
 };
 export type Megami = keyof (typeof MEGAMI_DATA_BASE);
-export const MEGAMI_DATA: {[megami: string]: MegamiDataItem} = MEGAMI_DATA_BASE;
+export const MEGAMI_DATA: {[megami in Megami]: MegamiDataItem} = MEGAMI_DATA_BASE;
+
 
 // カード情報
 interface CardDataItemBase {

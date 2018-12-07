@@ -58,7 +58,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
 
 
         let options: JSX.Element[] = [];
-        for(let key in MEGAMI_DATA){
+        for(let key of utils.getMegamiKeys(state.board.cardSet)){
             let data = MEGAMI_DATA[key];
             options.push(<option value={key} selected={key === state.cardListSelectedMegami}>{data.name} ({data.symbol})</option>);
         }

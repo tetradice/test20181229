@@ -404,7 +404,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     addExtraToken(extraTokens, opponentSide, 10, 315);
 
     let megamiNumber = 0;
-    for(let key in MEGAMI_DATA){
+    for(let key of utils.getMegamiKeys(state.board.cardSet)){
         megamiNumber++;
     }
 
