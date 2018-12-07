@@ -11,7 +11,7 @@ type UmbrellaState = null | 'closed' | 'opened';
 
 type VigorValue = 0 | 1 | 2;
 
-type LogValue = string | [string, object] | {type: 'cardName', cardSet: string, cardId: string};
+type LogValue = [string, {[key: string]: state.ActionLogBody}];
 
 /** 観戦者情報 */
 interface WatcherInfo {

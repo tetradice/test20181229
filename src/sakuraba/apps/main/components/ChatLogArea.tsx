@@ -6,7 +6,7 @@ import { BOARD_BASE_WIDTH } from "sakuraba/const";
 import { t } from "i18next";
 
 /** チャット */
-export const ChatLogArea = (p: {logs: state.LogRecord[]}) => (state: state.State, actions: ActionsType) => {
+export const ChatLogArea = (p: {logs: state.ChatLogRecord[]}) => (state: state.State, actions: ActionsType) => {
 
     let logElements: Children[] = [];
     let now = moment();

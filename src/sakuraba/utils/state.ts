@@ -2,6 +2,7 @@
 export function createInitialState(): state.State{
   let st: state.State = {
         stateDataVersion: 1
+      , lang: 'ja'
       , board: {
             objects: []
           , playerNames: {p1: null, p2: null}

@@ -1,9 +1,9 @@
 import { EventEmitter } from "events";
 
 interface ServerToClientEventProps {
-    onFirstTableDataReceived: {board: state.Board, actionLogs: state.LogRecord[], chatLogs: state.LogRecord[], watchers: {[sessionId: string]: WatcherInfo}};
-    onBoardReceived: {board: state.Board, appendedActionLogs: state.LogRecord[] | null};
-    onChatLogAppended: {appendedChatLogs: state.LogRecord[]};
+    onFirstTableDataReceived: {board: state.Board, actionLogs: state.ActionLogRecord[], chatLogs: state.ChatLogRecord[], watchers: {[sessionId: string]: WatcherInfo}};
+    onBoardReceived: {board: state.Board, appendedActionLogs: state.ActionLogRecord[] | null};
+    onChatLogAppended: {appendedChatLogs: state.ChatLogRecord[]};
 
     onNotifyReceived: {senderSide: PlayerSide, message: string};
 
@@ -15,8 +15,8 @@ type ServerToClientEventName = keyof ServerToClientEventProps;
 
 interface ClientToServerEventProps {
     requestFirstTableData: {tableId: string}; 
-    updateBoard: {tableId: string, side: SheetSide, board: state.Board, appendedActionLogs: state.LogRecord[] | null};
-    appendChatLog: {tableId: string, appendedChatLog: state.LogRecord};
+    updateBoard: {tableId: string, side: SheetSide, board: state.Board, appendedActionLogs: state.ActionLogRecord[] | null};
+    appendChatLog: {tableId: string, appendedChatLog: state.ChatLogRecord};
 
     notify: {tableId: string, senderSide: PlayerSide, message: string};
 

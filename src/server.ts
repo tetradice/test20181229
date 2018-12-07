@@ -186,11 +186,11 @@ function saveBoard(tableId: string, board: state.Board, callback: () => void){
 }
 
 /** Redis上に保存されたアクションログを取得 */
-function getStoredActionLogs(tableId: string, callback: (logs: state.LogRecord[]) => void){
+function getStoredActionLogs(tableId: string, callback: (logs: state.ActionLogRecord[]) => void){
   // ログを取得
   RedisClient.LRANGE(`sakuraba:tables:${tableId}:actionLogs`, 0, -1, (err, jsons) => {
 
-    let logs = jsons.map((json) => JSON.parse(json) as state.LogRecord); 
+    let logs = jsons.map((json) => JSON.parse(json) as state.ActionLogRecord); 
 
     // コールバックを実行
     callback(logs);
@@ -198,11 +198,11 @@ function getStoredActionLogs(tableId: string, callback: (logs: state.LogRecord[]
 }
 
 /** Redis上に保存されたチャットログを取得 */
-function getStoredChatLogs(tableId: string, callback: (logs: state.LogRecord[]) => void){
+function getStoredChatLogs(tableId: string, callback: (logs: state.ChatLogRecord[]) => void){
   // ログを取得
   RedisClient.LRANGE(`sakuraba:tables:${tableId}:chatLogs`, 0, -1, (err, jsons) => {
 
-    let logs = jsons.map((json) => JSON.parse(json) as state.LogRecord); 
+    let logs = jsons.map((json) => JSON.parse(json) as state.ChatLogRecord); 
 
     // コールバックを実行
     callback(logs);
@@ -210,7 +210,7 @@ function getStoredChatLogs(tableId: string, callback: (logs: state.LogRecord[]) 
 }
 
 /** Redisへアクションログデータを追加 */
-function appendActionLogs(tableId: string, logs: state.LogRecord[], callback: (logs: state.LogRecord[]) => void){
+function appendActionLogs(tableId: string, logs: state.ActionLogRecord[], callback: (logs: state.ActionLogRecord[]) => void){
   // ログをトランザクションで追加
   let commands: string[][] = [];
   logs.forEach((log) => {
@@ -224,7 +224,7 @@ function appendActionLogs(tableId: string, logs: state.LogRecord[], callback: (l
 }
 
 /** Redisへチャットログデータを追加 */
-function appendChatLogs(tableId: string, logs: state.LogRecord[], callback: (logs: state.LogRecord[]) => void){
+function appendChatLogs(tableId: string, logs: state.ChatLogRecord[], callback: (logs: state.ChatLogRecord[]) => void){
   // ログをトランザクションで追加
   let commands: string[][] = [];
   logs.forEach((log) => {

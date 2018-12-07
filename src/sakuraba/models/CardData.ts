@@ -6,7 +6,7 @@ export class CardData {
     cardId: string;
 
     /** 言語 */
-    language: state.LanguageSetting;
+    language: string;
 
     /** 複製元のカードID */
     duplicatingCardId: string | null = null;
@@ -14,7 +14,7 @@ export class CardData {
     /** 傘が開いている場合の情報を使用するかどうか */
     usedOpenedCardData: boolean = false;
 
-    constructor(cardId: string, language: state.LanguageSetting, duplicatingCardId?: string){
+    constructor(cardId: string, language: string, duplicatingCardId?: string){
         this.cardId = cardId;
         this.language = language;
         if(duplicatingCardId){

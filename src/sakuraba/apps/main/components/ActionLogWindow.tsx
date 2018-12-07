@@ -12,7 +12,7 @@ function saveWindowState(elem: HTMLElement){
 }
 
 /** 操作ログ */
-export const ActionLogWindow = (p: {shown: boolean, logs: state.LogRecord[]}) => (state: state.State, actions: ActionsType) => {
+export const ActionLogWindow = (p: {shown: boolean, logs: state.ActionLogRecord[]}) => (state: state.State, actions: ActionsType) => {
     if(p.shown){
         let logElements: Children[] = [];
         let now = moment();

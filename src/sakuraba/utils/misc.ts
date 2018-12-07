@@ -194,6 +194,8 @@ export function getSakuraTokenRegionTitle(selfSide: PlayerSide, side: PlayerSide
 
 // ログテキストオブジェクトを翻訳する (パラメータの中に翻訳対象オブジェクトが含まれていれば再帰的に翻訳)
 export function translateLog(log: LogValue): string{
+    if(!log) return "";
+
     if(typeof log === 'string'){
         return log;
     } else if(Array.isArray(log)){

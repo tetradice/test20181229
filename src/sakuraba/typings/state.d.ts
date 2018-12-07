@@ -7,6 +7,8 @@ export as namespace state
 export interface State {
     stateDataVersion: number;
 
+    lang: string;
+
     board: Board;
     boardHistoryPast: BoardHistoryItem[];
     boardHistoryFuture: BoardHistoryItem[];
@@ -24,8 +26,8 @@ export interface State {
 
     currentWatcherSessionId: string;
 
-    actionLog: LogRecord[];
-    chatLog: LogRecord[];
+    actionLog: ActionLogRecord[];
+    chatLog: ChatLogRecord[];
 
     actionLogVisible: boolean;
     helpVisible: boolean;
@@ -43,7 +45,7 @@ export interface State {
 /** ボード履歴 */
 export interface BoardHistoryItem {
     board: Board;
-    appendedLogs: state.LogRecord[];
+    appendedLogs: state.ActionLogRecord[];
 }
 
 /** 設定 */
@@ -145,10 +147,39 @@ export interface SakuraToken extends BoardObjectBase {
 
 /** ログ1行分のデータ */
 export interface LogRecord {
-    body: LogValue;
     time: string; // momentから変換した値を渡す
     side?: SheetSide;
     watcherSessionId?: string;
     visibility: LogVisibility;
     indent?: boolean;
+}
+
+export interface ChatLogRecord extends LogRecord {
+    body: string;
+}
+
+export interface ActionLogRecord extends LogRecord {
+    body: string | ActionLogBody;
+}
+
+
+export type ActionLogBody = ActionLogItem | ActionLogItem[]
+
+export type ActionLogItem = ActionLogStringItem | ActionLogLocaleStringItem | ActionLogCardNameItem;
+
+export interface ActionLogStringItem {
+    type: 's';
+    text: string;
+}
+
+export interface ActionLogLocaleStringItem {
+    type: 'ls';
+    key: string;
+    args: {[key: string]: ActionLogBody}
+}
+
+export interface ActionLogCardNameItem {
+    type: 'cn';
+    cardSet: string;
+    cardId: string;
 }

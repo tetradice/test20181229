@@ -80,8 +80,18 @@ export default {
 
         // 移動するカード名を記録
         if(p.cardNameLogging){
-            let cardNames = fromCards.map((c) => `[${CARD_DATA[c.cardId].name}]`).join('、');
+            let cardNames = fromCards.map((c) => `[${CARD_DATA[c.cardId].name}]`).join(t('log:CardNameFormat-、'));
             let title = (p.cardNameLogTitle ? `${p.cardNameLogTitle} ` : '');
+            let logData: LocalizedLogValue = [
+                  (p.cardNameLogTitle ? 'log:CardNameFormat-TemplateWithTitle' : 'log:CardNameFormat-Template')
+                , {
+                      title: p.cardNameLogTitle
+                    , cardNames: [
+                        
+                      ]
+                  }
+            ]
+
             actions.appendActionLog({text: `${title}-> ${cardNames}`, visibility: 'ownerOnly'});
         }
 

@@ -6,9 +6,21 @@ export default {
         return {actionLogVisible: !state.actionLogVisible};
     },
 
-    appendActionLog: (p: {text: LogValue, visibility?: LogVisibility, indent?: boolean}) => (state: state.State) => {
-        let append: state.LogRecord = {
-              body: p.text
+    appendActionLog: (p: {text?: LogValue, body?: state.ActionLogBody,visibility?: LogVisibility, indent?: boolean}) => (state: state.State) => {
+        // textとbodyを両方指定することはできない
+        if(p.text !== undefined && p.body !== undefined) throw "ArgumentError - appendActionLog - text and body are both specified";
+
+        // 渡された引数を保存用に変換
+        let logBody: state.ActionLogBody;
+        if(p.body !== undefined){
+            logBody = p.body;
+        } else {
+            logBody = {type: 'ls', key: p.text[0], args: p.text[1]};
+        }
+
+        // 保存
+        let append: state.ActionLogRecord = {
+              body: logBody
             , time: moment().format()
             , side: state.side
             , watcherSessionId: (state.side === 'watcher' ? state.currentWatcherSessionId : null)
@@ -20,11 +32,11 @@ export default {
         return {actionLog: newLogs};
     },
 
-    appendReceivedActionLogs: (logs: state.LogRecord[]) => (state: state.State) => {
+    appendReceivedActionLogs: (logs: state.ActionLogRecord[]) => (state: state.State) => {
         return {actionLog: state.actionLog.concat(logs)};
     },
 
-    setActionLogs: (newLogs: state.LogRecord[]) => (state: state.State) => {
+    setActionLogs: (newLogs: state.ActionLogRecord[]) => (state: state.State) => {
         return {actionLog: newLogs};
     }
 }

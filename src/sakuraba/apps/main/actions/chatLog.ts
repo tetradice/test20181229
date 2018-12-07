@@ -3,7 +3,7 @@ import moment = require('moment');
 
 export default {
     appendChatLog: (p: {text: string}) => (state: state.State) => {
-        let append: state.LogRecord = {
+        let append: state.ChatLogRecord = {
             body: p.text
           , time: moment().format()
           , side: state.side
@@ -14,11 +14,11 @@ export default {
         return {chatLog: newLogs};
     },
 
-    appendReceivedChatLogs: (logs: state.LogRecord[]) => (state: state.State) => {
+    appendReceivedChatLogs: (logs: state.ChatLogRecord[]) => (state: state.State) => {
         return {chatLog: state.chatLog.concat(logs)};
     },
 
-    setChatLogs: (newLogs: state.LogRecord[]) => (state: state.State) => {
+    setChatLogs: (newLogs: state.ChatLogRecord[]) => (state: state.State) => {
         return {chatLog: newLogs};
     }
 }

@@ -62,6 +62,7 @@ $(function(){
                 st.side = params.side;
                 st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
                 st.environment = params.environment;
+                st.lang = params.lang;
 
                 // ズーム設定を調整
                 // コントロールパネルとチャットエリアの幅を350pxぶんは確保できるように調整
@@ -75,6 +76,8 @@ $(function(){
                 // アプリケーション起動
                 let appActions = apps.main.run(st, document.getElementById('BOARD'));
 
+                // アプリケーション起動まで完了したら、ローダーの表示を隠す
+                $('#LOADER').removeClass('active');
 
                 let contextMenuShowingAfterDrop: boolean = false;    
                 const processOnDragEnd = () => {
@@ -96,7 +99,7 @@ $(function(){
                     if (currentState.side === 'watcher') return;
 
                     // 移動ログを決定
-                    let logs: { text: LogValue, visibility?: LogVisibility }[] = [];
+                    let logs: { text: LocalizedLogValue, visibility?: LogVisibility }[] = [];
                     let cardName = CARD_DATA[card.cardId].name;
                     let boardModel = new models.Board(currentState.board);
                     let fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region, (card.linkedCardId ? boardModel.getCard(card.linkedCardId) : null));
@@ -180,7 +183,7 @@ $(function(){
                     }
 
                     appActions.operate({
-                        log: logs,
+                        logParams: logs,
                         proc: () => {
                             appActions.moveCard({
                                 from: card.id
@@ -651,7 +654,7 @@ $(function(){
                                         return cards.length === 0;
                                     }, callback: () => {
                                         appActions.operate({
-                                            log: ['log:手札を公開しました'],
+                                            log: ['log:手札を公開しました', null],
                                             proc: () => {
                                                 appActions.setHandOpenFlag({side: playerSide, value: true});
                                             }
@@ -765,7 +768,7 @@ $(function(){
                 socket.emit('requestFirstTableData', {tableId: params.tableId});
 
                 // ボード情報を受信した場合、メイン処理をスタート
-                socket.on('onFirstTableDataReceived', (p: {board: state.Board, actionLogs: state.LogRecord[], chatLogs: state.LogRecord[]}) => {
+                socket.on('onFirstTableDataReceived', (p: {board: state.Board, actionLogs: state.ActionLogRecord[], chatLogs: state.ChatLogRecord[]}) => {
                     // ユーザー設定のセット
                     let settingJson = localStorage.getItem('Setting');
                     if(settingJson){
@@ -1291,7 +1294,7 @@ $(function(){
                                 let fromLinkedCard = (dragInfo.draggingFrom.linkedCardId === null ? undefined :  boardModel.getCard(dragInfo.draggingFrom.linkedCardId));
                                 let toLinkedCard = (toLinkedCardId === null ? undefined : boardModel.getCard(toLinkedCardId));
 
-                                let logs: {text: LogValue, visibility?: LogVisibility}[] = [];
+                                let logs: {text: LocalizedLogValue, visibility?: LogVisibility}[] = [];
                                 let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region, fromLinkedCard);
                                 let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion, toLinkedCard);
                                 
@@ -1305,7 +1308,7 @@ $(function(){
                                     // ログ内容を決定
                                     let tokenName = (sakuraToken.artificial ? t('造花結晶') : t('桜花結晶'));
                                     let isOpponent = sakuraToken.ownerSide && currentState.side !== sakuraToken.ownerSide;
-                                    let log: LogValue = [(isOpponent ? 'log:相手のTOKENをNつ移動しました：FROM → TO' : 'log:TOKENをNつ移動しました：FROM → TO'), {count: dragInfo.sakuraTokenMoveCount, from: fromRegionTitle, to: toRegionTitle, token: tokenName}];
+                                    let log: LocalizedLogValue = [(isOpponent ? 'log:相手のTOKENをNつ移動しました：FROM → TO' : 'log:TOKENをNつ移動しました：FROM → TO'), {count: dragInfo.sakuraTokenMoveCount, from: fromRegionTitle, to: toRegionTitle, token: tokenName}];
                                     
 
                                     // 一部の移動ではログを変更
@@ -1321,7 +1324,7 @@ $(function(){
                                     logs.push({ text: log });
 
                                     appActions.operate({
-                                        log: logs,
+                                        logParams: logs,
                                         proc: () => {
                                             appActions.moveSakuraToken({
                                                 from: [sakuraToken.side, sakuraToken.region, sakuraToken.linkedCardId]

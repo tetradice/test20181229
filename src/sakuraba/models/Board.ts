@@ -20,9 +20,6 @@ export class Board implements state.Board {
     windGuage: state.Board['windGuage'];
     thunderGuage: state.Board['thunderGuage'];
 
-    actionLog: state.LogRecord[];
-    chatLog: state.LogRecord[];
-
     constructor(original?: state.Board, deepCloning?: boolean){
         if(original !== undefined){
             if(deepCloning === true){
@@ -38,7 +35,7 @@ export class Board implements state.Board {
     }
 
     /** 指定したカードのカード情報を取得（複製済みでゅーぷりぎあがあればそれも考慮する） */
-    getCardData(card: state.Card, language: state.LanguageSetting): models.CardData {
+    getCardData(card: state.Card, language: string): models.CardData {
         if(card.cardId === '10-kururu-o-s-3-ex1'){ // でゅーぷりぎあ
             // でゅーぷりぎあの場合、複製対象のカードがあるかどうかを探す
             // (でゅーぷりぎあ所有者の切札に使用済みのいんだすとりあがあり、かつ何かのカードが封印されていれば、それを複製する)

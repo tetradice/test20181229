@@ -5,7 +5,7 @@ import { Megami, CARD_DATA } from "sakuraba";
 import cardActions from './card';
 import { ActionsType } from ".";
 
-type LogParam = {text: string | LogValue, visibility?: LogVisibility};
+type LogParam = {text: LocalizedLogValue, visibility?: LogVisibility};
 
 export default {
     /** 複数の操作を行い、必要に応じてUndo履歴、ログを設定。同時にソケットに変更後ボードを送信 */
@@ -21,7 +21,12 @@ export default {
         /**
          * 操作ログに記録する内容
          */
-        log?: string | string[] | LogValue | LogValue[] | LogParam[];
+        log?: LocalizedLogValue | LocalizedLogValue[];
+
+        /**
+         * 操作ログに記録する内容 (可視性制御あり)
+         */
+        logParams?: LogParam[];
 
         /**
          * 実行する処理の内容
@@ -29,17 +34,24 @@ export default {
         proc: () => void;
     }) => (state: state.State, actions: ActionsType) => {
         // アクションログを追加し、追加されたログレコードを取得
-        let appendLogs: state.LogRecord[] = null;
+        let appendLogs: state.ActionLogRecord[] = null;
+
+        if(p.logParams !== undefined){
+            (p.log as LogParam[]).forEach((log) => actions.appendActionLog({text: log.text, visibility: log.visibility}));
+        }
 
         if(p.log !== undefined){
-            if(typeof p.log === 'string'){
-                actions.appendActionLog({text: p.log});
-            } else if(Array.isArray(p.log) && p.log.length >= 1){
-                if(typeof p.log[0] === 'string'){
-                    (p.log as string[]).forEach((text) => actions.appendActionLog({text: text}));
+            if(Array.isArray(p.log)){
+                if(p.log.length >= 1 && typeof p.log[0] === 'string'){
+                    // 1つのログを渡されたパターン
+                    actions.appendActionLog({text: p.log as [string, object]})
                 } else {
-                    (p.log as LogParam[]).forEach((log) => actions.appendActionLog({text: log.text, visibility: log.visibility}));
+                    // 複数のログを渡されたパターン
+                    (p.log as LocalizedLogValue[]).forEach((text) => actions.appendActionLog({text: text}));
                 }
+            } else {
+                // 1つのログ (カード名情報) を渡されたパターン
+                actions.appendActionLog({text: p.log})
             }
         }
 
@@ -100,7 +112,7 @@ export default {
         newFuture.push({board: state.board, appendedLogs: recoveredHistItem.appendedLogs});
 
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
-        let appendLogs: state.LogRecord[] = [];
+        let appendLogs: state.ActionLogRecord[] = [];
         let newActionLogs = actions.appendActionLog({text: ['log:直前の操作を取り消しました', null]}).actionLog;
         let appendedLogs = [newActionLogs[newActionLogs.length - 1]];
 
@@ -462,7 +474,7 @@ export default {
         }
 
         actions.operate({
-            log: logs,
+            logParams: logs,
             proc: () => {
                 if (state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
 

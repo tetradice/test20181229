@@ -261,9 +261,9 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
 
 // socket.io用イベント
 export namespace SocketParam {
-    export type appendActionLog = {boardId: string, log: state.LogRecord};
-    export type bcAppendActionLog = {log: state.LogRecord};
+    export type appendActionLog = {boardId: string, log: state.ActionLogRecord};
+    export type bcAppendActionLog = {log: state.ActionLogRecord};
 
-    export type appendChatLog = {boardId: string, log: state.LogRecord};
-    export type bcAppendChatLog = {log: state.LogRecord};
+    export type appendChatLog = {boardId: string, log: state.ChatLogRecord};
+    export type bcAppendChatLog = {log: state.ChatLogRecord};
 }

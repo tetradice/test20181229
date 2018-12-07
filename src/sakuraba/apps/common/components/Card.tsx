@@ -26,7 +26,7 @@ interface Param {
     zoom: number;
 
     /** 言語設定 cardDataを省略した場合のみ有効 */
-    language?: state.LanguageSetting;
+    language?: string;
 
     descriptionViewable: boolean;
     draggable?: boolean;
