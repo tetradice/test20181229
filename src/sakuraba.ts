@@ -35,20 +35,33 @@ const MEGAMI_DATA_BASE = {
     , 'tokoyo':   {name: 'トコヨ', symbol: '扇'}
     , 'tokoyo-a1': {name: '旅芸人トコヨ', symbol: '笛', base: 'tokoyo', anotherID: 'A1'}
     , 'oboro':    {name: 'オボロ', symbol: '忍'}
+    , 'oboro-a1': { name: '第三章オボロ', symbol: '戦略', base: 'oboro', notExistCardSets: ['na-s2'] as CardSet[] }
     , 'yukihi':   {name: 'ユキヒ', symbol: '傘/簪'}
     , 'shinra':   {name: 'シンラ', symbol: '書'}
     , 'hagane':   {name: 'ハガネ', symbol: '槌'}
     , 'chikage':  {name: 'チカゲ', symbol: '毒'}
+    , 'chikage-a1': { name: '第四章チカゲ', symbol: '絆', base: 'chikage', notExistCardSets: ['na-s2'] as CardSet[] }
     , 'kururu':   {name: 'クルル', symbol: '絡繰'}
     , 'thallya':  {name: 'サリヤ', symbol: '乗騎'}
     , 'raira':    {name: 'ライラ', symbol: '爪'}
     , 'utsuro':   {name: 'ウツロ', symbol: '鎌'}
-    , 'utsuro-a1':   {name: '終章ウツロ', symbol: '塵', notExistCardSets: ['na-s2'] as CardSet[]}
-    , 'honoka':   {name: 'ホノカ', symbol: '旗'}
+    , 'utsuro-a1': { name: '終章ウツロ', symbol: '塵', base: 'utsuro', notExistCardSets: ['na-s2'] as CardSet[]}
+    , 'honoka': { name: 'ホノカ', symbol: '旗', notExistCardSets: ['na-s2'] as CardSet[]}
 };
 export type Megami = keyof (typeof MEGAMI_DATA_BASE);
 export const MEGAMI_DATA: {[megami in Megami]: MegamiDataItem} = MEGAMI_DATA_BASE;
 
+// カードセット名
+export const CARD_SET_NAMES = {
+      'na-s2' : '新幕 シーズン2'
+    , 'na-s3' : '新幕 シーズン3'
+}
+
+// カードセット説明
+export const CARD_SET_DESCRIPTIONS = {
+    'na-s2': '新幕 シーズン2 (2018/8/17～ 『第壱拡張：神語起譚』以降)'
+    , 'na-s3': '新幕 シーズン3 (2018/11/30～ 『第弐拡張：神語転晴』以降)'
+}
 
 // カード情報
 interface CardDataItemBase {

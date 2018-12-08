@@ -85,9 +85,9 @@ export default {
     },
 
     /** ボード全体を初期化する（プレイヤー名除く） */
-    resetBoard: () => (state: state.State, actions: ActionsType) => {
+    resetBoard: (p: {newCardSet?: CardSet}) => (state: state.State, actions: ActionsType) => {
 
-        let extended: Partial<state.Board> = {playerNames: state.board.playerNames};
+        let extended: Partial<state.Board> = {playerNames: state.board.playerNames, cardSet: p.newCardSet};
         return {board: _.extend(utils.createInitialState().board, extended)} as Partial<state.State>;
     },
 

@@ -8,6 +8,7 @@ export class Board implements state.Board {
     playerNames: state.Board['playerNames'];
     watchers: state.Board['watchers'];
     megamis: state.Board['megamis'];
+    cardSet: state.Board['cardSet'];
     vigors: state.Board['vigors'];
     witherFlags: state.Board['witherFlags'];
     megamiOpenFlags: state.Board['megamiOpenFlags'];
@@ -145,7 +146,7 @@ export class Board implements state.Board {
             if (region === 'extra') {
                 regionCards = _.sortBy(regionCards, [((c: state.Card) => c.cardId)]);
             } else {
-                regionCards = _.sortBy(regionCards, [((c: state.Card) => CARD_DATA[c.cardId].baseType), ((c: state.Card) => c.indexOfRegion)]);
+                regionCards = _.sortBy(regionCards, [((c: state.Card) => CARD_DATA[this.cardSet][c.cardId].baseType), ((c: state.Card) => c.indexOfRegion)]);
             }
 
             let index = 0;

@@ -28,3 +28,13 @@
     font-weight: bold;
 }
 
+.currentCardSet {
+    color: silver;
+    font-size: small;
+    margin-left: 2em;
+}
+
+.cardSetChangeButton {
+    margin-left: 1em !important;
+}
+
