@@ -167,7 +167,7 @@ export class Board implements state.Board {
 
                 // 開閉状態更新
                 let handOpenFlag = this.handOpenFlags[c.side] || this.handCardOpenFlags[c.side][c.id];
-                c.openState = utils.judgeCardOpenState(c, handOpenFlag);
+                c.openState = utils.judgeCardOpenState(this.cardSet, c, handOpenFlag);
 
                 // 回転状態更新
                 c.rotated = (region === 'hidden-used') || c.discharged;

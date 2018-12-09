@@ -137,18 +137,23 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         } else if(state.board.megamiOpenFlags[state.side]){
             commandButtons = (
                 <div class={css.commandButtons}>
-                <div class={css.currentPhase}>- 眼前構築 -</div>
+                    <div><span class={css.currentPhase} style="white-space: nowrap">- 眼前構築 -</span>
+                        <span style="white-space: nowrap">
+                            <span class={css.currentCardSet}>カードセット: {CARD_SET_NAMES[state.board.cardSet]}</span>
+                            <button class={`ui basic button tiny ${css.cardSetChangeButton}`} onclick={changeCardSet}>変更</button>
+                        </span>
+                    </div>
                 </div>
             );
         } else if(state.board.playerNames[state.side] !== null){
             commandButtons = (
                 <div class={css.commandButtons}>
-                <div><span class={css.currentPhase} style="white-space: nowrap">- 双掌繚乱 -</span>
-                <span style="white-space: nowrap">
-                <span class={css.currentCardSet}>カードセット: {CARD_SET_NAMES[state.board.cardSet]}</span>
-                <button class={`ui basic button tiny ${css.cardSetChangeButton}`} onclick={changeCardSet}>変更</button>
-                </span>
-                </div>
+                    <div><span class={css.currentPhase} style="white-space: nowrap">- 双掌繚乱 -</span>
+                        <span style="white-space: nowrap">
+                            <span class={css.currentCardSet}>カードセット: {CARD_SET_NAMES[state.board.cardSet]}</span>
+                            <button class={`ui basic button tiny ${css.cardSetChangeButton}`} onclick={changeCardSet}>変更</button>
+                        </span>
+                    </div>
                 </div>
             );
         }
@@ -233,7 +238,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     }
 
     const quizOpen = () => {
-        let st = apps.quizWindow.State.create();
+        let st = apps.quizWindow.State.create(state.board.cardSet);
         apps.quizWindow.run(st, document.getElementById('QUIZ-WINDOW-CONTAINER'));            
     };
 

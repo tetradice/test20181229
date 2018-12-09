@@ -103,7 +103,7 @@ export default {
                     // 桜花結晶が0になる付与札があれば、カード名を出力
                     console.log(tokens);
                     if(tokens.length === 1){
-                        let cardData = CARD_DATA[card.cardId];
+                        let cardData = CARD_DATA[state.board.cardSet][card.cardId];
                         actions.appendActionLog({text: `-> [${cardData.name}]の上の桜花結晶数が0になりました`});
                     }
                 });

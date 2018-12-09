@@ -79,7 +79,7 @@ export default {
 
         // 移動するカード名を記録
         if(p.cardNameLogging){
-            let cardNames = fromCards.map((c) => `[${CARD_DATA[c.cardId].name}]`).join('、');
+            let cardNames = fromCards.map((c) => `[${CARD_DATA[state.board.cardSet][c.cardId].name}]`).join('、');
             let title = (p.cardNameLogTitle ? `${p.cardNameLogTitle} ` : '');
             actions.appendActionLog({text: `${title}-> ${cardNames}`, visibility: 'ownerOnly'});
         }
@@ -168,7 +168,7 @@ export default {
         }
 
         actions.operate({
-            log: (p.value ? `切札[${CARD_DATA[card.cardId].name}]を表向きにしました` : `切札[${CARD_DATA[card.cardId].name}]を裏返しました`),
+            log: (p.value ? `切札[${CARD_DATA[state.board.cardSet][card.cardId].name}]を表向きにしました` : `切札[${CARD_DATA[card.cardId].name}]を裏返しました`),
             proc: () => {
                 actions.setSpecialUsed(p);
             }
@@ -194,7 +194,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            log: `[${CARD_DATA[card.cardId].name}]をボード上から取り除きました`,
+            log: `[${CARD_DATA[state.board.cardSet][card.cardId].name}]をボード上から取り除きました`,
             proc: () => {
                 actions.removeCard(p);
             }
@@ -221,7 +221,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            log: `[${CARD_DATA[card.cardId].name}]の帯電を解除し、${p.guageType === 'wind' ? '風神' : '雷神'}ゲージを1上げました`,
+            log: `[${CARD_DATA[state.board.cardSet][card.cardId].name}]の帯電を解除し、${p.guageType === 'wind' ? '風神' : '雷神'}ゲージを1上げました`,
             proc: () => {
                 // 帯電解除
                 actions.discharge(p);
@@ -239,8 +239,8 @@ export default {
         let newBoard = models.Board.clone(state.board);
         // 山札のカードをすべて取得し、毒と毒以外のカードに分ける
         let cards = newBoard.getRegionCards(p.side, 'library', null);
-        let normalCards = cards.filter(c => !CARD_DATA[c.cardId].poison);
-        let poisonCards = cards.filter(c => CARD_DATA[c.cardId].poison);
+        let normalCards = cards.filter(c => !CARD_DATA[state.board.cardSet][c.cardId].poison);
+        let poisonCards = cards.filter(c => CARD_DATA[state.board.cardSet][c.cardId].poison);
         // ランダムに整列し、その順番をインデックスに再設定
         let shuffledNormalCards = _.shuffle(normalCards);
         let shuffledPoisonCards = _.shuffle(poisonCards);
@@ -277,7 +277,7 @@ export default {
                 let newBoard = models.Board.clone(state.board);
                 let usedCards = newBoard.getRegionCards(p.side, 'used', null);
                 usedCards.forEach(card => {
-                    let data = CARD_DATA[card.cardId];
+                    let data = CARD_DATA[state.board.cardSet][card.cardId];
                     if(newBoard.getRegionSakuraTokens(p.side, 'on-card', card.id).length === 0 && data.baseType !== 'transform'){
                         actions.moveCard({from: card.id, to: [p.side, 'library', null]});
                     }

@@ -18,11 +18,21 @@ const view: View<State, ActionsType> = (state, actions) => {
 
     const onChange = (e) => {
         let changedCardSet = $(e.target).val() as CardSet;
-        console.log('changed: ', changedCardSet);
         actions.selectCardSet(changedCardSet);
     };
 
-    console.log(state.selectedCardSet);
+    const okProc = () => {
+        const decide = function(){
+            actions.hide();
+            state.promiseResolve(state.selectedCardSet);
+        }
+
+        // どちらかのプレイヤーがメガミを選択していれば確認メッセージ
+        if (utils.confirmModal("カードセットを変更すると、卓は初期状態に戻ります。<br>（操作ログは初期化されません）<br>この操作は相手プレイヤーに確認を取ってから行ってください。<br><br>よろしいですか？", decide)){
+        } else {
+            decide();
+        }
+    };
 
     return (
         <div class={"ui dimmer modals page visible active " + css.modalTop}>
@@ -43,7 +53,7 @@ const view: View<State, ActionsType> = (state, actions) => {
                     </div>
                 </div>
                 <div class="actions">
-                    <div class="ui positive labeled icon button" onclick={() => { actions.hide(); state.promiseResolve(state.selectedCardSet) }}>
+                    <div class="ui positive labeled icon button" onclick={okProc}>
                         決定 <i class="checkmark icon"></i>
                     </div>
                     <div class="ui black deny button" onclick={() => { actions.hide(); state.promiseReject() }}>

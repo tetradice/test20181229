@@ -19,6 +19,7 @@ interface Param {
     useOpenedCardData?: boolean;
 
     zoom: number;
+    cardSet: CardSet;
     descriptionViewable: boolean;
     draggable?: boolean;
     handOpened?: boolean;
@@ -36,7 +37,7 @@ export const Card = (p: Param) => {
     };
 
     // 使用済にあるtransformカードの場合横にする
-    if(p.target.region === 'used' && sakuraba.CARD_DATA[p.target.cardId].baseType === 'transform'){
+    if(p.target.region === 'used' && sakuraba.CARD_DATA[p.cardSet][p.target.cardId].baseType === 'transform'){
         let oldW = styles.width;
         styles.width = styles.height;
         styles.height = oldW;
@@ -51,7 +52,7 @@ export const Card = (p: Param) => {
         styles.zIndex = `${ZIndex.CARD}`;
     }
 
-  let cardData = sakuraba.CARD_DATA[p.target.cardId];
+    let cardData = sakuraba.CARD_DATA[p.cardSet][p.target.cardId];
   let className = "fbs-card";
 
   // クリック可能クラスを付与する場合
@@ -126,7 +127,7 @@ export const Card = (p: Param) => {
           ondblclick={p.ondblclick}
           oncreate={oncreate}
           onupdate={onupdate}
-          data-html={utils.getDescriptionHtml(p.target.cardId)}            
+          data-html={utils.getDescriptionHtml(p.cardSet, p.target.cardId)}            
       >
           <div class="card-name">{(p.opened ? cardData.name : '')}</div>
 

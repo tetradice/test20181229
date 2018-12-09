@@ -35,17 +35,17 @@ const MEGAMI_DATA_BASE = {
     , 'tokoyo':   {name: 'トコヨ', symbol: '扇'}
     , 'tokoyo-a1': {name: '旅芸人トコヨ', symbol: '笛', base: 'tokoyo', anotherID: 'A1'}
     , 'oboro':    {name: 'オボロ', symbol: '忍'}
-    , 'oboro-a1': { name: '第三章オボロ', symbol: '戦略', base: 'oboro', notExistCardSets: ['na-s2'] as CardSet[] }
+    , 'oboro-a1': { name: '第三章オボロ', symbol: '戦略', base: 'oboro', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[] }
     , 'yukihi':   {name: 'ユキヒ', symbol: '傘/簪'}
     , 'shinra':   {name: 'シンラ', symbol: '書'}
     , 'hagane':   {name: 'ハガネ', symbol: '槌'}
     , 'chikage':  {name: 'チカゲ', symbol: '毒'}
-    , 'chikage-a1': { name: '第四章チカゲ', symbol: '絆', base: 'chikage', notExistCardSets: ['na-s2'] as CardSet[] }
+    , 'chikage-a1': { name: '第四章チカゲ', symbol: '絆', base: 'chikage', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[] }
     , 'kururu':   {name: 'クルル', symbol: '絡繰'}
     , 'thallya':  {name: 'サリヤ', symbol: '乗騎'}
     , 'raira':    {name: 'ライラ', symbol: '爪'}
     , 'utsuro':   {name: 'ウツロ', symbol: '鎌'}
-    , 'utsuro-a1': { name: '終章ウツロ', symbol: '塵', base: 'utsuro', notExistCardSets: ['na-s2'] as CardSet[]}
+    , 'utsuro-a1': { name: '終章ウツロ', symbol: '塵', base: 'utsuro', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[]}
     , 'honoka': { name: 'ホノカ', symbol: '旗', notExistCardSets: ['na-s2'] as CardSet[]}
 };
 export type Megami = keyof (typeof MEGAMI_DATA_BASE);
@@ -112,7 +112,7 @@ export interface TransformCardDataItem extends CardDataItemBase {
 
 export type CardDataItem = NormalCardDataItem | SpecialCardDataItem | TransformCardDataItem;
 
-export const CARD_DATA: {[key in CardSet]: {[key: string]: CardDataItem | null} } = {} as any;
+export const CARD_DATA: {[key in CardSet]: {[key: string]: CardDataItem} } = {} as any;
 
 CARD_DATA['na-s2'] = {
       '01-yurina-o-n-1': {megami: 'yurina', name: '斬', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: '3-4', damage: '3/1', text: ''}
@@ -350,7 +350,15 @@ const season3CardData: { [key: string]: CardDataItem } = {
 
 };
 
-CARD_DATA['na-s3'] = _.extend({}, CARD_DATA['na-s2'], season3CardData);
+CARD_DATA['na-s3'] = _.extend({}, CARD_DATA['na-s2']);
+for (let key in season3CardData){
+    let data = season3CardData[key];
+    if(data === null){
+        delete CARD_DATA['na-s3'][key];
+    } else {
+        CARD_DATA['na-s3'][key] = data;
+    }
+}
 
 
 // socket.io用イベント

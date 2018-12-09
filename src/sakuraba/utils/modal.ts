@@ -1,4 +1,4 @@
-export function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery) => false | void){
+export function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery) => (false | void)){
     // すべてのポップアップを非表示にする
     $('.fbs-card').popup('hide all');
 

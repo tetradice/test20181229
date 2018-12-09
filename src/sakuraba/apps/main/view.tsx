@@ -276,7 +276,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
             // 相手側の場合はカードの座標を逆転
             if(area.side === opponentSide){
-                let minus = (card.rotated || (card.region === 'used' && CARD_DATA[card.cardId].baseType === 'transform') ? 140 : 100);
+                let minus = (card.rotated || (card.region === 'used' && CARD_DATA[state.board.cardSet][card.cardId].baseType === 'transform') ? 140 : 100);
                 left = area.left + (area.width - ret[1] - minus);
             }
 
@@ -357,14 +357,14 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     });
 
     // カードを封印することが可能な全カードについて、ドロップ領域を配置
-    let sealableCards = state.board.objects.filter(o => o.type === 'card' && (o.region === 'used' || o.region === 'special') && CARD_DATA[o.cardId].sealable && o.openState === 'opened') as state.Card[];
+    let sealableCards = state.board.objects.filter(o => o.type === 'card' && (o.region === 'used' || o.region === 'special') && CARD_DATA[state.board.cardSet][o.cardId].sealable && o.openState === 'opened') as state.Card[];
     sealableCards.forEach(card => {
         let cardLocation = cardLocations[card.id];
         frameNodes.push(<components.CardAreaDroppable side={card.side} region="on-card" linkedCardId={card.id} left={cardLocation[0]} top={cardLocation[1]} width={100} height={140} />);
     });
 
     // 桜花結晶を載せることが可能な全カードについて、ドロップ領域を配置
-    let tokenDroppableCards = state.board.objects.filter(o => o.type === 'card' && (o.region === 'used' || o.region === 'special') && CARD_DATA[o.cardId].types.find(t => t === 'enhance') && o.openState === 'opened') as state.Card[];
+    let tokenDroppableCards = state.board.objects.filter(o => o.type === 'card' && (o.region === 'used' || o.region === 'special') && CARD_DATA[state.board.cardSet][o.cardId].types.find(t => t === 'enhance') && o.openState === 'opened') as state.Card[];
     tokenDroppableCards.forEach(card => {
         let cardLocation = cardLocations[card.id];
         frameNodes.push(<components.SakuraTokenAreaDroppable side={card.side} region="on-card" linkedCardId={card.id} left={cardLocation[0]} top={cardLocation[1]} width={100} height={140} />);

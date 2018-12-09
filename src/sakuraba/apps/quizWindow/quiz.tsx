@@ -55,6 +55,7 @@ const QuizTypeList: QuizType[] = [
 
 class QuizMakerClass {
     difficult: QuizDifficult = 'normal';
+    cardSet: CardSet;
 
     getCardTitleHtml(cardData: CardDataItem){
         let megamiName = MEGAMI_DATA[cardData.megami].name;
@@ -73,7 +74,7 @@ class QuizMakerClass {
         // すべてのカード情報を取得
         let allCards: {id: string, data: CardDataItem}[] = [];
         for(let key in CARD_DATA){
-            allCards.push({id: key, data: CARD_DATA[key]});
+            allCards.push({ id: key, data: CARD_DATA[this.cardSet][key]});
         }
 
         // 変数初期化

@@ -2,6 +2,7 @@ import { Quiz } from "./quiz";
 
 export interface State {
     shown: boolean;
+    cardSet: CardSet;
     currentQuiz: Quiz;
     selectedAnswerIndex: number | null;
     questionNumber: number;
@@ -11,9 +12,10 @@ export interface State {
 
 export namespace State {
     /** 新しいstateの生成 */
-    export function create(): State{
+    export function create(cardSet: CardSet): State{
         return {
               shown: true
+            , cardSet: cardSet
             , currentQuiz: null
             , selectedAnswerIndex: null
             , questionNumber: 0

@@ -3,7 +3,7 @@ import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
 import { ZIndex } from "sakuraba/const";
-import { MEGAMI_DATA, CARD_DATA, CardDataItem, Megami } from "sakuraba";
+import { MEGAMI_DATA, CARD_DATA, CardDataItem, Megami, CARD_SET_NAMES } from "sakuraba";
 import dragInfo from "sakuraba/dragInfo";
 import { css } from 'emotion'
 
@@ -64,8 +64,8 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
         }
 
         let trs: JSX.Element[] = [];
-        let cardIds = utils.getMegamiCardIds(state.cardListSelectedMegami, null, true);
-        cardIds.map(id => CARD_DATA[id]).forEach((c, i) => {
+        let cardIds = utils.getMegamiCardIds(state.cardListSelectedMegami, state.board.cardSet, null, true);
+        cardIds.map(id => CARD_DATA[state.board.cardSet][id]).forEach((c, i) => {
             let typeCaptions = [];
             if(c.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>攻撃</span>);
             if(c.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>行動</span>);
@@ -75,7 +75,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
             if(c.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>全力</span>);
 
             trs.push(
-                <tr class={c.baseType === 'special' ? 'warning' : null} data-html={utils.getDescriptionHtml(cardIds[i])}>
+                <tr class={c.baseType === 'special' ? 'warning' : null} data-html={utils.getDescriptionHtml(state.board.cardSet, cardIds[i])}>
                     <td>{c.name}</td>
                     <td>{(typeCaptions.length === 2 ? [typeCaptions[0], '/', typeCaptions[1]] : typeCaptions[0])}</td>
                     <td>{(c.rangeOpened ? `[閉]${c.range} [開]${c.rangeOpened}` : c.range)}</td>
@@ -106,7 +106,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
                                 {options}
                             </select>
                         </div>
-                        <div class={cardSetCss}>カードセット: 新幕 シーズン2</div>
+                        <div class={cardSetCss}>カードセット: {CARD_SET_NAMES[state.board.cardSet]}</div>
                     </div>
                 </div>
                 <table class="ui small celled selectable table" style={{background: `transparent`}}>

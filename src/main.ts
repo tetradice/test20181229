@@ -79,12 +79,12 @@ $(function(){
             let logs: { text: string, visibility?: LogVisibility }[] = [];
             let cardName = CARD_DATA[card.cardId].name;
             let boardModel = new models.Board(currentState.board);
-            let fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region, (card.linkedCardId ? boardModel.getCard(card.linkedCardId) : null));
-            let toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion, (toLinkedCardId ? boardModel.getCard(toLinkedCardId) : null));
+            let fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region, currentState.board.cardSet, (card.linkedCardId ? boardModel.getCard(card.linkedCardId) : null));
+            let toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion, currentState.board.cardSet, (toLinkedCardId ? boardModel.getCard(toLinkedCardId) : null));
 
             // 移動元での公開状態と、移動先での公開状態を判定
             let oldOpenState = card.openState;
-            let newOpenState = utils.judgeCardOpenState(card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
+            let newOpenState = utils.judgeCardOpenState(currentState.board.cardSet, card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
 
             // ログ内容を決定
             console.log(`openState: ${oldOpenState} => ${newOpenState}`);
@@ -1269,8 +1269,8 @@ $(function(){
                         let toLinkedCard = (toLinkedCardId === null ? undefined : boardModel.getCard(toLinkedCardId));
 
                         let logs: {text: string, visibility?: LogVisibility}[] = [];
-                        let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region, fromLinkedCard);
-                        let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion, toLinkedCard);
+                        let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region, currentState.board.cardSet, fromLinkedCard);
+                        let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion, currentState.board.cardSet, toLinkedCard);
                         
                         // 間合に造花結晶を移動した場合は特殊処理 (騎動メニュー)
                         if (toRegion === 'distance' && sakuraToken.artificial) {

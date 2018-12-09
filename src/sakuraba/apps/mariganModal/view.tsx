@@ -31,10 +31,10 @@ const view: View<State, ActionsType> = (state, actions) => {
         let selectedIndex = state.selectedCards.indexOf(card);
         let selected = selectedIndex >= 0;
         
-        cardElements.push(<Card clickableClass target={card} opened descriptionViewable left={left} top={top} selected={selected} selectedIndex={(selected ? selectedIndex : null)} onclick={() => actions.selectCard(card)} zoom={state.zoom}></Card>);
+        cardElements.push(<Card cardSet={state.cardSet} clickableClass target={card} opened descriptionViewable left={left} top={top} selected={selected} selectedIndex={(selected ? selectedIndex : null)} onclick={() => actions.selectCard(card)} zoom={state.zoom}></Card>);
     });
 
-    let selectedCount = state.selectedCards.filter(card => sakuraba.CARD_DATA[card.cardId].baseType === 'normal').length;
+    let selectedCount = state.selectedCards.filter(card => sakuraba.CARD_DATA[state.cardSet][card.cardId].baseType === 'normal').length;
 
     let okButtonClass = "ui positive labeled icon button";
     if(selectedCount === 0) okButtonClass += " disabled";

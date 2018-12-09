@@ -273,7 +273,7 @@ export default {
 
         // 選択されたカードを追加
         p.cardIds.forEach((id) => {
-            const data = CARD_DATA[id];
+            const data = CARD_DATA[state.board.cardSet][id];
             if(data.baseType === 'normal'){
                 actions.addCard({side: side, region: 'library', cardId: id});
             }
@@ -464,7 +464,7 @@ export default {
             logs.push({ text: `集中力を1使って${p.actionTitle}を行いました` });
         } else if (p.costType === 'hand') {
             let card = boardModel.getCard(p.useCardId);
-            let data = CARD_DATA[card.cardId];
+            let data = CARD_DATA[state.board.cardSet][card.cardId];
 
             logs.push({ text: `[${data.name}]を伏せ札にして${p.actionTitle}を行いました`, visibility: 'ownerOnly' });
             logs.push({ text: `手札1枚を伏せ札にして${p.actionTitle}を行いました`, visibility: 'outerOnly' });
