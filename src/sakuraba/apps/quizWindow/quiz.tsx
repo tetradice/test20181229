@@ -53,9 +53,13 @@ const QuizTypeList: QuizType[] = [
     , 'type'
 ]
 
-class QuizMakerClass {
+export class QuizMaker {
     difficult: QuizDifficult = 'normal';
     cardSet: CardSet;
+
+    constructor(cardSet: CardSet){
+        this.cardSet = cardSet;
+    }
 
     getCardTitleHtml(cardData: CardDataItem){
         let megamiName = MEGAMI_DATA[cardData.megami].name;
@@ -215,7 +219,10 @@ class QuizMakerClass {
                     if(c.data.megami === 'kururu') return false;
                     if(/Edge/.test(name)) return false;
                     if(name === '雷螺風神爪') return false;
-                    if(name === '刈取り') return false;
+                    if (name === '刈取り') return false;
+                    if(name === '石突き') return false;
+                    if (name === '手裏剣') return false;
+                    if (name === '不意打ち') return false;
 
                     return true;
                 });
@@ -252,5 +259,3 @@ class QuizMakerClass {
 
 
 }
-
-export const QuizMaker = new QuizMakerClass();
