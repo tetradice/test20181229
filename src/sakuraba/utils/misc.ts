@@ -204,6 +204,9 @@ export function getSakuraTokenRegionTitle(
     if(region === 'burned'){
         titleBase = "燃焼済";
     }
+    if (region === 'out-of-game') {
+        titleBase = "ゲーム外";
+    }
     if(region === 'on-card'){
         let cardData = sakuraba.CARD_DATA[cardSet][linkedCard.cardId];
         titleBase = `[${cardData.name}]上`;

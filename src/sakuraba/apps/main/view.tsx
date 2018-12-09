@@ -198,7 +198,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
                 , left: 1220
                 , top: (side === state.viewingSide ? 430 : 30)
                 , width: 120
-                , height: 340
+                , height: 330
             });
         }
     });
@@ -226,11 +226,30 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             , { region: 'flair', side: selfSide, title: "フレア", layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 260, height: 30 }
         ];
 
-    // サリヤを宿しており、かつ決闘開始済の場合、マシン領域と燃焼済を追加
+    // 第三章オボロを宿しており、かつメガミ公開済みの場合のみ、追加札領域を追加
     ['p1', 'p2'].forEach((side: PlayerSide) => {
-        if(hasMachineTarot[side]){
+        if (state.board.megamis[side] &&
+            state.board.megamiOpenFlags[side] &&
+            state.board.megamis[side].find((megami) => megami === 'oboro-a1')) {
             sakuraTokenAreaData.push({
-                  region: 'machine'
+                  region: 'out-of-game'
+                , side: side
+                , title: 'ゲーム外'
+                , layoutType: 'horizontal'
+                , left: 1180
+                , top: (side === state.viewingSide ? 770 : 370)
+                , width: 160
+                , tokenWidth: 120
+                , height: 30
+            });
+        }
+    });
+
+    // サリヤを宿しており、かつ決闘開始済の場合、ゲーム外桜花結晶領域を追加
+    ['p1', 'p2'].forEach((side: PlayerSide) => {
+        if (hasMachineTarot[side]) {
+            sakuraTokenAreaData.push({
+                region: 'machine'
                 , side: side
                 , title: 'STEAM ENGINE'
                 , layoutType: 'horizontal'
@@ -243,18 +262,17 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
             sakuraTokenAreaData.push({
                 region: 'burned'
-              , side: side
-              , title: 'BURNED'
-              , layoutType: 'horizontal'
-              , left: (side === state.viewingSide ? 1010 : 50)
-              , top: (side === state.viewingSide ? 660 : 80)
-              , width: 150
-              , height: 50
-              , tokenWidth: 130
-          });
+                , side: side
+                , title: 'BURNED'
+                , layoutType: 'horizontal'
+                , left: (side === state.viewingSide ? 1010 : 50)
+                , top: (side === state.viewingSide ? 660 : 80)
+                , width: 150
+                , height: 50
+                , tokenWidth: 130
+            });
         }
     });
-
 
     let frameNodes: hyperapp.Children[] = [];
     let objectNodes: hyperapp.Children[] = [];

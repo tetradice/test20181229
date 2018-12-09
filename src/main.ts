@@ -487,17 +487,45 @@ $(function(){
                         // 交換メニューを表示
                         let exchangeToCardData = CARD_DATA[currentState.board.cardSet][cardData.exchangableTo];
                         items['sepExchange'] = '---';
-                        items['exchange'] = {
-                            name: `追加札の[${exchangeToCardData.name}]に交換する`
-                            , disabled: !extraCard || !card.specialUsed // 追加札領域に対象カードがあり、かつ表向きの場合のみ
-                            , callback: () => {
-                                appActions.operate({
-                                    log: `[${cardData.name}]を[${exchangeToCardData.name}]に交換しました`,
-                                    proc: () => {
-                                        appActions.moveCard({ from: id, to: [playerSide, 'extra', null] });
-                                        appActions.moveCard({ from: extraCard.id, to: [playerSide, 'special', null] });
+                        // 神代枝のみ特殊 (交換と同時にゲームから取り除く)
+                        if (card.cardId === '05-oboro-A1-s-4'){
+                            items['exchange'] = {
+                                name: `[${cardData.name}]をゲームから取り除き、追加札の[${exchangeToCardData.name}]を得る`
+                                , disabled: !extraCard || !card.specialUsed // 追加札領域に対象カードがあり、かつ表向きの場合のみ
+                                , callback: () => {
+                                    // まだ相手が決闘を開始していなければ、この操作は禁止する
+                                    // (決闘を開始する前にカードを取り除くと、更新がうまくいかずにエラーが多発する場合があるため。原因不明)
+                                    if (!currentState.board.mariganFlags[utils.flipSide(playerSide)]) {
+                                        utils.messageModal(`相手が決闘を開始するまでは、この操作を行うことはできません。`);
+                                        return;
                                     }
-                                });
+
+                                    utils.confirmModal(`ゲームから取り除いた後は、元に戻すことはできません。<br>よろしいですか？`, () => {
+
+                                        appActions.operate({
+                                            log: `[${cardData.name}]を取り除き、[${exchangeToCardData.name}]を追加札から取得しました`,
+                                            proc: () => {
+                                                appActions.removeCard({ objectId: id });
+                                                appActions.moveCard({ from: extraCard.id, to: [playerSide, 'special', null] });
+                                            }
+                                        });
+                                    });
+
+                                }
+                            }
+                        } else {
+                            items['exchange'] = {
+                                name: `追加札の[${exchangeToCardData.name}]に交換する`
+                                , disabled: !extraCard || !card.specialUsed // 追加札領域に対象カードがあり、かつ表向きの場合のみ
+                                , callback: () => {
+                                    appActions.operate({
+                                        log: `[${cardData.name}]を[${exchangeToCardData.name}]に交換しました`,
+                                        proc: () => {
+                                            appActions.moveCard({ from: id, to: [playerSide, 'extra', null] });
+                                            appActions.moveCard({ from: extraCard.id, to: [playerSide, 'special', null] });
+                                        }
+                                    });
+                                }
                             }
                         }
                     }
@@ -515,7 +543,7 @@ $(function(){
                                     return;
                                 }
 
-                                utils.confirmModal(`ゲームから取り除いた後は、元に戻すことはできません。\nよろしいですか？`, () => {
+                                utils.confirmModal(`ゲームから取り除いた後は、元に戻すことはできません。<br>よろしいですか？`, () => {
                                     appActions.oprRemoveCard({objectId: id});
                                 });
                             }

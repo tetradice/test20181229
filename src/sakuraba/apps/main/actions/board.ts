@@ -577,6 +577,7 @@ export default {
                     actions.resetWindGauge({side: state.side});
                     actions.resetThunderGauge({side: state.side});
                 }
+
                 // 第三章オボロ、終章ウツロ、ホノカがいればすべての追加札を取得
                 for (let megami of board.megamis[state.side]){
                     if (megami == 'oboro-a1'
@@ -589,6 +590,11 @@ export default {
                             }
                         }
                     }
+                }
+
+                // 第三章オボロがいればゲーム外に桜花結晶を追加
+                if (board.megamis[state.side].find(m => m === 'oboro-a1')) {
+                    actions.addSakuraToken({ side: state.side, region: 'out-of-game', number: 2 });
                 }
 
             }
