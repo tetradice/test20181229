@@ -63,7 +63,7 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
                         <li>カードを封印したい時には、使用済み領域にある封印先のカードの上にドラッグ<br />（[論破]などの一部カードにのみ封印可能）</li>
                         <li>カードをゲームから取り除きたい場合は、カードの上で右クリック<br />（[風魔招来孔]などの一部カードのみ実行可能）</li>
                         {rairaFound ? <li>カードの帯電を解除したい場合は、表向きのカードの上で右クリック</li> : null}
-                        {honokaFound ? <li>カードを追加札と交換したい場合は、表向きのカードの上で右クリック<br />（[精霊式]などの一部カードのみ実行可能）</li> : null}
+                        {oboroA1Found || honokaFound ? <li>カードを追加札と交換したい場合は、表向きのカードの上で右クリック<br />（[精霊式]などの一部カードのみ実行可能）</li> : null}
                         {utsuroA1Found ? <li>終焉の影を蘇らせる場合は、表向きの[残響装置:枢式]の上で右クリック</li> : null}
                     </ul>
                 </div>

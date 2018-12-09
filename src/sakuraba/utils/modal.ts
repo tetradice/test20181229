@@ -1,9 +1,10 @@
-export function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery) => (false | void)){
+export function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery) => (false | void), options?: {target?: string}){
     // すべてのポップアップを非表示にする
     $('.fbs-card').popup('hide all');
 
-    $('#CONFIRM-MODAL .description').html(desc);
-    $('#CONFIRM-MODAL')
+    let target = options && options.target ? options.target : '#CONFIRM-MODAL';
+    $(`${target} .description`).html(desc);
+    $(`${target}`)
         .modal({closable: false, onApprove:yesCallback})
         .modal('show');
 }

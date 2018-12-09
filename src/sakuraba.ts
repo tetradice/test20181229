@@ -314,7 +314,7 @@ const season3CardData: { [key: string]: CardDataItem } = {
 
     , '07-shinra-o-n-6': { megami: 'shinra', name: '壮語', nameEn: 'Eloquence', ruby: 'そうご', baseType: 'normal', types: ['enhance'], capacity: '2', text: '【破棄時】計略を実行し、次の計略を準備する。 \n[神算] あなたは集中力を1得て、このカードを山札の一番上に置く。 \n[鬼謀] 相手の手札が1枚以下ならば、相手を畏縮させ、相手はカードを3枚引き、相手は手札を2枚捨て札にする。'}
 
-    , '11-thallya-o-s-3': { megami: 'thallya', name: 'Thallya\'s Masterpiece', nameEn: 'Thallya\'s Masterpiece', ruby: 'サリヤズ　マスターピース', baseType: 'special', types: ['action'], cost: '0', text: '【使用済】あなたのターンに、あなたが基本動作以外の方法で騎動を行い、間合を変化させるたびに\nダスト⇔自オーラ：1 \nを行ってもよい。'}
+    , '11-thallya-o-s-3': { megami: 'thallya', name: 'Thallya\'s Masterpiece', nameEn: 'Thallya\'s Masterpiece', ruby: 'サリヤズ　マスターピース', baseType: 'special', types: ['action'], cost: '1', text: '【使用済】あなたのターンに、あなたが基本動作以外の方法で騎動を行い、間合を変化させるたびに\nダスト⇔自オーラ：1 \nを行ってもよい。', textEn: '' }
     , '11-thallya-o-s-4': { megami: 'thallya', name: 'Julia\'s BlackBox', nameEn: 'Julia\'s BlackBox', ruby: 'ジュリアズ　ブラックボックス', baseType: 'special', types: ['action', 'fullpower'], cost: '2', text: 'あなたのマシンに造花結晶がないならば、あなたのマシンはTransFormし、あなたの燃焼済の造花結晶を2つ回復する。そうでない場合、このカードを未使用に戻す。', textEn: 'If there are no Artificial Sakura tokens on your machine, TransForm it and recover 2 burned Artificial Sakura tokens. Otherwise, turn this card face-down.' }
 
     , '05-oboro-A1-n-2': { megami: 'oboro', anotherID: 'A1', replace: '05-oboro-o-n-2', name: '手裏剣', ruby: 'しゅりけん', baseType: 'normal', types: ['attack'], range: '3-5', damage: '2/1', text: '【常時】あなたの終了フェイズに両者の伏せ札が合計5枚以上あるならば、このカードを捨て札から手札に戻してもよい。'}

@@ -540,14 +540,15 @@ $(function(){
                     // 条件を満たしていれば、帯電解除コマンドを追加
                     addDischargeCommand(items, card, true);
 
-
-                    // 交換先のカードがある？
-                    if (cardData.exchangableTo) {
+                    // 交換先のカードがあり、かつ自分のカードか？
+                    if (cardData.exchangableTo && card.side === playerSide) {
                         // 交換先のカードが追加札領域に存在する場合は実行可能
-                        let extraCard = board.getRegionCards(playerSide, 'extra', null).find(c => c.cardId === cardData.exchangableTo);
+                        let extraCard = board.getRegionCards(card.side, 'extra', null).find(c => c.cardId === cardData.exchangableTo);
                         // 交換メニューを表示
                         let exchangeToCardData = CARD_DATA[currentState.board.cardSet][cardData.exchangableTo];
+
                         items['sepExchange'] = '---';
+                        
                         // 神代枝のみ特殊 (交換と同時にゲームから取り除く)
                         if (card.cardId === '05-oboro-A1-s-4'){
                             items['exchange'] = {
@@ -589,11 +590,95 @@ $(function(){
                                     appActions.operate({
                                         log: `[${cardData.name}]を[${exchangeToCardData.name}]に交換しました`,
                                         proc: () => {
-                                            appActions.moveCard({ from: id, to: [playerSide, 'extra', null] });
-                                            appActions.moveCard({ from: extraCard.id, to: [playerSide, 'special', null] });
+                                            appActions.moveCard({ from: id, to: [card.side, 'extra', null] });
+                                            appActions.moveCard({ from: extraCard.id, to: [card.side, 'special', null] });
                                         }
                                     });
                                 }
+                            }
+                        }
+                    }
+
+                    // 残響装置:枢式で、かつ自分のカードか？
+                    if (card.cardId === '13-utsuro-A1-s-1' && card.side === playerSide) {
+
+                        items['sepShadowArise'] = '---';
+
+                        let dustCount = board.getRegionSakuraTokens(null, 'dust', null).length;
+                        items['shadowArise'] = {
+                            name: `- 終焉の影が蘇る -`
+                            , disabled: !card.specialUsed || dustCount < 13 // カードが表向き、かつダストが13以上の場合のみ使用可能
+                            , callback: () => {
+                                // まだ相手が決闘を開始していなければ、この操作は禁止する
+                                // (決闘を開始する前にカードを取り除くと、更新がうまくいかずにエラーが多発する場合があるため。原因不明)
+                                if (!currentState.board.mariganFlags[utils.flipSide(playerSide)]) {
+                                    utils.messageModal(`相手が決闘を開始するまでは、この操作を行うことはできません。`);
+                                    return;
+                                }
+
+                                utils.confirmModal(`あなたの使用済み、伏せ札、手札、山札領域にあるすべてのカードは取り除かれます。<br>また、[残響装置:枢式]は取り除かれ、代わりにいくつかのカードを追加で得ます。<br>（この操作を元に戻すことはできません）<br><br>よろしいですか？`, () => {
+                                    appActions.operate({
+                                        log: `終焉の影が蘇りました`,
+                                        proc: () => {
+                                            // 通常札上のすべての桜花結晶をダストへ移動
+                                            let sakuraTokensOnBoard = board.objects.filter(v => v.type === 'sakura-token' && v.side === card.side && v.region == 'on-card') as state.SakuraToken[];
+                                            for (let token of sakuraTokensOnBoard) {
+                                                let linkedCardData = CARD_DATA[board.cardSet][board.getCard(token.linkedCardId).cardId];
+                                                if (linkedCardData.baseType === 'normal'){
+                                                    appActions.moveSakuraToken({ from: [token.side, token.region, token.linkedCardId], to: [null, 'dust', null] });
+                                                }
+                                            }
+
+                                            // 封印通常札をすべて取り除く
+                                            let sealedCards = board.objects.filter(v => v.type === 'card' && v.side === card.side && v.region === 'on-card') as state.Card[];
+                                            for (let targetCard of sealedCards) {
+                                                let linkedCardData = CARD_DATA[board.cardSet][board.getCard(targetCard.linkedCardId).cardId];
+                                                if (linkedCardData.baseType === 'normal') {
+                                                    appActions.removeCard({ objectId: targetCard.id });
+                                                }
+                                            }
+
+                                            // 使用済み、伏せ札、手札、山札をすべて取り除く (transformカードは除く)
+                                            for(let region of ['used', 'hidden-used', 'hand', 'library'] as CardRegion[]){
+                                                for (let targetCard of board.getRegionCards(card.side, region, null)){
+                                                    let targetCardData = CARD_DATA[board.cardSet][targetCard.cardId];
+                                                    if (targetCardData.baseType !== 'transform'){
+                                                        appActions.removeCard({objectId: targetCard.id});
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // 残響装置:枢式を取り除く
+                                            appActions.removeCard({ objectId: card.id });
+
+                                            // 追加札からカードを得る
+                                            let extraCards = board.getRegionCards(card.side, 'extra', null);
+                                            let targetExtraCard: state.Card;
+                                            if (targetExtraCard = extraCards.find(x => x.cardId === '13-utsuro-A1-s-1-ex1')) {
+                                                appActions.moveCard({ from: targetExtraCard.id, to: [card.side, 'special', null] });
+                                                appActions.setSpecialUsed({objectId: targetExtraCard.id, value: true});
+                                            }
+                                            if (targetExtraCard = extraCards.find(x => x.cardId === '13-utsuro-A1-s-1-ex2')){
+                                                appActions.moveCard({ from: targetExtraCard.id, to: [card.side, 'library', null] });
+                                            }
+                                            if (targetExtraCard = extraCards.find(x => x.cardId === '13-utsuro-A1-s-1-ex3')) {
+                                                appActions.moveCard({ from: targetExtraCard.id, to: [card.side, 'library', null] });
+                                            }
+                                            if (targetExtraCard = extraCards.find(x => x.cardId === '13-utsuro-A1-s-1-ex4')) {
+                                                appActions.moveCard({ from: targetExtraCard.id, to: [card.side, 'library', null] });
+                                            }
+
+                                            // 山札をシャッフル
+                                            appActions.shuffle({side: card.side});
+
+                                            // カードを1枚引く
+                                            appActions.oprDraw({cardNameLogging: true});
+                                        }
+                                    });
+                                }, {
+                                    target: '#CONFIRM-SMALL-MODAL'
+                                });
+
                             }
                         }
                     }
@@ -617,6 +702,8 @@ $(function(){
                             }
                         }
                     };
+
+
                 }
 
                 
