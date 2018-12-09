@@ -377,9 +377,9 @@ $(function(){
                 };
 
                 // 帯電解除コマンドを追加する関数
-                const addDischargeCommand = (items: any, card: state.Card, addSeparator?: boolean) => {
+                const addDischargeCommand = (items: any, card: state.Card, addSeparator?: boolean): boolean => {
                     // プレイヤーがライラを宿しており、かつ対象のカードが公開状態で、ライラのカードでもTransformカードでもない場合、帯電解除を行える
-                    if(board.megamis[playerSide][0] === 'raira' || board.megamis[playerSide][1] === 'raira'){
+                    if(board.megamis[card.side][0] === 'raira' || board.megamis[card.side][1] === 'raira'){
                         if(addSeparator){
                             items['sepDischarge'] = '---';
                         }
@@ -398,7 +398,11 @@ $(function(){
                                 appActions.oprDischarge({objectId: card.id, guageType: 'thunder'});
                             }
                         }
+
+                        return true;
                     }
+
+                    return false;
                 };
 
                 // 基本動作コマンドを追加する関数
@@ -454,12 +458,70 @@ $(function(){
                 if($elem.is('.fbs-card[data-region=used]')){
                     let id = $elem.attr('data-object-id');
                     let card = board.getCard(id);
+                    let cardData = CARD_DATA[currentState.board.cardSet][card.cardId];
                     items = {};
 
                     // 条件を満たしていれば、帯電解除コマンドを追加
-                    addDischargeCommand(items, card);
+                    let addedDischarge = addDischargeCommand(items, card);
+
+                    // 交換先のカードがあり、かつ自分のカードか？
+                    if (cardData.exchangableTo && card.side === playerSide) {
+                        // 交換先のカードが追加札領域に存在する場合は実行可能
+                        let extraCard = board.getRegionCards(card.side, 'extra', null).find(c => c.cardId === cardData.exchangableTo);
+
+                        // 帯電解除コマンドが追加されていれば罫線を追加
+                        if (addedDischarge){
+                            items['sepExchange'] = '---';
+                        }
+
+                        // 交換メニューを表示
+                        let exchangeToCardData = CARD_DATA[currentState.board.cardSet][cardData.exchangableTo];
+                        items['exchange'] = {
+                            name: `追加札の[${exchangeToCardData.name}]に交換する`
+                            , disabled: !extraCard
+                            , callback: () => {
+                                appActions.operate({
+                                    log: `[${cardData.name}]を[${exchangeToCardData.name}]に交換しました`,
+                                    proc: () => {
+                                        appActions.moveCard({ from: id, to: [card.side, 'extra', null] });
+                                        appActions.moveCard({ from: extraCard.id, to: [card.side, 'used', null] });
+                                    }
+                                });
+                            }
+                        }
+                    }
                 }
 
+                // // 自分の使用済み札で右クリック
+                // let $selfUsedCard = $elem.closest(`.fbs-card[data-side=${playerSide}][data-region=used]`);
+                // if ($selfUsedCard.length >= 1) {
+                //     items = {};
+
+                //     let id = $selfUsedCard.attr('data-object-id');
+                //     let card = board.getCard(id);
+
+                //     // 交換先のカードがある？
+                //     if (cardData.exchangableTo) {
+                //         // 交換先のカードが追加札領域に存在する場合は実行可能
+                //         let extraCard = board.getRegionCards(playerSide, 'extra', null).find(c => c.cardId === cardData.exchangableTo);
+
+                //         // 交換メニューを表示
+                //         let exchangeToCardData = CARD_DATA[currentState.board.cardSet][cardData.exchangableTo];
+                //         items['exchange'] = {
+                //             name: `追加札の[${exchangeToCardData.name}]に交換する`
+                //             , disabled: !extraCard
+                //             , callback: () => {
+                //                 appActions.operate({
+                //                     log: `[${cardData.name}]を[${exchangeToCardData.name}]に交換しました`,
+                //                     proc: () => {
+                //                         appActions.moveCard({ from: id, to: [playerSide, 'extra', null] });
+                //                         appActions.moveCard({ from: extraCard.id, to: [playerSide, 'used', null] });
+                //                     }
+                //                 });
+                //             }
+                //         }
+                //     }
+                // }
 
                 // 切り札で右クリック
                 if($elem.is('.fbs-card[data-region=special]')){
@@ -468,11 +530,11 @@ $(function(){
                     let cardData = CARD_DATA[currentState.board.cardSet][card.cardId];
                     
                     items = {};
-                    items['flip'] =  {
+                    items['flip'] = {
                         name: (card.specialUsed ? '裏向きにする' : '表向きにする')
-                    , callback: function() {
-                        appActions.oprSetSpecialUsed({objectId: id, value: !card.specialUsed});
-                    }
+                        , callback: function () {
+                            appActions.oprSetSpecialUsed({ objectId: id, value: !card.specialUsed });
+                        }
                     }
 
                     // 条件を満たしていれば、帯電解除コマンドを追加
@@ -610,38 +672,6 @@ $(function(){
                                     log: `[${linkedCardData.name}]の下に封印されていた[${cardData.name}]を、相手の捨て札にしました`,
                                     proc: () => {
                                         appActions.moveCard({from: id, to: [utils.flipSide(playerSide), 'used', null]});
-                                    }
-                                });
-                            }
-                        }
-                    }
-                }
-
-                // 自分の使用済み札で右クリック
-                let $selfUsedCard = $elem.closest(`.fbs-card[data-side=${playerSide}][data-region=used]`);
-                if ($selfUsedCard.length >= 1) {
-                    items = {};
-
-                    let id = $selfUsedCard.attr('data-object-id');
-                    let card = board.getCard(id);
-                    let cardData = CARD_DATA[currentState.board.cardSet][card.cardId];
-
-                    // 交換先のカードがある？
-                    if(cardData.exchangableTo){
-                        // 交換先のカードが追加札領域に存在する場合は実行可能
-                        let extraCard = board.getRegionCards(playerSide, 'extra', null).find(c => c.cardId === cardData.exchangableTo);
-
-                        // 交換メニューを表示
-                        let exchangeToCardData = CARD_DATA[currentState.board.cardSet][cardData.exchangableTo];
-                        items['exchange'] = {
-                              name: `追加札の[${exchangeToCardData.name}]に交換する`
-                            , disabled: !extraCard
-                            , callback: () => {
-                                appActions.operate({
-                                    log: `[${cardData.name}]を[${exchangeToCardData.name}]に交換しました`,
-                                    proc: () => {
-                                        appActions.moveCard({ from: id, to: [playerSide, 'extra', null] });
-                                        appActions.moveCard({ from: extraCard.id, to: [playerSide, 'used', null] });
                                     }
                                 });
                             }
