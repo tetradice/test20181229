@@ -1,4 +1,4 @@
-import { CARD_DATA, CardDataItem, SpecialCardDataItem, MEGAMI_DATA } from "sakuraba";
+import { CARD_DATA, CardDataItem, SpecialCardDataItem, MEGAMI_DATA, ALL_CARD_ID_LIST } from "sakuraba";
 import _ from "lodash";
 import { h } from "hyperapp";
 
@@ -73,8 +73,8 @@ class QuizMakerClass {
 
         // すべてのカード情報を取得
         let allCards: {id: string, data: CardDataItem}[] = [];
-        for(let key in CARD_DATA){
-            allCards.push({ id: key, data: CARD_DATA[this.cardSet][key]});
+        for(let cardId of ALL_CARD_ID_LIST[this.cardSet]){
+            allCards.push({ id: cardId, data: CARD_DATA[this.cardSet][cardId]});
         }
 
         // 変数初期化

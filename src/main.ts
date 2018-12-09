@@ -847,50 +847,52 @@ $(function(){
             appActions.setWatcherInfo({watchers: p.watchers});
         });
 
-        // ★集計
-        // すべてのカード情報を取得
-        let allCards: [string, CardDataItem][] = [];
-        for(let key in CARD_DATA){
-            allCards.push([key, CARD_DATA[key]]);
-        }
-        {
-        let costSummary: {[key: number]: number} = {};
-        let costSummaryCardTitles: {[key: number]: string[]} = {};
-            let targetCards = allCards.filter(([cardId, card]) => card.baseType === 'special' && card.cost !== undefined && /^[0-9]+$/.test(card.cost)) as [string, SpecialCardDataItem][];
-            targetCards.forEach(([cardId, card]) => {
-                let intCost = parseInt(card.cost);
-                if(costSummary[intCost] === undefined) costSummary[intCost] = 0;
-                if(costSummaryCardTitles[intCost] === undefined) costSummaryCardTitles[intCost] = [];
-                costSummary[intCost] += 1;
-                costSummaryCardTitles[intCost].push(card.name);
-            });
+        // // ★集計
+        // // すべてのカード情報を取得
+        // let allCards: [string, CardDataItem][] = [];
+        // ['na-s2', 'na-s3'].forEach((cardSet: CardSet) => {
+        //     for (let key in CARD_DATA[cardSet]) {
+        //         allCards.push([key, CARD_DATA[key]]);
+        //     }
+        //     {
+        //         let costSummary: { [key: number]: number } = {};
+        //         let costSummaryCardTitles: { [key: number]: string[] } = {};
+        //         let targetCards = allCards.filter(([cardId, card]) => card.baseType === 'special' && card.cost !== undefined && /^[0-9]+$/.test(card.cost)) as [string, SpecialCardDataItem][];
+        //         targetCards.forEach(([cardId, card]) => {
+        //             let intCost = parseInt(card.cost);
+        //             if (costSummary[intCost] === undefined) costSummary[intCost] = 0;
+        //             if (costSummaryCardTitles[intCost] === undefined) costSummaryCardTitles[intCost] = [];
+        //             costSummary[intCost] += 1;
+        //             costSummaryCardTitles[intCost].push(card.name);
+        //         });
 
-            console.log(costSummaryCardTitles);
-        }
-        {
-            let auraDamageSummary: {[key: string]: number} = {};
-            let auraDamageSummaryCardTitles: {[key: string]: string[]} = {};
-            let lifeDamageSummary: {[key: string]: number} = {};
-            let lifeDamageSummaryCardTitles: {[key: string]: string[]} = {};
-        
-            let targetCards = allCards.filter(([cardId, card]) => card.damage !== undefined && card.megami !== 'yukihi' && /^[0-9-]+\/[0-9-]+$/.test(card.damage));
-            targetCards.forEach(([cardId, card]) => {
-                let [auraDamage, lifeDamage] = card.damage.split('/');
+        //         console.log(costSummaryCardTitles);
+        //     }
+        //     {
+        //         let auraDamageSummary: { [key: string]: number } = {};
+        //         let auraDamageSummaryCardTitles: { [key: string]: string[] } = {};
+        //         let lifeDamageSummary: { [key: string]: number } = {};
+        //         let lifeDamageSummaryCardTitles: { [key: string]: string[] } = {};
 
-                if(auraDamageSummary[auraDamage] === undefined) auraDamageSummary[auraDamage] = 0;
-                if(auraDamageSummaryCardTitles[auraDamage] === undefined) auraDamageSummaryCardTitles[auraDamage] = [];
-                auraDamageSummary[auraDamage] += 1;
-                auraDamageSummaryCardTitles[auraDamage].push(card.name);
+        //         let targetCards = allCards.filter(([cardId, card]) => card.damage !== undefined && card.megami !== 'yukihi' && /^[0-9-]+\/[0-9-]+$/.test(card.damage));
+        //         targetCards.forEach(([cardId, card]) => {
+        //             let [auraDamage, lifeDamage] = card.damage.split('/');
 
-                if(lifeDamageSummary[lifeDamage] === undefined) lifeDamageSummary[lifeDamage] = 0;
-                if(lifeDamageSummaryCardTitles[lifeDamage] === undefined) lifeDamageSummaryCardTitles[lifeDamage] = [];
-                lifeDamageSummary[lifeDamage] += 1;
-                lifeDamageSummaryCardTitles[lifeDamage].push(card.name);
-            });
+        //             if (auraDamageSummary[auraDamage] === undefined) auraDamageSummary[auraDamage] = 0;
+        //             if (auraDamageSummaryCardTitles[auraDamage] === undefined) auraDamageSummaryCardTitles[auraDamage] = [];
+        //             auraDamageSummary[auraDamage] += 1;
+        //             auraDamageSummaryCardTitles[auraDamage].push(card.name);
 
-            console.log(auraDamageSummaryCardTitles);
-            console.log(lifeDamageSummaryCardTitles);
-        }
+        //             if (lifeDamageSummary[lifeDamage] === undefined) lifeDamageSummary[lifeDamage] = 0;
+        //             if (lifeDamageSummaryCardTitles[lifeDamage] === undefined) lifeDamageSummaryCardTitles[lifeDamage] = [];
+        //             lifeDamageSummary[lifeDamage] += 1;
+        //             lifeDamageSummaryCardTitles[lifeDamage].push(card.name);
+        //         });
+
+        //         console.log(auraDamageSummaryCardTitles);
+        //         console.log(lifeDamageSummaryCardTitles);
+        //     }
+        // });
 
 
         // 他のプレイヤーがチャットログを追加した場合の処理

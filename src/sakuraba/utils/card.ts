@@ -1,21 +1,15 @@
-import { Megami, CARD_DATA, MEGAMI_DATA, CardDataItem } from "sakuraba";
+import { Megami, CARD_DATA, MEGAMI_DATA, CardDataItem, ALL_CARD_LIST, ALL_CARD_ID_LIST } from "sakuraba";
 
 // 指定したメガミのカードIDリストを取得
 export function getMegamiCardIds(megami: Megami, cardSet: CardSet, baseType: null | CardDataItem['baseType'], includeExtra = false){
     let ret = [];
 
-    // 全カード情報を取得
-    let allCardDataItem: CardDataItem[] = [];
-    for (let key in CARD_DATA[cardSet]){
-        allCardDataItem.push(CARD_DATA[cardSet][key]);
-    }
-
     // 全カードを探索し、指定されたメガミと対応するカードを、カードIDリストへ追加する
-    for (let key in CARD_DATA[cardSet]) {
+    for (let key of ALL_CARD_ID_LIST[cardSet]) {
         let data = CARD_DATA[cardSet][key];
         let megamiData = MEGAMI_DATA[megami];
 
-        let replacedByAnother = allCardDataItem.find(x => x.anotherID !== undefined && x.replace === key);
+        let replacedByAnother = ALL_CARD_LIST[cardSet].find(x => x.anotherID !== undefined && x.replace === key);
 
         if((baseType === null || data.baseType === baseType) && (includeExtra || !data.extra)){
             if(megamiData.anotherID){

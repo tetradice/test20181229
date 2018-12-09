@@ -3,26 +3,26 @@ import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
 import { ZIndex } from "sakuraba/const";
-import { MEGAMI_DATA, CARD_DATA, CardDataItem, Megami, CARD_SET_NAMES } from "sakuraba";
+import { MEGAMI_DATA, CARD_DATA, CardDataItem, Megami, CARD_SET_NAMES, CARD_SORT_KEY_MAP } from "sakuraba";
 import dragInfo from "sakuraba/dragInfo";
 import { css } from 'emotion'
 
 // ウインドウの表示状態をローカルストレージに保存
-function saveWindowState(elem: HTMLElement){
-    let current = {display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top')};
+function saveWindowState(elem: HTMLElement) {
+    let current = { display: $(elem).css('display'), left: $(elem).css('left'), top: $(elem).css('top') };
     localStorage.setItem(`${elem.id}-WindowState`, JSON.stringify(current));
 }
 
 /** カードリストウインドウ */
-export const CardListWindow = (p: {shown: boolean}) => (state: state.State, actions: ActionsType) => {
-    if(p.shown){
+export const CardListWindow = (p: { shown: boolean }) => (state: state.State, actions: ActionsType) => {
+    if (p.shown) {
         const setPopup = (elem) => {
             // SemanticUI ポップアップ初期化
             $(elem).find('[data-html]').popup({
                 hoverable: true,
-                delay: {show: 500, hide: 0},
-                onShow: function(): false | void{
-                    if(dragInfo.draggingFrom !== null) return false;
+                delay: { show: 500, hide: 0 },
+                onShow: function (): false | void {
+                    if (dragInfo.draggingFrom !== null) return false;
                 },
                 lastResort: true
             });
@@ -32,21 +32,21 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
         const oncreate = (e) => {
             // ウインドウを移動可能にする
             $(e).draggable({
-                cursor: "move", 
+                cursor: "move",
                 opacity: 0.7,
-                stop: function(){
+                stop: function () {
                     saveWindowState(e);
                 },
             });
 
             // ウインドウの状態を復元
             let windowStateJson = localStorage.getItem(`${e.id}-WindowState`);
-            if(windowStateJson){
+            if (windowStateJson) {
                 let windowState = JSON.parse(windowStateJson);
                 $(e).css(windowState);
             } else {
                 // 設定がなければ中央に配置
-                $(e).css({left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2});
+                $(e).css({ left: window.innerWidth / 2 - $(e).outerWidth() / 2, top: window.innerHeight / 2 - $(e).outerHeight() / 2 });
             }
 
             setPopup(e);
@@ -58,31 +58,31 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
 
 
         let options: JSX.Element[] = [];
-        for(let key of utils.getMegamiKeys(state.board.cardSet)){
+        for (let key of utils.getMegamiKeys(state.board.cardSet)) {
             let data = MEGAMI_DATA[key];
             options.push(<option value={key} selected={key === state.cardListSelectedMegami}>{data.name} ({data.symbol})</option>);
         }
 
         let trs: JSX.Element[] = [];
-        let cardIds = utils.getMegamiCardIds(state.cardListSelectedMegami, state.board.cardSet, null, true);
-        cardIds.map(id => CARD_DATA[state.board.cardSet][id]).forEach((c, i) => {
+        for (let cardId of utils.getMegamiCardIds(state.cardListSelectedMegami, state.board.cardSet, null, true)) {
+            let c = CARD_DATA[state.board.cardSet][cardId];
             let typeCaptions = [];
-            if(c.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>攻撃</span>);
-            if(c.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>行動</span>);
-            if(c.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>付与</span>);
-            if(c.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>不定</span>);
-            if(c.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>対応</span>);
-            if(c.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>全力</span>);
+            if (c.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>攻撃</span>);
+            if (c.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>行動</span>);
+            if (c.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>付与</span>);
+            if (c.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>不定</span>);
+            if (c.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>対応</span>);
+            if (c.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>全力</span>);
 
             trs.push(
-                <tr class={c.baseType === 'special' ? 'warning' : null} data-html={utils.getDescriptionHtml(state.board.cardSet, cardIds[i])}>
+                <tr class={c.baseType === 'special' ? 'warning' : null} data-html={utils.getDescriptionHtml(state.board.cardSet, cardId)}>
                     <td>{c.name}</td>
                     <td>{(typeCaptions.length === 2 ? [typeCaptions[0], '/', typeCaptions[1]] : typeCaptions[0])}</td>
                     <td>{(c.rangeOpened ? `[閉]${c.range} [開]${c.rangeOpened}` : c.range)}</td>
                     <td>{(c.baseType === 'special' ? c.cost : '')}</td>
                 </tr>
             )
-        });
+        }
 
         let contentDiv: JSX.Element;
 
@@ -98,7 +98,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
         `;
 
         contentDiv = (
-            <div style={{overflowY: 'auto', maxHeight: "85vh", paddingRight: "1em"}}>
+            <div style={{ overflowY: 'auto', maxHeight: "85vh", paddingRight: "1em" }}>
                 <div class="ui form">
                     <div class="inline fields">
                         <div class="field">
@@ -109,17 +109,17 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
                         <div class={cardSetCss}>カードセット: {CARD_SET_NAMES[state.board.cardSet]}</div>
                     </div>
                 </div>
-                <table class="ui small celled selectable table" style={{background: `transparent`}}>
+                <table class="ui small celled selectable table" style={{ background: `transparent` }}>
                     <thead>
-                    <tr>
-                        <th class="seven wide">名称</th>
-                        <th class="four wide">タイプ</th>
-                        <th class="three wide">適正距離</th>
-                        <th class="two wide">消費</th>
-                    </tr>
+                        <tr>
+                            <th class="seven wide">名称</th>
+                            <th class="four wide">タイプ</th>
+                            <th class="three wide">適正距離</th>
+                            <th class="two wide">消費</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {trs}
+                        {trs}
                     </tbody>
                 </table>
             </div>
@@ -127,10 +127,10 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
 
         return (
             <div id="CARD-LIST-WINDOW"
-             style={{position: 'absolute', width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
-              class="ui segment draggable ui-widget-content resizable"
-              oncreate={oncreate} onupdate={onupdate}>
-                <div class="ui top attached label">カードリスト<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleCardListVisible()}><i class="times icon"></i></a></div>
+                style={{ position: 'absolute', width: "45rem", backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW }}
+                class="ui segment draggable ui-widget-content resizable"
+                oncreate={oncreate} onupdate={onupdate}>
+                <div class="ui top attached label">カードリスト<a style={{ display: 'block', float: 'right', padding: '2px' }} onclick={() => actions.toggleCardListVisible()}><i class="times icon"></i></a></div>
                 {contentDiv}
             </div>
         )

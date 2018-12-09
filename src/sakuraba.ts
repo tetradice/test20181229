@@ -93,6 +93,9 @@ interface CardDataItemBase {
     extraFrom?: string;
     /** 交換先 */
     exchangableTo?: string;
+
+    /** ソートキー (自動で設定される) */
+    sortKey?: string;
 }
 
 export interface NormalCardDataItem extends CardDataItemBase {
@@ -281,17 +284,17 @@ CARD_DATA['na-s2'] = {
     , '12-raira-o-s-3-ex2': {megami: 'raira', name: '風魔纏廻', ruby: 'ふうまてんかい', extra: true, baseType: 'special', types: ['action'], cost: '1', text: 'あなたの使用済の切札を1枚選び、それを未使用に戻す。 \n【使用済】あなたの切札の消費は1少なくなる(0未満にはならない)。'}
     , '12-raira-o-s-3-ex3': {megami: 'raira', name: '風魔天狗道', ruby: 'ふうまてんぐどう', extra: true, baseType: 'special', types: ['action', 'reaction'], cost: '4', text: 'ダスト⇔間合：5 \nあなたはこの効果で本来より少ない個数の桜花結晶を動かしてもよい。その後、このカードを取り除く。', removable: true}
 
-    , '12-utsuro-o-n-1': {megami: 'utsuro', name: '円月', ruby: 'えんげつ', baseType: 'normal', types: ['attack'], range: '6-7', damage: '2/2', text: '【常時】灰塵-ダストが12以上ならば、この《攻撃》のオーラへのダメージは「-」になる。'}
-    , '12-utsuro-o-n-2': {megami: 'utsuro', name: '黒き波動', ruby: 'くろきはどう', baseType: 'normal', types: ['attack'], range: '4-7', damage: '1/2', text: '【攻撃後】相手がオーラへのダメージを選んだならば、相手の手札を見てその中から1枚を選び、それを捨て札にする。'}
-    , '12-utsuro-o-n-3': {megami: 'utsuro', name: '刈取り', ruby: 'かりとり', baseType: 'normal', types: ['attack'], range: '4', damage: '-/0', text: '【攻撃後】相手は相手のオーラ、フレア、ライフのいずれかから桜花結晶を合計2つダストへ移動させる。 \n【攻撃後】相手の付与札を1枚選んでもよい。そうした場合、その付与札の上から桜花結晶を2つダストへ送る。'}
-    , '12-utsuro-o-n-4': {megami: 'utsuro', name: '重圧', ruby: 'じゅうあつ', baseType: 'normal', types: ['action'], text: '相手は相手のオーラ、フレア、ライフのいずれかから桜花結晶を1つダストへ移動させる。 \n灰塵-ダストが12以上ならば、相手を畏縮させる。'}
-    , '12-utsuro-o-n-5': {megami: 'utsuro', name: '影の翅', ruby: 'かげのはね', baseType: 'normal', types: ['action'], text: 'このターン中、現在の間合は2増加し、達人の間合は2大きくなる。'}
-    , '12-utsuro-o-n-6': {megami: 'utsuro', name: '影の壁', ruby: 'かげのかべ', baseType: 'normal', types: ['action', 'reaction'], text: '対応した《攻撃》は+0/-1となる。'}
-    , '12-utsuro-o-n-7': {megami: 'utsuro', name: '遺灰呪', ruby: 'いかいじゅ', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '2', text: '【展開時】相オーラ→ダスト：3 \n【破棄時】灰塵-ダストが12以上ならば以下を行う。 \nダスト→相オーラ：2、相ライフ→ダスト：1'}
-    , '12-utsuro-o-s-1': {megami: 'utsuro', name: '灰滅', ruby: 'ヴィミラニエ', baseType: 'special', types: ['action'], cost: '24', text: '【常時】このカードの消費はダストの数だけ少なくなる。 \n相ライフ→ダスト：3 \nこのカードを取り除く。', removable: true}
-    , '12-utsuro-o-s-2': {megami: 'utsuro', name: '虚偽', ruby: 'ローシェ', baseType: 'special', types: ['enhance', 'reaction'], capacity: '3', cost: '3', text: '【展開中】相手の《攻撃》は距離縮小(近1)を得て、【攻撃後】効果が解決されない。 \n【展開中】相手の《付与》カードは納が1減少し、【破棄時】効果が解決されない。'}
-    , '12-utsuro-o-s-3': {megami: 'utsuro', name: '終末', ruby: 'カニェッツ', baseType: 'special', types: ['enhance'], capacity: '3', cost: '2', text: '【展開中】あなたに1以上のダメージを与えた《攻撃》の解決後に、このカードの上の桜花結晶を全てをダストに送る。 \n【破棄時】現在のフェイズを終了する。 \n----\n【再起】灰塵-ダストが12以上である。'}
-    , '12-utsuro-o-s-4': {megami: 'utsuro', name: '魔食', ruby: 'エロージャ', baseType: 'special', types: ['action'], cost: '5', text: '【使用済】あなたの開始フェイズの開始時に相手は以下のどちらかを選ぶ。\n・相オーラ→ダスト：1\n・相フレア→ダスト：2'}
+    , '13-utsuro-o-n-1': {megami: 'utsuro', name: '円月', ruby: 'えんげつ', baseType: 'normal', types: ['attack'], range: '6-7', damage: '2/2', text: '【常時】灰塵-ダストが12以上ならば、この《攻撃》のオーラへのダメージは「-」になる。'}
+    , '13-utsuro-o-n-2': {megami: 'utsuro', name: '黒き波動', ruby: 'くろきはどう', baseType: 'normal', types: ['attack'], range: '4-7', damage: '1/2', text: '【攻撃後】相手がオーラへのダメージを選んだならば、相手の手札を見てその中から1枚を選び、それを捨て札にする。'}
+    , '13-utsuro-o-n-3': {megami: 'utsuro', name: '刈取り', ruby: 'かりとり', baseType: 'normal', types: ['attack'], range: '4', damage: '-/0', text: '【攻撃後】相手は相手のオーラ、フレア、ライフのいずれかから桜花結晶を合計2つダストへ移動させる。 \n【攻撃後】相手の付与札を1枚選んでもよい。そうした場合、その付与札の上から桜花結晶を2つダストへ送る。'}
+    , '13-utsuro-o-n-4': {megami: 'utsuro', name: '重圧', ruby: 'じゅうあつ', baseType: 'normal', types: ['action'], text: '相手は相手のオーラ、フレア、ライフのいずれかから桜花結晶を1つダストへ移動させる。 \n灰塵-ダストが12以上ならば、相手を畏縮させる。'}
+    , '13-utsuro-o-n-5': {megami: 'utsuro', name: '影の翅', ruby: 'かげのはね', baseType: 'normal', types: ['action'], text: 'このターン中、現在の間合は2増加し、達人の間合は2大きくなる。'}
+    , '13-utsuro-o-n-6': {megami: 'utsuro', name: '影の壁', ruby: 'かげのかべ', baseType: 'normal', types: ['action', 'reaction'], text: '対応した《攻撃》は+0/-1となる。'}
+    , '13-utsuro-o-n-7': {megami: 'utsuro', name: '遺灰呪', ruby: 'いかいじゅ', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '2', text: '【展開時】相オーラ→ダスト：3 \n【破棄時】灰塵-ダストが12以上ならば以下を行う。 \nダスト→相オーラ：2、相ライフ→ダスト：1'}
+    , '13-utsuro-o-s-1': {megami: 'utsuro', name: '灰滅', ruby: 'ヴィミラニエ', baseType: 'special', types: ['action'], cost: '24', text: '【常時】このカードの消費はダストの数だけ少なくなる。 \n相ライフ→ダスト：3 \nこのカードを取り除く。', removable: true}
+    , '13-utsuro-o-s-2': {megami: 'utsuro', name: '虚偽', ruby: 'ローシェ', baseType: 'special', types: ['enhance', 'reaction'], capacity: '3', cost: '3', text: '【展開中】相手の《攻撃》は距離縮小(近1)を得て、【攻撃後】効果が解決されない。 \n【展開中】相手の《付与》カードは納が1減少し、【破棄時】効果が解決されない。'}
+    , '13-utsuro-o-s-3': {megami: 'utsuro', name: '終末', ruby: 'カニェッツ', baseType: 'special', types: ['enhance'], capacity: '3', cost: '2', text: '【展開中】あなたに1以上のダメージを与えた《攻撃》の解決後に、このカードの上の桜花結晶を全てをダストに送る。 \n【破棄時】現在のフェイズを終了する。 \n----\n【再起】灰塵-ダストが12以上である。'}
+    , '13-utsuro-o-s-4': {megami: 'utsuro', name: '魔食', ruby: 'エロージャ', baseType: 'special', types: ['action'], cost: '5', text: '【使用済】あなたの開始フェイズの開始時に相手は以下のどちらかを選ぶ。\n・相オーラ→ダスト：1\n・相フレア→ダスト：2'}
                        
 };
 
@@ -316,7 +319,7 @@ const season3CardData: { [key: string]: CardDataItem } = {
     , '05-oboro-A1-n-2': { megami: 'oboro', anotherID: 'A1', replace: '05-oboro-o-n-2', name: '手裏剣', nameEn: '', ruby: 'しゅりけん', baseType: 'normal', types: ['attack'], range: '3-5', damage: '2/1', text: '【常時】あなたの終了フェイズに両者の伏せ札が合計5枚以上あるならば、このカードを捨て札から手札に戻してもよい。', textEn: '' }
     , '05-oboro-A1-n-3': { megami: 'oboro', anotherID: 'A1', replace: '05-oboro-o-n-3', name: '不意打ち', nameEn: '', ruby: 'ふいうち', baseType: 'normal', types: ['attack', 'fullpower'], range: '1-4', damage: '4/3', text: '対応不可（通常札） \n【常時】この《攻撃》は-X/+0となる。Xは相手の伏せ札の枚数に等しい。', textEn: '' }
     , '05-oboro-A1-s-4': { megami: 'oboro', anotherID: 'A1', replace: '05-oboro-o-s-4', name: '神代枝', nameEn: '', ruby: 'かみしろのえ', baseType: 'special', types: ['action', 'fullpower'], cost: '0', text: 'ゲーム外→自オーラ：1 \nゲーム外→自フレア：1 \nこのカードを取り除き、切札「最後の結晶」を追加札から未使用で得る。', textEn: '', removable: true }
-    , '05-oboro-A1-s-4-ex1': { megami: 'oboro', anotherID: 'A1', replace: '', name: '最後の結晶', nameEn: '', ruby: 'さいごのけっしょう', baseType: 'special', extra: true, extraFrom: '05-oboro-A1-s-4-ex1', types: ['action'], cost: '2', text: '【常時】このカードは通常の方法では使用できない。あなたが初めて敗北するならば、代わりにこのカードを使用してもよい(消費は支払う)。 \nダスト→自ライフ：1', textEn: '' }
+    , '05-oboro-A1-s-4-ex1': { megami: 'oboro', anotherID: 'A1', replace: '', name: '最後の結晶', nameEn: '', ruby: 'さいごのけっしょう', baseType: 'special', extra: true, extraFrom: '05-oboro-A1-s-4', types: ['action'], cost: '2', text: '【常時】このカードは通常の方法では使用できない。あなたが初めて敗北するならば、代わりにこのカードを使用してもよい(消費は支払う)。 \nダスト→自ライフ：1', textEn: '' }
  
     , '09-chikage-A1-n-5': { megami: 'chikage', anotherID: 'A1', replace: '09-chikage-o-n-5', name: '仕掛け番傘', nameEn: '', ruby: 'しかけばんがさ', baseType: 'normal', types: ['attack'], range: '4', damage: '2/1', text: '不可避 \n【常時】相手の手札が2枚以上あるならば、この《攻撃》は距離拡大(近2)と距離拡大(遠2)を得る。 \n(他に何もなければ、適正距離は2-6になる)', textEn: '' }
     , '09-chikage-A1-n-6': { megami: 'chikage', anotherID: 'A1', replace: '09-chikage-o-n-6', name: '奮迅', nameEn: '', ruby: 'ふんじん', baseType: 'normal', types: ['action'], text: '相手の手札が2枚以上あるならば、あなたは集中力を1得る。 \n間合⇔ダスト：1', textEn: '' }
@@ -360,6 +363,56 @@ for (let key in season3CardData){
     }
 }
 
+
+
+// ソートキーを自動で割り振り、また同時にカードIDとソートキーの対応を記憶
+let cardSortKeys: [string, string][] = [];
+export const CARD_SORT_KEY_MAP: {[cardId: string]: string} = {};
+
+for (let cardSet in CARD_DATA){
+    for(let cardId in CARD_DATA[cardSet]){
+        let card = CARD_DATA[cardSet as CardSet][cardId];
+        if(card.replace){
+            // 別のカードを置き換えるアナザー
+            card.sortKey = `${card.replace}_${card.anotherID}`;
+        } else if (card.extraFrom) {
+            // 追加札
+            card.sortKey = `${CARD_DATA[cardSet as CardSet][card.extraFrom].sortKey}_${cardId}`;
+        } else if(card.poison){
+            // 毒 (末尾)
+            card.sortKey = `99-${cardId}`
+        } else {
+            // 上記以外
+            card.sortKey = cardId;
+        }
+
+        cardSortKeys.push([cardId, card.sortKey]);
+        CARD_SORT_KEY_MAP[cardId] = card.sortKey;
+    }
+}
+
+// カードIDをソートキー順に並べ替える
+let sortedAllCardIds = _.sortedUniq(_.sortBy(cardSortKeys, p => p[1]).map(p => p[0]));
+
+// 全カードをソートキー順にソートして、（カードセット別に）全カードIDの配列と、全カードの配列を作成
+export const ALL_CARD_ID_LIST: { [cardSet in CardSet]: string[] } = {} as { [cardSet in CardSet]: string[] };
+export const ALL_CARD_LIST: { [cardSet in CardSet]: CardDataItem[] } = {} as { [cardSet in CardSet]: CardDataItem[] };
+
+for (let cardSet in CARD_DATA) {
+    ALL_CARD_ID_LIST[cardSet as CardSet] = [];
+    ALL_CARD_LIST[cardSet as CardSet] = [];
+    
+    for (let cardId of sortedAllCardIds){
+        if(CARD_DATA[cardSet][cardId]){
+            ALL_CARD_ID_LIST[cardSet as CardSet].push(cardId);
+            ALL_CARD_LIST[cardSet as CardSet].push(CARD_DATA[cardSet as CardSet][cardId]);
+        }
+    }
+}
+
+console.log(sortedAllCardIds);
+console.log(ALL_CARD_ID_LIST);
+console.log(ALL_CARD_LIST);
 
 // socket.io用イベント
 export namespace SocketParam {
