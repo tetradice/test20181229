@@ -63,8 +63,8 @@ export function judgeCardOpenState(
 }
 
 /** カードの説明用ポップアップHTMLを取得する */
-export function getDescriptionHtml(cardSet: string, cardId: string): string{
-    let cardData = sakuraba.CARD_DATA[cardSet][cardId];
+export function getDescriptionHtml(cardSet: CardSet, cardId: string): string{
+  let cardData = sakuraba.CARD_DATA[cardSet][cardId];
   let cardTitleHtml = `<ruby><rb>${cardData.name}</rb><rp>(</rp><rt>${cardData.ruby}</rt><rp>)</rp></ruby>`
   let html = `<div class='ui header' style='margin-right: 2em;'>${cardTitleHtml}`
 
@@ -112,6 +112,11 @@ export function getDescriptionHtml(cardSet: string, cardId: string): string{
         html += `${cardData.damage}<br>`;
     }
     html += `${cardData.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+  }
+  // 追加札で、かつ追加元が指定されている場合
+  if(cardData.extra && cardData.extraFrom){
+      let extraCardData = sakuraba.CARD_DATA[cardSet][cardData.extraFrom];
+      html += `<div class="extra-from">追加 ≫ ${extraCardData.name}</div>`
   }
   html += `</div>`;
 
