@@ -111,7 +111,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
             cardIds[0] = utils.getMegamiCardIds(state.board.megamis[state.side][0], state.board.cardSet, 'normal');
             cardIds[1] = utils.getMegamiCardIds(state.board.megamis[state.side][1], state.board.cardSet, 'normal');
             cardIds[2] = utils.getMegamiCardIds(state.board.megamis[state.side][0], state.board.cardSet, 'special');
-            cardIds[2].concat(utils.getMegamiCardIds(state.board.megamis[state.side][1], state.board.cardSet, 'special'));
+            cardIds[2] = cardIds[2].concat(utils.getMegamiCardIds(state.board.megamis[state.side][1], state.board.cardSet, 'special'));
 
 
             // デッキ構築エリアをセット

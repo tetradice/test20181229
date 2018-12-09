@@ -189,7 +189,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     ['p1', 'p2'].forEach((side: PlayerSide) => {
         if(state.board.megamis[side] &&
         state.board.megamiOpenFlags[side] &&
-        state.board.megamis[side].find((megami) => megami === 'chikage' || megami === 'kururu' || megami === 'thallya' || megami === 'raira')){
+            state.board.megamis[side].find((megami) => megami === 'chikage' || megami === 'kururu' || megami === 'thallya' || megami === 'raira' || megami === 'oboro' || megami === 'oboro-a1' || megami === 'honoka')){
             cardAreaData.push({
                   region: 'extra'
                 , side: side

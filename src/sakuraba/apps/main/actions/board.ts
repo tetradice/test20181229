@@ -85,9 +85,12 @@ export default {
     },
 
     /** ボード全体を初期化する（プレイヤー名除く） */
-    resetBoard: (p: {newCardSet?: CardSet}) => (state: state.State, actions: ActionsType) => {
+    resetBoard: (p?: {newCardSet?: CardSet}) => (state: state.State, actions: ActionsType) => {
 
-        let extended: Partial<state.Board> = {playerNames: state.board.playerNames, cardSet: p.newCardSet};
+        let extended: Partial<state.Board> = {playerNames: state.board.playerNames};
+        if(p !== undefined && p.newCardSet){
+            extended.cardSet = p.newCardSet;
+        }
         return {board: _.extend(utils.createInitialState().board, extended)} as Partial<state.State>;
     },
 
@@ -574,6 +577,20 @@ export default {
                     actions.resetWindGauge({side: state.side});
                     actions.resetThunderGauge({side: state.side});
                 }
+                // 第三章オボロ、終章ウツロ、ホノカがいればすべての追加札を取得
+                for (let megami of board.megamis[state.side]){
+                    if (megami == 'oboro-a1'
+                        || megami == 'utsuro-a1'
+                        || megami == 'honoka') {
+                        let cardIds = utils.getMegamiCardIds(megami, state.board.cardSet, null, true);
+                        for(let cardId of cardIds){
+                            if(CARD_DATA[state.board.cardSet][cardId].extra){
+                                actions.addCard({ side: state.side, region: 'extra', cardId: cardId });
+                            }
+                        }
+                    }
+                }
+
             }
         });
     },

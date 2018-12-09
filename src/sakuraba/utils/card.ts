@@ -1,8 +1,8 @@
 import { Megami, CARD_DATA, MEGAMI_DATA, CardDataItem, ALL_CARD_LIST, ALL_CARD_ID_LIST } from "sakuraba";
 
 // 指定したメガミのカードIDリストを取得
-export function getMegamiCardIds(megami: Megami, cardSet: CardSet, baseType: null | CardDataItem['baseType'], includeExtra = false){
-    let ret = [];
+export function getMegamiCardIds(megami: Megami, cardSet: CardSet, baseType: null | CardDataItem['baseType'], includeExtra = false): string[]{
+    let ret: string[] = [];
 
     // 全カードを探索し、指定されたメガミと対応するカードを、カードIDリストへ追加する
     for (let key of ALL_CARD_ID_LIST[cardSet]) {

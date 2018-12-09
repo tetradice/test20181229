@@ -410,10 +410,6 @@ for (let cardSet in CARD_DATA) {
     }
 }
 
-console.log(sortedAllCardIds);
-console.log(ALL_CARD_ID_LIST);
-console.log(ALL_CARD_LIST);
-
 // socket.io用イベント
 export namespace SocketParam {
     export type appendActionLog = {boardId: string, log: state.LogRecord};

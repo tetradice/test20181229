@@ -168,7 +168,7 @@ export default {
         }
 
         actions.operate({
-            log: (p.value ? `切札[${CARD_DATA[state.board.cardSet][card.cardId].name}]を表向きにしました` : `切札[${CARD_DATA[card.cardId].name}]を裏返しました`),
+            log: (p.value ? `切札[${CARD_DATA[state.board.cardSet][card.cardId].name}]を表向きにしました` : `切札[${CARD_DATA[state.board.cardSet][card.cardId].name}]を裏返しました`),
             proc: () => {
                 actions.setSpecialUsed(p);
             }
