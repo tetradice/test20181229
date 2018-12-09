@@ -139,6 +139,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         , width: number
         , height: number
         , cardCountDisplay?: boolean
+        , hideBorder?: boolean
     }[] = [
             // 対戦相手
               { region: 'used',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 750,   top: 200,  width: 450, height: 160 }
@@ -162,10 +163,11 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         READY_AREA_LOCATIONS[side] = (side === state.viewingSide ? [10, 430] : [380, 30]);
 
         if(!state.board.mariganFlags[side]){
-            // 最初の手札を引いており、引き直しの有無を選択していない場合は、手札だけは表示する (タイトルなし)
+            // 最初の手札を引いており、引き直しの有無を選択していない場合は、手札だけは表示する (タイトル、枠線なし)
             if(state.board.firstDrawFlags[side]){
                 _.remove(cardAreaData, a => a.side === side && a.region !== 'hand');
                 cardAreaData.find(a => a.side === side && a.region === 'hand').title = null;
+                cardAreaData.find(a => a.side === side && a.region === 'hand').hideBorder = true;
             } else {
                 _.remove(cardAreaData, a => a.side === side);
             }
@@ -283,9 +285,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             // 座標を記憶しておく
             cardLocations[card.id] = [left, top];
         });
-
         // フレームを追加
-        frameNodes.push(<components.CardAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
+        frameNodes.push(<components.CardAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} hideBorder={area.hideBorder} />);
         frameNodes.push(<components.CardAreaDroppable side={area.side} region={area.region} linkedCardId={null} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
 
