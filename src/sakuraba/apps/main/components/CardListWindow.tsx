@@ -76,7 +76,7 @@ export const CardListWindow = (p: { shown: boolean }) => (state: state.State, ac
 
             trs.push(
                 <tr class={c.baseType === 'special' ? 'warning' : null} data-html={utils.getDescriptionHtml(state.board.cardSet, cardId)}>
-                    <td>{c.name}</td>
+                    <td>{c.extraFrom ? '≫ ' : ''}{c.name}</td>
                     <td>{(typeCaptions.length === 2 ? [typeCaptions[0], '/', typeCaptions[1]] : typeCaptions[0])}</td>
                     <td>{(c.rangeOpened ? `[閉]${c.range} [開]${c.rangeOpened}` : c.range)}</td>
                     <td>{(c.baseType === 'special' ? c.cost : '')}</td>
