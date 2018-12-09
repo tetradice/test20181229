@@ -5,6 +5,7 @@ export const SakuraToken = (p: {
     target: state.SakuraToken
   , left: number
   , top: number
+  , onEnhance?: boolean
 }) => (state: state.State, actions) => {
     let styles: Partial<CSSStyleDeclaration> = {
           left: `${p.left * state.zoom}px`
@@ -22,6 +23,7 @@ export const SakuraToken = (p: {
       data-region={p.target.region}
       data-linked-card-id={p.target.linkedCardId || 'none'}
       data-region-index={p.target.indexOfRegion}
+      data-on-enhance={p.onEnhance ? true : null}
       data-group={p.target.group}
       data-dragging-count={p.target.groupTokenDraggingCount}
       id={'board-object-' + p.target.id}

@@ -8,6 +8,7 @@ import { CARD_DATA, MEGAMI_DATA } from "sakuraba";
 import { MegamiTarots } from "sakuraba/apps/common/components";
 import { StackedCards } from "sakuraba/apps/common/components/StackedCards";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
+import { State } from "../quizWindow";
 
 /** レイアウト種別 */
 type LayoutType = 'horizontal' | 'horizontal-distance' | 'vertical' | 'stacked';
@@ -316,6 +317,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         // 指定されたレイアウト情報に応じて、桜花結晶をレイアウトし、各桜花結晶の座標を決定
         let layoutResults = layoutObjects(tokens, area.layoutType, area.tokenWidth, 20, 2, 6);
 
+
         // 桜花結晶を領域の子オブジェクトとして追加
         layoutResults.forEach((ret) => {
             let token = ret[0];
@@ -359,8 +361,11 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     tokenLinkedCardIds.forEach((linkedCardId) => {
         // そのカードにひも付いている全桜花結晶を取得
         let tokens = onCardTokens.filter(o => o.linkedCardId === linkedCardId);
-        let card = state.board.objects.find(o => o.id === linkedCardId) as state.Card;
+        let card = boardModel.getCard(linkedCardId);
         let cardLocation = cardLocations[card.id];
+
+        // 付与札の上に乗っている桜花結晶の場合、カード情報を取得し、それが付与札に乗っているかどうかを判定
+        let onEnhance = (CARD_DATA[state.board.cardSet][card.cardId].types[0] === 'enhance');
 
         // 桜花結晶をレイアウトし、各桜花結晶の座標を決定
         let layoutResults = layoutObjects(tokens, 'horizontal', 100 - 12, 26, 0, 0);
@@ -370,7 +375,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let draggingCount = tokens.length - token.indexOfRegion;
             let left = cardLocation[0] + ret[1];
             let top = cardLocation[1] + (card.side === selfSide ? 24 : (140 - 24 - 26));
-            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} />);
+            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} onEnhance={onEnhance} />);
         });
     });
 
@@ -382,7 +387,12 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     });
 
     // 桜花結晶を載せることが可能な全カードについて、ドロップ領域を配置
-    let tokenDroppableCards = state.board.objects.filter(o => o.type === 'card' && (o.region === 'used' || o.region === 'special') && CARD_DATA[state.board.cardSet][o.cardId].types.find(t => t === 'enhance') && o.openState === 'opened') as state.Card[];
+    let tokenDroppableCards = state.board.objects.filter(o => 
+        o.type === 'card'
+        && (o.region === 'used' || o.region === 'special') // 使用済み領域か切札領域にある
+        && (CARD_DATA[state.board.cardSet][o.cardId].types.find(t => t === 'enhance') || o.cardId === '14-honoka-o-s-1-ex1') // 付与、もしくは「両手に華を」である
+        && o.openState === 'opened' // 公開されている
+    ) as state.Card[];
     tokenDroppableCards.forEach(card => {
         let cardLocation = cardLocations[card.id];
         frameNodes.push(<components.SakuraTokenAreaDroppable side={card.side} region="on-card" linkedCardId={card.id} left={cardLocation[0]} top={cardLocation[1]} width={100} height={140} />);

@@ -483,7 +483,6 @@ $(function(){
                     if (cardData.exchangableTo) {
                         // 交換先のカードが追加札領域に存在する場合は実行可能
                         let extraCard = board.getRegionCards(playerSide, 'extra', null).find(c => c.cardId === cardData.exchangableTo);
-
                         // 交換メニューを表示
                         let exchangeToCardData = CARD_DATA[currentState.board.cardSet][cardData.exchangableTo];
                         items['sepExchange'] = '---';
@@ -518,6 +517,13 @@ $(function(){
                                 name: `追加札の[${exchangeToCardData.name}]に交換する`
                                 , disabled: !extraCard || !card.specialUsed // 追加札領域に対象カードがあり、かつ表向きの場合のみ
                                 , callback: () => {
+                                    // 桜花結晶が乗っている切札を、交換しようとした場合はエラー
+                                    let onCardTokens = board.getRegionSakuraTokens(card.side, 'on-card', card.id);
+                                    if (onCardTokens.length >= 1) {
+                                        utils.messageModal("桜花結晶が上に乗っている切札は、交換できません。");
+                                        return;
+                                    }
+
                                     appActions.operate({
                                         log: `[${cardData.name}]を[${exchangeToCardData.name}]に交換しました`,
                                         proc: () => {
@@ -1061,7 +1067,7 @@ $(function(){
             // 全付与札の桜花結晶-1ボタンの上にカーソルを置いたときの処理
             $('#BOARD').on('mouseenter', '#ALL-ENHANCE-DECREASE-BUTTON', function(e){
                 // カード上桜花結晶の右端をフォーカス
-                $(`.sakura-token[data-region=on-card][data-dragging-count=1]`).addClass('focused');
+                $(`.sakura-token[data-region=on-card][data-dragging-count=1][data-on-enhance]`).addClass('focused');
                 // ダスト領域をハイライト
                 $(`.area.background[data-region=dust]`).addClass('over');
             });

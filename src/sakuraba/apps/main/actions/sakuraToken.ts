@@ -3,6 +3,7 @@ import * as models from "sakuraba/models";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from ".";
 import { CARD_DATA } from "sakuraba";
+import { SakuraTokenAreaBackground } from "../components";
 
 export default {
     /** 桜花結晶を指定数追加する */
@@ -87,14 +88,18 @@ export default {
             proc: () => {
                 let boardModel = new models.Board(state.board);
 
-                // 桜花結晶が乗っているすべての付与札を取得
+                // 桜花結晶が乗っているすべてのカードを取得
                 let tokensOnCard = state.board.objects.filter(o => o.type === 'sakura-token' && o.region === 'on-card') as state.SakuraToken[];
                 let cardIds = _.uniq(tokensOnCard.map(t => t.linkedCardId));
 
                 // 付与札1つごとに、桜花結晶をダストへ移動
-                cardIds.forEach(cardId => {
+                for(let cardId of cardIds){
                     let card = boardModel.getCard(cardId);
                     let tokens = boardModel.getRegionSakuraTokens(card.side, 'on-card', cardId);
+
+                    // 付与札以外のカードであればスキップ
+                    if(CARD_DATA[state.board.cardSet][card.cardId].types.indexOf('enhance') === -1) continue;
+
                     actions.moveSakuraToken({
                         from: [card.side, 'on-card', cardId]
                         , to: [null, 'dust', null]
@@ -106,7 +111,7 @@ export default {
                         let cardData = CARD_DATA[state.board.cardSet][card.cardId];
                         actions.appendActionLog({text: `-> [${cardData.name}]の上の桜花結晶数が0になりました`});
                     }
-                });
+                }
             }
         });
     },
