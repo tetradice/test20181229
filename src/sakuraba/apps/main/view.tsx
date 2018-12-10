@@ -140,6 +140,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         , width: number
         , height: number
         , cardCountDisplay?: boolean
+        , hideBorder?: boolean
     }[] = [
             // 対戦相手
               { region: 'used',        side: opponentSide,  title: null, cardLayoutType: 'horizontal', left: 750,   top: 200,  width: 450, height: 160 }
@@ -163,10 +164,11 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         READY_AREA_LOCATIONS[side] = (side === state.viewingSide ? [10, 430] : [380, 30]);
 
         if(!state.board.mariganFlags[side]){
-            // 最初の手札を引いており、引き直しの有無を選択していない場合は、手札だけは表示する (タイトルなし)
+            // 最初の手札を引いており、引き直しの有無を選択していない場合は、手札だけは表示する (タイトル、枠線なし)
             if(state.board.firstDrawFlags[side]){
                 _.remove(cardAreaData, a => a.side === side && a.region !== 'hand');
                 cardAreaData.find(a => a.side === side && a.region === 'hand').title = null;
+                cardAreaData.find(a => a.side === side && a.region === 'hand').hideBorder = true;
             } else {
                 _.remove(cardAreaData, a => a.side === side);
             }
@@ -188,7 +190,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     ['p1', 'p2'].forEach((side: PlayerSide) => {
         if(state.board.megamis[side] &&
         state.board.megamiOpenFlags[side] &&
-        state.board.megamis[side].find((megami) => megami === 'chikage' || megami === 'kururu' || megami === 'thallya' || megami === 'raira')){
+            state.board.megamis[side].find((megami) => megami === 'chikage' || megami === 'kururu' || megami === 'thallya' || megami === 'raira' || megami === 'oboro' || megami === 'oboro-a1' || megami === 'honoka')){
             cardAreaData.push({
                   region: 'extra'
                 , side: side
@@ -197,7 +199,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
                 , left: 1220
                 , top: (side === state.viewingSide ? 430 : 30)
                 , width: 120
-                , height: 340
+                , height: 330
             });
         }
     });
@@ -225,7 +227,26 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             , { region: 'flair', side: selfSide, title: t("領域名-フレア"), layoutType: 'horizontal', left: 850, top: 510, width: 350, tokenWidth: 260, height: 30 }
         ];
 
-    // サリヤを宿しており、かつ決闘開始済の場合、マシン領域と燃焼済を追加
+    // 第三章オボロを宿しており、かつメガミ公開済みの場合のみ、追加札領域を追加
+    ['p1', 'p2'].forEach((side: PlayerSide) => {
+        if (state.board.megamis[side] &&
+            state.board.megamiOpenFlags[side] &&
+            state.board.megamis[side].find((megami) => megami === 'oboro-a1')) {
+            sakuraTokenAreaData.push({
+                  region: 'out-of-game'
+                , side: side
+                , title: 'ゲーム外'
+                , layoutType: 'horizontal'
+                , left: 1180
+                , top: (side === state.viewingSide ? 770 : 370)
+                , width: 160
+                , tokenWidth: 120
+                , height: 30
+            });
+        }
+    });
+
+    // サリヤを宿しており、かつ決闘開始済の場合、ゲーム外桜花結晶領域を追加
     ['p1', 'p2'].forEach((side: PlayerSide) => {
         if(hasMachineTarot[side]){
             sakuraTokenAreaData.push({
@@ -254,7 +275,6 @@ const view: View<state.State, ActionsType> = (state, actions) => {
         }
     });
 
-
     let frameNodes: hyperapp.Children[] = [];
     let objectNodes: hyperapp.Children[] = [];
     let cardLocations: {[id: string]: [number, number]} = {};
@@ -275,7 +295,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
             // 相手側の場合はカードの座標を逆転
             if(area.side === opponentSide){
-                let minus = (card.rotated || (card.region === 'used' && CARD_DATA[card.cardId].baseType === 'transform') ? 140 : 100);
+                let minus = (card.rotated || (card.region === 'used' && CARD_DATA[state.board.cardSet][card.cardId].baseType === 'transform') ? 140 : 100);
                 left = area.left + (area.width - ret[1] - minus);
             }
 
@@ -284,9 +304,8 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             // 座標を記憶しておく
             cardLocations[card.id] = [left, top];
         });
-
         // フレームを追加
-        frameNodes.push(<components.CardAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} />);
+        frameNodes.push(<components.CardAreaBackground side={area.side} region={area.region} title={area.title} left={area.left} top={area.top} width={area.width} height={area.height} cardCount={area.cardCountDisplay ? cards.length : null} hideBorder={area.hideBorder} />);
         frameNodes.push(<components.CardAreaDroppable side={area.side} region={area.region} linkedCardId={null} left={area.left} top={area.top} width={area.width} height={area.height} />);
     });
 
@@ -297,6 +316,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
         // 指定されたレイアウト情報に応じて、桜花結晶をレイアウトし、各桜花結晶の座標を決定
         let layoutResults = layoutObjects(tokens, area.layoutType, area.tokenWidth, 20, 2, 6);
+
 
         // 桜花結晶を領域の子オブジェクトとして追加
         layoutResults.forEach((ret) => {
@@ -341,8 +361,11 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     tokenLinkedCardIds.forEach((linkedCardId) => {
         // そのカードにひも付いている全桜花結晶を取得
         let tokens = onCardTokens.filter(o => o.linkedCardId === linkedCardId);
-        let card = state.board.objects.find(o => o.id === linkedCardId) as state.Card;
+        let card = boardModel.getCard(linkedCardId);
         let cardLocation = cardLocations[card.id];
+
+        // 付与札の上に乗っている桜花結晶の場合、カード情報を取得し、それが付与札に乗っているかどうかを判定
+        let onEnhance = (CARD_DATA[state.board.cardSet][card.cardId].types[0] === 'enhance');
 
         // 桜花結晶をレイアウトし、各桜花結晶の座標を決定
         let layoutResults = layoutObjects(tokens, 'horizontal', 100 - 12, 26, 0, 0);
@@ -352,19 +375,24 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             let draggingCount = tokens.length - token.indexOfRegion;
             let left = cardLocation[0] + ret[1];
             let top = cardLocation[1] + (card.side === selfSide ? 24 : (140 - 24 - 26));
-            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} />);
+            objectNodes.push(<components.SakuraToken target={token} left={left} top={top} onEnhance={onEnhance} />);
         });
     });
 
     // カードを封印することが可能な全カードについて、ドロップ領域を配置
-    let sealableCards = state.board.objects.filter(o => o.type === 'card' && (o.region === 'used' || o.region === 'special') && CARD_DATA[o.cardId].sealable && o.openState === 'opened') as state.Card[];
+    let sealableCards = state.board.objects.filter(o => o.type === 'card' && (o.region === 'used' || o.region === 'special') && CARD_DATA[state.board.cardSet][o.cardId].sealable && o.openState === 'opened') as state.Card[];
     sealableCards.forEach(card => {
         let cardLocation = cardLocations[card.id];
         frameNodes.push(<components.CardAreaDroppable side={card.side} region="on-card" linkedCardId={card.id} left={cardLocation[0]} top={cardLocation[1]} width={100} height={140} />);
     });
 
     // 桜花結晶を載せることが可能な全カードについて、ドロップ領域を配置
-    let tokenDroppableCards = state.board.objects.filter(o => o.type === 'card' && (o.region === 'used' || o.region === 'special') && CARD_DATA[o.cardId].types.find(t => t === 'enhance') && o.openState === 'opened') as state.Card[];
+    let tokenDroppableCards = state.board.objects.filter(o => 
+        o.type === 'card'
+        && (o.region === 'used' || o.region === 'special') // 使用済み領域か切札領域にある
+        && (CARD_DATA[state.board.cardSet][o.cardId].types.find(t => t === 'enhance') || o.cardId === '14-honoka-o-s-1-ex1') // 付与、もしくは「両手に華を」である
+        && o.openState === 'opened' // 公開されている
+    ) as state.Card[];
     tokenDroppableCards.forEach(card => {
         let cardLocation = cardLocations[card.id];
         frameNodes.push(<components.SakuraTokenAreaDroppable side={card.side} region="on-card" linkedCardId={card.id} left={cardLocation[0]} top={cardLocation[1]} width={100} height={140} />);
@@ -404,7 +432,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
     addExtraToken(extraTokens, opponentSide, 10, 315);
 
     let megamiNumber = 0;
-    for(let key in MEGAMI_DATA){
+    for(let key of utils.getMegamiKeys(state.board.cardSet)){
         megamiNumber++;
     }
 

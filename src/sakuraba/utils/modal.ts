@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { nl2br } from "./misc";
 
 export function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery) => false | void){
@@ -6,6 +7,15 @@ export function confirmModal(desc: string, yesCallback: (this: JQuery, $element:
 
     $('#CONFIRM-MODAL .description').html(nl2br(desc));
     $('#CONFIRM-MODAL')
+=======
+export function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery) => (false | void)){
+    // すべてのポップアップを非表示にする
+    $('.fbs-card').popup('hide all');
+
+    let target = '#CONFIRM-MODAL';
+    $(`${target} .description`).html(desc);
+    $(`${target}`)
+>>>>>>> master
         .modal({closable: false, onApprove:yesCallback})
         .modal('show');
 }

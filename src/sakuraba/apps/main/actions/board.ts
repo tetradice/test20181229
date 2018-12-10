@@ -97,9 +97,12 @@ export default {
     },
 
     /** ボード全体を初期化する（プレイヤー名除く） */
-    resetBoard: () => (state: state.State, actions: ActionsType) => {
+    resetBoard: (p?: {newCardSet?: CardSet}) => (state: state.State, actions: ActionsType) => {
 
         let extended: Partial<state.Board> = {playerNames: state.board.playerNames};
+        if(p !== undefined && p.newCardSet){
+            extended.cardSet = p.newCardSet;
+        }
         return {board: _.extend(utils.createInitialState().board, extended)} as Partial<state.State>;
     },
 
@@ -272,7 +275,7 @@ export default {
 
         // 選択されたカードを追加
         p.cardIds.forEach((id) => {
-            const data = CARD_DATA[id];
+            const data = CARD_DATA[state.board.cardSet][id];
             if(data.baseType === 'normal'){
                 actions.addCard({side: side, region: 'library', cardId: id});
             }
@@ -465,7 +468,7 @@ export default {
             logs.push({ text: ['log:集中力を1使ってACTを行いました', {action: [p.actionTitleKey, null]}]});
         } else if (p.costType === 'hand') {
             let card = boardModel.getCard(p.useCardId);
-            let data = CARD_DATA[card.cardId];
+            let data = CARD_DATA[state.board.cardSet][card.cardId];
 
             logs.push({ text: ['log:[CARDNAME]を伏せ札にしてACTを行いました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}, action: [p.actionTitleKey, null]}], visibility: 'ownerOnly' });
             logs.push({ text: ['log:手札1枚を伏せ札にしてACTを行いました', {action: [p.actionTitleKey, null]}], visibility: 'outerOnly' });
@@ -575,6 +578,26 @@ export default {
                     actions.resetWindGauge({side: state.side});
                     actions.resetThunderGauge({side: state.side});
                 }
+
+                // 第三章オボロ、終章ウツロ、ホノカがいればすべての追加札を取得
+                for (let megami of board.megamis[state.side]){
+                    if (megami == 'oboro-a1'
+                        || megami == 'utsuro-a1'
+                        || megami == 'honoka') {
+                        let cardIds = utils.getMegamiCardIds(megami, state.board.cardSet, null, true);
+                        for(let cardId of cardIds){
+                            if(CARD_DATA[state.board.cardSet][cardId].extra){
+                                actions.addCard({ side: state.side, region: 'extra', cardId: cardId });
+                            }
+                        }
+                    }
+                }
+
+                // 第三章オボロがいればゲーム外に桜花結晶を追加
+                if (board.megamis[state.side].find(m => m === 'oboro-a1')) {
+                    actions.addSakuraToken({ side: state.side, region: 'out-of-game', number: 2 });
+                }
+
             }
         });
     },

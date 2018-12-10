@@ -10,6 +10,19 @@ export function flipSide(side: PlayerSide): PlayerSide{
   return side;
 }
 
+/** 指定したカードセットに対応するメガミのキー一覧を取得 */
+export function getMegamiKeys(cardSet: CardSet): sakuraba.Megami[]{
+    let keys: sakuraba.Megami[] = [];
+    for(let key in sakuraba.MEGAMI_DATA){
+        let megami = sakuraba.MEGAMI_DATA[key as sakuraba.Megami];
+        if(megami.notExistCardSets === undefined || megami.notExistCardSets.indexOf(cardSet) === -1){
+            keys.push(key as sakuraba.Megami);
+        }
+    }
+
+    return keys;
+}
+
 /** メガミの表示名を取得 */
 export function getMegamiDispName(megami: sakuraba.Megami): string{
     let data = sakuraba.MEGAMI_DATA[megami];
@@ -30,14 +43,15 @@ export function logIsVisible(log: state.LogRecord, side: SheetSide): boolean{
 
 /** カードの適切な公開状態を判定 */
 export function judgeCardOpenState(
-      card: state.Card
+      cardSet: CardSet
+    , card: state.Card
     , handOpenFlag: boolean
     , cardSide?: PlayerSide
     , cardRegion?: CardRegion
 ): CardOpenState{
     if(cardSide === undefined) cardSide = card.side;
     if(cardRegion === undefined) cardRegion = card.region;
-    let cardData = sakuraba.CARD_DATA[card.cardId];
+    let cardData = sakuraba.CARD_DATA[cardSet][card.cardId];
 
     if(cardRegion === 'used' || cardRegion === 'on-card' || cardRegion === 'extra' || (cardData.baseType === 'special' && card.specialUsed)){
         // カードが使用済み領域にある場合か、封印済みか、追加札か、切り札で使用済みフラグがONの場合、公開済み
@@ -52,7 +66,12 @@ export function judgeCardOpenState(
 }
 
 /** カードの説明用ポップアップHTMLを取得する */
+<<<<<<< HEAD
 export function getDescriptionHtml(cardData: models.CardData): string{
+=======
+export function getDescriptionHtml(cardSet: CardSet, cardId: string): string{
+  let cardData = sakuraba.CARD_DATA[cardSet][cardId];
+>>>>>>> master
   let cardTitleHtml = `<ruby><rb>${cardData.name}</rb><rp>(</rp><rt>${cardData.ruby}</rt><rp>)</rp></ruby>`
   let html = `<div class='ui header' style='margin-right: 2em;'>${cardTitleHtml}`
 
@@ -104,6 +123,11 @@ export function getDescriptionHtml(cardData: models.CardData): string{
     }
     html += `${cardData.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
   }
+  // 追加札で、かつ追加元が指定されている場合
+  if(cardData.extra && cardData.extraFrom){
+      let extraCardData = sakuraba.CARD_DATA[cardSet][cardData.extraFrom];
+      html += `<div class="extra-from">追加 ≫ ${extraCardData.name}</div>`
+  }
   html += `</div>`;
 
   if(cardData.megami === 'kururu'){
@@ -121,7 +145,13 @@ export function getDescriptionHtml(cardData: models.CardData): string{
 }
 
 /** カードのリージョン名を取得 */
-export function getCardRegionTitle(selfSide: PlayerSide, side: PlayerSide, region: CardRegion, linkedCard: state.Card){
+export function getCardRegionTitle(
+      selfSide: PlayerSide
+    , side: PlayerSide
+    , region: CardRegion
+    , cardSet: CardSet
+    , linkedCard: state.Card
+){
     let titleBase = ``;
     if(region === 'hand'){
         titleBase = "手札";
@@ -142,7 +172,7 @@ export function getCardRegionTitle(selfSide: PlayerSide, side: PlayerSide, regio
         titleBase = "追加札";
     }
     if(region === 'on-card'){
-        let cardData = sakuraba.CARD_DATA[linkedCard.cardId];
+        let cardData = sakuraba.CARD_DATA[cardSet][linkedCard.cardId];
         titleBase = `[${cardData.name}]の下`;
     }
 
@@ -155,7 +185,13 @@ export function getCardRegionTitle(selfSide: PlayerSide, side: PlayerSide, regio
 }
 
 /** 桜花結晶のリージョン名を取得 */
-export function getSakuraTokenRegionTitle(selfSide: PlayerSide, side: PlayerSide, region: SakuraTokenRegion, linkedCard?: state.Card){
+export function getSakuraTokenRegionTitle(
+      selfSide: PlayerSide
+    , side: PlayerSide
+    , region: SakuraTokenRegion
+    , cardSet: CardSet
+    , linkedCard: state.Card
+){
     let titleBase = ``;
     if(region === 'aura'){
         titleBase = "オーラ";
@@ -178,8 +214,11 @@ export function getSakuraTokenRegionTitle(selfSide: PlayerSide, side: PlayerSide
     if(region === 'burned'){
         titleBase = "燃焼済";
     }
+    if (region === 'out-of-game') {
+        titleBase = "ゲーム外";
+    }
     if(region === 'on-card'){
-        let cardData = sakuraba.CARD_DATA[linkedCard.cardId];
+        let cardData = sakuraba.CARD_DATA[cardSet][linkedCard.cardId];
         titleBase = `[${cardData.name}]上`;
     }
 

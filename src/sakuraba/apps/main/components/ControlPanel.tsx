@@ -6,6 +6,7 @@ import * as models from "sakuraba/models";
 import toastr from "toastr";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
 import * as apps from "sakuraba/apps"
+import { CARD_SET_NAMES } from "sakuraba";
 import i18next, { t } from 'i18next';
 
 /** コントロールパネル */
@@ -20,6 +21,32 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             });
         })
     }
+
+    // カードセット変更
+    let changeCardSet = () => {
+        let currentState = actions.getState();
+
+        let promise = new Promise<CardSet>((resolve, reject) => {
+            let modalState = apps.cardSetSelectModal.State.create(
+                  currentState.board.cardSet
+                , resolve
+                , reject
+            );
+
+            apps.cardSetSelectModal.run(modalState, document.getElementById('COMMON-MODAL-PLACEHOLDER'));
+        }).then((newCardSet) => {
+            actions.operate({
+                log: `カードセットを${CARD_SET_NAMES[newCardSet]}に変更しました`,
+                proc: () => {
+                    actions.resetBoard({ newCardSet: newCardSet });
+                }
+            });
+
+        });
+
+
+    }
+
 
     let playerNameChange = () => {
         if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
@@ -117,13 +144,23 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         } else if(state.board.megamiOpenFlags[state.side]){
             commandButtons = (
                 <div class={css.commandButtons}>
-                <div class={css.currentPhase}>{t('- 眼前構築 -')}</div>
+                    <div><span class={css.currentPhase} style="white-space: nowrap">{t('- 眼前構築 -')}</span>
+                        <span style="white-space: nowrap">
+                            <span class={css.currentCardSet}>カードセット: {CARD_SET_NAMES[state.board.cardSet]}</span>
+                            <button class={`ui basic button tiny ${css.cardSetChangeButton}`} onclick={changeCardSet}>変更</button>
+                        </span>
+                    </div>
                 </div>
             );
         } else if(state.board.playerNames[state.side] !== null){
             commandButtons = (
                 <div class={css.commandButtons}>
-                <div class={css.currentPhase}>{t('- 双掌繚乱 -')}</div>
+                    <div><span class={css.currentPhase} style="white-space: nowrap">{t('- 双掌繚乱 -')}</span>
+                        <span style="white-space: nowrap">
+                            <span class={css.currentCardSet}>カードセット: {CARD_SET_NAMES[state.board.cardSet]}</span>
+                            <button class={`ui basic button tiny ${css.cardSetChangeButton}`} onclick={changeCardSet}>変更</button>
+                        </span>
+                    </div>
                 </div>
             );
         }
@@ -208,7 +245,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     }
 
     const quizOpen = () => {
-        let st = apps.quizWindow.State.create();
+        let st = apps.quizWindow.State.create(state.board.cardSet);
         apps.quizWindow.run(st, document.getElementById('QUIZ-WINDOW-CONTAINER'));            
     };
 

@@ -34,7 +34,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         // ドロップダウンの選択肢を設定
         $('#MEGAMI1-SELECTION').empty().append('<option></option>');
         $('#MEGAMI2-SELECTION').empty().append('<option></option>');
-        for(let key in sakuraba.MEGAMI_DATA){
+        for(let key of utils.getMegamiKeys(state.board.cardSet)){
             let data = sakuraba.MEGAMI_DATA[key];
             $('#MEGAMI1-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
             $('#MEGAMI2-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
@@ -108,46 +108,11 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         let promise = new Promise(function(resolve, reject){
             let cardIds: string[][] = [[], [], []];
 
-            // 全カード情報を取得しておく
-            let allCardDataItem: sakuraba.CardDataItem[] = [];
-            for(let key in sakuraba.CARD_DATA){
-                allCardDataItem.push(sakuraba.CARD_DATA[key]);
-            }
-
-            // カードを追加する処理
-            const addCardIds = (appendToCardIds: string[], megami: sakuraba.Megami, baseType: 'normal' | 'special') => {
-                // 全カードを探索し、指定された種類のカードで追加札でないカードを、カードIDリストへ追加する
-                for(let key in sakuraba.CARD_DATA){
-                    let data = sakuraba.CARD_DATA[key];
-                    let megamiData = sakuraba.MEGAMI_DATA[megami];
-    
-                    let replacedByAnother = allCardDataItem.find(x => x.anotherID !== undefined && x.replace === key);
-    
-                    if(data.baseType === baseType && !data.extra){
-                        if(megamiData.anotherID){
-                            // アナザーメガミである場合の所有カード判定
-                            // 通常メガミが持ち、かつアナザーで置き換えられていないカードを追加
-                            if(data.megami === megamiData.base && (data.anotherID === undefined) && !replacedByAnother){
-                                appendToCardIds.push(key);
-                            }
-                            // アナザーメガミ用のカードを追加
-                            if(data.megami === megamiData.base && (data.anotherID === megamiData.anotherID)){
-                                appendToCardIds.push(key);
-                            }
-                        } else {
-                            // 通常メガミである場合、メガミの種類が一致している通常カードを全て追加
-                            if(data.megami === megami && (data.anotherID === undefined)){
-                                appendToCardIds.push(key);
-                            }
-                        }
-                    }
-                }
-            }
             // 1柱目の通常札 → 2柱目の通常札 → 1柱目の切札＋2柱目の切札 順に設定
-            addCardIds(cardIds[0], state.board.megamis[state.side][0], 'normal');
-            addCardIds(cardIds[1], state.board.megamis[state.side][1], 'normal');
-            addCardIds(cardIds[2], state.board.megamis[state.side][0], 'special');
-            addCardIds(cardIds[2], state.board.megamis[state.side][1], 'special');
+            cardIds[0] = utils.getMegamiCardIds(state.board.megamis[state.side][0], state.board.cardSet, 'normal');
+            cardIds[1] = utils.getMegamiCardIds(state.board.megamis[state.side][1], state.board.cardSet, 'normal');
+            cardIds[2] = utils.getMegamiCardIds(state.board.megamis[state.side][0], state.board.cardSet, 'special');
+            cardIds[2] = cardIds[2].concat(utils.getMegamiCardIds(state.board.megamis[state.side][1], state.board.cardSet, 'special'));
 
 
             // デッキ構築エリアをセット
@@ -181,12 +146,12 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                         let left = 4 + c * (100 + 8);
                         let selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
                         
-                        cardElements.push(<Card clickableClass target={card} opened descriptionViewable left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={state.zoom}></Card>);
+                        cardElements.push(<Card clickableClass cardSet={state.board.cardSet} target={card} opened descriptionViewable left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={state.zoom}></Card>);
                     });
                 });
 
-                let normalCardCount = deckBuildState.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'normal').length;
-                let specialCardCount = deckBuildState.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[cardId].baseType === 'special').length;
+                let normalCardCount = deckBuildState.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[state.board.cardSet][cardId].baseType === 'normal').length;
+                let specialCardCount = deckBuildState.selectedCardIds.filter(cardId => sakuraba.CARD_DATA[state.board.cardSet][cardId].baseType === 'special').length;
 
                 let normalColor = (normalCardCount > 7 ? 'red' : (normalCardCount < 7 ? 'blue' : 'black'));
                 let normalCardCountStyles: Partial<CSSStyleDeclaration> = {color: normalColor, fontWeight: (normalColor === 'black' ? 'normal' : 'bold')};
@@ -280,8 +245,8 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
             
             let promise = new Promise<state.Card[]>((resolve, reject) => {
                 let cards = board.getRegionCards(side, 'hand', null);
-                let st = apps.mariganModal.State.create(side, cards, state.zoom, resolve, reject);
-                apps.mariganModal.run(st, document.getElementById('MARIGAN-MODAL'));            
+                let st = apps.mariganModal.State.create(state.board.cardSet, side, cards, state.zoom, resolve, reject);
+                apps.mariganModal.run(st, document.getElementById('COMMON-MODAL-PLACEHOLDER'));            
             }).then((selectedCards) => {
                 // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
                 actions.operate({

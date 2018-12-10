@@ -13,6 +13,7 @@ interface Param {
     height: number;
 
     cardCount?: number;
+    hideBorder?: boolean;
 }
 
 export const CardAreaBackground = (p: Param) => (state: state.State) => {
@@ -22,6 +23,9 @@ export const CardAreaBackground = (p: Param) => (state: state.State) => {
         , width: `${p.width * state.zoom}px`
         , height: `${p.height * state.zoom}px`
     };
+    if(p.hideBorder){
+        styles.border = 'none';
+    }
 
     // 自分の手札領域で、かつ公開済みの場合
     let handOpened = false;

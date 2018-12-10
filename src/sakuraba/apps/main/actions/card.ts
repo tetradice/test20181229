@@ -80,7 +80,7 @@ export default {
 
         // 移動するカード名を記録
         if(p.cardNameLogging){
-            let cardNames = fromCards.map((c) => `[${CARD_DATA[c.cardId].name}]`).join(t('log:CardNameFormat-、'));
+            let cardNames = fromCards.map((c) => `[${CARD_DATA[state.board.cardSet][c.cardId].name}]`).join(t('log:CardNameFormat-、'));
             let title = (p.cardNameLogTitle ? `${p.cardNameLogTitle} ` : '');
             let logData: LocalizedLogValue = [
                   (p.cardNameLogTitle ? 'log:CardNameFormat-TemplateWithTitle' : 'log:CardNameFormat-Template')
@@ -179,7 +179,7 @@ export default {
         }
 
         actions.operate({
-            log: [(p.value ? 'log:切札[CARDNAME]を表向きにしました' : 'log:切札[CARDNAME]を裏返しました'), {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}}],
+            log: [(p.value ? 'log:切札[CARDNAME]を表向きにしました' : 'log:切札[CARDNAME]を裏返しました'), {cardName: {type: 'cardName', cardSet: state.board.cardSet, cardId: card.cardId}}],
             proc: () => {
                 actions.setSpecialUsed(p);
             }
@@ -205,7 +205,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            log: ['log:[CARDNAME]をボード上から取り除きました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}}],
+            log: ['log:[CARDNAME]をボード上から取り除きました', {cardName: {type: 'cardName', cardSet: state.board.cardSet, cardId: card.cardId}}],
             proc: () => {
                 actions.removeCard(p);
             }
@@ -232,7 +232,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            log: ['log:[CARDNAME]の帯電を解除し、GUAGEを1上げました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}, guage: [(p.guageType === 'wind' ? '風神ゲージ' : '雷神ゲージ'), null]}],
+            log: ['log:[CARDNAME]の帯電を解除し、GUAGEを1上げました', {cardName: {type: 'cardName', cardSet: state.board.cardSet, cardId: card.cardId}, guage: [(p.guageType === 'wind' ? '風神ゲージ' : '雷神ゲージ'), null]}],
             proc: () => {
                 // 帯電解除
                 actions.discharge(p);
@@ -250,8 +250,8 @@ export default {
         let newBoard = models.Board.clone(state.board);
         // 山札のカードをすべて取得し、毒と毒以外のカードに分ける
         let cards = newBoard.getRegionCards(p.side, 'library', null);
-        let normalCards = cards.filter(c => !CARD_DATA[c.cardId].poison);
-        let poisonCards = cards.filter(c => CARD_DATA[c.cardId].poison);
+        let normalCards = cards.filter(c => !CARD_DATA[state.board.cardSet][c.cardId].poison);
+        let poisonCards = cards.filter(c => CARD_DATA[state.board.cardSet][c.cardId].poison);
         // ランダムに整列し、その順番をインデックスに再設定
         let shuffledNormalCards = _.shuffle(normalCards);
         let shuffledPoisonCards = _.shuffle(poisonCards);
@@ -288,7 +288,7 @@ export default {
                 let newBoard = models.Board.clone(state.board);
                 let usedCards = newBoard.getRegionCards(p.side, 'used', null);
                 usedCards.forEach(card => {
-                    let data = CARD_DATA[card.cardId];
+                    let data = CARD_DATA[state.board.cardSet][card.cardId];
                     if(newBoard.getRegionSakuraTokens(p.side, 'on-card', card.id).length === 0 && data.baseType !== 'transform'){
                         actions.moveCard({from: card.id, to: [p.side, 'library', null]});
                     }

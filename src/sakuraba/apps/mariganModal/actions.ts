@@ -18,6 +18,9 @@ export const actions = {
 
         return {selectedCards: newSelectedCards};
     },
+
+    /** ボードの状態を取得 */
+    getState: () => (state: State) => state
 };
 
 export type ActionsType = WiredActions<State, typeof actions>;

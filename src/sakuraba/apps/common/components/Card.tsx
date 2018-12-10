@@ -24,8 +24,9 @@ interface Param {
     cardData?: models.CardData;
 
     zoom: number;
+    cardSet: CardSet;
 
-    /** 言語設定 cardDataを省略した場合のみ有効 */
+    /** 言語設定 */
     language?: string;
 
     descriptionViewable: boolean;
@@ -45,7 +46,7 @@ export const Card = (p: Param) => {
     };
 
     // 使用済にあるtransformカードの場合横にする
-    if(p.target.region === 'used' && sakuraba.CARD_DATA[p.target.cardId].baseType === 'transform'){
+    if(p.target.region === 'used' && sakuraba.CARD_DATA[p.cardSet][p.target.cardId].baseType === 'transform'){
         let oldW = styles.width;
         styles.width = styles.height;
         styles.height = oldW;
@@ -60,7 +61,7 @@ export const Card = (p: Param) => {
         styles.zIndex = `${ZIndex.CARD}`;
     }
 
-  let cardData = (p.cardData || new models.CardData(p.target.cardId, p.language));
+  let cardData = (p.cardData || new models.CardData(p.cardSet, p.target.cardId, p.language));
   let className = "fbs-card";
 
   // クリック可能クラスを付与する場合

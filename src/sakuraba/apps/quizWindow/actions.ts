@@ -7,7 +7,8 @@ export const actions = {
         return {shown: false};
     },
     setNewQuiz: () => (state: State) => {
-        let newQuiz = QuizMaker.make();
+        let quizMaker = new QuizMaker(state.cardSet);
+        let newQuiz = quizMaker.make();
         
         return {
               currentQuiz: newQuiz

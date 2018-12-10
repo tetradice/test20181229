@@ -65,7 +65,7 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
             utils.messageModal(t('dialog:決闘を開始するまでは、カードや桜花結晶の操作は行えません。'));
             return false;
         };
-        const data = sakuraba.CARD_DATA[p.target.cardId];
+        const data = sakuraba.CARD_DATA[state.board.cardSet][p.target.cardId];
 
         // 切札なら裏返す
         if(data.baseType === 'special'){
@@ -83,7 +83,7 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
 
     // そのカードが開いた状態での適正距離を持っていれば、カードの所有プレイヤーが傘を開いているかどうかを判定
     let useOpenedData = false;
-    const cardData = sakuraba.CARD_DATA[p.target.cardId];
+    const cardData = sakuraba.CARD_DATA[state.board.cardSet][p.target.cardId];
     if(cardData.rangeOpened !== undefined && state.board.umbrellaStatus[p.target.ownerSide] === 'opened'){
         useOpenedData = true;
     }
@@ -92,7 +92,7 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
     
     return (
         <Card
-            cardData={boardModel.getCardData(p.target, state.lang)}
+            cardData={boardModel.getCardData(state.board.cardSet, p.target, state.lang)}
             opened={opened}
             handOpened={handOpened}
             clickableClass={clickableClass}

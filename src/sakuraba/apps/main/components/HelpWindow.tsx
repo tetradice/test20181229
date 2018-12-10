@@ -46,6 +46,9 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
             );
         } else {
             let rairaFound = state.board.megamis[state.side][0] === 'raira' || state.board.megamis[state.side][1] === 'raira';
+            let honokaFound = state.board.megamis[state.side][0] === 'honoka' || state.board.megamis[state.side][1] === 'honoka';
+            let oboroA1Found = state.board.megamis[state.side][0] === 'oboro-a1' || state.board.megamis[state.side][1] === 'oboro-a1';
+            let utsuroA1Found = state.board.megamis[state.side][0] === 'utsuro-a1' || state.board.megamis[state.side][1] === 'utsuro-a1';
             contentDiv = (
                 <div>
                     <h4><i class="icon question circle outline"></i>{t('help-window:決闘中の操作方法')}</h4>
@@ -60,6 +63,8 @@ export const HelpWindow = (p: {shown: boolean}) => (state: state.State, actions:
                         <li>{utils.nl2brJsx(t('help-window:カードを封印したい時には、使用済み領域にある封印先のカードの上にドラッグ（[論破]などの一部カードにのみ封印可能）'))}</li>
                         <li>{utils.nl2brJsx(t('help-window:カードをゲームから取り除きたい場合は、追加札領域へ移動（[風魔招来孔]などの一部カードのみ実行可能）'))}</li>
                         {rairaFound ? <li>{utils.nl2brJsx(t('help-window:カードの帯電を解除したい場合は、表向きのカードの上で右クリック'))}</li> : null}
+                        {oboroA1Found || honokaFound ? <li>カードを追加札と交換したい場合は、表向きのカードの上で右クリック<br />（[精霊式]などの一部カードのみ実行可能）</li> : null}
+                        {utsuroA1Found ? <li>終焉の影を蘇らせる場合は、表向きの[残響装置:枢式]の上で右クリック</li> : null}
                     </ul>
                 </div>
             );

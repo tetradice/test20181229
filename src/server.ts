@@ -171,6 +171,11 @@ function getStoredBoard(tableId: string, callback: (board: state.Board) => void)
   RedisClient.GET(`sakuraba:tables:${tableId}:board`, (err, json) => {
     let boardData = JSON.parse(json) as state.Board;
 
+    // カードセット情報がなければ初期値をセット
+    if(boardData.cardSet === undefined){
+      boardData.cardSet = 'na-s2';
+    }
+
     // コールバックを実行
     callback(boardData);
   });

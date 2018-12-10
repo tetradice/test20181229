@@ -8,6 +8,7 @@ export class Board implements state.Board {
     playerNames: state.Board['playerNames'];
     watchers: state.Board['watchers'];
     megamis: state.Board['megamis'];
+    cardSet: state.Board['cardSet'];
     vigors: state.Board['vigors'];
     witherFlags: state.Board['witherFlags'];
     megamiOpenFlags: state.Board['megamiOpenFlags'];
@@ -161,7 +162,7 @@ export class Board implements state.Board {
             if (region === 'extra') {
                 regionCards = _.sortBy(regionCards, [((c: state.Card) => c.cardId)]);
             } else {
-                regionCards = _.sortBy(regionCards, [((c: state.Card) => CARD_DATA[c.cardId].baseType), ((c: state.Card) => c.indexOfRegion)]);
+                regionCards = _.sortBy(regionCards, [((c: state.Card) => CARD_DATA[this.cardSet][c.cardId].baseType), ((c: state.Card) => c.indexOfRegion)]);
             }
 
             let index = 0;
@@ -182,7 +183,7 @@ export class Board implements state.Board {
 
                 // 開閉状態更新
                 let handOpenFlag = this.handOpenFlags[c.side] || this.handCardOpenFlags[c.side][c.id];
-                c.openState = utils.judgeCardOpenState(c, handOpenFlag);
+                c.openState = utils.judgeCardOpenState(this.cardSet, c, handOpenFlag);
 
                 // 回転状態更新
                 c.rotated = (region === 'hidden-used') || c.discharged;

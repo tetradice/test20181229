@@ -100,14 +100,14 @@ $(function(){
 
                     // 移動ログを決定
                     let logs: { text: LocalizedLogValue, visibility?: LogVisibility }[] = [];
-                    let cardName = CARD_DATA[card.cardId].name;
+                    let cardName = CARD_DATA[currentState.board.cardSet][card.cardId].name;
                     let boardModel = new models.Board(currentState.board);
-                    let fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region, (card.linkedCardId ? boardModel.getCard(card.linkedCardId) : null));
-                    let toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion, (toLinkedCardId ? boardModel.getCard(toLinkedCardId) : null));
+            let fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region, currentState.board.cardSet, (card.linkedCardId ? boardModel.getCard(card.linkedCardId) : null));
+            let toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion, currentState.board.cardSet, (toLinkedCardId ? boardModel.getCard(toLinkedCardId) : null));
 
                     // 移動元での公開状態と、移動先での公開状態を判定
                     let oldOpenState = card.openState;
-                    let newOpenState = utils.judgeCardOpenState(card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
+            let newOpenState = utils.judgeCardOpenState(currentState.board.cardSet, card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
 
                     // ログ内容を決定
                     let logCardNameParam = {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId};
@@ -402,28 +402,32 @@ $(function(){
                         };
 
                         // 帯電解除コマンドを追加する関数
-                        const addDischargeCommand = (items: any, card: state.Card, addSeparator?: boolean) => {
+                const addDischargeCommand = (items: any, card: state.Card, addSeparator?: boolean): boolean => {
                             // プレイヤーがライラを宿しており、かつ対象のカードが公開状態で、ライラのカードでもTransformカードでもない場合、帯電解除を行える
-                            if(board.megamis[playerSide][0] === 'raira' || board.megamis[playerSide][1] === 'raira'){
+                    if(board.megamis[card.side][0] === 'raira' || board.megamis[card.side][1] === 'raira'){
                                 if(addSeparator){
                                     items['sepDischarge'] = '---';
                                 }
 
                                 items['dischargeAndIncrementWind'] =  {
                                     name: t('帯電を解除し、GAUGEを1上げる', {gauge: t('風神ゲージ')})
-                                    , disabled: (card.openState !== 'opened' || card.discharged || CARD_DATA[card.cardId].megami === 'raira' || CARD_DATA[card.cardId].baseType === 'transform')
+                                    , disabled: (card.openState !== 'opened' || card.discharged || CARD_DATA[currentState.board.cardSet][card.cardId].megami === 'raira' || CARD_DATA[currentState.board.cardSet][card.cardId].baseType === 'transform')
                                     , callback: function() {
                                         appActions.oprDischarge({objectId: card.id, guageType: 'wind'});
                                     }
                                 }
                                 items['dischargeAndIncrementThunder'] =  {
                                     name: t('帯電を解除し、GAUGEを1上げる', {gauge: t('雷神ゲージ')})
-                                    , disabled: (card.openState !== 'opened' || card.discharged || CARD_DATA[card.cardId].megami === 'raira' || CARD_DATA[card.cardId].baseType === 'transform')
+                                    , disabled: (card.openState !== 'opened' || card.discharged || CARD_DATA[currentState.board.cardSet][card.cardId].megami === 'raira' || CARD_DATA[currentState.board.cardSet][card.cardId].baseType === 'transform')
                                     , callback: function() {
                                         appActions.oprDischarge({objectId: card.id, guageType: 'thunder'});
                                     }
                                 }
+
+                        return true;
                             }
+
+                    return false;
                         };
 
                         // 基本動作コマンドを追加する関数
@@ -479,17 +483,44 @@ $(function(){
                         if($elem.is('.fbs-card[data-region=used]')){
                             let id = $elem.attr('data-object-id');
                             let card = board.getCard(id);
+                    		let cardData = CARD_DATA[currentState.board.cardSet][card.cardId];
                             items = {};
 
-                            // 条件を満たしていれば、帯電解除コマンドを追加
-                            addDischargeCommand(items, card);
+                    // 条件を満たしていれば、帯電解除コマンドを追加
+                    let addedDischarge = addDischargeCommand(items, card);
+
+                    // 交換先のカードがあり、かつ自分のカードか？
+                    if (cardData.exchangableTo && card.side === playerSide) {
+                        // 交換先のカードが追加札領域に存在する場合は実行可能
+                        let extraCard = board.getRegionCards(card.side, 'extra', null).find(c => c.cardId === cardData.exchangableTo);
+
+                        // 帯電解除コマンドが追加されていれば罫線を追加
+                        if (addedDischarge){
+                            items['sepExchange'] = '---';
                         }
 
-
+                        // 交換メニューを表示
+                        let exchangeToCardData = CARD_DATA[currentState.board.cardSet][cardData.exchangableTo];
+                        items['exchange'] = {
+                            name: `追加札の[${exchangeToCardData.name}]に交換する`
+                            , disabled: !extraCard
+                            , callback: () => {
+                                appActions.operate({
+                                    log: `[${cardData.name}]を[${exchangeToCardData.name}]に交換しました`,
+                                    proc: () => {
+                                        appActions.moveCard({ from: id, to: [card.side, 'extra', null] });
+                                        appActions.moveCard({ from: extraCard.id, to: [card.side, 'used', null] });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
                         // 切り札で右クリック
                         if($elem.is('.fbs-card[data-region=special]')){
                             let id = $elem.attr('data-object-id');
                             let card = board.getCard(id);
+                    let cardData = CARD_DATA[currentState.board.cardSet][card.cardId];
                             
                             items = {};
                             items['flip'] =  {
@@ -502,11 +533,151 @@ $(function(){
                             // 条件を満たしていれば、帯電解除コマンドを追加
                             addDischargeCommand(items, card, true);
 
+                    // 交換先のカードがあり、かつ自分のカードか？
+                    if (cardData.exchangableTo && card.side === playerSide) {
+                        // 交換先のカードが追加札領域に存在する場合は実行可能
+                        let extraCard = board.getRegionCards(card.side, 'extra', null).find(c => c.cardId === cardData.exchangableTo);
+                        // 交換メニューを表示
+                        let exchangeToCardData = CARD_DATA[currentState.board.cardSet][cardData.exchangableTo];
+
+                        items['sepExchange'] = '---';
+                        
+                        // 神代枝のみ特殊 (交換と同時にゲームから取り除く)
+                        if (card.cardId === '05-oboro-A1-s-4'){
+                            items['exchange'] = {
+                                name: `[${cardData.name}]をゲームから取り除き、追加札の[${exchangeToCardData.name}]を得る`
+                                , disabled: !extraCard || !card.specialUsed // 追加札領域に対象カードがあり、かつ表向きの場合のみ
+                                , callback: () => {
+                                    // まだ相手が決闘を開始していなければ、この操作は禁止する
+                                    // (決闘を開始する前にカードを取り除くと、更新がうまくいかずにエラーが多発する場合があるため。原因不明)
+                                    if (!currentState.board.mariganFlags[utils.flipSide(playerSide)]) {
+                                        utils.messageModal(`相手が決闘を開始するまでは、この操作を行うことはできません。`);
+                                        return;
+                                    }
+
+                                    utils.confirmModal(`ゲームから取り除いた後は、元に戻すことはできません。<br>よろしいですか？`, () => {
+
+                                        appActions.operate({
+                                            log: `[${cardData.name}]を取り除き、[${exchangeToCardData.name}]を追加札から取得しました`,
+                                            proc: () => {
+                                                appActions.removeCard({ objectId: id });
+                                                appActions.moveCard({ from: extraCard.id, to: [playerSide, 'special', null] });
+                                            }
+                                        });
+                                    });
+
+                                }
+                            }
+                        } else {
+                            items['exchange'] = {
+                                name: `追加札の[${exchangeToCardData.name}]に交換する`
+                                , disabled: !extraCard || !card.specialUsed // 追加札領域に対象カードがあり、かつ表向きの場合のみ
+                                , callback: () => {
+                                    // 桜花結晶が乗っている切札を、交換しようとした場合はエラー
+                                    let onCardTokens = board.getRegionSakuraTokens(card.side, 'on-card', card.id);
+                                    if (onCardTokens.length >= 1) {
+                                        utils.messageModal("桜花結晶が上に乗っている切札は、交換できません。");
+                                        return;
+                                    }
+
+                                    appActions.operate({
+                                        log: `[${cardData.name}]を[${exchangeToCardData.name}]に交換しました`,
+                                        proc: () => {
+                                            appActions.moveCard({ from: id, to: [card.side, 'extra', null] });
+                                            appActions.moveCard({ from: extraCard.id, to: [card.side, 'special', null] });
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    // 残響装置:枢式で、かつ自分のカードか？
+                    if (card.cardId === '13-utsuro-A1-s-1' && card.side === playerSide) {
+
+                        items['sepShadowArise'] = '---';
+
+                        let dustCount = board.getRegionSakuraTokens(null, 'dust', null).length;
+                        items['shadowArise'] = {
+                            name: `- 終焉の影が蘇る -`
+                            , disabled: !card.specialUsed || dustCount < 13 // カードが表向き、かつダストが13以上の場合のみ使用可能
+                            , callback: () => {
+                                // まだ相手が決闘を開始していなければ、この操作は禁止する
+                                // (決闘を開始する前にカードを取り除くと、更新がうまくいかずにエラーが多発する場合があるため。原因不明)
+                                if (!currentState.board.mariganFlags[utils.flipSide(playerSide)]) {
+                                    utils.messageModal(`相手が決闘を開始するまでは、この操作を行うことはできません。`);
+                                    return;
+                                }
+
+                                utils.confirmModal(`あなたの使用済み、伏せ札、手札、山札領域にあるすべてのカードは取り除かれます。<br>また、[残響装置:枢式]は取り除かれ、代わりにいくつかのカードを追加で得ます。<br>（この操作を元に戻すことはできません）<br><br>よろしいですか？`, () => {
+                                    appActions.operate({
+                                        log: `終焉の影が蘇りました`,
+                                        proc: () => {
+                                            // 通常札上のすべての桜花結晶をダストへ移動
+                                            let sakuraTokensOnBoard = board.objects.filter(v => v.type === 'sakura-token' && v.side === card.side && v.region == 'on-card') as state.SakuraToken[];
+                                            for (let token of sakuraTokensOnBoard) {
+                                                let linkedCardData = CARD_DATA[board.cardSet][board.getCard(token.linkedCardId).cardId];
+                                                if (linkedCardData.baseType === 'normal'){
+                                                    appActions.moveSakuraToken({ from: [token.side, token.region, token.linkedCardId], to: [null, 'dust', null] });
+                                                }
+                                            }
+
+                                            // 封印通常札をすべて取り除く
+                                            let sealedCards = board.objects.filter(v => v.type === 'card' && v.side === card.side && v.region === 'on-card') as state.Card[];
+                                            for (let targetCard of sealedCards) {
+                                                let linkedCardData = CARD_DATA[board.cardSet][board.getCard(targetCard.linkedCardId).cardId];
+                                                if (linkedCardData.baseType === 'normal') {
+                                                    appActions.removeCard({ objectId: targetCard.id });
+                                                }
+                                            }
+
+                                            // 使用済み、伏せ札、手札、山札をすべて取り除く (transformカードは除く)
+                                            for(let region of ['used', 'hidden-used', 'hand', 'library'] as CardRegion[]){
+                                                for (let targetCard of board.getRegionCards(card.side, region, null)){
+                                                    let targetCardData = CARD_DATA[board.cardSet][targetCard.cardId];
+                                                    if (targetCardData.baseType !== 'transform'){
+                                                        appActions.removeCard({objectId: targetCard.id});
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // 残響装置:枢式を取り除く
+                                            appActions.removeCard({ objectId: card.id });
+
+                                            // 追加札からカードを得る
+                                            let extraCards = board.getRegionCards(card.side, 'extra', null);
+                                            let targetExtraCard: state.Card;
+                                            if (targetExtraCard = extraCards.find(x => x.cardId === '13-utsuro-A1-s-1-ex1')) {
+                                                appActions.moveCard({ from: targetExtraCard.id, to: [card.side, 'special', null] });
+                                                appActions.setSpecialUsed({objectId: targetExtraCard.id, value: true});
+                                            }
+                                            if (targetExtraCard = extraCards.find(x => x.cardId === '13-utsuro-A1-s-1-ex2')){
+                                                appActions.moveCard({ from: targetExtraCard.id, to: [card.side, 'library', null] });
+                                            }
+                                            if (targetExtraCard = extraCards.find(x => x.cardId === '13-utsuro-A1-s-1-ex3')) {
+                                                appActions.moveCard({ from: targetExtraCard.id, to: [card.side, 'library', null] });
+                                            }
+                                            if (targetExtraCard = extraCards.find(x => x.cardId === '13-utsuro-A1-s-1-ex4')) {
+                                                appActions.moveCard({ from: targetExtraCard.id, to: [card.side, 'library', null] });
+                                            }
+
+                                            // 山札をシャッフル
+                                            appActions.shuffle({side: card.side});
+
+                                            // カードを1枚引く
+                                            appActions.oprDraw({cardNameLogging: true});
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                    }
+
                             // ゲームから取り除くことが可能なカードであれば、取り除く選択肢を表示
-                            if(CARD_DATA[card.cardId].removable){
+                    if (cardData.removable){
                                 items['sep2'] = '---';
                                 items['remove'] =  {
-                                    name: t('[CARDNAME]をゲームから取り除く', {cardName: CARD_DATA[card.cardId].name})
+                                    name: t('[CARDNAME]をゲームから取り除く', {cardName: CARD_DATA[currentState.board.cardSet][card.cardId].name})
                                     , callback: function() {
                                         // まだ相手が決闘を開始していなければ、この操作は禁止する
                                         // (決闘を開始する前にカードを取り除くと、更新がうまくいかずにエラーが多発する場合があるため。原因不明)
@@ -521,6 +692,8 @@ $(function(){
                                     }
                                 }
                             };
+
+
                         }
 
                         
@@ -552,9 +725,9 @@ $(function(){
                         if($sealedCard.length >= 1){
                             let id = $sealedCard.attr('data-object-id');
                             let card = board.getCard(id);
-                            let cardData = CARD_DATA[card.cardId];
+                    let cardData = CARD_DATA[currentState.board.cardSet][card.cardId];
                             let linkedCard = board.getCard($sealedCard.attr('data-linked-card-id'));
-                            let linkedCardData = CARD_DATA[linkedCard.cardId];
+                    let linkedCardData = CARD_DATA[currentState.board.cardSet][linkedCard.cardId];
                             items = {};
 
                             if(card.ownerSide === playerSide){
@@ -593,7 +766,7 @@ $(function(){
                             if($handCard.length >= 1){
                                 let id = $handCard.attr('data-object-id');
                                 let card = board.getCard(id);
-                                let cardData = CARD_DATA[card.cardId];
+                        let cardData = CARD_DATA[currentState.board.cardSet][card.cardId];
 
                                 // 伏せ札にして基本動作
                                 items['basicAction'] = {
@@ -680,7 +853,7 @@ $(function(){
                                         let card = opponentHandCards[index];
 
                                         appActions.operate({
-                                            log: ['log:相手の手札1枚を無作為に選び、捨て札にしました -> [CARDNAME]', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}}],
+                                            log: ['log:相手の手札1枚を無作為に選び、捨て札にしました -> [CARDNAME]', {cardName: {type: 'cardName', cardSet: [currentState.board.cardSet], cardId: card.cardId}}],
                                             proc: () => {
                                                 appActions.moveCard({from: [opponentSide, 'hand', null], fromPosition: index, to: [opponentSide, 'used', null]});
                                             }
@@ -873,50 +1046,52 @@ $(function(){
                     appActions.setWatcherInfo({watchers: p.watchers});
                 });
 
-                // ★集計
-                // すべてのカード情報を取得
-                let allCards: [string, CardDataItem][] = [];
-                for(let key in CARD_DATA){
-                    allCards.push([key, CARD_DATA[key]]);
-                }
-                {
-                let costSummary: {[key: number]: number} = {};
-                let costSummaryCardTitles: {[key: number]: string[]} = {};
-                    let targetCards = allCards.filter(([cardId, card]) => card.baseType === 'special' && card.cost !== undefined && /^[0-9]+$/.test(card.cost));
-                    targetCards.forEach(([cardId, card]) => {
-                        let intCost = parseInt(card.cost);
-                        if(costSummary[intCost] === undefined) costSummary[intCost] = 0;
-                        if(costSummaryCardTitles[intCost] === undefined) costSummaryCardTitles[intCost] = [];
-                        costSummary[intCost] += 1;
-                        costSummaryCardTitles[intCost].push(card.name);
-                    });
+        // // ★集計
+        // // すべてのカード情報を取得
+        // let allCards: [string, CardDataItem][] = [];
+        // ['na-s2', 'na-s3'].forEach((cardSet: CardSet) => {
+        //     for (let key in CARD_DATA[cardSet]) {
+        //         allCards.push([key, CARD_DATA[key]]);
+        //     }
+        //     {
+        //         let costSummary: { [key: number]: number } = {};
+        //         let costSummaryCardTitles: { [key: number]: string[] } = {};
+        //         let targetCards = allCards.filter(([cardId, card]) => card.baseType === 'special' && card.cost !== undefined && /^[0-9]+$/.test(card.cost)) as [string, SpecialCardDataItem][];
+        //         targetCards.forEach(([cardId, card]) => {
+        //             let intCost = parseInt(card.cost);
+        //             if (costSummary[intCost] === undefined) costSummary[intCost] = 0;
+        //             if (costSummaryCardTitles[intCost] === undefined) costSummaryCardTitles[intCost] = [];
+        //             costSummary[intCost] += 1;
+        //             costSummaryCardTitles[intCost].push(card.name);
+        //         });
 
-                    console.log(costSummaryCardTitles);
-                }
-                {
-                    let auraDamageSummary: {[key: string]: number} = {};
-                    let auraDamageSummaryCardTitles: {[key: string]: string[]} = {};
-                    let lifeDamageSummary: {[key: string]: number} = {};
-                    let lifeDamageSummaryCardTitles: {[key: string]: string[]} = {};
-                
-                    let targetCards = allCards.filter(([cardId, card]) => card.damage !== undefined && card.megami !== 'yukihi' && /^[0-9-]+\/[0-9-]+$/.test(card.damage));
-                    targetCards.forEach(([cardId, card]) => {
-                        let [auraDamage, lifeDamage] = card.damage.split('/');
+        //         console.log(costSummaryCardTitles);
+        //     }
+        //     {
+        //         let auraDamageSummary: { [key: string]: number } = {};
+        //         let auraDamageSummaryCardTitles: { [key: string]: string[] } = {};
+        //         let lifeDamageSummary: { [key: string]: number } = {};
+        //         let lifeDamageSummaryCardTitles: { [key: string]: string[] } = {};
 
-                        if(auraDamageSummary[auraDamage] === undefined) auraDamageSummary[auraDamage] = 0;
-                        if(auraDamageSummaryCardTitles[auraDamage] === undefined) auraDamageSummaryCardTitles[auraDamage] = [];
-                        auraDamageSummary[auraDamage] += 1;
-                        auraDamageSummaryCardTitles[auraDamage].push(card.name);
+        //         let targetCards = allCards.filter(([cardId, card]) => card.damage !== undefined && card.megami !== 'yukihi' && /^[0-9-]+\/[0-9-]+$/.test(card.damage));
+        //         targetCards.forEach(([cardId, card]) => {
+        //             let [auraDamage, lifeDamage] = card.damage.split('/');
 
-                        if(lifeDamageSummary[lifeDamage] === undefined) lifeDamageSummary[lifeDamage] = 0;
-                        if(lifeDamageSummaryCardTitles[lifeDamage] === undefined) lifeDamageSummaryCardTitles[lifeDamage] = [];
-                        lifeDamageSummary[lifeDamage] += 1;
-                        lifeDamageSummaryCardTitles[lifeDamage].push(card.name);
-                    });
+        //             if (auraDamageSummary[auraDamage] === undefined) auraDamageSummary[auraDamage] = 0;
+        //             if (auraDamageSummaryCardTitles[auraDamage] === undefined) auraDamageSummaryCardTitles[auraDamage] = [];
+        //             auraDamageSummary[auraDamage] += 1;
+        //             auraDamageSummaryCardTitles[auraDamage].push(card.name);
 
-                    console.log(auraDamageSummaryCardTitles);
-                    console.log(lifeDamageSummaryCardTitles);
-                }
+        //             if (lifeDamageSummary[lifeDamage] === undefined) lifeDamageSummary[lifeDamage] = 0;
+        //             if (lifeDamageSummaryCardTitles[lifeDamage] === undefined) lifeDamageSummaryCardTitles[lifeDamage] = [];
+        //             lifeDamageSummary[lifeDamage] += 1;
+        //             lifeDamageSummaryCardTitles[lifeDamage].push(card.name);
+        //         });
+
+        //         console.log(auraDamageSummaryCardTitles);
+        //         console.log(lifeDamageSummaryCardTitles);
+        //     }
+        // });
 
 
                 // 他のプレイヤーがチャットログを追加した場合の処理
@@ -1000,7 +1175,7 @@ $(function(){
                     // 全付与札の桜花結晶-1ボタンの上にカーソルを置いたときの処理
                     $('#BOARD').on('mouseenter', '#ALL-ENHANCE-DECREASE-BUTTON', function(e){
                         // カード上桜花結晶の右端をフォーカス
-                        $(`.sakura-token[data-region=on-card][data-dragging-count=1]`).addClass('focused');
+                $(`.sakura-token[data-region=on-card][data-dragging-count=1][data-on-enhance]`).addClass('focused');
                         // ダスト領域をハイライト
                         $(`.area.background[data-region=dust]`).addClass('over');
                     });
@@ -1062,7 +1237,7 @@ $(function(){
                             let linkedCardId = $this.attr('data-linked-card-id');
                             this.style.opacity = '0.4';  // this / e.target is the source node.
                             
-                            let cardData = CARD_DATA[object.cardId];
+                    let cardData = CARD_DATA[currentState.board.cardSet][object.cardId];
 
                             // 現在のエリアに応じて、選択可能なエリアを前面に移動し、選択したカードを記憶
                             // (同じ領域への移動、もしくは自分に自分を封印するような処理は行えない)
@@ -1163,12 +1338,13 @@ $(function(){
                         let side = $(this).attr('data-side') as (PlayerSide | 'none');
                         let region = $(this).attr('data-region') as (CardRegion | SakuraTokenRegion);
                         let linkedCardId = $(this).attr('data-linked-card-id');
+                let currentState = appActions.getState();
 
                         // 毒カードの移動で、かつ移動先が伏せ札の場合は移動不可
                         if(dragInfo.draggingFrom.type === 'card'){
                             let toRegion = region as CardRegion;
 
-                            if(CARD_DATA[dragInfo.draggingFrom.cardId].poison && toRegion === 'hidden-used'){
+                    if (CARD_DATA[currentState.board.cardSet][dragInfo.draggingFrom.cardId].poison && toRegion === 'hidden-used'){
                                 $(`.area.droppable[data-side=${side}][data-region=${region}]`).addClass('over-forbidden');
                                 $(`.area.background[data-side=${side}][data-region=${region}]`).addClass('over-forbidden');
                                 return true;
@@ -1295,8 +1471,8 @@ $(function(){
                                 let toLinkedCard = (toLinkedCardId === null ? undefined : boardModel.getCard(toLinkedCardId));
 
                                 let logs: {text: LocalizedLogValue, visibility?: LogVisibility}[] = [];
-                                let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region, fromLinkedCard);
-                                let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion, toLinkedCard);
+                                let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region, currentState.board.cardSet, fromLinkedCard);
+                                let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion, currentState.board.cardSet, toLinkedCard);
                                 
                                 // 間合に造花結晶を移動した場合は特殊処理 (騎動メニュー)
                                 if (toRegion === 'distance' && sakuraToken.artificial) {

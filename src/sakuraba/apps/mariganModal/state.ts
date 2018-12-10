@@ -1,5 +1,6 @@
 export interface State {
     shown: boolean;
+    cardSet: CardSet;
     side: PlayerSide;
     cards: state.Card[];
     selectedCards: state.Card[];
@@ -12,7 +13,8 @@ export interface State {
 export namespace State {
     /** 新しいstateの生成 */
     export function create(
-          side: PlayerSide
+          cardSet: CardSet
+        , side: PlayerSide
         , cards: state.Card[]
         , zoom: number
         , promiseResolve: (selectedCards: state.Card[]) => void
@@ -20,6 +22,7 @@ export namespace State {
     ): State{
         return {
               shown: true
+            , cardSet: cardSet
             , side: side
             , cards: cards
             , selectedCards: []

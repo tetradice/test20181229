@@ -19,5 +19,11 @@ export const MegamiFace = (p: {megami: Megami, left: number, top: number, width:
     if(p.megami === 'yukihi' && state.board.umbrellaStatus[state.side] === 'opened'){
         imageName = 'yukihi_o_240x80.png';
     }
+    if(p.megami === 'chikage-a1'){
+        imageName = 'chikage_a1_300x100.png';
+    }
+    if(p.megami === 'utsuro-a1'){
+        imageName = 'utsuro_a1_360x120.png';
+    }
     return <img style={styles} src={`//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/megami/face/${imageName}`} />;
 }

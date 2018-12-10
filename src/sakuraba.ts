@@ -1,5 +1,6 @@
 import {Serializable, Serialize, SerializeProperty} from "ts-serializer";
 import * as moment from 'moment';
+import _ from "lodash";
 
 // 独自型
 export type CardType = "attack" | "reaction" | "action" | "fullpower" | "enhance" | "variable" | 'transform';
@@ -14,6 +15,7 @@ export const SAKURA_TOKEN_MAX: {[P in SakuraTokenRegion]: number} = {
     , 'on-card': 99
     , machine : 5
     , burned : 5
+    , 'out-of-game': 99
 };
 
 // メガミ情報
@@ -23,6 +25,7 @@ export interface MegamiDataItem {
     symbol: string;
     base?: string;
     anotherID?: string;
+    notExistCardSets?: CardSet[];
 }
 const MEGAMI_DATA_BASE = {
       'yurina':   {name: 'ユリナ', nameEn: 'Yurina', symbol: '刀'}
@@ -34,17 +37,33 @@ const MEGAMI_DATA_BASE = {
     , 'tokoyo':   {name: 'トコヨ', symbol: '扇'}
     , 'tokoyo-a1': {name: '旅芸人トコヨ', symbol: '笛', base: 'tokoyo', anotherID: 'A1'}
     , 'oboro':    {name: 'オボロ', symbol: '忍'}
+    , 'oboro-a1': { name: '第三章オボロ', symbol: '戦略', base: 'oboro', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[] }
     , 'yukihi':   {name: 'ユキヒ', symbol: '傘/簪'}
     , 'shinra':   {name: 'シンラ', symbol: '書'}
     , 'hagane':   {name: 'ハガネ', symbol: '槌'}
     , 'chikage':  {name: 'チカゲ', symbol: '毒'}
+    , 'chikage-a1': { name: '第四章チカゲ', symbol: '絆', base: 'chikage', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[] }
     , 'kururu':   {name: 'クルル', symbol: '絡繰'}
     , 'thallya':  {name: 'サリヤ', symbol: '乗騎'}
     , 'raira':    {name: 'ライラ', symbol: '爪'}
     , 'utsuro':   {name: 'ウツロ', symbol: '鎌'}
+    , 'utsuro-a1': { name: '終章ウツロ', symbol: '塵', base: 'utsuro', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[]}
+    , 'honoka': { name: 'ホノカ', symbol: '旗', notExistCardSets: ['na-s2'] as CardSet[]}
 };
 export type Megami = keyof (typeof MEGAMI_DATA_BASE);
-export const MEGAMI_DATA: {[megami: string]: MegamiDataItem} = MEGAMI_DATA_BASE;
+export const MEGAMI_DATA: {[megami in Megami]: MegamiDataItem} = MEGAMI_DATA_BASE;
+
+// カードセット名
+export const CARD_SET_NAMES = {
+      'na-s2' : '新幕 シーズン2'
+    , 'na-s3' : '新幕 シーズン3'
+}
+
+// カードセット説明
+export const CARD_SET_DESCRIPTIONS = {
+    'na-s2': '新幕 シーズン2 (2018/8/17～ 『第壱拡張：神語起譚』以降)'
+    , 'na-s3': '新幕 シーズン3 (2018/11/30～ 『第弐拡張：神語転晴』以降)'
+}
 
 // カード情報
 export interface CardDataItem {
@@ -73,11 +92,14 @@ export interface CardDataItem {
     removable?: boolean;
     /** 毒 */
     poison?: boolean;
-    /** 追加札かどうか */
+    /** 追加札かどうか(デッキ構築の時に選択できず、ゲーム開始時に追加札領域に置かれる) */
     extra?: boolean;
 }
 
-export const CARD_DATA: {[key: string]: CardDataItem} = {
+export const CARD_DATA: {[key in CardSet]: {[key: string]: CardDataItem} } = {} as any;
+
+CARD_DATA['na-s2'] = {
+
       '01-yurina-o-n-1': {megami: 'yurina', name: '斬', nameEn: 'Slash', ruby: 'ざん', baseType: 'normal', types: ['attack'], range: '3-4', damage: '3/1', text: '', textEn: ''}
     , '01-yurina-A1-n-1': {megami: 'yurina', anotherID: 'A1', replace: '01-yurina-o-n-1', name: '乱打', nameEn: 'Wild Swing', ruby: 'らんだ', baseType: 'normal', types: ['attack'], range: '2', damage: '2/1', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+0/+2となり、対応不可を得る。', textEn: 'Forced: Resolve - If your Life is 3 or less, this attack gains +0/+2 and No Reactions.'}
     , '01-yurina-o-n-2': {megami: 'yurina', name: '一閃', nameEn: 'Brandish', ruby: 'いっせん', baseType: 'normal', types: ['attack'], range: '3', damage: '2/2', text: '【常時】決死-あなたのライフが3以下ならば、この《攻撃》は+1/+0となる。', textEn: 'Forced: Resolve - This attack gains +1/+0 if your Life is 3 or less.'}
@@ -168,8 +190,8 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
     , '07-shinra-o-n-4': {megami: 'shinra', name: '引用', ruby: 'いんよう', baseType: 'normal', types: ['action'], text: '相手の手札を見て、《攻撃》カードを1枚選んでもよい。そうした場合、そのカードを使用するか伏せ札にする。その後、そのカードが《全力》を持つならば現在のフェイズを終了する。'}
     , '07-shinra-o-n-5': {megami: 'shinra', name: '煽動', ruby: 'せんどう', baseType: 'normal', types: ['action', 'reaction'], text: '計略を実行し、次の計略を準備する。 \n[神算] ダスト→間合：1 \n[鬼謀] 間合→相オーラ：1'}
     , '07-shinra-o-n-6': {megami: 'shinra', name: '壮語', ruby: 'そうご', baseType: 'normal', types: ['enhance'], capacity: '2', text: '【破棄時】計略を実行し、次の計略を準備する。 \n[神算] あなたの集中力は1増加し、このカードを山札の一番上に置く。 \n[鬼謀] 相手は手札が2枚以上ならば、手札を1枚になるまで捨て札にする。相手の集中力は0になる。'}
-    , '07-shinra-o-n-7': {megami: 'shinra', name: '論破', ruby: 'ろんぱ', baseType: 'normal', types: ['enhance'], capacity: '4', text: '【展開時】相手の捨て札にあるカード1枚を選び、このカードの下に封印する。 \n【破棄時】このカードに封印されたカードを相手の捨て札に戻す。', sealable: true}
-    , '07-shinra-o-s-1': {megami: 'shinra', name: '完全論破', ruby: 'かんぜんろんぱ', baseType: 'special', types: ['action'], cost: '4', text: '相手の捨て札にあるカード1枚を選び、このカードの下に封印する。 \n(ゲーム中に戻ることはない)', sealable: true}
+    , '07-shinra-o-n-7': { megami: 'shinra', name: '論破', ruby: 'ろんぱ', baseType: 'normal', types: ['enhance'], capacity: '4', text: '【展開時】相手の捨て札にあるカード1枚を選び、このカードの下に封印する。 \n【破棄時】このカードに封印されたカードを相手の捨て札に戻す。', textEn: '', sealable: true }
+    , '07-shinra-o-s-1': { megami: 'shinra', name: '完全論破', ruby: 'かんぜんろんぱ', baseType: 'special', types: ['action'], cost: '4', text: '相手の捨て札にあるカード1枚を選び、このカードの下に封印する。 \n(ゲーム中に戻ることはない)', textEn: '', sealable: true }
     , '07-shinra-o-s-2': {megami: 'shinra', name: '皆式理解', ruby: 'かいしきりかい', baseType: 'special', types: ['action'], cost: '2', text: '計略を実行し、次の計略を準備する。 \n[神算] あなたの捨て札または使用済の切札から、消費を支払わずに《付与》カード1枚を使用する。そのカードが《全力》ならば現在のフェイズを終了する。 \n[鬼謀] 切札でない相手の付与札を1枚選ぶ。その上の桜花結晶全てをダストに送る。'}
     , '07-shinra-o-s-3': {megami: 'shinra', name: '天地反駁', ruby: 'てんちはんぱく', baseType: 'special', types: ['enhance', 'fullpower'], capacity: '5', cost: '2', text: '【展開中】あなたの《攻撃》のオーラへのダメージとライフへのダメージを入れ替える。 \n（ダメージの入れ替えは、ダメージの増減より先に適用される）'}
     , '07-shinra-o-s-4': {megami: 'shinra', name: '森羅判証', ruby: 'しんらばんしょう', baseType: 'special', types: ['enhance'], capacity: '6', cost: '6', text: '【展開時】ダスト→自ライフ：2 \n【展開中】あなたの他の付与札が破棄された時、相手のライフに1ダメージを与える。 \n【破棄時】あなたは敗北する。'}
@@ -197,10 +219,10 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
     , '09-chikage-o-s-2': {megami: 'chikage', name: '叛旗の纏毒', ruby: 'はんきのまといどく', baseType: 'special', types: ['enhance', 'reaction'], capacity: '5', cost: '2', text: '【展開中】相手によるオーラへのダメージかライフへのダメージのどちらかが「-」である《攻撃》は打ち消される。'}
     , '09-chikage-o-s-3': {megami: 'chikage', name: '流転の霞毒', ruby: 'るてんのかすみどく', baseType: 'special', types: ['attack'], range: '3-7', damage: '1/2', cost: '1', text: '【再起】相手の手札が2枚以上ある。'}
     , '09-chikage-o-s-4': {megami: 'chikage', name: '闇昏千影の生きる道', ruby: 'やみくらちかげのいきるみち', baseType: 'special', types: ['enhance', 'fullpower'], capacity: '4', cost: '5', text: '【展開中】あなたが1以上のライフへのダメージを受けた時、このカードの上の桜花結晶は全てダストに送られ、このカードは未使用に戻る。 \n(破棄時効果は失敗する) \n【破棄時】あなたの他の切札が全て使用済ならば、あなたは勝利する。'}
-    , '09-chikage-o-p-1': {megami: 'chikage', name: '麻痺毒', ruby: 'まひどく', extra: true, poison: true, baseType: 'normal', types: ['action'], text: '毒（このカードは伏せ札にできない） \n【常時】このターン中にあなたが基本動作を行ったならば、このカードは使用できない。 \nこのカードを相手の毒袋に戻す。その後、このフェイズを終了する。'}
-    , '09-chikage-o-p-2': {megami: 'chikage', name: '幻覚毒', ruby: 'げんかくどく', extra: true, poison: true, baseType: 'normal', types: ['action'], text: '毒（このカードは伏せ札にできない） \nこのカードを相手の毒袋に戻す。 \n自フレア→ダスト：2'}
-    , '09-chikage-o-p-3': {megami: 'chikage', name: '弛緩毒', ruby: 'しかんどく', extra: true, poison: true, baseType: 'normal', types: ['enhance'], capacity: '3', text: '毒（このカードは伏せ札にできない） \n【展開中】あなたは《攻撃》カードを使用できない。 \n【破棄時】このカードを相手の毒袋に戻す。'}
-    , '09-chikage-o-p-4': {megami: 'chikage', name: '滅灯毒', ruby: 'ほろびどく', extra: true, poison: true, baseType: 'normal', types: ['action'], text: '毒（このカードは伏せ札にできない） \n自オーラ→ダスト：3'}
+    , '09-chikage-o-p-1': { megami: 'chikage', name: '麻痺毒', ruby: 'まひどく', baseType: 'normal', extra: true, poison: true, types: ['action'], text: '毒（このカードは伏せ札にできない） \n【常時】このターン中にあなたが基本動作を行ったならば、このカードは使用できない。 \nこのカードを相手の毒袋に戻す。その後、このフェイズを終了する。'}
+    , '09-chikage-o-p-2': { megami: 'chikage', name: '幻覚毒', ruby: 'げんかくどく', baseType: 'normal', extra: true, poison: true, types: ['action'], text: '毒（このカードは伏せ札にできない） \nこのカードを相手の毒袋に戻す。 \n自フレア→ダスト：2'}
+    , '09-chikage-o-p-3': { megami: 'chikage', name: '弛緩毒', ruby: 'しかんどく', baseType: 'normal', extra: true, poison: true, types: ['enhance'], capacity: '3', text: '毒（このカードは伏せ札にできない） \n【展開中】あなたは《攻撃》カードを使用できない。 \n【破棄時】このカードを相手の毒袋に戻す。'}
+    , '09-chikage-o-p-4': { megami: 'chikage', name: '滅灯毒', ruby: 'ほろびどく', baseType: 'normal', extra: true, poison: true, types: ['action'], text: '毒（このカードは伏せ札にできない） \n自オーラ→ダスト：3'}
   
     , '10-kururu-o-n-1': {megami: 'kururu', name: 'えれきてる', ruby: '', baseType: 'normal', types: ['action'], text: '----\n<行行行対対> 相手のライフに1ダメージを与える。 '}
     , '10-kururu-o-n-2': {megami: 'kururu', name: 'あくせらー', ruby: '', baseType: 'normal', types: ['action'], text: '----\n<行行付> あなたの手札から《全力》カードを1枚選び、そのカードを使用してもよい。 \n(フェイズは終了しない) '}
@@ -211,9 +233,9 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
     , '10-kururu-o-n-7': {megami: 'kururu', name: 'りふれくた', ruby: '', baseType: 'normal', types: ['enhance'], capacity: '0', text: '----\n<攻対> 【展開時】このカードの上に桜花結晶を4個ダストから置く。 \n----\n【展開中】各ターンにおける相手の2回目の《攻撃》は打ち消される。\n'}
     , '10-kururu-o-s-1': {megami: 'kururu', name: 'どれーんでびる', ruby: '', baseType: 'special', types: ['action', 'reaction'], cost: '2', text: '相オーラ→自オーラ：1 \n【使用済】あなたの使用済の切札が未使用に戻った時、このカードを消費を支払わずに使用してもよい。'}
     , '10-kururu-o-s-2': {megami: 'kururu', name: 'びっぐごーれむ', ruby: '', baseType: 'special', types: ['action'], cost: '4', text: '----\n<対全全> 【使用済】あなたの終了フェイズに相手のライフに1ダメージを与えてもよい。そうした場合、山札を再構成する。 \n----\n【使用済】あなたが《全力》カードを使用した時、その解決後に基本動作を1回行ってもよい。\n'}
-    , '10-kururu-o-s-3': {megami: 'kururu', name: 'いんだすとりあ', ruby: '', baseType: 'special', types: ['action'], cost: '1', text: 'このカードにカードが封印されていないならば、あなたの手札から《付与》でないカードを1枚選び、そのカードをこのカードの下に表向きで封印してもよい。 \nあなたの追加札から「でゅーぷりぎあ」を山札の底に1枚置く(最大で合計3枚)。 \n----\n【即再起】あなたが山札を再構成する(再構成の後に未使用に戻る)。', sealable: true}
-    , '10-kururu-o-s-4': {megami: 'kururu', name: '神渉装置:枢式', ruby: 'かんしょうそうち　くるるしき', baseType: 'special', types: ['action'], cost: '3', text: '----\n<攻攻行行行付付> 相手の切札を見て、その中から1枚選び、それを使用済にしてもよい。\n----\n相手の使用済の切札1枚を選んでもよい。そのカードを消費を支払わずに使用する(《全力》カードでもよい)。その後、このカードを取り除く。', removable: true}
-    , '10-kururu-o-s-3-ex1': {megami: 'kururu', name: 'でゅーぷりぎあ', ruby: '', extra: true, baseType: 'normal', types: ['variable'], text: '(カードタイプが不定のカードは使用できない) \n【常時】このカードはあなたの「いんだすとりあ」に封印されたカードの複製となる。但し、名前は変更されない。 \n(「いんだすとりあ」が未使用なら複製とならないので、使用できない)'}
+    , '10-kururu-o-s-3': { megami: 'kururu', name: 'いんだすとりあ', ruby: '', baseType: 'special', types: ['action'], cost: '1', text: 'このカードにカードが封印されていないならば、あなたの手札から《付与》でないカードを1枚選び、そのカードをこのカードの下に表向きで封印してもよい。 \nあなたの追加札から「でゅーぷりぎあ」を山札の底に1枚置く(最大で合計3枚)。 \n----\n【即再起】あなたが山札を再構成する(再構成の後に未使用に戻る)。', textEn: '', sealable: true }
+    , '10-kururu-o-s-4': { megami: 'kururu', name: '神渉装置:枢式', ruby: 'かんしょうそうち　くるるしき', baseType: 'special', types: ['action'], cost: '3', text: '----\n<攻攻行行行付付> 相手の切札を見て、その中から1枚選び、それを使用済にしてもよい。\n----\n相手の使用済の切札1枚を選んでもよい。そのカードを消費を支払わずに使用する(《全力》カードでもよい)。その後、このカードを取り除く。', textEn: '', removable: true }
+    , '10-kururu-o-s-3-ex1': { megami: 'kururu', name: 'でゅーぷりぎあ', ruby: '', baseType: 'normal', extra: true, extraFrom: '10-kururu-o-s-4', types: ['variable'], text: '(カードタイプが不定のカードは使用できない) \n【常時】このカードはあなたの「いんだすとりあ」に封印されたカードの複製となる。但し、名前は変更されない。 \n(「いんだすとりあ」が未使用なら複製とならないので、使用できない)'}
     
     , '11-thallya-o-n-1': {megami: 'thallya', name: 'Burning Steam', ruby: 'バーニングスチーム', baseType: 'normal', types: ['attack'], range: '3-5', damage: '2/1', text: '【攻撃後】騎動を行う。'}
     , '11-thallya-o-n-2': {megami: 'thallya', name: 'Waving Edge', ruby: 'ウェービングエッジ', baseType: 'normal', types: ['attack'], range: '1-3', damage: '3/1', text: '燃焼 \n【攻撃後】騎動を行う。'}
@@ -225,6 +247,7 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
     , '11-thallya-o-s-1': {megami: 'thallya', name: 'Alpha-Edge', ruby: 'アルファエッジ', baseType: 'special', types: ['attack'], range: '1,3,5,7', damage: '1/1', cost: '1', text: '【即再起】あなたが騎動により間合を変化させる。'}
     , '11-thallya-o-s-2': {megami: 'thallya', name: 'Omega-Burst', ruby: 'オメガバースト', baseType: 'special', types: ['action', 'reaction'], cost: '4', text: 'あなたの燃焼済の造花結晶を全て回復する。 \n対応した、オーラへのダメージが「-」またはX以下の《攻撃》を打ち消す。Xはこのカードにより回復した造花結晶の個数に等しい。'}
     , '11-thallya-o-s-4': {megami: 'thallya', name: 'Julia\'s BlackBox', ruby: 'ジュリアズ　ブラックボックス', baseType: 'special', types: ['action', 'fullpower'], cost: '0', text: 'あなたのマシンに造花結晶がないならば、あなたのマシンはTransFormし、あなたの燃焼済の造花結晶を2つ回復する。そうでない場合、このカードを未使用に戻す。'}
+
     , 'transform-01': {megami: 'thallya', name: 'Form: YAKSHA', ruby: 'フォルム:ヤクシャ', baseType: 'transform', types: ['transform'], text: '【変形時】相手は次の開始フェイズにカードを1枚しか引けない。相手を畏縮させる。\n----\n【常時】あなたのマシンに造花結晶がないならば、あなたは基本動作を行えない。\n----\n【追加基本行動：Beta-Edge】\n「適正距離2,4,6,8、2/1 【攻撃後】騎動を行う」の《攻撃》を行う。'}
     , 'transform-02': {megami: 'thallya', name: 'Form: NAGA', ruby: 'フォルム:ナーガ', baseType: 'transform', types: ['transform'], text: '【変形時】相手のフレアが3以上ならば、フレアが2になるように桜花結晶をダストへ移動させる。 \n----\n【追加基本行動：Gamma-Ray】\n相手の山札の一番上のカードを相手の捨て札に置く。'}
     , 'transform-03': {megami: 'thallya', name: 'Form: GARUDA', ruby: 'フォルム:ガルーダ', baseType: 'transform', types: ['transform'], text: '【変形時】カードを2枚引き、このターンの間手札の上限が無くなる。 \n----\n【常時】カードを2枚引き、このターンの間手札の上限が無くなる。 \n----\n【追加基本行動：Delta-Wing】\n現在の間合が7以下ならば、ダスト→間合：1'}
@@ -238,26 +261,137 @@ export const CARD_DATA: {[key: string]: CardDataItem} = {
     , '12-raira-o-n-7': {megami: 'raira', name: '空駆け', ruby: 'そらかけ', baseType: 'normal', types: ['action', 'fullpower'], text: '間合⇔ダスト：3'}
     , '12-raira-o-s-1': {megami: 'raira', name: '雷螺風神爪', ruby: 'らいらふうじんそう', baseType: 'special', types: ['attack'], range: '1-2', damage: '2/2', cost: '3', text: '【常時】あなたの雷神ゲージが4以上ならば、この《攻撃》は+1/+0となる。 \n----\n【再起】あなたの風神ゲージが4以上である。'}
     , '12-raira-o-s-2': {megami: 'raira', name: '天雷召喚陣', ruby: 'てんらいしょうかんじん', baseType: 'special', types: ['action', 'fullpower'], cost: '6', text: '攻撃『適正距離0-10、1/1』をX回行う。Xは雷神ゲージの半分(切り上げ)に等しい。'}
-    , '12-raira-o-s-3': {megami: 'raira', name: '風魔招来孔', ruby: 'ふうましょうらいこう', baseType: 'special', types: ['action'], cost: '0', text: '現在の風神ゲージに応じて、以下の切札を追加札から未使用で得る(条件を満たしたものは全て得る)。その後、このカードを取り除く。 \n3以上……風魔旋風 \n6以上……風魔纏廻 \n10以上……風魔天狗道', removable: true}
+    , '12-raira-o-s-3': { megami: 'raira', name: '風魔招来孔', ruby: 'ふうましょうらいこう', baseType: 'special', types: ['action'], cost: '0', text: '現在の風神ゲージに応じて、以下の切札を追加札から未使用で得る(条件を満たしたものは全て得る)。その後、このカードを取り除く。 \n3以上……風魔旋風 \n6以上……風魔纏廻 \n10以上……風魔天狗道', textEn: '', removable: true }
     , '12-raira-o-s-4': {megami: 'raira', name: '円環輪廻旋', ruby: 'えんかんりんかいせん', baseType: 'special', types: ['enhance', 'fullpower'], capacity: '5', cost: '3', text: '【展開中】あなたが《付与》でない通常札を使用した場合、それを捨て札にする代わりに山札の底に置く。'}
-    , '12-raira-o-s-3-ex1': {megami: 'raira', name: '風魔旋風', ruby: 'ふうませんぷう', extra: true, baseType: 'special', types: ['attack'], range: '1-3', damage: '1/2', cost: '1', text: ''}
-    , '12-raira-o-s-3-ex2': {megami: 'raira', name: '風魔纏廻', ruby: 'ふうまてんかい', extra: true, baseType: 'special', types: ['action'], cost: '1', text: 'あなたの使用済の切札を1枚選び、それを未使用に戻す。 \n【使用済】あなたの切札の消費は1少なくなる(0未満にはならない)。'}
-    , '12-raira-o-s-3-ex3': {megami: 'raira', name: '風魔天狗道', ruby: 'ふうまてんぐどう', extra: true, baseType: 'special', types: ['action', 'reaction'], cost: '4', text: 'ダスト⇔間合：5 \nあなたはこの効果で本来より少ない個数の桜花結晶を動かしてもよい。その後、このカードを取り除く。', removable: true}
+    , '12-raira-o-s-3-ex1': { megami: 'raira', name: '風魔旋風', ruby: 'ふうませんぷう', baseType: 'special', extra: true, extraFrom: '12-raira-o-s-3', types: ['attack'], range: '1-3', damage: '1/2', cost: '1', text: ''}
+    , '12-raira-o-s-3-ex2': { megami: 'raira', name: '風魔纏廻', ruby: 'ふうまてんかい', baseType: 'special', extra: true, extraFrom: '12-raira-o-s-3', types: ['action'], cost: '1', text: 'あなたの使用済の切札を1枚選び、それを未使用に戻す。 \n【使用済】あなたの切札の消費は1少なくなる(0未満にはならない)。'}
+    , '12-raira-o-s-3-ex3': { megami: 'raira', name: '風魔天狗道', ruby: 'ふうまてんぐどう', baseType: 'special', extra: true, extraFrom: '12-raira-o-s-3', types: ['action', 'reaction'], cost: '4', text: 'ダスト⇔間合：5 \nあなたはこの効果で本来より少ない個数の桜花結晶を動かしてもよい。その後、このカードを取り除く。', textEn: '', removable: true }
 
-    , '12-utsuro-o-n-1': {megami: 'utsuro', name: '円月', ruby: 'えんげつ', baseType: 'normal', types: ['attack'], range: '6-7', damage: '2/2', text: '【常時】灰塵-ダストが12以上ならば、この《攻撃》のオーラへのダメージは「-」になる。'}
-    , '12-utsuro-o-n-2': {megami: 'utsuro', name: '黒き波動', ruby: 'くろきはどう', baseType: 'normal', types: ['attack'], range: '4-7', damage: '1/2', text: '【攻撃後】相手がオーラへのダメージを選んだならば、相手の手札を見てその中から1枚を選び、それを捨て札にする。'}
-    , '12-utsuro-o-n-3': {megami: 'utsuro', name: '刈取り', ruby: 'かりとり', baseType: 'normal', types: ['attack'], range: '4', damage: '-/0', text: '【攻撃後】相手は相手のオーラ、フレア、ライフのいずれかから桜花結晶を合計2つダストへ移動させる。 \n【攻撃後】相手の付与札を1枚選んでもよい。そうした場合、その付与札の上から桜花結晶を2つダストへ送る。'}
-    , '12-utsuro-o-n-4': {megami: 'utsuro', name: '重圧', ruby: 'じゅうあつ', baseType: 'normal', types: ['action'], text: '相手は相手のオーラ、フレア、ライフのいずれかから桜花結晶を1つダストへ移動させる。 \n灰塵-ダストが12以上ならば、相手を畏縮させる。'}
-    , '12-utsuro-o-n-5': {megami: 'utsuro', name: '影の翅', ruby: 'かげのはね', baseType: 'normal', types: ['action'], text: 'このターン中、現在の間合は2増加し、達人の間合は2大きくなる。'}
-    , '12-utsuro-o-n-6': {megami: 'utsuro', name: '影の壁', ruby: 'かげのかべ', baseType: 'normal', types: ['action', 'reaction'], text: '対応した《攻撃》は+0/-1となる。'}
-    , '12-utsuro-o-n-7': {megami: 'utsuro', name: '遺灰呪', ruby: 'いかいじゅ', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '2', text: '【展開時】相オーラ→ダスト：3 \n【破棄時】灰塵-ダストが12以上ならば以下を行う。 \nダスト→相オーラ：2、相ライフ→ダスト：1'}
-    , '12-utsuro-o-s-1': {megami: 'utsuro', name: '灰滅', ruby: 'ヴィミラニエ', baseType: 'special', types: ['action'], cost: '24', text: '【常時】このカードの消費はダストの数だけ少なくなる。 \n相ライフ→ダスト：3 \nこのカードを取り除く。', removable: true}
-    , '12-utsuro-o-s-2': {megami: 'utsuro', name: '虚偽', ruby: 'ローシェ', baseType: 'special', types: ['enhance', 'reaction'], capacity: '3', cost: '3', text: '【展開中】相手の《攻撃》は距離縮小(近1)を得て、【攻撃後】効果が解決されない。 \n【展開中】相手の《付与》カードは納が1減少し、【破棄時】効果が解決されない。'}
-    , '12-utsuro-o-s-3': {megami: 'utsuro', name: '終末', ruby: 'カニェッツ', baseType: 'special', types: ['enhance'], capacity: '3', cost: '2', text: '【展開中】あなたに1以上のダメージを与えた《攻撃》の解決後に、このカードの上の桜花結晶を全てをダストに送る。 \n【破棄時】現在のフェイズを終了する。 \n----\n【再起】灰塵-ダストが12以上である。'}
-    , '12-utsuro-o-s-4': {megami: 'utsuro', name: '魔食', ruby: 'エロージャ', baseType: 'special', types: ['action'], cost: '5', text: '【使用済】あなたの開始フェイズの開始時に相手は以下のどちらかを選ぶ。\n・相オーラ→ダスト：1\n・相フレア→ダスト：2'}
-                       
+    , '13-utsuro-o-n-1': { megami: 'utsuro', name: '円月', ruby: 'えんげつ', baseType: 'normal', types: ['attack'], range: '6-7', damage: '2/2', text: '【常時】灰塵-ダストが12以上ならば、この《攻撃》のオーラへのダメージは「-」になる。'}
+    , '13-utsuro-o-n-2': { megami: 'utsuro', name: '黒き波動', ruby: 'くろきはどう', baseType: 'normal', types: ['attack'], range: '4-7', damage: '1/2', text: '【攻撃後】相手がオーラへのダメージを選んだならば、相手の手札を見てその中から1枚を選び、それを捨て札にする。'}
+    , '13-utsuro-o-n-3': { megami: 'utsuro', name: '刈取り', ruby: 'かりとり', baseType: 'normal', types: ['attack'], range: '4', damage: '-/0', text: '【攻撃後】相手は相手のオーラ、フレア、ライフのいずれかから桜花結晶を合計2つダストへ移動させる。 \n【攻撃後】相手の付与札を1枚選んでもよい。そうした場合、その付与札の上から桜花結晶を2つダストへ送る。'}
+    , '13-utsuro-o-n-4': { megami: 'utsuro', name: '重圧', ruby: 'じゅうあつ', baseType: 'normal', types: ['action'], text: '相手は相手のオーラ、フレア、ライフのいずれかから桜花結晶を1つダストへ移動させる。 \n灰塵-ダストが12以上ならば、相手を畏縮させる。'}
+    , '13-utsuro-o-n-5': { megami: 'utsuro', name: '影の翅', ruby: 'かげのはね', baseType: 'normal', types: ['action'], text: 'このターン中、現在の間合は2増加し、達人の間合は2大きくなる。'}
+    , '13-utsuro-o-n-6': { megami: 'utsuro', name: '影の壁', ruby: 'かげのかべ', baseType: 'normal', types: ['action', 'reaction'], text: '対応した《攻撃》は+0/-1となる。'}
+    , '13-utsuro-o-n-7': { megami: 'utsuro', name: '遺灰呪', ruby: 'いかいじゅ', baseType: 'normal', types: ['enhance', 'fullpower'], capacity: '2', text: '【展開時】相オーラ→ダスト：3 \n【破棄時】灰塵-ダストが12以上ならば以下を行う。 \nダスト→相オーラ：2、相ライフ→ダスト：1'}
+    , '13-utsuro-o-s-1': { megami: 'utsuro', name: '灰滅', ruby: 'ヴィミラニエ', baseType: 'special', types: ['action'], cost: '24', text: '【常時】このカードの消費はダストの数だけ少なくなる。 \n相ライフ→ダスト：3 \nこのカードを取り除く。', textEn: '', removable: true }
+    , '13-utsuro-o-s-2': { megami: 'utsuro', name: '虚偽', ruby: 'ローシェ', baseType: 'special', types: ['enhance', 'reaction'], capacity: '3', cost: '3', text: '【展開中】相手の《攻撃》は距離縮小(近1)を得て、【攻撃後】効果が解決されない。 \n【展開中】相手の《付与》カードは納が1減少し、【破棄時】効果が解決されない。'}
+    , '13-utsuro-o-s-3': { megami: 'utsuro', name: '終末', ruby: 'カニェッツ', baseType: 'special', types: ['enhance'], capacity: '3', cost: '2', text: '【展開中】あなたに1以上のダメージを与えた《攻撃》の解決後に、このカードの上の桜花結晶を全てをダストに送る。 \n【破棄時】現在のフェイズを終了する。 \n----\n【再起】灰塵-ダストが12以上である。'}
+    , '13-utsuro-o-s-4': { megami: 'utsuro', name: '魔食', ruby: 'エロージャ', baseType: 'special', types: ['action'], cost: '5', text: '【使用済】あなたの開始フェイズの開始時に相手は以下のどちらかを選ぶ。\n・相オーラ→ダスト：1\n・相フレア→ダスト：2'}
+              
 };
 
+// シーズン3
+const season3CardData: { [key: string]: CardDataItem } = {
+      '02-saine-o-n-3': { megami: 'saine', name: '石突き', ruby: 'いしづき', baseType: 'normal', types: ['attack', 'reaction'], range: '2-3', damage: '2/1', text: '【攻撃後】八相-あなたのオーラが0ならば、ダスト→間合：1'}
+    , '02-saine-o-n-6': { megami: 'saine', name: '衝音晶', nameEn: 'Wavering Crystal', ruby: 'しょうおんしょう', baseType: 'normal', types: ['enhance', 'reaction'], capacity: '1', text: '【展開時】対応した《攻撃》は-1/+0となる。\n【破棄時】攻撃『適正距離0-10、1/-、対応不可』を行い、ダスト→間合：1'}
+
+    , '04-tokoyo-A1-n-7': null
+    , '04-tokoyo-A1-n-5': { megami: 'tokoyo', anotherID: 'A1', replace: '04-tokoyo-o-n-5', name: '陽の音', nameEn: 'Sound of Sun', ruby: 'ひのね', baseType: 'normal', types: ['enhance'], capacity: '2', text: '【展開中】あなたが《対応》カードを使用した時、その解決後にダスト→自オーラ：1 \n【展開中】相手のターンにこのカードの上の桜花結晶は移動しない。'}
+    , '04-tokoyo-A1-s-2': { megami: 'tokoyo', anotherID: 'A1', replace: '04-tokoyo-o-s-2', name: '二重奏:吹弾陽明', nameEn: 'Duet: Radiant Luminosity', ruby: 'にじゅうそう：すいだんようめい', baseType: 'special', types: ['action'], cost: '1', text: '【使用済】あなたの開始フェイズの開始時に以下のどちらかを行ってもよい。\n・あなたの伏せ札からカード1枚を選び、山札の底に置く。 \n・あなたの捨て札から《行動》カード1枚を選び、山札の底に置く。 \n----\n【即再起】あなたが再構成以外でライフに1以上のダメージを受ける。'}
+
+    , '05-oboro-o-n-4': { megami: 'oboro', name: '忍歩', nameEn: 'Ninpo-Walk', ruby: 'にんぽ', baseType: 'normal', types: ['action'], text: '設置 \n間合→ダスト：1 \nこのカードを伏せ札から使用したならば、伏せ札から設置を持つカードを1枚使用してもよい。', textEn: 'Trap\n\nDistance (1)→ Shadow\n\nIf this card was played from your discard pile, you may play a card with Trap from your discard pile.' }
+    , '05-oboro-o-s-2': { megami: 'oboro', name: '鳶影', nameEn: 'Tobi-Kage', ruby: 'とびかげ', baseType: 'special', types: ['action', 'reaction'], cost: '4', text: '伏せ札から《全力》でないカードを1枚選び、そのカードを使用してもよい。この際、このカードが対応している《攻撃》があるならば、使用されたカードはそれに対応しているものと扱う。', textEn: 'Reveal a non-Throughout card in your discard pile and play it. If this card was played as a Reaction to an attack, treat that card as if it were played as a Reaction to that attack.' }
+    , '05-oboro-o-s-4': { megami: 'oboro', name: '壬蔓', nameEn: 'Mi-Kazura', ruby: 'みかずら', baseType: 'special', types: ['attack'], range: '3-7', damage: '1/1', cost: '0', text: 'ダスト→自フレア：1 \n----\n【再起】あなたのフレアが0である。', textEn: 'Shadow (1)→ Your Flare\n\nResurgence: There are no Sakura tokens on your Flare.' }
+
+    , '07-shinra-o-n-6': { megami: 'shinra', name: '壮語', nameEn: 'Eloquence', ruby: 'そうご', baseType: 'normal', types: ['enhance'], capacity: '2', text: '【破棄時】計略を実行し、次の計略を準備する。 \n[神算] あなたは集中力を1得て、このカードを山札の一番上に置く。 \n[鬼謀] 相手の手札が1枚以下ならば、相手を畏縮させ、相手はカードを3枚引き、相手は手札を2枚捨て札にする。'}
+
+    , '11-thallya-o-s-3': { megami: 'thallya', name: 'Thallya\'s Masterpiece', nameEn: 'Thallya\'s Masterpiece', ruby: 'サリヤズ　マスターピース', baseType: 'special', types: ['action'], cost: '1', text: '【使用済】あなたのターンに、あなたが基本動作以外の方法で騎動を行い、間合を変化させるたびに\nダスト⇔自オーラ：1 \nを行ってもよい。', textEn: '' }
+    , '11-thallya-o-s-4': { megami: 'thallya', name: 'Julia\'s BlackBox', nameEn: 'Julia\'s BlackBox', ruby: 'ジュリアズ　ブラックボックス', baseType: 'special', types: ['action', 'fullpower'], cost: '2', text: 'あなたのマシンに造花結晶がないならば、あなたのマシンはTransFormし、あなたの燃焼済の造花結晶を2つ回復する。そうでない場合、このカードを未使用に戻す。', textEn: 'If there are no Artificial Sakura tokens on your machine, TransForm it and recover 2 burned Artificial Sakura tokens. Otherwise, turn this card face-down.' }
+
+    , '05-oboro-A1-n-2': { megami: 'oboro', anotherID: 'A1', replace: '05-oboro-o-n-2', name: '手裏剣', ruby: 'しゅりけん', baseType: 'normal', types: ['attack'], range: '3-5', damage: '2/1', text: '【常時】あなたの終了フェイズに両者の伏せ札が合計5枚以上あるならば、このカードを捨て札から手札に戻してもよい。'}
+    , '05-oboro-A1-n-3': { megami: 'oboro', anotherID: 'A1', replace: '05-oboro-o-n-3', name: '不意打ち', ruby: 'ふいうち', baseType: 'normal', types: ['attack', 'fullpower'], range: '1-4', damage: '4/3', text: '対応不可（通常札） \n【常時】この《攻撃》は-X/+0となる。Xは相手の伏せ札の枚数に等しい。'}
+    , '05-oboro-A1-s-4': { megami: 'oboro', anotherID: 'A1', replace: '05-oboro-o-s-4', name: '神代枝', nameEn: '', ruby: 'かみしろのえ', baseType: 'special', exchangableTo: '05-oboro-A1-s-4-ex1', types: ['action', 'fullpower'], cost: '0', text: 'ゲーム外→自オーラ：1 \nゲーム外→自フレア：1 \nこのカードを取り除き、切札「最後の結晶」を追加札から未使用で得る。', textEn: '', removable: true }
+    , '05-oboro-A1-s-4-ex1': { megami: 'oboro', anotherID: 'A1', replace: '', name: '最後の結晶', ruby: 'さいごのけっしょう', baseType: 'special', extra: true, extraFrom: '05-oboro-A1-s-4', types: ['action'], cost: '2', text: '【常時】このカードは通常の方法では使用できない。あなたが初めて敗北するならば、代わりにこのカードを使用してもよい(消費は支払う)。 \nダスト→自ライフ：1'}
+ 
+    , '09-chikage-A1-n-5': { megami: 'chikage', anotherID: 'A1', replace: '09-chikage-o-n-5', name: '仕掛け番傘', ruby: 'しかけばんがさ', baseType: 'normal', types: ['attack'], range: '4', damage: '2/1', text: '不可避 \n【常時】相手の手札が2枚以上あるならば、この《攻撃》は距離拡大(近2)と距離拡大(遠2)を得る。 \n(他に何もなければ、適正距離は2-6になる)'}
+    , '09-chikage-A1-n-6': { megami: 'chikage', anotherID: 'A1', replace: '09-chikage-o-n-6', name: '奮迅', ruby: 'ふんじん', baseType: 'normal', types: ['action'], text: '相手の手札が2枚以上あるならば、あなたは集中力を1得る。 \n間合⇔ダスト：1'}
+    , '09-chikage-A1-s-4': { megami: 'chikage', anotherID: 'A1', replace: '09-chikage-o-s-4', name: '残滓の絆毒', ruby: 'ざんしのきずなどく', baseType: 'special', types: ['attack'], range: '0-1', damage: '4/X', cost: '5', text: '【常時】Xは相手の手札にあるカードの枚数の2倍に等しい。'}
+ 
+    , '13-utsuro-A1-n-2': { megami: 'utsuro', anotherID: 'A1', replace: '13-utsuro-o-n-2', name: '蝕みの塵', ruby: 'むしばみのちり', baseType: 'normal', types: ['attack'], range: '3-6', damage: '2/0', text: '【攻撃後】相手がライフへのダメージを選んだならば、相フレア→ダスト：2'}
+    , '13-utsuro-A1-s-1': { megami: 'utsuro', anotherID: 'A1', replace: '13-utsuro-o-s-1', name: '残響装置:枢式', ruby: 'ざんきょうそうち　くるるしき', baseType: 'special', types: ['action'], cost: '2', text: '相手のライフが8以上ならば、相ライフ→ダスト：1 \n【使用済】あなたか相手の終了フェイズにダストが13以上ならば、終焉の影が蘇る。その後、このカードを取り除き、あなたの追加札から切札「望我」を使用済で得て、カードを1枚引く。', textEn: '', removable: true }
+    , '13-utsuro-A1-s-1-ex1': { megami: 'utsuro', anotherID: 'A1', replace: '', name: '望我', ruby: 'ジェラーニエ', baseType: 'special', extra: true, extraFrom: '13-utsuro-A1-s-1', types: ['action'], cost: '6', text: '【使用済】あなたはダメージを受けない。 \n----\n【即再起】あなたのメインフェイズが開始する。'}
+    , '13-utsuro-A1-s-1-ex2': { megami: 'utsuro', anotherID: 'A1', replace: '', name: '万象乖ク殲滅ノ影', ruby: 'ばんしょうそむくせんめつのかげ', baseType: 'normal', extra: true, extraFrom: '13-utsuro-A1-s-1', types: ['attack', 'fullpower'], range: '0-3', damage: '-/0', text: '対応不可 \n【攻撃後】相手は相手のオーラ、フレア、ライフのいずれかから桜花結晶を合計6つダストへ移動させる。'}
+    , '13-utsuro-A1-s-1-ex3': { megami: 'utsuro', anotherID: 'A1', replace: '', name: '我ヲ亡クシテ静寂ヲ往ク', ruby: 'われをなくしてせいじゃくをゆく', baseType: 'normal', extra: true, extraFrom: '13-utsuro-A1-s-1', types: ['action', 'fullpower'], text: 'あなたは《前進》以外の基本動作を5回まで行ってもよい。 \n攻撃「適正距離4-10、3/2」を行う。 \n攻撃「適正距離5-10、1/1」を行う。 \n攻撃「適正距離6-10、1/1」を行う。'}
+    , '13-utsuro-A1-s-1-ex4': { megami: 'utsuro', anotherID: 'A1', replace: '', name: '終焉、来タレ', ruby: 'しゅうえん、きたれ', baseType: 'normal', extra: true, extraFrom: '13-utsuro-A1-s-1', types: ['enhance'], capacity: '2', text: '【破棄時】相手は手札と山札をすべて捨て札にする。相手の集中力は0になる。相手を畏縮させる。'}
+ 
+    , '14-honoka-o-n-1': { megami: 'honoka', name: '精霊式', ruby: 'せいれいしき', baseType: 'normal', exchangableTo: '14-honoka-o-n-1-ex1', types: ['attack'], range: '3-4', damage: '1/1', text: '対応不可 \n【攻撃後】開花-この「精霊式」を追加札の「守護霊式」と交換してもよい。そうした場合、その「守護霊式」を山札の底に置いてもよい。'}
+    , '14-honoka-o-n-1-ex1': { megami: 'honoka', name: '守護霊式', ruby: 'しゅごれいしき', baseType: 'normal', extra: true, extraFrom: '14-honoka-o-n-1', exchangableTo: '14-honoka-o-n-1-ex2', types: ['attack', 'reaction'], range: '2-3', damage: '2/1', text: '【攻撃後】ダスト→自オーラ：1 \n【攻撃後】開花-この「守護霊式」を追加札の「突撃霊式」と交換してもよい。そうした場合、その「突撃霊式」を山札の底に置いてもよい。'}
+    , '14-honoka-o-n-1-ex2': { megami: 'honoka', name: '突撃霊式', ruby: 'とつげきれいしき', baseType: 'normal', extra: true, extraFrom: '14-honoka-o-n-1-ex1', exchangableTo: '14-honoka-o-n-1-ex3', types: ['attack'], range: '5', damage: '3/2', text: '不可避 \n【攻撃後】開花-この「突撃霊式」を追加札の「神霊ヲウカ」と交換してもよい。そうした場合、その「神霊ヲウカ」を山札の底に置いてもよい。'}
+    , '14-honoka-o-n-1-ex3': { megami: 'honoka', name: '神霊ヲウカ', ruby: 'しんれいをうか', baseType: 'normal', extra: true, extraFrom: '14-honoka-o-n-1-ex2', types: ['attack', 'fullpower'], range: '1-4', damage: '4/3', text: '対応不可 \n【攻撃後】ダスト→自オーラ：2'}
+    , '14-honoka-o-n-2': { megami: 'honoka', name: '桜吹雪', ruby: 'さくらふぶき', baseType: 'normal', types: ['attack'], range: '1-5', damage: '2/1', text: '【攻撃後】相手は以下のどちらかを選ぶ。\n・間合→ダスト：1\n・ダスト→間合：1'}
+    , '14-honoka-o-n-3': { megami: 'honoka', name: '義旗共振', ruby: 'ぎききょうしん', baseType: 'normal', types: ['attack', 'fullpower'], range: '2-9', damage: '2/2', text: '【攻撃後】カードを１枚引いてもよい。 \n【攻撃後】あなたは手札を1枚選び、それを山札の底に置いてもよい。 \n【攻撃後】このカードを山札の底に置いてもよい。'}
+    , '14-honoka-o-n-4': { megami: 'honoka', name: '桜の翅', ruby: 'さくらのはね', baseType: 'normal', exchangableTo: '14-honoka-o-n-4-ex1', types: ['action'], text: '間合⇔ダスト：2 \nこの「桜の翅」を追加札の「再生」と交換する。'}
+    , '14-honoka-o-n-4-ex1': { megami: 'honoka', name: '再生', ruby: 'さいせい', baseType: 'normal', extra: true, extraFrom: '14-honoka-o-n-4', exchangableTo: '14-honoka-o-n-4', types: ['action', 'fullpower'], text: 'ダスト→自オーラ：1 \nダスト→自フレア：1 \nこの「再生」を追加札の「桜の翅」と交換する。'}
+    , '14-honoka-o-n-5': { megami: 'honoka', name: '桜花のお守り', ruby: 'おうかのおまもり', baseType: 'normal', exchangableTo: '14-honoka-o-n-5-ex1', types: ['action', 'reaction'], text: 'あなたは手札を１枚選び、それを伏せ札にしてもよい。そうした場合、対応した切札でない《攻撃》を打ち消す。 \n開花-この「桜花のお守り」を追加札の「仄かなる輝き」と交換してもよい。そうした場合、その「仄かなる輝き」を山札の底に置いてもよい。'}
+    , '14-honoka-o-n-5-ex1': { megami: 'honoka', name: '仄かなる輝き', ruby: 'ほのかなるかがやき', baseType: 'normal', extra: true, extraFrom: '14-honoka-o-n-5', types: ['attack'], range: '1-3', damage: '1/2', text: ''}
+    , '14-honoka-o-n-6': { megami: 'honoka', name: '微光結界', ruby: 'びこうけっかい', baseType: 'normal', types: ['enhance'], capacity: '4', text: '【展開中】相手のターンにあなたの手札と山札にあるカードは伏せ札、捨て札にならない。 \n(使用したカードは通常通り捨て札になる) \n【展開中】あなたは畏縮しない \n【破棄時】あなたは集中力を1得る。'}
+    , '14-honoka-o-n-7': { megami: 'honoka', name: '追い風', ruby: 'おいかぜ', baseType: 'normal', types: ['enhance'], capacity: '3', text: '【展開中】あなたの《攻撃》は距離拡大(遠1)を得る。'}
+    , '14-honoka-o-s-1': { megami: 'honoka', name: '胸に想いを', ruby: 'むねにおもいを', baseType: 'special', exchangableTo: '14-honoka-o-s-1-ex1', types: ['action'], cost: '5', text: '開花-この「胸に想いを」を追加札の「両手に華を」に交換し、未使用に戻す。'}
+    , '14-honoka-o-s-1-ex1': { megami: 'honoka', name: '両手に華を', ruby: 'りょうてにはなを', baseType: 'special', extra: true, extraFrom: '14-honoka-o-s-1', exchangableTo: '14-honoka-o-s-1-ex2', types: ['action', 'fullpower'], cost: '0', text: '【使用済】開花-あなたの終了フェイズにあなたのオーラにある桜花結晶を2つまでこのカードの上に置いてもよい。その結果、ちょうど5つになったならば、それらの桜花結晶をあなたのフレアへと移動させ、この「両手に華を」を追加札の「そして新たな幕開けを」に交換し、未使用に戻す。'}
+    , '14-honoka-o-s-1-ex2': { megami: 'honoka', name: 'そして新たな幕開けを', ruby: 'そしてあらたなまくあけを', baseType: 'special', extra: true, extraFrom: '14-honoka-o-s-1-ex1', types: ['action'], cost: '5', text: '【使用済】あなたの終了フェイズに攻撃「適正距離0-10、X/X、対応不可 【常時】Xは桜花結晶がちょうど5つある領域の数に等しい」を行う。'}
+    , '14-honoka-o-s-2': { megami: 'honoka', name: 'この旗の名の下に', ruby: 'このはたのなのもとに', baseType: 'special', types: ['attack'], range: '3-7', damage: '3/2', cost: '4', text: '【常時】このカードを使用するに際し、あなたの付与札を1つ選んでもよい。この《攻撃》のダメージにより移動する桜花結晶はダストやフレアでなく選ばれた付与札に可能ならば動かす。 \n(付与札が存在しないなど不可能な場合は通常通りに桜花結晶を動かす)'}
+    , '14-honoka-o-s-3': { megami: 'honoka', name: '四季はまた廻り来る', ruby: 'しきはまためぐりくる', baseType: 'special', types: ['action'], cost: '2', text: 'あなたの山札を全て伏せ札にする。伏せ札、捨て札からカードを4枚まで選び、それらを好きな順番で山札の上に置く。'}
+    , '14-honoka-o-s-4': { megami: 'honoka', name: '満天の花道で', ruby: 'まんてんのはなみちで', baseType: 'special', types: ['enhance'], capacity: '5', cost: '2', text: '【展開中】この付与札の上の桜花結晶がダストへと送られるならば、それは代わりにあなたのオーラへと移動する。あなたのオーラが5以上ならば、代わりにあなたのフレアへ移動する。'}
+
+};
+
+CARD_DATA['na-s3'] = _.extend({}, CARD_DATA['na-s2']);
+for (let key in season3CardData){
+    let data = season3CardData[key];
+    if(data === null){
+        delete CARD_DATA['na-s3'][key];
+    } else {
+        CARD_DATA['na-s3'][key] = data;
+    }
+}
+
+
+
+// ソートキーを自動で割り振り、また同時にカードIDとソートキーの対応を記憶
+let cardSortKeys: [string, string][] = [];
+export const CARD_SORT_KEY_MAP: {[cardId: string]: string} = {};
+
+for (let cardSet in CARD_DATA){
+    for(let cardId in CARD_DATA[cardSet]){
+        let card = CARD_DATA[cardSet as CardSet][cardId];
+        if(card.replace){
+            // 別のカードを置き換えるアナザー
+            card.sortKey = `${card.replace}_${card.anotherID}`;
+        } else if (card.extraFrom) {
+            // 追加札
+            card.sortKey = `${CARD_DATA[cardSet as CardSet][card.extraFrom].sortKey}_${cardId}`;
+        } else if(card.poison){
+            // 毒 (末尾)
+            card.sortKey = `99-${cardId}`
+        } else {
+            // 上記以外
+            card.sortKey = cardId;
+        }
+
+        cardSortKeys.push([cardId, card.sortKey]);
+        CARD_SORT_KEY_MAP[cardId] = card.sortKey;
+    }
+}
+
+// カードIDをソートキー順に並べ替える
+let sortedAllCardIds = _.sortedUniq(_.sortBy(cardSortKeys, p => p[1]).map(p => p[0]));
+
+// 全カードをソートキー順にソートして、（カードセット別に）全カードIDの配列と、全カードの配列を作成
+export const ALL_CARD_ID_LIST: { [cardSet in CardSet]: string[] } = {} as { [cardSet in CardSet]: string[] };
+export const ALL_CARD_LIST: { [cardSet in CardSet]: CardDataItem[] } = {} as { [cardSet in CardSet]: CardDataItem[] };
+
+for (let cardSet in CARD_DATA) {
+    ALL_CARD_ID_LIST[cardSet as CardSet] = [];
+    ALL_CARD_LIST[cardSet as CardSet] = [];
+    
+    for (let cardId of sortedAllCardIds){
+        if(CARD_DATA[cardSet][cardId]){
+            ALL_CARD_ID_LIST[cardSet as CardSet].push(cardId);
+            ALL_CARD_LIST[cardSet as CardSet].push(CARD_DATA[cardSet as CardSet][cardId]);
+        }
+    }
+}
 
 // socket.io用イベント
 export namespace SocketParam {
