@@ -24,20 +24,26 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     // カードセット変更
     let changeCardSet = () => {
         let currentState = actions.getState();
-        let modalState = apps.cardSetSelectModal.State.create(
-            currentState.board.cardSet
-            , (newCardSet) => {
-                actions.operate({
-                    log: `カードセットを${CARD_SET_NAMES[newCardSet]}に変更しました`,
-                    proc: () => {
-                        actions.resetBoard({ newCardSet: newCardSet});
-                    }
-                });
-            }
-            , () => { }
-        );
 
-        apps.cardSetSelectModal.run(modalState, document.getElementById('CARD-SET-SELECT-MODAL'));
+        let promise = new Promise<CardSet>((resolve, reject) => {
+            let modalState = apps.cardSetSelectModal.State.create(
+                  currentState.board.cardSet
+                , resolve
+                , reject
+            );
+
+            apps.cardSetSelectModal.run(modalState, document.getElementById('COMMON-MODAL-PLACEHOLDER'));
+        }).then((newCardSet) => {
+            actions.operate({
+                log: `カードセットを${CARD_SET_NAMES[newCardSet]}に変更しました`,
+                proc: () => {
+                    actions.resetBoard({ newCardSet: newCardSet });
+                }
+            });
+
+        });
+
+
     }
 
 

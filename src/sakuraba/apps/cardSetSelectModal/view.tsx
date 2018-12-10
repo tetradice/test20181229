@@ -24,42 +24,43 @@ const view: View<State, ActionsType> = (state, actions) => {
     const okProc = () => {
         const decide = function(){
             actions.hide();
-            state.promiseResolve(state.selectedCardSet);
+            let currentState = actions.getState();
+            currentState.promiseResolve(currentState.selectedCardSet);
         }
 
-        // どちらかのプレイヤーがメガミを選択していれば確認メッセージ
-        if (utils.confirmModal("カードセットを変更すると、卓は初期状態に戻ります。<br>（操作ログは初期化されません）<br>この操作は相手プレイヤーに確認を取ってから行ってください。<br><br>よろしいですか？", decide)){
-        } else {
-            decide();
-        }
+        // 確認メッセージ
+        utils.confirmModal("カードセットを変更すると、卓は初期状態に戻ります。<br>（操作ログは初期化されません）<br>この操作は相手プレイヤーに確認を取ってから行ってください。<br><br>よろしいですか？", decide);
+    };
+
+    const oncreate = (elem: HTMLElement) => {
+        $('#COMMON-MODAL').modal({
+            onApprove: () => {
+                okProc();
+            },
+            onDeny: () => {
+                // let currentState = actions.getState();
+                // currentState.promiseReject();
+            },
+            onHidden: () => {
+                actions.hide();
+            }
+        }).modal('show');
     };
 
     return (
-        <div class={"ui dimmer modals page visible active " + css.modalTop}>
-            <div class="ui modal visible active">
-                <div class="content">
-                    <div class="description" style="margin-bottom: 2em;">
-                        <p>使用するカードセットを選択してください。</p>
-                    </div>
-                    <div class="ui form">
-                        <div class="fields">
-                            <div class="field">
-                                <select id="CARDSET-SELECTION" name="cardSet" onchange={onChange}>
-                                    {cardSetOptions}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="ui error message"></div>
+        <div class="content" oncreate={oncreate}>
+            <div class="description" style="margin-bottom: 2em;">
+                <p>使用するカードセットを選択してください。</p>
+            </div>
+            <div class="ui form">
+                <div class="fields">
+                    <div class="field">
+                        <select id="CARDSET-SELECTION" name="cardSet" onchange={onChange}>
+                            {cardSetOptions}
+                        </select>
                     </div>
                 </div>
-                <div class="actions">
-                    <div class="ui positive labeled icon button" onclick={okProc}>
-                        決定 <i class="checkmark icon"></i>
-                    </div>
-                    <div class="ui black deny button" onclick={() => { actions.hide(); state.promiseReject() }}>
-                        キャンセル
-                    </div>
-                </div>
+                <div class="ui error message"></div>
             </div>
         </div>
     );

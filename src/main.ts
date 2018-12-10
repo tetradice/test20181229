@@ -675,10 +675,7 @@ $(function(){
                                             appActions.oprDraw({cardNameLogging: true});
                                         }
                                     });
-                                }, {
-                                    target: '#CONFIRM-SMALL-MODAL'
                                 });
-
                             }
                         }
                     }

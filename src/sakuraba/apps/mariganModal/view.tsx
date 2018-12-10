@@ -31,38 +31,50 @@ const view: View<State, ActionsType> = (state, actions) => {
         let selectedIndex = state.selectedCards.indexOf(card);
         let selected = selectedIndex >= 0;
         
-        cardElements.push(<Card cardSet={state.cardSet} clickableClass target={card} opened descriptionViewable left={left} top={top} selected={selected} selectedIndex={(selected ? selectedIndex : null)} onclick={() => actions.selectCard(card)} zoom={state.zoom}></Card>);
+        const onclick = (e) => {
+            actions.selectCard(card);            
+
+            let $okButton = $('#COMMON-MODAL .ui.button.positive');
+            let currentSelectedCount = actions.getState().selectedCards.filter(card => sakuraba.CARD_DATA[state.cardSet][card.cardId].baseType === 'normal').length;
+            if (currentSelectedCount === 0) {
+                $okButton.addClass('disabled');
+            } else {
+                $okButton.removeClass('disabled');
+            }
+        };
+        
+        cardElements.push(<Card cardSet={state.cardSet} clickableClass target={card} opened descriptionViewable left={left} top={top} selected={selected} selectedIndex={(selected ? selectedIndex : null)} onclick={onclick} zoom={state.zoom}></Card>);
     });
 
-    let selectedCount = state.selectedCards.filter(card => sakuraba.CARD_DATA[state.cardSet][card.cardId].baseType === 'normal').length;
-
-    let okButtonClass = "ui positive labeled icon button";
-    if(selectedCount === 0) okButtonClass += " disabled";
+    const oncreate = (elem: HTMLElement) => {
+        $('#COMMON-MODAL').modal({
+            onShow: () => {
+                let $okButton = $('#COMMON-MODAL .ui.button.positive');
+                $okButton.addClass('disabled');
+            },
+            onApprove: function(): void | false{
+                let currentState = actions.getState();
+                currentState.promiseResolve(currentState.selectedCards);
+                return false; // 自動で非表示にしない (終了後に次のモーダルを表示するため)
+            },
+            onHidden: () => {
+                actions.hide();
+            }
+        }).modal('show');
+    };
 
     return(
-        <div class={"ui dimmer modals page visible active " + css.modalTop} oncreate={() => setPopup()}>
-            <div class="ui modal visible active">
-                <div class="content">
-                    <div class="description" style={{marginBottom: '2em'}}>
-                        <p>山札の底に戻すカードを選択してください。（この操作は一度しか行えません）</p>
-                    </div>
-                    <div class={css.outer}>
-                        <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
-                            {cardElements}
-                        </div>
-                    </div>
-                    <div class="description" style={{marginTop: '1em'}}>
-                        <p>※選択した順番でカードを底に置く順番が決まり、「1」と表示されているカードが一番上に置かれます。</p>
-                    </div>
+        <div class="content" oncreate={oncreate}>
+            <div class="description" style={{marginBottom: '2em'}}>
+                <p>山札の底に戻すカードを選択してください。（この操作は一度しか行えません）</p>
+            </div>
+            <div class={css.outer}>
+                <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
+                    {cardElements}
                 </div>
-                <div class="actions">
-                    <div class={okButtonClass} onclick={() => {actions.hide(); state.promiseResolve(state.selectedCards)}}>
-                        決定 <i class="checkmark icon"></i>
-                    </div>
-                    <div class="ui black deny button" onclick={() => {actions.hide(); state.promiseReject()}}>
-                        キャンセル
-                    </div>
-                </div>
+            </div>
+            <div class="description" style={{marginTop: '1em'}}>
+                <p>※選択した順番でカードを底に置く順番が決まり、「1」と表示されているカードが一番上に置かれます。</p>
             </div>
         </div>
     );
