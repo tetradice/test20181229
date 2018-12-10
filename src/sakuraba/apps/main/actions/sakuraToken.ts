@@ -111,7 +111,7 @@ export default {
                         let cardData = CARD_DATA[state.board.cardSet][card.cardId];
                         actions.appendActionLog({indent: true, text: ['log:[CARDNAME]の上の桜花結晶数が0になりました', {cardName: {type: 'cardName', cardSet: state.board.cardSet, cardId: card.cardId}}]});
                     }
-                });
+                }
             }
         });
     },

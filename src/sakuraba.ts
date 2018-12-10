@@ -94,6 +94,13 @@ export interface CardDataItem {
     poison?: boolean;
     /** 追加札かどうか(デッキ構築の時に選択できず、ゲーム開始時に追加札領域に置かれる) */
     extra?: boolean;
+    /** 追加札の追加元 */
+    extraFrom?: string;
+    /** 交換先 */
+    exchangableTo?: string;
+
+    /** ソートキー (自動で設定される) */
+    sortKey?: string;
 }
 
 export const CARD_DATA: {[key in CardSet]: {[key: string]: CardDataItem} } = {} as any;
