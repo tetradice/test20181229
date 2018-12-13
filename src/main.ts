@@ -10,7 +10,7 @@ import { BOARD_BASE_WIDTH, ZIndex } from "sakuraba/const";
 import * as randomstring from 'randomstring';
 import _ from "lodash";
 import i18next, { t } from 'i18next';
-import Backend from 'i18next-locize-backend';
+import LocizeBackend from 'i18next-locize-backend';
 import languageDetector from 'i18next-browser-languagedetector';
 
 declare var params: {
@@ -39,7 +39,7 @@ $(function () {
         console.log(params);
         // 言語設定の初期化。初期化完了後にメイン処理に入る
         i18next
-            .use(Backend)
+            .use(LocizeBackend)
             .init({
                 lng: params.lang
                 , defaultNS: 'common'
@@ -110,7 +110,7 @@ $(function () {
                     let newOpenState = utils.judgeCardOpenState(currentState.board.cardSet, card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
 
                     // ログ内容を決定
-                    let logCardNameParam: LogValueCardNameParam = { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId };
+                    let logCardNameParam: LogCardNameParamValue = { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId };
                     let logParam = { from: fromRegionTitle, to: toRegionTitle };
                     let logParamWithCardName = { cardName: logCardNameParam, from: fromRegionTitle, to: toRegionTitle };
 

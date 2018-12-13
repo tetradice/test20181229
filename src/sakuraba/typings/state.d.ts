@@ -178,7 +178,7 @@ export interface ActionLogStringItem {
 export interface ActionLogLocaleStringItem {
     type: 'ls';
     key: string;
-    args: {[key: string]: ActionLogBody}
+    params: {[key: string]: ActionLogBody}
 }
 
 export interface ActionLogCardNameItem {

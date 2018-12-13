@@ -226,14 +226,38 @@ export function getSakuraTokenRegionTitle(
     }
 }
 
+// パラメータとして渡されたログ値を、保存用の形式に変換する
+export function convertLogValueForState(val: LogValue): state.ActionLogBody{
+    let params: { [key: string]: state.ActionLogBody } = {};
+    if(val[1] !== null){
+        for(let paramName in val[1]){
+            params[paramName] = convertLogParamValueForState(val[1][paramName]);
+        }
+    }
+
+    return { type: 'ls', key: val[0], params: params};
+}
+
+function convertLogParamValueForState(val: LogParamValue): state.ActionLogBody {
+    if(typeof val === 'string' || typeof val === 'number'){
+        return { type: 's', text: val.toString() };
+    } else if(Array.isArray(val)){
+        return convertLogValueForState(val);
+    } else {
+        return { type: 'cn', cardId: val.cardId, cardSet: val.cardSet };
+    }
+}
 
 // ログオブジェクトを翻訳する (パラメータの中に翻訳対象オブジェクトが含まれていれば再帰的に翻訳)
-export function translateLog(log: state.ActionLogBody): string{
+export function translateLog(log: string | state.ActionLogBody): string{
     if(!log) return "";
 
     let buf = "";
-
-    if(Array.isArray(log)){
+    if(typeof log === 'string'){
+        // 文字列が渡された場合はそのまま返す
+        return log;
+        
+    } else if(Array.isArray(log)){
         // 配列が渡された場合、全要素を翻訳して結合
         return log.map(x => translateLog(x)).join('');
 
@@ -246,13 +270,13 @@ export function translateLog(log: state.ActionLogBody): string{
         // 翻訳対象文字列
         if(log.type === 'ls'){
 
-            let args = {};
-            for (let k in log.args) {
-                args[k] = translateLog(log.args[k]); // パラメータも再帰的に翻訳する
+            let params = {};
+            for (let k in log.params) {
+                params[k] = translateLog(log.params[k]); // パラメータも再帰的に翻訳する
             }
 
             // i18nextで翻訳した結果を返す
-            return t(log.key, args);
+            return t(log.key, params);
         }
 
         // カード名
