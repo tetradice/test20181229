@@ -99,7 +99,7 @@ $(function () {
                     if (currentState.side === 'watcher') return;
 
                     // 移動ログを決定
-                    let logs: { text: LocalizedLogValue, visibility?: LogVisibility }[] = [];
+                    let logs: { text: LogValue, visibility?: LogVisibility }[] = [];
                     let cardName = CARD_DATA[currentState.board.cardSet][card.cardId].name;
                     let boardModel = new models.Board(currentState.board);
                     let fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region, currentState.board.cardSet, (card.linkedCardId ? boardModel.getCard(card.linkedCardId) : null));
@@ -110,9 +110,10 @@ $(function () {
                     let newOpenState = utils.judgeCardOpenState(currentState.board.cardSet, card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
 
                     // ログ内容を決定
-                    let logCardNameParam = { type: 'cardName', cardSet: 'na-s2', cardId: card.cardId };
+                    let logCardNameParam: LogValueCardNameParam = { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId };
                     let logParam = { from: fromRegionTitle, to: toRegionTitle };
                     let logParamWithCardName = { cardName: logCardNameParam, from: fromRegionTitle, to: toRegionTitle };
+
                     if (oldOpenState === 'opened' || newOpenState === 'opened') {
                         // 公開状態から移動した場合や、公開状態へ移動した場合は、全員に名前を公開
                         logs.push({ text: ['log:[CARDNAME]を移動しました：FROM → TO', logParamWithCardName] });
@@ -522,11 +523,11 @@ $(function () {
                                 // 交換メニューを表示
                                 let exchangeToCardData = CARD_DATA[currentState.board.cardSet][cardData.exchangableTo];
                                 items['exchange'] = {
-                                    name: `追加札の[${exchangeToCardData.name}]に交換する`
+                                    name: t('追加札の[CARDNAME]に交換する', {cardName: exchangeToCardData.name})
                                     , disabled: !extraCard
                                     , callback: () => {
                                         appActions.operate({
-                                            log: `[${cardData.name}]を[${exchangeToCardData.name}]に交換しました`,
+                                            log: ['log:[CARDNAME1]を[CARDNAME2]に交換しました', { cardName1: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId }, cardName2: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: cardData.exchangableTo }}],
                                             proc: () => {
                                                 appActions.moveCard({ from: id, to: [card.side, 'extra', null] });
                                                 appActions.moveCard({ from: extraCard.id, to: [card.side, 'used', null] });
@@ -565,20 +566,20 @@ $(function () {
                                 // 神代枝のみ特殊 (交換と同時にゲームから取り除く)
                                 if (card.cardId === '05-oboro-A1-s-4') {
                                     items['exchange'] = {
-                                        name: `[${cardData.name}]をゲームから取り除き、追加札の[${exchangeToCardData.name}]を得る`
+                                        name: t('[CARDNAME1]をゲームから取り除き、追加札の[CARDNAME2]を得る', { cardName1: cardData.name, cardName2: exchangeToCardData.name })
                                         , disabled: !extraCard || !card.specialUsed // 追加札領域に対象カードがあり、かつ表向きの場合のみ
                                         , callback: () => {
                                             // まだ相手が決闘を開始していなければ、この操作は禁止する
                                             // (決闘を開始する前にカードを取り除くと、更新がうまくいかずにエラーが多発する場合があるため。原因不明)
                                             if (!currentState.board.mariganFlags[utils.flipSide(playerSide)]) {
-                                                utils.messageModal(`相手が決闘を開始するまでは、この操作を行うことはできません。`);
+                                                utils.messageModal(t('dialog:相手が決闘を開始するまでは、この操作を行うことはできません。'));
                                                 return;
                                             }
 
-                                            utils.confirmModal(`ゲームから取り除いた後は、元に戻すことはできません。<br>よろしいですか？`, () => {
+                                            utils.confirmModal(t('dialog:ゲームから取り除いた後は、元に戻すことはできません。よろしいですか？'), () => {
 
                                                 appActions.operate({
-                                                    log: `[${cardData.name}]を取り除き、[${exchangeToCardData.name}]を追加札から取得しました`,
+                                                    log: ['log:[CARDNAME1]を取り除き、[CARDNAME2]を追加札から取得しました', { cardName1: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId }, cardName2: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: cardData.exchangableTo } }],
                                                     proc: () => {
                                                         appActions.removeCard({ objectId: id });
                                                         appActions.moveCard({ from: extraCard.id, to: [playerSide, 'special', null] });
@@ -590,18 +591,18 @@ $(function () {
                                     }
                                 } else {
                                     items['exchange'] = {
-                                        name: `追加札の[${exchangeToCardData.name}]に交換する`
+                                        name: t('追加札の[CARDNAME]に交換する', { cardName: exchangeToCardData.name })
                                         , disabled: !extraCard || !card.specialUsed // 追加札領域に対象カードがあり、かつ表向きの場合のみ
                                         , callback: () => {
                                             // 桜花結晶が乗っている切札を、交換しようとした場合はエラー
                                             let onCardTokens = board.getRegionSakuraTokens(card.side, 'on-card', card.id);
                                             if (onCardTokens.length >= 1) {
-                                                utils.messageModal("桜花結晶が上に乗っている切札は、交換できません。");
+                                                utils.messageModal(t("dialog:桜花結晶が上に乗っている切札は、交換できません。"));
                                                 return;
                                             }
 
                                             appActions.operate({
-                                                log: `[${cardData.name}]を[${exchangeToCardData.name}]に交換しました`,
+                                                log: ['log:[CARDNAME1]を[CARDNAME2]に交換しました', { cardName1: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId }, cardName2: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: cardData.exchangableTo } }],
                                                 proc: () => {
                                                     appActions.moveCard({ from: id, to: [card.side, 'extra', null] });
                                                     appActions.moveCard({ from: extraCard.id, to: [card.side, 'special', null] });
@@ -619,19 +620,19 @@ $(function () {
 
                                 let dustCount = board.getRegionSakuraTokens(null, 'dust', null).length;
                                 items['shadowArise'] = {
-                                    name: `- 終焉の影が蘇る -`
+                                    name: t('- 終焉の影が蘇る -')
                                     , disabled: !card.specialUsed || dustCount < 13 // カードが表向き、かつダストが13以上の場合のみ使用可能
                                     , callback: () => {
                                         // まだ相手が決闘を開始していなければ、この操作は禁止する
                                         // (決闘を開始する前にカードを取り除くと、更新がうまくいかずにエラーが多発する場合があるため。原因不明)
                                         if (!currentState.board.mariganFlags[utils.flipSide(playerSide)]) {
-                                            utils.messageModal(`相手が決闘を開始するまでは、この操作を行うことはできません。`);
+                                            utils.messageModal(t('相手が決闘を開始するまでは、この操作を行うことはできません。'));
                                             return;
                                         }
 
-                                        utils.confirmModal(`あなたの使用済み、伏せ札、手札、山札領域にあるすべてのカードは取り除かれます。<br>また、[残響装置:枢式]は取り除かれ、代わりにいくつかのカードを追加で得ます。<br>（この操作を元に戻すことはできません）<br><br>よろしいですか？`, () => {
+                                        utils.confirmModal(t('dialog:あなたの使用済み、伏せ札、手札、山札領域にあるすべてのカードは取り除かれます。また、[残響装置:枢式]は取り除かれ、代わりにいくつかのカードを追加で得ます。', {cardName: cardData.name}), () => {
                                             appActions.operate({
-                                                log: `終焉の影が蘇りました`,
+                                                log: ['log:終焉の影が蘇りました', null],
                                                 proc: () => {
                                                     // 通常札上のすべての桜花結晶をダストへ移動
                                                     let sakuraTokensOnBoard = board.objects.filter(v => v.type === 'sakura-token' && v.side === card.side && v.region == 'on-card') as state.SakuraToken[];
@@ -873,7 +874,7 @@ $(function () {
                                         let card = opponentHandCards[index];
 
                                         appActions.operate({
-                                            log: ['log:相手の手札1枚を無作為に選び、捨て札にしました -> [CARDNAME]', { cardName: { type: 'cardName', cardSet: [currentState.board.cardSet], cardId: card.cardId } }],
+                                            log: ['log:相手の手札1枚を無作為に選び、捨て札にしました -> [CARDNAME]', { cardName: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId } }],
                                             proc: () => {
                                                 appActions.moveCard({ from: [opponentSide, 'hand', null], fromPosition: index, to: [opponentSide, 'used', null] });
                                             }
@@ -1500,7 +1501,7 @@ $(function () {
                                 let fromLinkedCard = (dragInfo.draggingFrom.linkedCardId === null ? undefined : boardModel.getCard(dragInfo.draggingFrom.linkedCardId));
                                 let toLinkedCard = (toLinkedCardId === null ? undefined : boardModel.getCard(toLinkedCardId));
 
-                                let logs: { text: LocalizedLogValue, visibility?: LogVisibility }[] = [];
+                                let logs: { text: LogValue, visibility?: LogVisibility }[] = [];
                                 let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region, currentState.board.cardSet, fromLinkedCard);
                                 let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion, currentState.board.cardSet, toLinkedCard);
 
@@ -1514,7 +1515,7 @@ $(function () {
                                     // ログ内容を決定
                                     let tokenName = (sakuraToken.artificial ? t('造花結晶') : t('桜花結晶'));
                                     let isOpponent = sakuraToken.ownerSide && currentState.side !== sakuraToken.ownerSide;
-                                    let log: LocalizedLogValue = [(isOpponent ? 'log:相手のTOKENをNつ移動しました：FROM → TO' : 'log:TOKENをNつ移動しました：FROM → TO'), { count: dragInfo.sakuraTokenMoveCount, from: fromRegionTitle, to: toRegionTitle, token: tokenName }];
+                                    let log: LogValue = [(isOpponent ? 'log:相手のTOKENをNつ移動しました：FROM → TO' : 'log:TOKENをNつ移動しました：FROM → TO'), { count: dragInfo.sakuraTokenMoveCount, from: fromRegionTitle, to: toRegionTitle, token: tokenName }];
 
 
                                     // 一部の移動ではログを変更

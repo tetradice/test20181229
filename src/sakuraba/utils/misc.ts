@@ -2,6 +2,7 @@ import * as sakuraba from "sakuraba";
 import * as models from "sakuraba/models";
 import { t } from "i18next";
 import { h } from "hyperapp";
+import { ActionLogRecord } from "sakuraba/typings/state";
 
 /** プレイヤーサイドを逆にする */
 export function flipSide(side: PlayerSide): PlayerSide{
@@ -66,12 +67,7 @@ export function judgeCardOpenState(
 }
 
 /** カードの説明用ポップアップHTMLを取得する */
-<<<<<<< HEAD
 export function getDescriptionHtml(cardData: models.CardData): string{
-=======
-export function getDescriptionHtml(cardSet: CardSet, cardId: string): string{
-  let cardData = sakuraba.CARD_DATA[cardSet][cardId];
->>>>>>> master
   let cardTitleHtml = `<ruby><rb>${cardData.name}</rb><rp>(</rp><rt>${cardData.ruby}</rt><rp>)</rp></ruby>`
   let html = `<div class='ui header' style='margin-right: 2em;'>${cardTitleHtml}`
 
@@ -125,7 +121,7 @@ export function getDescriptionHtml(cardSet: CardSet, cardId: string): string{
   }
   // 追加札で、かつ追加元が指定されている場合
   if(cardData.extra && cardData.extraFrom){
-      let extraCardData = sakuraba.CARD_DATA[cardSet][cardData.extraFrom];
+      let extraCardData = sakuraba.CARD_DATA[cardData.cardSet][cardData.extraFrom];
       html += `<div class="extra-from">追加 ≫ ${extraCardData.name}</div>`
   }
   html += `</div>`;
@@ -231,27 +227,42 @@ export function getSakuraTokenRegionTitle(
 }
 
 
-// ログテキストオブジェクトを翻訳する (パラメータの中に翻訳対象オブジェクトが含まれていれば再帰的に翻訳)
-export function translateLog(log: LogValue): string{
+// ログオブジェクトを翻訳する (パラメータの中に翻訳対象オブジェクトが含まれていれば再帰的に翻訳)
+export function translateLog(log: state.ActionLogBody): string{
     if(!log) return "";
 
-    if(typeof log === 'string'){
-        return log;
-    } else if(Array.isArray(log)){
-        let [key, givenParams] = log;
+    let buf = "";
 
-        let params = {};
-        for(let k in givenParams){
-            params[k] = translateLog(givenParams[k]); // 再帰処理
-        }
-        return t(key, params);
+    if(Array.isArray(log)){
+        // 配列が渡された場合、全要素を翻訳して結合
+        return log.map(x => translateLog(x)).join('');
+
     } else {
-        if(log.type === 'cardName'){
-            let cardData = new models.CardData(log['cardId'], 'ja');
+        // 固定文字列
+        if(log.type === 's'){
+            return log.text;
+        }
+
+        // 翻訳対象文字列
+        if(log.type === 'ls'){
+
+            let args = {};
+            for (let k in log.args) {
+                args[k] = translateLog(log.args[k]); // パラメータも再帰的に翻訳する
+            }
+
+            // i18nextで翻訳した結果を返す
+            return t(log.key, args);
+        }
+
+        // カード名
+        if (log.type === 'cn') {
+            let cardData = new models.CardData(log.cardSet, log.cardId, 'ja');
             return cardData.name;
         }
-        return undefined;
     }
+
+    return undefined;
 }
 
 export function nl2br(str: string): string {

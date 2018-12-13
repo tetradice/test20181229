@@ -13,7 +13,10 @@ type CardSet = 'na-s2' | 'na-s3';
 
 type VigorValue = 0 | 1 | 2;
 
-type LogValue = [string, {[key: string]: state.ActionLogBody}];
+type LogValue = [string, { [key: string]: LogValueParam} | null];
+
+type LogValueParam = string | number | LogValueCardNameParam | LogValue;
+type LogValueCardNameParam = { type: 'cardName', cardSet: CardSet, cardId: string }
 
 /** 観戦者情報 */
 interface WatcherInfo {

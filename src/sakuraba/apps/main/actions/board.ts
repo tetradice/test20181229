@@ -4,8 +4,9 @@ import * as utils from "sakuraba/utils";
 import { Megami, CARD_DATA } from "sakuraba";
 import cardActions from './card';
 import { ActionsType } from ".";
+import { ActionLogBody } from "sakuraba/typings/state";
 
-type LogParam = {text: LocalizedLogValue, visibility?: LogVisibility};
+type LogParam = {text?: LogValue, body?: ActionLogBody, visibility?: LogVisibility};
 
 export default {
     /** 複数の操作を行い、必要に応じてUndo履歴、ログを設定。同時にソケットに変更後ボードを送信 */
@@ -21,7 +22,7 @@ export default {
         /**
          * 操作ログに記録する内容
          */
-        log?: LocalizedLogValue | LocalizedLogValue[];
+        log?: LogValue;
 
         /**
          * 操作ログに記録する内容 (可視性制御あり)
@@ -37,22 +38,11 @@ export default {
         let appendLogs: state.ActionLogRecord[] = null;
 
         if(p.logParams !== undefined){
-            (p.log as LogParam[]).forEach((log) => actions.appendActionLog({text: log.text, visibility: log.visibility}));
+            p.logParams.forEach((log) => actions.appendActionLog({text: log.text, body: log.body, visibility: log.visibility}));
         }
 
         if(p.log !== undefined){
-            if(Array.isArray(p.log)){
-                if(p.log.length >= 1 && typeof p.log[0] === 'string'){
-                    // 1つのログを渡されたパターン
-                    actions.appendActionLog({text: p.log as [string, object]})
-                } else {
-                    // 複数のログを渡されたパターン
-                    (p.log as LocalizedLogValue[]).forEach((text) => actions.appendActionLog({text: text}));
-                }
-            } else {
-                // 1つのログ (カード名情報) を渡されたパターン
-                actions.appendActionLog({text: p.log})
-            }
+            actions.appendActionLog({text: p.log })
         }
 
         // メイン処理の実行
@@ -134,7 +124,7 @@ export default {
         newPast.push({board: state.board, appendedLogs: recoveredHistItem.appendedLogs});
 
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
-        recoveredHistItem.appendedLogs.forEach(log => actions.appendActionLog({text: log.body, visibility: log.visibility}));
+        recoveredHistItem.appendedLogs.forEach(log => actions.appendActionLog({ body: log.body as state.ActionLogBody, visibility: log.visibility}));
 
         if(state.socket){
             state.socket.emit('updateBoard', { tableId: state.tableId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: recoveredHistItem.appendedLogs});

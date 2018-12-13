@@ -183,6 +183,6 @@ export interface ActionLogLocaleStringItem {
 
 export interface ActionLogCardNameItem {
     type: 'cn';
-    cardSet: string;
+    cardSet: CardSet;
     cardId: string;
 }
