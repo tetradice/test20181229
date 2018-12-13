@@ -548,7 +548,7 @@ export default {
                     actions.setUmbrellaState({side: state.side, value: 'closed'});
                 }
                 // チカゲがいれば毒カードをセット
-                if(board.megamis[state.side].find(m => m === 'chikage')){
+                if (board.megamis[state.side].find(m => m === 'chikage' ||  m === 'chikage-a1')){
                     actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-1'});
                     actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-2'});
                     actions.addCard({side: state.side, region: 'extra', cardId: '09-chikage-o-p-3'});
