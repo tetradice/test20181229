@@ -1,6 +1,8 @@
 import * as sakuraba from "sakuraba";
 import * as models from "sakuraba/models";
 import i18next = require("i18next");
+import { getMegamiDispName } from "./megamiData";
+import { t } from "i18next";
 
 /** ログを表示できるかどうか判定 */
 export function logIsVisible(log: state.LogRecord, side: SheetSide): boolean {
