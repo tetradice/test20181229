@@ -3,6 +3,7 @@ import * as models from "sakuraba/models";
 import { t } from "i18next";
 import { h } from "hyperapp";
 import { ActionLogRecord } from "sakuraba/typings/state";
+import i18next = require("i18next");
 
 /** プレイヤーサイドを逆にする */
 export function flipSide(side: PlayerSide): PlayerSide{
@@ -24,15 +25,32 @@ export function getMegamiKeys(cardSet: CardSet): sakuraba.Megami[]{
     return keys;
 }
 
-/** メガミの表示名を取得 */
-export function getMegamiDispName(megami: sakuraba.Megami): string{
+/** メガミの表示名を取得（象徴武器表示あり） */
+export function getMegamiDispNameWithSymbol(lang: string, megami: sakuraba.Megami): string{
     let data = sakuraba.MEGAMI_DATA[megami];
-    if(data.base !== undefined){
-        return `${data.name}(${data.symbol})`
+
+    if(lang === 'zh'){
+        return `${data.nameZh}(${data.symbolZh})`
+    } else if(lang === 'en'){
+        return `${data.nameEn} (${data.symbolEn})`
     } else {
         return `${data.name}(${data.symbol})`
     }
 }
+
+/** メガミの表示名を取得 */
+export function getMegamiDispName(lang: string, megami: sakuraba.Megami): string {
+    let data = sakuraba.MEGAMI_DATA[megami];
+
+    if (lang === 'zh') {
+        return `${data.nameZh}`
+    } else if (lang === 'en') {
+        return `${data.nameEn}`
+    } else {
+        return `${data.name}`
+    }
+}
+
 
 /** ログを表示できるかどうか判定 */
 export function logIsVisible(log: state.LogRecord, side: SheetSide): boolean{
@@ -239,16 +257,20 @@ export function convertLogValueForState(val: LogValue): state.ActionLogBody{
 }
 
 function convertLogParamValueForState(val: LogParamValue): state.ActionLogBody {
-    if(typeof val === 'string' || typeof val === 'number'){
+    if(typeof val === 'number'){
         return val.toString();
+    } else if(typeof val === 'string'){
+        return val;
     } else if(Array.isArray(val)){
         return convertLogValueForState(val);
     } else {
-        return { type: 'cn', cardId: val.cardId, cardSet: val.cardSet };
+        return val;
     }
 }
 
-// ログオブジェクトを翻訳する (パラメータの中に翻訳対象オブジェクトが含まれていれば再帰的に翻訳)
+/**
+ * ログオブジェクトを翻訳する (パラメータの中に翻訳対象オブジェクトが含まれていれば再帰的に翻訳)
+ */
 export function translateLog(log: state.ActionLogBody): string{
     if(!log) return "";
 
@@ -280,15 +302,32 @@ export function translateLog(log: state.ActionLogBody): string{
             let cardData = new models.CardData(log.cardSet, log.cardId, 'ja');
             return cardData.name;
         }
+
+        // カードセット名
+        if (log.type === 'cs') {
+            return sakuraba.CARD_SET_NAMES[log.cardSet];
+        }
+
+        // メガミ名
+        if (log.type === 'mn') {
+            // i18nextから現在の言語を取得
+            return getMegamiDispName(i18next.language, log.megami);
+        }
     }
 
     return undefined;
 }
 
+/**
+ * 改行を<br>に変換
+ */
 export function nl2br(str: string): string {
     return str.replace(/\n/g, '<br>');
 }
 
+/**
+ * 改行を<br>に変換し、JSX要素のリストとして返す
+ */
 export function nl2brJsx(str: string): hyperapp.Children[] {
     let lines = str.split(/\n/g);
     let ret: hyperapp.Children[] = [];

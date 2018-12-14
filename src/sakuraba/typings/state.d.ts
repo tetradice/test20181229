@@ -168,16 +168,26 @@ export interface ActionLogRecord extends LogRecord {
 
 export type ActionLogBody = ActionLogItem | ActionLogItem[]
 
-export type ActionLogItem = string | ActionLogLocaleStringItem | ActionLogCardNameItem;
+export type ActionLogItem = string | ActionLogLocaleStringItem | ActionLogCardNameItem | ActionLogCardSetNameItem | ActionLogMegamiNameItem;
 
 export interface ActionLogLocaleStringItem {
     type: 'ls';
     key: string;
-    params: {[key: string]: ActionLogBody}
+    params?: {[key: string]: ActionLogBody}
 }
 
 export interface ActionLogCardNameItem {
     type: 'cn';
     cardSet: CardSet;
     cardId: string;
+}
+
+export interface ActionLogCardSetNameItem {
+    type: 'cs';
+    cardSet: CardSet;
+}
+
+export interface ActionLogMegamiNameItem {
+    type: 'mn';
+    megami: Megami;
 }

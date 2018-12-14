@@ -1,4 +1,4 @@
-import { CARD_DATA, CardDataItem, MEGAMI_DATA } from "sakuraba";
+import { CARD_DATA, CardDataItem, MEGAMI_DATA, ALL_CARD_ID_LIST } from "sakuraba";
 import _ from "lodash";
 import { h } from "hyperapp";
 

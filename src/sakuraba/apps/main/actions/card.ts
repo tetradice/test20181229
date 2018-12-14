@@ -4,6 +4,7 @@ import * as utils from "sakuraba/utils";
 import { ActionsType } from ".";
 import { CARD_DATA } from "sakuraba";
 import { t } from "i18next";
+import { State } from "sakuraba/apps/mariganModal";
 
 export default {
     /** カードを1枚追加する */
@@ -54,8 +55,8 @@ export default {
         toPosition?: 'first' | 'last';
         /** カード名をアクションログに出力するか */
         cardNameLogging?: boolean
-        /** カード名ログのタイトル */
-        cardNameLogTitle?: string
+        /** カード名ログのタイトル (翻訳キーで指定) */
+        cardNameLogTitleKey?: string
     }) => (state: state.State, actions: ActionsType) => {
         // 元の盤の状態をコピーして新しい盤を生成
         let newBoard = models.Board.clone(state.board);
@@ -80,19 +81,30 @@ export default {
 
         // 移動するカード名を記録
         if(p.cardNameLogging){
-            let cardNames = fromCards.map((c) => `[${CARD_DATA[state.board.cardSet][c.cardId].name}]`).join(t('log:CardNameFormat-、'));
-            let title = (p.cardNameLogTitle ? `${p.cardNameLogTitle} ` : '');
-            let logData: LogValue = [
-                  (p.cardNameLogTitle ? 'log:CardNameFormat-TemplateWithTitle' : 'log:CardNameFormat-Template')
-                , {
-                      title: p.cardNameLogTitle
-                    , cardNames: [
-                        
-                      ]
-                  }
-            ]
+            // ログバッファ
+            let logBuf: state.ActionLogBody = [];
 
-            actions.appendActionLog({text: `${title}-> ${cardNames}`, visibility: 'ownerOnly'});
+            // タイトルを表示する場合、まずはタイトルを追加
+            if(p.cardNameLogTitleKey){
+                logBuf.push({type: 'ls', key: p.cardNameLogTitleKey});
+            }
+
+            // インデント追加
+            logBuf.push('->');
+
+            // 移動するカードの名前を記号で結合（[CARD1]、[CARD2]、[CARD3]、... 形式にする）
+            for (let i = 0; i < fromCards.length; i++){
+                let card = fromCards[i];
+                if (i >= 1) logBuf.push({ type: 'ls', key: 'CardNameFormat-、' }); // 2つめ以降は区切り記号追加
+                logBuf.push({
+                      type: 'ls'
+                    , key: 'log:CardNameFormat-[CARDNAME]'
+                    , params: {type: 'cn', cardSet: state.board.cardSet, cardId: card.cardId}
+                });
+            }
+
+            // 最終的なログを決定
+            actions.appendActionLog({ body: logBuf, visibility: 'ownerOnly'});
         }
 
         let [toSide, toRegion, toLinkedCardId] = p.to;
@@ -179,7 +191,7 @@ export default {
         }
 
         actions.operate({
-            log: [(p.value ? 'log:切札[CARDNAME]を表向きにしました' : 'log:切札[CARDNAME]を裏返しました'), {cardName: {type: 'cardName', cardSet: state.board.cardSet, cardId: card.cardId}}],
+            log: [(p.value ? 'log:切札[CARDNAME]を表向きにしました' : 'log:切札[CARDNAME]を裏返しました'), {cardName: {type: 'cn', cardSet: state.board.cardSet, cardId: card.cardId}}],
             proc: () => {
                 actions.setSpecialUsed(p);
             }
@@ -205,7 +217,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            log: ['log:[CARDNAME]をボード上から取り除きました', {cardName: {type: 'cardName', cardSet: state.board.cardSet, cardId: card.cardId}}],
+            log: ['log:[CARDNAME]をボード上から取り除きました', {cardName: {type: 'cn', cardSet: state.board.cardSet, cardId: card.cardId}}],
             proc: () => {
                 actions.removeCard(p);
             }
@@ -232,7 +244,7 @@ export default {
         let card = board.getCard(p.objectId);
 
         actions.operate({
-            log: ['log:[CARDNAME]の帯電を解除し、GUAGEを1上げました', {cardName: {type: 'cardName', cardSet: state.board.cardSet, cardId: card.cardId}, guage: [(p.guageType === 'wind' ? '風神ゲージ' : '雷神ゲージ'), null]}],
+            log: ['log:[CARDNAME]の帯電を解除し、GUAGEを1上げました', {cardName: {type: 'cn', cardSet: state.board.cardSet, cardId: card.cardId}, guage: [(p.guageType === 'wind' ? '風神ゲージ' : '雷神ゲージ'), null]}],
             proc: () => {
                 // 帯電解除
                 actions.discharge(p);

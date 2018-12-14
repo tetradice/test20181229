@@ -110,7 +110,7 @@ $(function () {
                     let newOpenState = utils.judgeCardOpenState(currentState.board.cardSet, card, currentState.board.handOpenFlags[toSide], toSide, toRegion);
 
                     // ログ内容を決定
-                    let logCardNameParam: LogCardNameParamValue = { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId };
+                    let logCardNameParam: state.ActionLogCardNameItem = { type: 'cn', cardSet: currentState.board.cardSet, cardId: card.cardId };
                     let logParam = { from: fromRegionTitle, to: toRegionTitle };
                     let logParamWithCardName = { cardName: logCardNameParam, from: fromRegionTitle, to: toRegionTitle };
 
@@ -174,10 +174,10 @@ $(function () {
                             // カードを山札へ置いた場合
                             logs = [];
                             if (toPosition === 'first') {
-                                logs.push({ text: ['log:[CARDNAME]を山札の底へ置きました', logCardNameParam], visibility: 'ownerOnly' });
+                                logs.push({ text: ['log:[CARDNAME]を山札の底へ置きました', {cardName: logCardNameParam}], visibility: 'ownerOnly' });
                                 logs.push({ text: ['log:カードを1枚山札の底へ置きました', null], visibility: 'outerOnly' });
                             } else {
-                                logs.push({ text: ['log:[CARDNAME]を山札の上へ置きました', logCardNameParam], visibility: 'ownerOnly' });
+                                logs.push({ text: ['log:[CARDNAME]を山札の上へ置きました', {cardName: logCardNameParam}], visibility: 'ownerOnly' });
                                 logs.push({ text: ['log:カードを1枚山札の上へ置きました', null], visibility: 'outerOnly' });
                             }
                         }
@@ -527,7 +527,7 @@ $(function () {
                                     , disabled: !extraCard
                                     , callback: () => {
                                         appActions.operate({
-                                            log: ['log:[CARDNAME1]を[CARDNAME2]に交換しました', { cardName1: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId }, cardName2: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: cardData.exchangableTo }}],
+                                            log: ['log:[CARDNAME1]を[CARDNAME2]に交換しました', { cardName1: { type: 'cn', cardSet: currentState.board.cardSet, cardId: card.cardId }, cardName2: { type: 'cn', cardSet: currentState.board.cardSet, cardId: cardData.exchangableTo }}],
                                             proc: () => {
                                                 appActions.moveCard({ from: id, to: [card.side, 'extra', null] });
                                                 appActions.moveCard({ from: extraCard.id, to: [card.side, 'used', null] });
@@ -579,7 +579,7 @@ $(function () {
                                             utils.confirmModal(t('dialog:ゲームから取り除いた後は、元に戻すことはできません。よろしいですか？'), () => {
 
                                                 appActions.operate({
-                                                    log: ['log:[CARDNAME1]を取り除き、[CARDNAME2]を追加札から取得しました', { cardName1: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId }, cardName2: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: cardData.exchangableTo } }],
+                                                    log: ['log:[CARDNAME1]を取り除き、[CARDNAME2]を追加札から取得しました', { cardName1: { type: 'cn', cardSet: currentState.board.cardSet, cardId: card.cardId }, cardName2: { type: 'cn', cardSet: currentState.board.cardSet, cardId: cardData.exchangableTo } }],
                                                     proc: () => {
                                                         appActions.removeCard({ objectId: id });
                                                         appActions.moveCard({ from: extraCard.id, to: [playerSide, 'special', null] });
@@ -602,7 +602,7 @@ $(function () {
                                             }
 
                                             appActions.operate({
-                                                log: ['log:[CARDNAME1]を[CARDNAME2]に交換しました', { cardName1: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId }, cardName2: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: cardData.exchangableTo } }],
+                                                log: ['log:[CARDNAME1]を[CARDNAME2]に交換しました', { cardName1: { type: 'cn', cardSet: currentState.board.cardSet, cardId: card.cardId }, cardName2: { type: 'cn', cardSet: currentState.board.cardSet, cardId: cardData.exchangableTo } }],
                                                 proc: () => {
                                                     appActions.moveCard({ from: id, to: [card.side, 'extra', null] });
                                                     appActions.moveCard({ from: extraCard.id, to: [card.side, 'special', null] });
@@ -755,7 +755,7 @@ $(function () {
                                 items['sendToSelf'] = {
                                     name: t('[CARDNAME]を自分の捨て札にする', { cardName: cardData.name }), callback: () => {
                                         appActions.operate({
-                                            log: ['log:[LINKEDCARDNAME]の下に封印されていた[CARDNAME]を、捨て札にしました', { cardName: { type: 'cardName', cardSet: 'na-s2', cardId: id }, linkedCardName: { type: 'cardName', cardSet: 'na-s2', cardId: linkedCard.cardId } }],
+                                            log: ['log:[LINKEDCARDNAME]の下に封印されていた[CARDNAME]を、捨て札にしました', { cardName: { type: 'cn', cardSet: currentState.board.cardSet, cardId: id }, linkedCardName: { type: 'cn', cardSet: currentState.board.cardSet, cardId: linkedCard.cardId } }],
                                             proc: () => {
                                                 appActions.moveCard({ from: id, to: [playerSide, 'used', null] });
                                             }
@@ -767,7 +767,7 @@ $(function () {
                                 items['sendToOpponent'] = {
                                     name: t('[CARDNAME]を相手の捨て札にする', { cardName: cardData.name }), callback: () => {
                                         appActions.operate({
-                                            log: ['log:[LINKEDCARDNAME]の下に封印されていた[CARDNAME]を、相手の捨て札にしました', { cardName: { type: 'cardName', cardSet: 'na-s2', cardId: id }, linkedCardName: { type: 'cardName', cardSet: 'na-s2', cardId: linkedCard.cardId } }],
+                                            log: ['log:[LINKEDCARDNAME]の下に封印されていた[CARDNAME]を、相手の捨て札にしました', { cardName: { type: 'cn', cardSet: currentState.board.cardSet, cardId: id }, linkedCardName: { type: 'cn', cardSet: currentState.board.cardSet, cardId: linkedCard.cardId } }],
                                             proc: () => {
                                                 appActions.moveCard({ from: id, to: [utils.flipSide(playerSide), 'used', null] });
                                             }
@@ -804,7 +804,7 @@ $(function () {
                                         items['closeCard'] = {
                                             name: t('[CARDNAME]の公開を中止する', { cardName: cardData.name }), callback: () => {
                                                 appActions.operate({
-                                                    log: ['log:[CARDNAME]の公開を中止しました', { cardName: { type: 'cardName', cardSet: 'na-s2', cardId: id } }],
+                                                    log: ['log:[CARDNAME]の公開を中止しました', { cardName: { type: 'cn', cardSet: currentState.board.cardSet, cardId: id } }],
                                                     proc: () => {
                                                         appActions.setHandCardOpenFlag({ side: playerSide, cardId: id, value: false });
                                                     }
@@ -815,7 +815,7 @@ $(function () {
                                         items['openCard'] = {
                                             name: t('[CARDNAME]を相手に公開する', { cardName: cardData.name }), callback: () => {
                                                 appActions.operate({
-                                                    log: ['log:[CARDNAME]を公開しました', { cardName: { type: 'cardName', cardSet: 'na-s2', cardId: id } }],
+                                                    log: ['log:[CARDNAME]を公開しました', { cardName: { type: 'cn', cardSet: currentState.board.cardSet, cardId: id } }],
                                                     proc: () => {
                                                         appActions.setHandCardOpenFlag({ side: playerSide, cardId: id, value: true });
                                                     }
@@ -874,7 +874,7 @@ $(function () {
                                         let card = opponentHandCards[index];
 
                                         appActions.operate({
-                                            log: ['log:相手の手札1枚を無作為に選び、捨て札にしました -> [CARDNAME]', { cardName: { type: 'cardName', cardSet: currentState.board.cardSet, cardId: card.cardId } }],
+                                            log: ['log:相手の手札1枚を無作為に選び、捨て札にしました -> [CARDNAME]', { cardName: { type: 'cn', cardSet: currentState.board.cardSet, cardId: card.cardId } }],
                                             proc: () => {
                                                 appActions.moveCard({ from: [opponentSide, 'hand', null], fromPosition: index, to: [opponentSide, 'used', null] });
                                             }
@@ -1080,7 +1080,7 @@ $(function () {
                 // // ★集計
                 // // すべてのカード情報を取得
                 // let allCards: [string, CardDataItem][] = [];
-                // ['na-s2', 'na-s3'].forEach((cardSet: CardSet) => {
+                // [currentState.board.cardSet, 'na-s3'].forEach((cardSet: CardSet) => {
                 //     for (let key in CARD_DATA[cardSet]) {
                 //         allCards.push([key, CARD_DATA[key]]);
                 //     }

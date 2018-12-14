@@ -208,12 +208,23 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
         let side = state.side;
 
+        let megamiNameLogBody: state.ActionLogBody = [
+            {
+                type: 'ls'
+                , key: 'メガミ名-MEGAMI1、MEGAMI2'
+                , params: {
+                    megami1: { type: 'mn', megami: board.megamis[state.side][0] }
+                    , megami2: { type: 'mn', megami: board.megamis[state.side][1] }
+                }
+            }
+        ];
+
         utils.confirmModal(t('dialog:選択したメガミ2柱を公開します。この操作を行うと、それ以降メガミの変更は行えません。よろしいですか？'), () => {
             actions.operate({
                 log: ['log:選択したメガミを公開しました', null],
                 undoType: 'notBack',
                 proc: () => {
-                    actions.appendActionLog({indent: true, text: ['メガミ名-MEGAMI1、MEGAMI2', {megami1: utils.getMegamiDispName(board.megamis[state.side][0]), megami2: utils.getMegamiDispName(board.megamis[state.side][1])}]});
+                    actions.appendActionLog({ indent: true, body: megamiNameLogBody});
                     actions.setMegamiOpenFlag({side: side, value: true});
                 }
             });
@@ -255,7 +266,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                     proc: () => {
                         // 選択したカードを山札の底に移動
                         selectedCards.forEach(card => {
-                            actions.moveCard({from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitle: t('log:CardNamePrefix-山札へ戻す')});
+                            actions.moveCard({from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitleKey: 'log:CardNamePrefix-山札へ戻す'});
                         });
 
                         // 手札n枚を引く

@@ -15,8 +15,7 @@ type VigorValue = 0 | 1 | 2;
 
 type LogValue = [string, { [key: string]: LogParamValue} | null];
 
-type LogParamValue = string | number | LogCardNameParamValue | LogValue;
-type LogCardNameParamValue = { type: 'cardName', cardSet: CardSet, cardId: string }
+type LogParamValue = string | number | state.ActionLogCardNameItem | state.ActionLogCardSetNameItem | state.ActionLogCardSetNameItem | LogValue;
 
 /** 観戦者情報 */
 

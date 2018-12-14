@@ -36,7 +36,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
             apps.cardSetSelectModal.run(modalState, document.getElementById('COMMON-MODAL-PLACEHOLDER'));
         }).then((newCardSet) => {
             actions.operate({
-                log: `カードセットを${CARD_SET_NAMES[newCardSet]}に変更しました`,
+                log: ['log:カードセットをCARDSETに変更しました', { cardSet: { type: 'cs', cardSet: newCardSet}}],
                 proc: () => {
                     actions.resetBoard({ newCardSet: newCardSet });
                 }
@@ -173,7 +173,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     if(board.megamis.p1 !== null){
         if(state.side === 'p1' || board.megamiOpenFlags.p1){
             // プレイヤー1のメガミ名を表示可能な場合 (自分がプレイヤー1である or プレイヤー1のメガミが公開されている)
-            megamiCaptionP1 = ` - ${t('メガミ名-MEGAMI1、MEGAMI2', {megami1: utils.getMegamiDispName(board.megamis.p1[0]), megami2: utils.getMegamiDispName(board.megamis.p1[1])})}`
+            megamiCaptionP1 = ` - ${t('メガミ名-MEGAMI1、MEGAMI2', { megami1: utils.getMegamiDispNameWithSymbol(state.lang, board.megamis.p1[0]), megami2: utils.getMegamiDispNameWithSymbol(state.lang, board.megamis.p1[1])})}`
         } else {
             // プレイヤー1のメガミ名を表示不可能な場合
             megamiCaptionP1 = ` - ${t('メガミ名-？？？、？？？')}`
@@ -182,7 +182,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     if(board.megamis.p2 !== null){
         if(state.side === 'p2' || board.megamiOpenFlags.p2){
             // プレイヤー2のメガミ名を表示可能な場合 (自分がプレイヤー2である or プレイヤー2のメガミが公開されている)
-            megamiCaptionP2 = ` - ${t('メガミ名-MEGAMI1、MEGAMI2', {megami1: utils.getMegamiDispName(board.megamis.p2[0]), megami2: utils.getMegamiDispName(board.megamis.p2[1])})}`
+            megamiCaptionP2 = ` - ${t('メガミ名-MEGAMI1、MEGAMI2', { megami1: utils.getMegamiDispNameWithSymbol(state.lang, board.megamis.p2[0]), megami2: utils.getMegamiDispNameWithSymbol(state.lang, board.megamis.p2[1])})}`
         } else {
             // プレイヤー2のメガミ名を表示不可能な場合
             megamiCaptionP2 = ` - ${t('メガミ名-？？？、？？？')}`

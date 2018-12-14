@@ -460,7 +460,7 @@ export default {
             let card = boardModel.getCard(p.useCardId);
             let data = CARD_DATA[state.board.cardSet][card.cardId];
 
-            logs.push({ text: ['log:[CARDNAME]を伏せ札にしてACTを行いました', {cardName: {type: 'cardName', cardSet: 'na-s2', cardId: card.cardId}, action: [p.actionTitleKey, null]}], visibility: 'ownerOnly' });
+            logs.push({ text: ['log:[CARDNAME]を伏せ札にしてACTを行いました', {cardName: {type: 'cn', cardSet: state.board.cardSet, cardId: card.cardId}, action: [p.actionTitleKey, null]}], visibility: 'ownerOnly' });
             logs.push({ text: ['log:手札1枚を伏せ札にしてACTを行いました', {action: [p.actionTitleKey, null]}], visibility: 'outerOnly' });
         } else {
             logs.push({ text: ['log:ACTを行いました', {action: [p.actionTitleKey, null]}] });
