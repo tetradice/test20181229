@@ -1,4 +1,5 @@
 import moment = require('moment');
+import * as utils from "sakuraba/utils";
 
 
 export default {
@@ -6,7 +7,7 @@ export default {
         return {actionLogVisible: !state.actionLogVisible};
     },
 
-    appendActionLog: (p: {text?: LogValue, body?: state.ActionLogBody,visibility?: LogVisibility, indent?: boolean}) => (state: state.State) => {
+    appendActionLog: (p: {text?: LogValue, body?: state.ActionLogBody, visibility?: LogVisibility, indent?: boolean}) => (state: state.State) => {
         // textとbodyを両方指定することはできない
         if(p.text !== undefined && p.body !== undefined) throw "ArgumentError - appendActionLog - text and body are both specified";
 
@@ -15,7 +16,7 @@ export default {
         if(p.body !== undefined){
             logBody = p.body;
         } else {
-            logBody = {type: 'ls', key: p.text[0], args: p.text[1]};
+            logBody = utils.convertLogValueForState(p.text);
         }
 
         // 保存

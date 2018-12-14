@@ -19,6 +19,7 @@ type LogParamValue = string | number | LogCardNameParamValue | LogValue;
 type LogCardNameParamValue = { type: 'cardName', cardSet: CardSet, cardId: string }
 
 /** 観戦者情報 */
+
 interface WatcherInfo {
     name: string;
     online: boolean;

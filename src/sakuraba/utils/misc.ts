@@ -240,7 +240,7 @@ export function convertLogValueForState(val: LogValue): state.ActionLogBody{
 
 function convertLogParamValueForState(val: LogParamValue): state.ActionLogBody {
     if(typeof val === 'string' || typeof val === 'number'){
-        return { type: 's', text: val.toString() };
+        return val.toString();
     } else if(Array.isArray(val)){
         return convertLogValueForState(val);
     } else {
@@ -249,22 +249,18 @@ function convertLogParamValueForState(val: LogParamValue): state.ActionLogBody {
 }
 
 // ログオブジェクトを翻訳する (パラメータの中に翻訳対象オブジェクトが含まれていれば再帰的に翻訳)
-export function translateLog(log: string | state.ActionLogBody): string{
+export function translateLog(log: state.ActionLogBody): string{
     if(!log) return "";
 
     let buf = "";
-    if(typeof log === 'string'){
-        // 文字列が渡された場合はそのまま返す
-        return log;
-        
-    } else if(Array.isArray(log)){
+    if(Array.isArray(log)){
         // 配列が渡された場合、全要素を翻訳して結合
         return log.map(x => translateLog(x)).join('');
 
     } else {
         // 固定文字列
-        if(log.type === 's'){
-            return log.text;
+        if(typeof log === 'string'){
+            return log;
         }
 
         // 翻訳対象文字列

@@ -82,7 +82,7 @@ export default {
         if(p.cardNameLogging){
             let cardNames = fromCards.map((c) => `[${CARD_DATA[state.board.cardSet][c.cardId].name}]`).join(t('log:CardNameFormat-、'));
             let title = (p.cardNameLogTitle ? `${p.cardNameLogTitle} ` : '');
-            let logData: LocalizedLogValue = [
+            let logData: LogValue = [
                   (p.cardNameLogTitle ? 'log:CardNameFormat-TemplateWithTitle' : 'log:CardNameFormat-Template')
                 , {
                       title: p.cardNameLogTitle

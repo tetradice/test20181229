@@ -45,13 +45,13 @@ export class Board implements state.Board {
             if(usedIndustria){
                 let sealedCards = this.getRegionCards(usedIndustria.side, 'on-card', usedIndustria.id);
                 if(sealedCards.length >= 1){
-                    return new models.CardData(card.cardId, language, sealedCards[0].cardId);
+                    return new models.CardData(this.cardSet, card.cardId, language, sealedCards[0].cardId);
                 }
             }
         }
 
         // でゅーぷりぎあ以外のカードか、複製元がないでゅーぷりぎあなら、通常通りカード情報を取得
-        return new models.CardData(card.cardId, language);
+        return new models.CardData(this.cardSet, card.cardId, language);
     }
 
     /** すべてのカードを取得 */

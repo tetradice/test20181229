@@ -168,12 +168,7 @@ export interface ActionLogRecord extends LogRecord {
 
 export type ActionLogBody = ActionLogItem | ActionLogItem[]
 
-export type ActionLogItem = ActionLogStringItem | ActionLogLocaleStringItem | ActionLogCardNameItem;
-
-export interface ActionLogStringItem {
-    type: 's';
-    text: string;
-}
+export type ActionLogItem = string | ActionLogLocaleStringItem | ActionLogCardNameItem;
 
 export interface ActionLogLocaleStringItem {
     type: 'ls';
