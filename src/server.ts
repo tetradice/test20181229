@@ -61,7 +61,7 @@ app
   .get('/dist/main.js.map', (req, res) => res.sendFile(MAIN_JS_MAP) );
 
   // プレイヤーとして卓URLにアクセスしたときの処理
-  const playerRoute = (req: express.Request, res: express.Response, lang: string) => {
+  const playerRoute = (req: express.Request, res: express.Response, lang: Language) => {
     // キーに対応する情報の取得を試みる
     RedisClient.HGET(`sakuraba:player-key-map`, req.params.key, (err, dataJson) => {
       if(dataJson !== null){
@@ -75,21 +75,28 @@ app
   };
 app
   // 卓URL (プレイヤー)
-  .get('/:lang/play/:key', (req, res) => {
-    playerRoute(req, res, req.params.lang);
+  .get('/zh/play/:key', (req, res) => {
+    playerRoute(req, res, 'zh-Hans-CN');
+  })
+  .get('/en/play/:key', (req, res) => {
+    playerRoute(req, res, 'en');
   })
   .get('/play/:key', (req, res) => {
     playerRoute(req, res, 'ja');
   })
   // 卓URL (観戦者用)
-  .get('/:lang/watch/:tableId', (req, res) => {
-    res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: req.params.lang})
+  .get('/zh/watch/:tableId', (req, res) => {
+    res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'zh-Hans-CN'})
+  })
+  .get('/en/watch/:tableId', (req, res) => {
+    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'en' })
   })
   .get('/watch/:tableId', (req, res) => {
     res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja'})
   })
   // トップページ
-  .get('/:lang', (req, res) => res.render('index', {environment: process.env.ENVIRONMENT, version: VERSION, lang: req.params.lang}) )
+  .get('/zh', (req, res) => res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'zh-Hans-CN'}) )
+  .get('/en', (req, res) => res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'en' }))
   .get('/', (req, res) => res.render('index', {environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja'}) )
 
   .post('/tables.create', (req, res) => {

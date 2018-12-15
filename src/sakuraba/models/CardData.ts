@@ -127,7 +127,7 @@ export class CardData {
 
     /** 追加札かどうか(デッキ構築の時に選択できず、ゲーム開始時に追加札領域に置かれる) */
     get extra(): CardDataItem['extra'] {
-        return this.extra;
+        return this.baseData.extra;
     }
     /** 追加札の追加元 */
     get extraFrom(): CardDataItem['extraFrom'] {

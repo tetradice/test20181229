@@ -27,7 +27,7 @@ interface Param {
     cardSet: CardSet;
 
     /** 言語設定 */
-    language?: string;
+    language?: Language;
 
     descriptionViewable: boolean;
     draggable?: boolean;

@@ -17,7 +17,7 @@ declare var params: {
     tableId: string;
     side: SheetSide;
     environment: 'production' | 'development';
-    lang: string;
+    lang: Language;
 }
 
 function messageModal(desc: string) {
@@ -36,21 +36,28 @@ function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery
 
 $(function () {
     try {
-        console.log(params);
         // 言語設定の初期化。初期化完了後にメイン処理に入る
         i18next
             .use(LocizeBackend)
+            .use(languageDetector)
             .init({
-                lng: params.lang
-                , defaultNS: 'common'
-                , ns: ['common', 'log', 'cardset', 'help-window']
+                defaultNS: 'common'
+                , lng: params.lang
+                , ns: ['common', 'log', 'cardset', 'help-window', 'dialog']
+                , load: 'currentOnly' // 対象となった言語のみ読み込む
                 , debug: true
+                , saveMissing: true // 見つからないキーがあれば追加
+                , fallbackLng: false // フォールバック先はなし
                 , parseMissingKeyHandler: (k: string) => `[${k}]`
                 , backend: {
                     projectId: '5dfcd5bf-69f5-4e2c-b607-66b6ad4836ec'
+                    , apiKey: '4ca647fc-f94b-4f89-9b08-63c491ef292f'
                     , referenceLng: 'ja'
                 }
             }, function () {
+                console.log("i18next.language: ", i18next.language); // ★
+                console.log("i18next.languages: ", i18next.languages); // ★
+
                 // socket.ioに接続し、ラッパーを作成
                 const ioSocket = io();
                 const socket = new ClientSocket(ioSocket);
