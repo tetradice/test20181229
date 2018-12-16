@@ -75,6 +75,55 @@ app
       }
     });
   };
+
+// 卓作成処理
+const tableCreateRoute = (req: express.Request, res: express.Response, langCode?: string) => {
+  // 新しい卓番号を採番
+  RedisClient.INCR(`sakuraba:currentTableNo`, (err, newTableNo) => {
+    // トランザクションを張る
+    var multiClient = RedisClient.multi();
+
+    // 卓を追加
+    let state = utils.createInitialState();
+    multiClient.SET(`sakuraba:tables:${newTableNo}:board`, JSON.stringify(state.board));
+    multiClient.SET(`sakuraba:tables:${newTableNo}:watchers`, JSON.stringify({}));
+
+
+    // 卓へアクセスするための、プレイヤー1用アクセスキー、プレイヤー2用アクセスキーを生成
+    let p1Key = randomstring.generate({
+      length: 12
+      , readable: true
+    });
+    let p2Key = randomstring.generate({
+      length: 12
+      , readable: true
+    });
+
+    multiClient.HSET(`sakuraba:player-key-map`, p1Key, JSON.stringify({ tableId: newTableNo, side: 'p1' }));
+    multiClient.HSET(`sakuraba:player-key-map`, p2Key, JSON.stringify({ tableId: newTableNo, side: 'p2' }));
+
+    multiClient.EXEC((err, replies) => {
+      console.log(JSON.stringify(err));
+      console.log(JSON.stringify(replies));
+
+      // 卓にアクセスするためのURLを生成
+      let urlBase: string;
+      if (process.env.BASE_URL) {
+        urlBase = process.env.BASE_URL;
+      } else {
+        // for development
+        urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
+      }
+
+      let p1Url = `${urlBase}/${langCode ? langCode + '/' : ''}play/${p1Key}`;
+      let p2Url = `${urlBase}/${langCode ? langCode + '/' : ''}play/${p2Key}`;
+      let watchUrl = `${urlBase}/${langCode ? langCode + '/' : ''}watch/${newTableNo}`;
+
+      res.json({ p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl });
+    });
+  });
+}
+
 app
   // 卓URL (プレイヤー)
   .get('/zh/play/:key', (req, res) => {
@@ -101,51 +150,14 @@ app
   .get('/en', (req, res) => res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'en' }))
   .get('/', (req, res) => res.render('index', {environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja'}) )
 
+  // 新しい卓の作成
+  .post('/zh/tables.create', (req, res) => tableCreateRoute(req, res, 'zh'))
+  .post('/en/tables.create', (req, res) => tableCreateRoute(req, res, 'en'))
+  .post('/tables.create', (req, res) => tableCreateRoute(req, res))
+
+
   .post('/tables.create', (req, res) => {
-    // 新しい卓番号を採番
-    RedisClient.INCR(`sakuraba:currentTableNo`, (err, newTableNo) => {
-      // トランザクションを張る
-      var multiClient = RedisClient.multi();
 
-      // 卓を追加
-      let state = utils.createInitialState();
-      multiClient.SET(`sakuraba:tables:${newTableNo}:board`, JSON.stringify(state.board));
-      multiClient.SET(`sakuraba:tables:${newTableNo}:watchers`, JSON.stringify({}));
-
-
-      // 卓へアクセスするための、プレイヤー1用アクセスキー、プレイヤー2用アクセスキーを生成
-      let p1Key = randomstring.generate({
-          length: 12
-        , readable: true
-      });
-      let p2Key = randomstring.generate({
-          length: 12
-        , readable: true
-      });
-
-      multiClient.HSET(`sakuraba:player-key-map`, p1Key, JSON.stringify({tableId: newTableNo, side: 'p1'}));
-      multiClient.HSET(`sakuraba:player-key-map`, p2Key, JSON.stringify({tableId: newTableNo, side: 'p2'}));
-
-      multiClient.EXEC((err, replies) => {
-        console.log(JSON.stringify(err));
-        console.log(JSON.stringify(replies));
-
-        // 卓にアクセスするためのURLを生成
-        let urlBase: string;
-        if(process.env.BASE_URL){
-          urlBase = process.env.BASE_URL;
-        } else {
-          // for development
-          urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
-        }
-         
-        let p1Url = `${urlBase}/play/${p1Key}`;
-        let p2Url = `${urlBase}/play/${p2Key}`;
-        let watchUrl = `${urlBase}/watch/${newTableNo}`;
-
-        res.json({p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl});
-      });
-    });
   })
   .post('/.error-send', (req, res) => {
     let sendgrid_username   = process.env.SENDGRID_USERNAME;
