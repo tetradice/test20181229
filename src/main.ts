@@ -225,12 +225,12 @@ $(function () {
 
                         items['toTop'] = {
                             name: t('山札の上に置く'), callback: () => {
-                                moveCardMain(dragInfo.lastDraggingCardBeforeContextMenu, side, 'library', null);
+                                moveCardMain(dragInfo.lastDraggingCardBeforeContextMenu, dragInfo.lastDragToSideBeforeContextMenu, 'library', null);
                             }
                         };
                         items['toBottom'] = {
                             name: t('山札の底に置く'), callback: () => {
-                                moveCardMain(dragInfo.lastDraggingCardBeforeContextMenu, side, 'library', null, 'first');
+                                moveCardMain(dragInfo.lastDraggingCardBeforeContextMenu, dragInfo.lastDragToSideBeforeContextMenu, 'library', null, 'first');
                             }
                         };
                         items['sep'] = '----';
@@ -1489,6 +1489,7 @@ $(function () {
                                 if (toRegion === 'library' && boardModel.getRegionCards(toSide, toRegion, toLinkedCardId).length >= 1) {
                                     contextMenuShowingAfterDrop = true;
                                     dragInfo.lastDraggingCardBeforeContextMenu = card;
+                            dragInfo.lastDragToSideBeforeContextMenu = toSide;
                                     $('#CONTEXT-DRAG-TO-LIBRARY').contextMenu({ x: e.pageX, y: e.pageY });
                                     return false;
                                 } else {
