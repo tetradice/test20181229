@@ -1,9 +1,8 @@
-import { h, Children } from "hyperapp";
-import moment from "moment";
+import { h } from "hyperapp";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
 import { ZIndex } from "sakuraba/const";
-import { MEGAMI_DATA, CARD_DATA, CardDataItem, Megami, CARD_SORT_KEY_MAP } from "sakuraba";
+import { MEGAMI_DATA, Megami } from "sakuraba";
 import dragInfo from "sakuraba/dragInfo";
 import { css } from 'emotion'
 import { t } from "i18next";
@@ -62,11 +61,10 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
         let options: JSX.Element[] = [];
         for (let key of utils.getMegamiKeys(state.board.cardSet)) {
             let data = MEGAMI_DATA[key];
-            options.push(<option value={key} selected={key === state.cardListSelectedMegami}>{data.name} ({data.symbol})</option>);
+            options.push(<option value={key} selected={key === state.cardListSelectedMegami}>{utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, key)}</option>);
         }
 
         let trs: JSX.Element[] = [];
-        let boardModel = new models.Board(state.board);
         for (let cardId of utils.getMegamiCardIds(state.cardListSelectedMegami, state.board.cardSet, null, true)) {
             let c = new models.CardData(state.board.cardSet, cardId, state.setting.language);
             let typeCaptions = [];

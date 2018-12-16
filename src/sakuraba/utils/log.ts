@@ -82,7 +82,7 @@ export function translateLog(log: state.ActionLogBody, languageSetting: Language
         // メガミ名
         if (log.type === 'mn') {
             // i18nextから現在の言語を取得
-            return getMegamiDispName(i18next.language, log.megami);
+            return getMegamiDispName(languageSetting.ui, log.megami);
         }
     }
 

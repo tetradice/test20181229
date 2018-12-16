@@ -2,6 +2,7 @@ import { h, app, View } from "hyperapp";
 import { actions, ActionsType } from "./actions";
 import { State } from "./state";
 import * as utils from "sakuraba/utils";
+import * as models from "sakuraba/models";
 import * as sakuraba from "sakuraba";
 import { Card } from "sakuraba/apps/common/components";
 
@@ -44,7 +45,7 @@ const view: View<State, ActionsType> = (state, actions) => {
             }
         };
         
-        cardElements.push(<Card cardSet={state.cardSet} clickableClass target={card} opened descriptionViewable left={left} top={top} selected={selected} selectedIndex={(selected ? selectedIndex : null)} onclick={onclick} zoom={state.zoom}></Card>);
+        cardElements.push(<Card clickableClass target={card} cardData={new models.CardData(state.cardSet, card.cardId, state.setting.language)} opened descriptionViewable left={left} top={top} selected={selected} selectedIndex={(selected ? selectedIndex : null)} onclick={onclick} zoom={state.zoom}></Card>);
     });
 
     const oncreate = (elem: HTMLElement) => {

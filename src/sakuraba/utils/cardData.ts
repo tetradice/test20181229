@@ -4,12 +4,12 @@ import { t } from "i18next";
 
 /** カードセット名取得 */
 export function getCardSetName(cardSet: CardSet): string{
-    return t(cardSet === 'na-s3' ? t('cardset:新幕 シーズン3') : t('cardset:新幕 シーズン2'))
+    return (cardSet === 'na-s3' ? t('cardset:新幕 シーズン3') : t('cardset:新幕 シーズン2'))
 }
 
 /** カードセットの説明を取得 (選択時に表示) */
 export function getCardSetDescription(cardSet: CardSet): string {
-    return t(cardSet === 'na-s3' ? t('cardset:新幕 シーズン3-説明') : t('cardset:新幕 シーズン2-説明'))
+    return (cardSet === 'na-s3' ? t('cardset:新幕 シーズン3-説明') : t('cardset:新幕 シーズン2-説明'))
 }
 
 

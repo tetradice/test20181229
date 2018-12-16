@@ -46,18 +46,12 @@ $(function () {
                 , ns: ['common', 'log', 'cardset', 'help-window', 'dialog']
                 , load: 'currentOnly' // 対象となった言語のみ読み込む
                 , debug: true
-                , saveMissing: true // 見つからないキーがあれば追加
-                , fallbackLng: false // フォールバック先はなし
                 , parseMissingKeyHandler: (k: string) => `[${k}]`
                 , backend: {
                     projectId: '5dfcd5bf-69f5-4e2c-b607-66b6ad4836ec'
-                    , apiKey: '4ca647fc-f94b-4f89-9b08-63c491ef292f'
                     , referenceLng: 'ja'
                 }
             }, function () {
-                console.log("i18next.language: ", i18next.language); // ★
-                console.log("i18next.languages: ", i18next.languages); // ★
-
                 // socket.ioに接続し、ラッパーを作成
                 const ioSocket = io();
                 const socket = new ClientSocket(ioSocket);
@@ -1015,7 +1009,7 @@ $(function () {
                         // 観戦者でない場合
                         if (p.board.playerNames[params.side] === null) {
                             let playerCommonName = (params.side === 'p1' ? t('プレイヤー1') : t('プレイヤー2'));
-                            utils.userInputModal(`<p>${t('dialog:ふるよにボードシミュレーターへようこそ。あなたはSIDEとして卓に参加します。')}</p><p>${t('プレイヤー名：')}</p>`, ($elem) => {
+                            utils.userInputModal(`<p>${t('dialog:ふるよにボードシミュレーターへようこそ。あなたはSIDEとして卓に参加します。', { side: playerCommonName})}</p><p>${t('プレイヤー名：')}</p>`, ($elem) => {
                                 let playerName = $('#INPUT-MODAL input').val() as string;
                                 if (playerName === '') {
                                     playerName = playerCommonName;

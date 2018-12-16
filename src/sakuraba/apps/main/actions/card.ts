@@ -95,11 +95,11 @@ export default {
             // 移動するカードの名前を記号で結合（[CARD1]、[CARD2]、[CARD3]、... 形式にする）
             for (let i = 0; i < fromCards.length; i++){
                 let card = fromCards[i];
-                if (i >= 1) logBuf.push({ type: 'ls', key: 'CardNameFormat-、' }); // 2つめ以降は区切り記号追加
+                if (i >= 1) logBuf.push({ type: 'ls', key: 'log:CardNameFormat-、' }); // 2つめ以降は区切り記号追加
                 logBuf.push({
                       type: 'ls'
                     , key: 'log:CardNameFormat-[CARDNAME]'
-                    , params: {type: 'cn', cardSet: state.board.cardSet, cardId: card.cardId}
+                    , params: {cardName: {type: 'cn', cardSet: state.board.cardSet, cardId: card.cardId}}
                 });
             }
 

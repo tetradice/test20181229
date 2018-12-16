@@ -3,6 +3,7 @@ import { CARD_SETS } from "sakuraba";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "./actions";
 import { State } from "./state";
+import { t } from "i18next";
 
 // メインビューの定義
 const view: View<State, ActionsType> = (state, actions) => {
@@ -26,7 +27,7 @@ const view: View<State, ActionsType> = (state, actions) => {
         }
 
         // 確認メッセージ
-        utils.confirmModal("カードセットを変更すると、卓は初期状態に戻ります。<br>（操作ログは初期化されません）<br>この操作は相手プレイヤーに確認を取ってから行ってください。<br><br>よろしいですか？", decide);
+        utils.confirmModal(t("dialog:カードセットを変更すると、卓は初期状態に戻ります。"), decide);
     };
 
     const oncreate = (elem: HTMLElement) => {
@@ -47,7 +48,7 @@ const view: View<State, ActionsType> = (state, actions) => {
     return (
         <div class="content" oncreate={oncreate}>
             <div class="description" style="margin-bottom: 2em;">
-                <p>使用するカードセットを選択してください。</p>
+                <p>{t('dialog:使用するカードセットを選択してください。')}</p>
             </div>
             <div class="ui form">
                 <div class="fields">

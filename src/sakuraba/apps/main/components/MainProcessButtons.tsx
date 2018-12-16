@@ -7,6 +7,7 @@ import * as models from "sakuraba/models";
 import { Card, ProcessButton } from "sakuraba/apps/common/components";
 import * as apps from "sakuraba/apps";
 import { t } from "i18next";
+import i18next = require("i18next");
 
 
 /** 処理を進めるためのボタンを表示 */
@@ -34,10 +35,9 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         // ドロップダウンの選択肢を設定
         $('#MEGAMI1-SELECTION').empty().append('<option></option>');
         $('#MEGAMI2-SELECTION').empty().append('<option></option>');
-        for(let key of utils.getMegamiKeys(state.board.cardSet)){
-            let data = sakuraba.MEGAMI_DATA[key];
-            $('#MEGAMI1-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
-            $('#MEGAMI2-SELECTION').append(`<option value='${key}'>${data.name} (${data.symbol})</option>`);
+        for(let megami of utils.getMegamiKeys(state.board.cardSet)){
+            $('#MEGAMI1-SELECTION').append(`<option value='${megami}'>${utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, megami)}</option>`);
+            $('#MEGAMI2-SELECTION').append(`<option value='${megami}'>${utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, megami)}</option>`);
         }
     
         $.fn.form.settings.rules.originalMegamiEqual = function(value) {
@@ -146,7 +146,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                         let left = 4 + c * (100 + 8);
                         let selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
                         
-                        cardElements.push(<Card clickableClass cardSet={state.board.cardSet} target={card} opened descriptionViewable left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={state.zoom}></Card>);
+                        cardElements.push(<Card clickableClass target={card} cardData={boardModel.getCardData(card, state.setting.language)} opened descriptionViewable left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={state.zoom}></Card>);
                     });
                 });
 
@@ -256,7 +256,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
             
             let promise = new Promise<state.Card[]>((resolve, reject) => {
                 let cards = board.getRegionCards(side, 'hand', null);
-                let st = apps.mariganModal.State.create(state.board.cardSet, side, cards, state.zoom, resolve, reject);
+                let st = apps.mariganModal.State.create(state.board.cardSet, side, cards, state.zoom, state.setting, resolve, reject);
                 apps.mariganModal.run(st, document.getElementById('COMMON-MODAL-PLACEHOLDER'));            
             }).then((selectedCards) => {
                 // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す

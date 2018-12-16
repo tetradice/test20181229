@@ -1,0 +1,17 @@
+{
+  "カード/桜花結晶をドラッグ": "Drag Cards/Sakura Tokens",
+  "カードの帯電を解除したい場合は、表向きのカードの上で右クリック": "You may ground cards you electrify by right clicking",
+  "カードを1枚引く": "Draw 1 card",
+  "カードをゲームから取り除きたい場合は、追加札領域へ移動（[風魔招来孔]などの一部カードのみ実行可能）": "If you want to remove the card from the game, move to the additional tag area\n(Only a part of cards such as [Windbeast Invocation] can be executed)",
+  "カードを封印したい時には、使用済み領域にある封印先のカードの上にドラッグ（[論破]などの一部カードにのみ封印可能）": "When you want to seal the card, drag it onto the sealed card in the played cards pile\n(Sealable only on some cards such as [Confuse])",
+  "ボード上に表示されたボタンを押して、準備を進めてください。メガミ選択、デッキ構築、手札の引き直しが終わると決闘開始となります。": "Please push the button displayed on the board and proceed with preparations.\nWhen Megami selection, deck construction, hand redeeming is over and the battle will start.",
+  "再構成を行うときは、自分の山札の上で右クリック": "When you want to reshuffling your deck, please right click on your deck.",
+  "切札をダブルクリック": "Double click on the Special card",
+  "切札を表向き(使用済み)にする": "Make a Special card face up (used)",
+  "山札をダブルクリック": "Double-click a deck",
+  "手札を相手に公開するときは、手札の上で右クリック": "To reveal your hand against your opponent, right-click on your hand",
+  "決闘中の操作方法": "How to operate during a battle",
+  "決闘準備中の操作方法": "How to operate during battle preparation",
+  "畏縮させるときは、集中力の上で右クリック": "When flinching, right-click on your vigor card.",
+  "移動": "Move"
+}

@@ -146,7 +146,7 @@ export class CardData {
         return this.baseData.exchangableTo;
     }
     /** 追加札の追加元データ */
-    get extraFromData(): CardDataItem {
+    get extraFromData(): CardData {
         return new CardData(this.cardSet, this.extraFrom, this.languageSetting);
     }
     /** 交換先 */
@@ -155,7 +155,7 @@ export class CardData {
     }
     
     /** 交換先データ */
-    get exchangableToData(): CardDataItem {
+    get exchangableToData(): CardData {
         return new CardData(this.cardSet, this.exchangableTo, this.languageSetting);
     }
 
@@ -192,7 +192,7 @@ export class CardData {
         }
         html += `<br>`;
         if (this.types.indexOf('enhance') >= 0) {
-            html += `${t('納:N', { capacity: this.capacity, lng: this.languageSetting.cardText })}<br>`;
+            html += `${t('カード説明-納N', { capacity: this.capacity, lng: this.languageSetting.cardText })}<br>`;
         }
 
         if (this.damageOpened !== undefined) {
@@ -238,7 +238,7 @@ export class CardData {
                         .replace(/绿+/, (str2) => `<span class='card-type-enhance'>${str2}</span>`)
                         .replace(/紫+/, (str2) => `<span class='card-type-reaction'>${str2}</span>`)
                         .replace(/黄+/, (str2) => `<span class='card-type-fullpower'>${str2}</span>`)
-                    return `<${replaced}>`;
+                    return `机巧：${replaced}`;
                 });
             } else if (this.languageSetting.cardText === 'en') {
                 html = html.replace(/Mechanism \((ATK|ACT|ENH|REA|THR| )+\)/g, (str, arg) => {
@@ -247,7 +247,7 @@ export class CardData {
                         .replace(/(?:ENH ?)+/, (str2) => `<span class='card-type-enhance'>${str2}</span>`)
                         .replace(/(?:REA ?)+/, (str2) => `<span class='card-type-reaction'>${str2}</span>`)
                         .replace(/(?:THR ?)+/, (str2) => `<span class='card-type-fullpower'>${str2}</span>`)
-                    return `<${replaced}>`;
+                    return `Mechanism (${replaced})`;
                 });
             }
         }

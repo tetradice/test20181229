@@ -35,17 +35,17 @@ if(process.env.ENVIRONMENT === 'development'){
 i18next
   .use(FilesystemBackend)
   .init({
-      debug: true
-    , ns: ['common']
-    , defaultNS: 'common'
+    defaultNS: 'common'
     , lng: 'ja'
-    , fallbackLng: 'ja'
+    , ns: ['common', 'log', 'cardset', 'help-window', 'dialog']
+    , load: 'currentOnly' // 対象となった言語のみ読み込む
+    , debug: true
+    , fallbackLng: false
+    , parseMissingKeyHandler: (k: string) => `[${k}]`
     , backend: {
-        loadPath: './locales/{{lng}}/{{ns}}.json',
-      }
+      loadPath: './locales/{{lng}}/{{ns}}.json',
+    }
   });
-
-
 
 app
   .set('views', __dirname + '/../views/')
