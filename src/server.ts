@@ -12,6 +12,7 @@ import nodemailer from 'nodemailer';
 import bodyParser from 'body-parser';
 import { VERSION } from 'sakuraba/const';
 import i18next = require('i18next');
+import LocizeBackend = require('i18next-node-locize-backend');
 import FilesystemBackend = require('i18next-node-fs-backend');
 import i18nextMiddleware = require('i18next-express-middleware');
 import webpackNodeExternals = require('webpack-node-externals');
@@ -33,7 +34,7 @@ if(process.env.ENVIRONMENT === 'development'){
 }
 
 i18next
-  .use(FilesystemBackend)
+  .use(LocizeBackend)
   .init({
     defaultNS: 'common'
     , lng: 'ja'
@@ -43,7 +44,8 @@ i18next
     , fallbackLng: false
     , parseMissingKeyHandler: (k: string) => `[${k}]`
     , backend: {
-      loadPath: './locales/{{lng}}/{{ns}}.json',
+      projectId: '5dfcd5bf-69f5-4e2c-b607-66b6ad4836ec'
+      , referenceLng: 'ja'
     }
   });
 
