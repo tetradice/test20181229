@@ -6,7 +6,6 @@ import * as models from "sakuraba/models";
 import toastr from "toastr";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
 import * as apps from "sakuraba/apps"
-import { CARD_SET_NAMES } from "sakuraba";
 import i18next, { t } from 'i18next';
 
 /** コントロールパネル */
@@ -146,8 +145,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <div class={css.commandButtons}>
                     <div><span class={css.currentPhase} style="white-space: nowrap">{t('- 眼前構築 -')}</span>
                         <span style="white-space: nowrap">
-                            <span class={css.currentCardSet}>カードセット: {CARD_SET_NAMES[state.board.cardSet]}</span>
-                            <button class={`ui basic button tiny ${css.cardSetChangeButton}`} onclick={changeCardSet}>変更</button>
+                            <span class={css.currentCardSet}>{t('カードセット')}: {utils.getCardSetName(state.board.cardSet)}</span>
+                            <button class={`ui basic button tiny ${css.cardSetChangeButton}`} onclick={changeCardSet}>{t('変更')}</button>
                         </span>
                     </div>
                 </div>
@@ -157,8 +156,8 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
                 <div class={css.commandButtons}>
                     <div><span class={css.currentPhase} style="white-space: nowrap">{t('- 双掌繚乱 -')}</span>
                         <span style="white-space: nowrap">
-                            <span class={css.currentCardSet}>カードセット: {CARD_SET_NAMES[state.board.cardSet]}</span>
-                            <button class={`ui basic button tiny ${css.cardSetChangeButton}`} onclick={changeCardSet}>変更</button>
+                            <span class={css.currentCardSet}>{t('カードセット')}: {utils.getCardSetName(state.board.cardSet)}</span>
+                            <button class={`ui basic button tiny ${css.cardSetChangeButton}`} onclick={changeCardSet}>{t('変更')}</button>
                         </span>
                     </div>
                 </div>
@@ -173,7 +172,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     if(board.megamis.p1 !== null){
         if(state.side === 'p1' || board.megamiOpenFlags.p1){
             // プレイヤー1のメガミ名を表示可能な場合 (自分がプレイヤー1である or プレイヤー1のメガミが公開されている)
-            megamiCaptionP1 = ` - ${t('メガミ名-MEGAMI1、MEGAMI2', { megami1: utils.getMegamiDispNameWithSymbol(state.lang, board.megamis.p1[0]), megami2: utils.getMegamiDispNameWithSymbol(state.lang, board.megamis.p1[1])})}`
+            megamiCaptionP1 = ` - ${t('メガミ名-MEGAMI1、MEGAMI2', {
+                 megami1: utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, board.megamis.p1[0])
+                 , megami2: utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, board.megamis.p1[1])
+                })}`
         } else {
             // プレイヤー1のメガミ名を表示不可能な場合
             megamiCaptionP1 = ` - ${t('メガミ名-？？？、？？？')}`
@@ -182,7 +184,10 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     if(board.megamis.p2 !== null){
         if(state.side === 'p2' || board.megamiOpenFlags.p2){
             // プレイヤー2のメガミ名を表示可能な場合 (自分がプレイヤー2である or プレイヤー2のメガミが公開されている)
-            megamiCaptionP2 = ` - ${t('メガミ名-MEGAMI1、MEGAMI2', { megami1: utils.getMegamiDispNameWithSymbol(state.lang, board.megamis.p2[0]), megami2: utils.getMegamiDispNameWithSymbol(state.lang, board.megamis.p2[1])})}`
+            megamiCaptionP2 = ` - ${t('メガミ名-MEGAMI1、MEGAMI2', {
+                 megami1: utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, board.megamis.p2[0])
+                 , megami2: utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, board.megamis.p2[1])
+                })}`
         } else {
             // プレイヤー2のメガミ名を表示不可能な場合
             megamiCaptionP2 = ` - ${t('メガミ名-？？？、？？？')}`

@@ -20,6 +20,9 @@ type LogParamValue = string | number | state.ActionLogCardNameItem | state.Actio
 /** 言語 (この値はi18nextに設定される) */
 type Language = 'ja' | 'zh-Hans-CN' | 'en';
 
+/** 言語設定オブジェクト */
+type LanguageSetting = {allEqual: boolean, ui: Language, uniqueName: Language, cardText: Language};
+
 /** 観戦者情報 */
 interface WatcherInfo {
     name: string;

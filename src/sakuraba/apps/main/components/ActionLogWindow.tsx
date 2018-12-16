@@ -28,7 +28,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.ActionLogRecord[
 
             logElements.push(
                 <div>
-                {name}: <span style={bodyStyle}>{utils.translateLog(log.body)}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
+                {name}: <span style={bodyStyle}>{utils.translateLog(log.body, state.setting.language)}</span> <span style={{fontSize: 'smaller', color: 'silver'}}>({timeStr})</span>
                 </div>
             )
         });

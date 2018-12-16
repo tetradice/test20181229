@@ -3,7 +3,7 @@ import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
 import { ZIndex } from "sakuraba/const";
-import { MEGAMI_DATA, CARD_DATA, CardDataItem, Megami, CARD_SET_NAMES, CARD_SORT_KEY_MAP } from "sakuraba";
+import { MEGAMI_DATA, CARD_DATA, CardDataItem, Megami, CARD_SORT_KEY_MAP } from "sakuraba";
 import dragInfo from "sakuraba/dragInfo";
 import { css } from 'emotion'
 import { t } from "i18next";
@@ -68,7 +68,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
         let trs: JSX.Element[] = [];
         let boardModel = new models.Board(state.board);
         for (let cardId of utils.getMegamiCardIds(state.cardListSelectedMegami, state.board.cardSet, null, true)) {
-            let c = new models.CardData(state.board.cardSet, cardId, state.lang);
+            let c = new models.CardData(state.board.cardSet, cardId, state.setting.language);
             let typeCaptions = [];
             if(c.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>{t('攻撃')}</span>);
             if(c.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>{t('行動')}</span>);
@@ -78,8 +78,8 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
             if(c.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>{t('全力')}</span>);
 
             trs.push(
-                <tr class={c.baseType === 'special' ? 'warning' : null} data-html={utils.getDescriptionHtml(c)}>
-                    <td>{c.extraFrom ? '≫ ' : ''}{c.name}</td>
+                <tr class={c.baseType === 'special' ? 'warning' : null} data-html={c.getDescriptionHtml()}>
+                    <td>{c.extraFrom ? t('≫ CARDNAME', {cardName: c.name}) : c.name}</td>
                     <td>{(typeCaptions.length === 2 ? [typeCaptions[0], '/', typeCaptions[1]] : typeCaptions[0])}</td>
                     <td>{(c.rangeOpened ? `${t('[閉]')}${c.range} ${t('[開]')}${c.rangeOpened}` : c.range)}</td>
                     <td>{(c.baseType === 'special' ? c.cost : '')}</td>
@@ -109,7 +109,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
                                 {options}
                             </select>
                         </div>
-                        <div class={cardSetCss}>{t('カードセット')}: {CARD_SET_NAMES[state.board.cardSet]}</div>
+                        <div class={cardSetCss}>{t('カードセット')}: {utils.getCardSetName(this.cardSet)}</div>
                     </div>
                 </div>
                 <table class="ui small celled selectable table" style={{background: `transparent`}}>

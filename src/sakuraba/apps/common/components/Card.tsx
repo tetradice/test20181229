@@ -1,10 +1,9 @@
 import { h } from "hyperapp";
-import * as utils from "sakuraba/utils";
-import * as sakuraba from "sakuraba";
-import * as models from "sakuraba/models";
-import dragInfo from "sakuraba/dragInfo";
-import { ZIndex } from "sakuraba/const";
 import { t } from 'i18next';
+import * as sakuraba from "sakuraba";
+import { ZIndex } from "sakuraba/const";
+import dragInfo from "sakuraba/dragInfo";
+import * as models from "sakuraba/models";
 
 /** カード */
 interface Param {
@@ -27,7 +26,7 @@ interface Param {
     cardSet: CardSet;
 
     /** 言語設定 */
-    language?: Language;
+    languageSetting?: LanguageSetting;
 
     descriptionViewable: boolean;
     draggable?: boolean;
@@ -61,7 +60,7 @@ export const Card = (p: Param) => {
         styles.zIndex = `${ZIndex.CARD}`;
     }
 
-  let cardData = (p.cardData || new models.CardData(p.cardSet, p.target.cardId, p.language));
+  let cardData = (p.cardData || new models.CardData(p.cardSet, p.target.cardId, p.languageSetting));
   let className = "fbs-card";
 
   // クリック可能クラスを付与する場合
@@ -136,7 +135,7 @@ export const Card = (p: Param) => {
           ondblclick={p.ondblclick}
           oncreate={oncreate}
           onupdate={onupdate}
-          data-html={utils.getDescriptionHtml(cardData)}            
+          data-html={cardData.getDescriptionHtml()}            
       >
           <div class="card-name">{(p.opened ? cardData.name : '')}</div>
 

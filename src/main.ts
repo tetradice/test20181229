@@ -1,17 +1,17 @@
-import toastr from "toastr";
-
-import * as models from "sakuraba/models";
-import * as utils from "sakuraba/utils";
-import * as apps from "sakuraba/apps";
-import { ClientSocket } from "sakuraba/socket";
-import { CARD_DATA, SAKURA_TOKEN_MAX, CardDataItem } from "./sakuraba";
-import dragInfo from "sakuraba/dragInfo";
-import { BOARD_BASE_WIDTH, ZIndex } from "sakuraba/const";
-import * as randomstring from 'randomstring';
-import _ from "lodash";
 import i18next, { t } from 'i18next';
-import LocizeBackend from 'i18next-locize-backend';
 import languageDetector from 'i18next-browser-languagedetector';
+import LocizeBackend from 'i18next-locize-backend';
+import _ from "lodash";
+import * as randomstring from 'randomstring';
+import * as apps from "sakuraba/apps";
+import { BOARD_BASE_WIDTH, ZIndex } from "sakuraba/const";
+import dragInfo from "sakuraba/dragInfo";
+import * as models from "sakuraba/models";
+import { ClientSocket } from "sakuraba/socket";
+import * as utils from "sakuraba/utils";
+import toastr from "toastr";
+import { CARD_DATA, SAKURA_TOKEN_MAX } from "./sakuraba";
+
 
 declare var params: {
     tableId: string;
@@ -69,7 +69,7 @@ $(function () {
                 st.side = params.side;
                 st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
                 st.environment = params.environment;
-                st.lang = params.lang;
+                st.setting.language = {allEqual: true, ui: params.lang, uniqueName: params.lang, cardText: params.lang};
 
                 // ズーム設定を調整
                 // コントロールパネルとチャットエリアの幅を350pxぶんは確保できるように調整
@@ -106,11 +106,10 @@ $(function () {
                     if (currentState.side === 'watcher') return;
 
                     // 移動ログを決定
-                    let logs: { text: LogValue, visibility?: LogVisibility }[] = [];
-                    let cardName = CARD_DATA[currentState.board.cardSet][card.cardId].name;
+                    let logs: { text?: LogValue, body?: state.ActionLogBody, visibility?: LogVisibility }[] = [];
                     let boardModel = new models.Board(currentState.board);
-                    let fromRegionTitle = utils.getCardRegionTitle(currentState.side, card.side, card.region, currentState.board.cardSet, (card.linkedCardId ? boardModel.getCard(card.linkedCardId) : null));
-                    let toRegionTitle = utils.getCardRegionTitle(currentState.side, toSide, toRegion, currentState.board.cardSet, (toLinkedCardId ? boardModel.getCard(toLinkedCardId) : null));
+                    let fromRegionLogParam = utils.getCardRegionTitleLog(currentState.side, card.side, card.region, currentState.board.cardSet, (card.linkedCardId ? boardModel.getCard(card.linkedCardId) : null));
+                    let toRegionLogParam = utils.getCardRegionTitleLog(currentState.side, toSide, toRegion, currentState.board.cardSet, (toLinkedCardId ? boardModel.getCard(toLinkedCardId) : null));
 
                     // 移動元での公開状態と、移動先での公開状態を判定
                     let oldOpenState = card.openState;
@@ -118,12 +117,13 @@ $(function () {
 
                     // ログ内容を決定
                     let logCardNameParam: state.ActionLogCardNameItem = { type: 'cn', cardSet: currentState.board.cardSet, cardId: card.cardId };
-                    let logParam = { from: fromRegionTitle, to: toRegionTitle };
-                    let logParamWithCardName = { cardName: logCardNameParam, from: fromRegionTitle, to: toRegionTitle };
+                    let logCardNameParams = { cardName: logCardNameParam };
+                    let logFromToParams = { from: fromRegionLogParam, to: toRegionLogParam };
+                    let logCardNameAndFromToParams = { cardName: logCardNameParam, from: fromRegionLogParam, to: toRegionLogParam };
 
                     if (oldOpenState === 'opened' || newOpenState === 'opened') {
                         // 公開状態から移動した場合や、公開状態へ移動した場合は、全員に名前を公開
-                        logs.push({ text: ['log:[CARDNAME]を移動しました：FROM → TO', logParamWithCardName] });
+                        logs.push({ body: {type: 'ls', key: 'log:[CARDNAME]を移動しました：FROM → TO', params: logCardNameAndFromToParams} });
 
 
                     } else {
@@ -138,20 +138,20 @@ $(function () {
                             // 自分は知っている
                             if (oldOpponentKnown || newOpponentKnown) {
                                 // 対戦相手も知っている (観戦者対応が必要)
-                                logs.push({ text: ['log:[CARDNAME]を移動しました：FROM → TO', logParamWithCardName] });
+                                logs.push({ body: {type: 'ls', key: 'log:[CARDNAME]を移動しました：FROM → TO', params: logCardNameAndFromToParams} });
                             } else {
                                 // 対戦相手は知らない
-                                logs.push({ text: ['log:[CARDNAME]を移動しました：FROM → TO', logParamWithCardName], visibility: 'ownerOnly' });
-                                logs.push({ text: ['log:カードを1枚移動しました：FROM → TO', logParam], visibility: 'outerOnly' });
+                                logs.push({ body: {type: 'ls', key: 'log:[CARDNAME]を移動しました：FROM → TO', params: logCardNameAndFromToParams}, visibility: 'ownerOnly' });
+                                logs.push({ body: {type: 'ls', key: 'log:カードを1枚移動しました：FROM → TO', params: logFromToParams}, visibility: 'outerOnly' });
                             }
                         } else {
                             // 自分は知らない
                             if (oldOpponentKnown || newOpponentKnown) {
                                 // 対戦相手は知っている (観戦者対応が必要)
-                                logs.push({ text: ['log:カードを1枚移動しました：FROM → TO', logParam] });
+                                logs.push({ body: {type: 'ls', key: 'log:カードを1枚移動しました：FROM → TO', params: logFromToParams} });
                             } else {
                                 // 対戦相手も知らない
-                                logs.push({ text: ['log:カードを1枚移動しました：FROM → TO', logParam] });
+                                logs.push({ body: {type: 'ls', key: 'log:カードを1枚移動しました：FROM → TO', params: logFromToParams} });
                             }
                         }
 
@@ -163,29 +163,29 @@ $(function () {
                         if (card.region === 'hand' && toRegion === 'hidden-used') {
                             // 伏せ札にした場合
                             logs = [];
-                            logs.push({ text: ['log:[CARDNAME]を伏せ札にしました', { cardName: logCardNameParam }], visibility: 'ownerOnly' });
-                            logs.push({ text: ['log:カードを1枚伏せ札にしました', null], visibility: 'outerOnly' });
+                            logs.push({ body: {type: 'ls', key: 'log:[CARDNAME]を伏せ札にしました', params: logCardNameParams}, visibility: 'ownerOnly' });
+                            logs.push({ body: {type: 'ls', key: 'log:カードを1枚伏せ札にしました'}, visibility: 'outerOnly' });
                         }
                         if (card.region === 'hand' && toRegion === 'used') {
                             // 場に出した場合
                             logs = [];
-                            logs.push({ text: ['log:[CARDNAME]を場に出しました', { cardName: logCardNameParam }] });
+                            logs.push({ body: { type: 'ls', key: 'log:[CARDNAME]を場に出しました', params: logCardNameParams }});
                         }
                         if (card.region === 'library' && toRegion === 'hand') {
                             // カードを1枚引いた場合
                             logs = [];
-                            logs.push({ text: ['log:カードを1枚引きました', null] });
+                            logs.push({ body: {type: 'ls', key: 'log:カードを1枚引きました'} });
                             cardNameLogging = true;
                         }
                         if (toRegion === 'library') {
                             // カードを山札へ置いた場合
                             logs = [];
                             if (toPosition === 'first') {
-                                logs.push({ text: ['log:[CARDNAME]を山札の底へ置きました', {cardName: logCardNameParam}], visibility: 'ownerOnly' });
-                                logs.push({ text: ['log:カードを1枚山札の底へ置きました', null], visibility: 'outerOnly' });
+                                logs.push({ body: {type: 'ls', key: 'log:[CARDNAME]を山札の底へ置きました', params: logCardNameParams}, visibility: 'ownerOnly' });
+                                logs.push({ body: {type: 'ls', key: 'log:カードを1枚山札の底へ置きました'}, visibility: 'outerOnly' });
                             } else {
-                                logs.push({ text: ['log:[CARDNAME]を山札の上へ置きました', {cardName: logCardNameParam}], visibility: 'ownerOnly' });
-                                logs.push({ text: ['log:カードを1枚山札の上へ置きました', null], visibility: 'outerOnly' });
+                                logs.push({ body: {type: 'ls', key: 'log:[CARDNAME]を山札の上へ置きました', params: logCardNameParams}, visibility: 'ownerOnly' });
+                                logs.push({ body: {type: 'ls', key: 'log:カードを1枚山札の上へ置きました'}, visibility: 'outerOnly' });
                             }
                         }
                     }
@@ -1047,7 +1047,7 @@ $(function () {
                         // 受け取ったログをtoastrで表示
                         let st = appActions.getState();
                         let targetLogs = p.appendedActionLogs.filter((log) => utils.logIsVisible(log, st.side));
-                        let msg = targetLogs.map((log) => utils.translateLog(log.body)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
+                        let msg = targetLogs.map((log) => utils.translateLog(log.body, st.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
                         let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
 
                         toastr.info(msg, `${name}:`);
@@ -1508,9 +1508,9 @@ $(function () {
                                 let fromLinkedCard = (dragInfo.draggingFrom.linkedCardId === null ? undefined : boardModel.getCard(dragInfo.draggingFrom.linkedCardId));
                                 let toLinkedCard = (toLinkedCardId === null ? undefined : boardModel.getCard(toLinkedCardId));
 
-                                let logs: { text: LogValue, visibility?: LogVisibility }[] = [];
-                                let fromRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, sakuraToken.side, sakuraToken.region, currentState.board.cardSet, fromLinkedCard);
-                                let toRegionTitle = utils.getSakuraTokenRegionTitle(currentState.side, toSide, toRegion, currentState.board.cardSet, toLinkedCard);
+                                let logs: { text?: LogValue, body?: state.ActionLogBody, visibility?: LogVisibility }[] = [];
+                                let fromRegionTitleLogBody = utils.getSakuraTokenRegionTitleLog(currentState.side, sakuraToken.side, sakuraToken.region, currentState.board.cardSet, fromLinkedCard);
+                                let toRegionTitleLogBody = utils.getSakuraTokenRegionTitleLog(currentState.side, toSide, toRegion, currentState.board.cardSet, toLinkedCard);
 
                                 // 間合に造花結晶を移動した場合は特殊処理 (騎動メニュー)
                                 if (toRegion === 'distance' && sakuraToken.artificial) {
@@ -1520,22 +1520,38 @@ $(function () {
                                     return false;
                                 } else {
                                     // ログ内容を決定
-                                    let tokenName = (sakuraToken.artificial ? t('造花結晶') : t('桜花結晶'));
+                                    let tokenName: string = (sakuraToken.artificial ? t('造花結晶') : t('桜花結晶'));
                                     let isOpponent = sakuraToken.ownerSide && currentState.side !== sakuraToken.ownerSide;
-                                    let log: LogValue = [(isOpponent ? 'log:相手のTOKENをNつ移動しました：FROM → TO' : 'log:TOKENをNつ移動しました：FROM → TO'), { count: dragInfo.sakuraTokenMoveCount, from: fromRegionTitle, to: toRegionTitle, token: tokenName }];
+                                    let log: state.ActionLogBody = {
+                                          type: 'ls'
+                                        , key: (isOpponent ? 'log:相手のTOKENをNつ移動しました：FROM → TO' : 'log:TOKENをNつ移動しました：FROM → TO')
+                                        , params: { count: dragInfo.sakuraTokenMoveCount, from: fromRegionTitleLogBody, to: toRegionTitleLogBody, token: tokenName }
+                                    };
 
 
                                     // 一部の移動ではログを変更
                                     if (sakuraToken.region === 'machine' && toRegion === 'burned') {
-                                        log = [(isOpponent ? 'log:相手のマシンの造花結晶をNつ燃焼済にしました' : 'log:マシンの造花結晶をNつ燃焼済にしました'), { count: dragInfo.sakuraTokenMoveCount, token: tokenName }];
+                                        log = {
+                                            type: 'ls'
+                                            , key: (isOpponent ? 'log:相手のマシンの造花結晶をNつ燃焼済にしました' : 'log:マシンの造花結晶をNつ燃焼済にしました')
+                                            , params: { count: dragInfo.sakuraTokenMoveCount, token: tokenName }
+                                        };
                                     }
                                     if (sakuraToken.region === 'distance' && toRegion === 'burned') {
-                                        log = ['log:間合の造花結晶をNつ燃焼済にしました', { count: dragInfo.sakuraTokenMoveCount, token: tokenName }];
+                                        log = {
+                                            type: 'ls'
+                                            , key: 'log:間合の造花結晶をNつ燃焼済にしました'
+                                            , params: { count: dragInfo.sakuraTokenMoveCount, token: tokenName }
+                                        };
                                     }
                                     if (sakuraToken.region === 'burned' && toRegion === 'machine') {
-                                        log = [(isOpponent ? 'log:相手の燃焼済の造花結晶をNつ回復しました' : 'log:燃焼済の造花結晶をNつ回復しました'), { count: dragInfo.sakuraTokenMoveCount, token: tokenName }];
+                                        log = {
+                                            type: 'ls'
+                                            , key: (isOpponent ? 'log:相手の燃焼済の造花結晶をNつ回復しました' : 'log:燃焼済の造花結晶をNつ回復しました')
+                                            , params: { count: dragInfo.sakuraTokenMoveCount, token: tokenName }
+                                        };
                                     }
-                                    logs.push({ text: log });
+                                    logs.push({ body: log });
 
                                     appActions.operate({
                                         logParams: logs,
@@ -1550,31 +1566,6 @@ $(function () {
                                     });
                                 }
                             }
-
-                            // // 山札に移動した場合は特殊処理
-                            // if(to === 'library'){
-                            //     lastDraggingFrom = dragInfo.draggingFrom;
-                            //     contextMenuShowingAfterDrop = true;
-                            //     $('#CONTEXT-DRAG-TO-LIBRARY').contextMenu({x: e.pageX, y: e.pageY});
-                            //     return false;
-                            // } else {
-                            //     // 山札以外への移動の場合
-                            //     if(dragInfo.draggingFrom.type === 'card'){
-                            //         //moveCard(dragInfo.draggingFrom.region as sakuraba.CardArea, dragInfo.draggingFrom.indexOfRegion, to as sakuraba.CardArea);
-                            //         return false;
-                            //     }
-
-                            //     if(dragInfo.draggingFrom.type === 'sakura-token'){
-                            //         let cardId: string = null;
-                            //         if(to === 'on-card'){
-                            //             cardId = $(this).attr('data-card-id');
-                            //         }
-                            //         //moveSakuraToken(dragInfo.draggingFrom.region as sakuraba.SakuraTokenArea, to as sakuraba.SakuraTokenArea, cardId);
-                            //         return false;
-                            //     }
-                            // }
-
-
 
                         }
 

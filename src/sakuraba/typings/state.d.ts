@@ -7,8 +7,6 @@ export as namespace state
 export interface State {
     stateDataVersion: number;
 
-    lang: string;
-
     board: Board;
     boardHistoryPast: BoardHistoryItem[];
     boardHistoryFuture: BoardHistoryItem[];
@@ -50,7 +48,11 @@ export interface BoardHistoryItem {
 
 /** 設定 */
 export interface Setting {
+    /** メガミのフェイス画像表示 */
     megamiFaceViewMode: 'background1' | 'none';
+
+    /** 言語設定 */
+    language: LanguageSetting;
 }
 
 /** 卓情報 */
@@ -162,13 +164,13 @@ export interface ChatLogRecord extends LogRecord {
 }
 
 export interface ActionLogRecord extends LogRecord {
-    body: string | ActionLogBody;
+    body: ActionLogBody;
 }
 
 
 export type ActionLogBody = ActionLogItem | ActionLogItem[]
 
-export type ActionLogItem = string | ActionLogLocaleStringItem | ActionLogCardNameItem | ActionLogCardSetNameItem | ActionLogMegamiNameItem;
+export type ActionLogItem = string | number | ActionLogLocaleStringItem | ActionLogCardNameItem | ActionLogCardSetNameItem | ActionLogMegamiNameItem;
 
 export interface ActionLogLocaleStringItem {
     type: 'ls';

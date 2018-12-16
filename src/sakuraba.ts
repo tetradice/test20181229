@@ -58,23 +58,13 @@ const MEGAMI_DATA_BASE = {
 export type Megami = keyof (typeof MEGAMI_DATA_BASE);
 export const MEGAMI_DATA: {[megami in Megami]: MegamiDataItem} = MEGAMI_DATA_BASE;
 
-// カードセット名
-export const CARD_SET_NAMES = {
-      'na-s2' : '新幕 シーズン2'
-    , 'na-s3' : '新幕 シーズン3'
-}
-
-// カードセット説明
-export const CARD_SET_DESCRIPTIONS = {
-    'na-s2': '新幕 シーズン2 (2018/8/17～ 『第壱拡張：神語起譚』以降)'
-    , 'na-s3': '新幕 シーズン3 (2018/11/30～ 『第弐拡張：神語転晴』以降)'
-}
 
 // カード情報
 export interface CardDataItem {
     megami: Megami;
     baseType: 'normal' | 'special' | 'transform';
     name: string;
+    nameZh?: string;
     nameEn?: string;
     anotherID?: string;
     replace?: string;
@@ -86,8 +76,10 @@ export interface CardDataItem {
     damageOpened?: string;
     capacity?: string;
     text: string;
+    textZh?: string;
     textEn?: string;
     textOpened?: string;
+    textOpenedZh?: string;
     textOpenedEn?: string;
     cost?: string;
 
@@ -108,6 +100,7 @@ export interface CardDataItem {
     sortKey?: string;
 }
 
+export const CARD_SETS: CardSet[] = ['na-s2', 'na-s3']
 export const CARD_DATA: {[key in CardSet]: {[key: string]: CardDataItem} } = {} as any;
 
 CARD_DATA['na-s2'] = {

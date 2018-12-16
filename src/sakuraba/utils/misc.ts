@@ -1,6 +1,7 @@
 import * as sakuraba from "sakuraba";
 import { h } from "hyperapp";
 import i18next = require("i18next");
+import { t } from "i18next";
 
 /** プレイヤーサイドを逆にする */
 export function flipSide(side: PlayerSide): PlayerSide{
@@ -31,92 +32,6 @@ export function judgeCardOpenState(
     }
     // 上記以外の場合は裏向き
     return 'hidden';
-}
-
-/** カードのリージョン名を取得 */
-export function getCardRegionTitle(
-      selfSide: PlayerSide
-    , side: PlayerSide
-    , region: CardRegion
-    , cardSet: CardSet
-    , linkedCard: state.Card
-){
-    let titleBase = ``;
-    if(region === 'hand'){
-        titleBase = "手札";
-    }
-    if(region === 'hidden-used'){
-        titleBase = "伏せ札";
-    }
-    if(region === 'library'){
-        titleBase = "山札";
-    }
-    if(region === 'special'){
-        titleBase = "切り札";
-    }
-    if(region === 'used'){
-        titleBase = "使用済み";
-    }
-    if(region === 'extra'){
-        titleBase = "追加札";
-    }
-    if(region === 'on-card'){
-        let cardData = sakuraba.CARD_DATA[cardSet][linkedCard.cardId];
-        titleBase = `[${cardData.name}]の下`;
-    }
-
-    // 相手側に移動した場合は、「相手の」をつける
-    if(selfSide !== side){
-        return `相手の${titleBase}`
-    } else {
-        return titleBase;
-    }
-}
-
-/** 桜花結晶のリージョン名を取得 */
-export function getSakuraTokenRegionTitle(
-      selfSide: PlayerSide
-    , side: PlayerSide
-    , region: SakuraTokenRegion
-    , cardSet: CardSet
-    , linkedCard: state.Card
-){
-    let titleBase = ``;
-    if(region === 'aura'){
-        titleBase = "オーラ";
-    }
-    if(region === 'life'){
-        titleBase = "ライフ";
-    }
-    if(region === 'flair'){
-        titleBase = "フレア";
-    }
-    if(region === 'distance'){
-        titleBase = "間合";
-    }
-    if(region === 'dust'){
-        titleBase = "ダスト";
-    }
-    if(region === 'machine'){
-        titleBase = "マシン";
-    }
-    if(region === 'burned'){
-        titleBase = "燃焼済";
-    }
-    if (region === 'out-of-game') {
-        titleBase = "ゲーム外";
-    }
-    if(region === 'on-card'){
-        let cardData = sakuraba.CARD_DATA[cardSet][linkedCard.cardId];
-        titleBase = `[${cardData.name}]上`;
-    }
-
-    // 相手側に移動した場合は、「相手の」をつける
-    if(selfSide !== side && side !== null){
-        return `相手の${titleBase}`
-    } else {
-        return titleBase;
-    }
 }
 
 

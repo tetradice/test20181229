@@ -1,7 +1,4 @@
 import { h } from "hyperapp";
-import * as utils from "sakuraba/utils";
-import * as sakuraba from "sakuraba";
-import dragInfo from "sakuraba/dragInfo";
 import _ from "lodash";
 
 /** カード */

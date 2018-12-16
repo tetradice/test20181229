@@ -93,7 +93,7 @@ export const BoardCard = (p: Param) => (state: state.State, actions: ActionsType
     return (
         <Card
             cardSet={boardModel.cardSet}
-            cardData={boardModel.getCardData(p.target, state.lang)}
+            cardData={boardModel.getCardData(p.target, state.setting.language)}
             opened={opened}
             handOpened={handOpened}
             clickableClass={clickableClass}

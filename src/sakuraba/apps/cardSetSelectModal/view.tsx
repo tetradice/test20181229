@@ -1,19 +1,16 @@
-import { h, app, View } from "hyperapp";
-import { actions, ActionsType } from "./actions";
-import { State } from "./state";
+import { h, View } from "hyperapp";
+import { CARD_SETS } from "sakuraba";
 import * as utils from "sakuraba/utils";
-import { Card } from "sakuraba/apps/common/components";
-
-import * as css from "./view.css"
-import { CARD_SET_NAMES, CARD_SET_DESCRIPTIONS } from "sakuraba";
+import { ActionsType } from "./actions";
+import { State } from "./state";
 
 // メインビューの定義
 const view: View<State, ActionsType> = (state, actions) => {
     if (!state.shown) return null;
 
     let cardSetOptions: hyperapp.Children[] = [];
-    for (let cardSet in CARD_SET_DESCRIPTIONS) {
-        cardSetOptions.push(<option value={cardSet} selected={state.selectedCardSet === cardSet}>{CARD_SET_DESCRIPTIONS[cardSet]}</option>);
+    for (let cardSet of CARD_SETS) {
+        cardSetOptions.push(<option value={cardSet} selected={state.selectedCardSet === cardSet}>{utils.getCardSetDescription(cardSet)}</option>);
     }
 
     const onChange = (e) => {
