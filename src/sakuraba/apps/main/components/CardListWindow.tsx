@@ -7,6 +7,7 @@ import dragInfo from "sakuraba/dragInfo";
 import { css } from 'emotion'
 import { t } from "i18next";
 import * as models from "sakuraba/models";
+import { Card } from "sakuraba/apps/common/components";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -64,26 +65,67 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
             options.push(<option value={key} selected={key === state.cardListSelectedMegami}>{utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, key)}</option>);
         }
 
-        let trs: JSX.Element[] = [];
-        for (let cardId of utils.getMegamiCardIds(state.cardListSelectedMegami, state.board.cardSet, null, true)) {
-            let c = new models.CardData(state.board.cardSet, cardId, state.setting.language, state.setting.cardImageEnabledTestEn);
-            let typeCaptions = [];
-            if(c.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>{t('攻撃')}</span>);
-            if(c.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>{t('行動')}</span>);
-            if(c.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>{t('付与')}</span>);
-            if(c.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>{t('不定')}</span>);
-            if(c.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>{t('対応')}</span>);
-            if(c.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>{t('全力')}</span>);
+        // 画像表示ONかどうかで処理変更
+        let cardList: hyperapp.Children = null;
+        if(state.setting.cardImageEnabledTestEn){
+            let cards: hyperapp.Children[] = [];
+            let i = 0;
+            for (let cardId of utils.getMegamiCardIds(state.cardListSelectedMegami, state.board.cardSet, null, true)) {
+                let c = new models.CardData(state.board.cardSet, cardId, state.setting.language, state.setting.cardImageEnabledTestEn);
+                let card = utils.createCard(`cardlist-${cardId}`, cardId, null, 'p1');
+                card.openState = 'opened';
+                cards.push(
+                    <Card clickableClass target={card} cardData={c} opened descriptionViewable left={((i % 5) * 120)} top={Math.floor(i / 5) * 150} zoom={state.zoom}></Card>
+                )
+                i++;
+            }
 
-            trs.push(
-                <tr class={c.baseType === 'special' ? 'warning' : null} data-html={c.getDescriptionHtml()}>
-                    <td>{c.extraFrom ? t('≫ CARDNAME', {cardName: c.name}) : c.name}</td>
-                    <td>{(typeCaptions.length === 2 ? [typeCaptions[0], '/', typeCaptions[1]] : typeCaptions[0])}</td>
-                    <td>{(c.rangeOpened ? `${t('[閉]')}${c.range} ${t('[開]')}${c.rangeOpened}` : c.range)}</td>
-                    <td>{(c.baseType === 'special' ? c.cost : '')}</td>
-                </tr>
-            )
+            cardList = (
+                <div style={{position: 'relative', height: '460px', width: '500px'}}>
+                    {cards}
+                </div>
+            );
+
+        } else {
+            let trs: JSX.Element[] = [];
+            for (let cardId of utils.getMegamiCardIds(state.cardListSelectedMegami, state.board.cardSet, null, true)) {
+                let c = new models.CardData(state.board.cardSet, cardId, state.setting.language, state.setting.cardImageEnabledTestEn);
+                let typeCaptions = [];
+                if (c.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>{t('攻撃')}</span>);
+                if (c.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>{t('行動')}</span>);
+                if (c.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>{t('付与')}</span>);
+                if (c.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>{t('不定')}</span>);
+                if (c.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>{t('対応')}</span>);
+                if (c.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>{t('全力')}</span>);
+
+                trs.push(
+                    <tr class={c.baseType === 'special' ? 'warning' : null} data-html={c.getDescriptionHtml()}>
+                        <td>{c.extraFrom ? t('≫ CARDNAME', { cardName: c.name }) : c.name}</td>
+                        <td>{(typeCaptions.length === 2 ? [typeCaptions[0], '/', typeCaptions[1]] : typeCaptions[0])}</td>
+                        <td>{(c.rangeOpened ? `${t('[閉]')}${c.range} ${t('[開]')}${c.rangeOpened}` : c.range)}</td>
+                        <td>{(c.baseType === 'special' ? c.cost : '')}</td>
+                    </tr>
+                )
+            }
+
+            cardList = (
+                <table class="ui small celled selectable table" style={{ background: `transparent` }}>
+                    <thead>
+                        <tr>
+                            <th class="seven wide">{t('名称')}</th>
+                            <th class="four wide">{t('タイプ')}</th>
+                            <th class="three wide">{t('適正距離')}</th>
+                            <th class="two wide">{t('消費')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {trs}
+                    </tbody>
+                </table>
+            );
         }
+
+
 
         let contentDiv: JSX.Element;
 
@@ -110,19 +152,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
                         <div class={cardSetCss}>{t('カードセット')}: {utils.getCardSetName(this.cardSet)}</div>
                     </div>
                 </div>
-                <table class="ui small celled selectable table" style={{background: `transparent`}}>
-                    <thead>
-                    <tr>
-                        <th class="seven wide">{t('名称')}</th>
-                        <th class="four wide">{t('タイプ')}</th>
-                        <th class="three wide">{t('適正距離')}</th>
-                        <th class="two wide">{t('消費')}</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {trs}
-                    </tbody>
-                </table>
+                {cardList}
             </div>
         );
 

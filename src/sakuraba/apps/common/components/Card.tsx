@@ -118,8 +118,10 @@ export const Card = (p: Param) => {
 
     if (p.cardData.cardImageEnabled && p.opened) {
         styles.backgroundImage = `url(${p.cardData.getCardImageUrl()})`;
+        styles.backgroundColor = 'transparent';
         styles.backgroundSize = 'contain';
         styles.backgroundRepeat = 'no-repeat';
+        styles.borderColor = 'silver';
         if (p.target.rotated && p.reversed) {
             styles.transform = 'rotate(270deg)';
         } else if (p.target.rotated) {
