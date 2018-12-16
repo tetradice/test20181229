@@ -116,6 +116,19 @@ export const Card = (p: Param) => {
         if (p.cardData.types.indexOf('transform') >= 0) typeCaptions.push(<span class='card-type-transform'>{t('TF')}</span>);
     }
 
+    if (p.cardData.cardImageEnabled && p.opened) {
+        styles.backgroundImage = `url(${p.cardData.getCardImageUrl()})`;
+        styles.backgroundSize = 'contain';
+        styles.backgroundRepeat = 'no-repeat';
+        if (p.target.rotated && p.reversed) {
+            styles.transform = 'rotate(270deg)';
+        } else if (p.target.rotated) {
+            styles.transform = 'rotate(90deg)';
+        } else if (p.reversed) {
+            styles.transform = 'rotate(180deg)';
+        }
+    }
+
     return (
         <div
             key={p.target.id}
@@ -133,13 +146,13 @@ export const Card = (p: Param) => {
             onupdate={onupdate}
             data-html={p.cardData.getDescriptionHtml()}
         >
-            <div class="card-name">{(p.opened ? p.cardData.name : '')}</div>
+            {p.cardData.cardImageEnabled ? null : <div class="card-name">{(p.opened ? p.cardData.name : '')}</div>}
 
             {p.selectedIndex !== null && p.selectedIndex !== undefined ?
                 <div class="card-count-center" style={{ width: `${20 * p.zoom}px`, height: `${32 * p.zoom}px` }}>{p.selectedIndex + 1}</div>
                 : null}
 
-            {p.opened ?
+            {(p.opened && !p.cardData.cardImageEnabled) ?
                 <div>
                     <div style={{ position: 'absolute', top: (p.reversed ? `${24 * p.zoom}px` : null), bottom: (p.reversed ? null : `${24 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null) }}>{typeCaptions}</div>
                     <div style={{ position: 'absolute', top: (p.reversed ? `${4 * p.zoom}px` : null), bottom: (p.reversed ? null : `${4 * p.zoom}px`), left: (p.reversed ? null : `${4 * p.zoom}px`), right: (p.reversed ? `${4 * p.zoom}px` : null) }}>{(p.cardData.types[0] === 'enhance' ? t('納N', { capacity: p.cardData.capacity }) : p.cardData.range)}</div>
