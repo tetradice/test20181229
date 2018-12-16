@@ -235,7 +235,7 @@ const view: View<state.State, ActionsType> = (state, actions) => {
             sakuraTokenAreaData.push({
                   region: 'out-of-game'
                 , side: side
-                , title: 'ゲーム外'
+                , title: t("領域名-ゲーム外")
                 , layoutType: 'horizontal'
                 , left: 1180
                 , top: (side === state.viewingSide ? 770 : 370)
