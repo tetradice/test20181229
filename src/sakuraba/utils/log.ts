@@ -70,7 +70,7 @@ export function translateLog(log: state.ActionLogBody, languageSetting: Language
 
         // カード名
         if (log.type === 'cn') {
-            let cardData = new models.CardData(log.cardSet, log.cardId, languageSetting);
+            let cardData = new models.CardData(log.cardSet, log.cardId, languageSetting, false);
             return cardData.name;
         }
 

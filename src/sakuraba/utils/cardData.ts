@@ -12,7 +12,6 @@ export function getCardSetDescription(cardSet: CardSet): string {
     return (cardSet === 'na-s3' ? t('cardset:新幕 シーズン3-説明') : t('cardset:新幕 シーズン2-説明'))
 }
 
-
 /** 指定したカードセットに対応するメガミのキー一覧を取得 */
 export function getMegamiKeys(cardSet: CardSet): sakuraba.Megami[] {
     let keys: sakuraba.Megami[] = [];

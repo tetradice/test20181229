@@ -53,6 +53,9 @@ export interface Setting {
 
     /** 言語設定 */
     language: LanguageSetting;
+
+    /** 英語のカード画像表示フラグ (テスト用) */
+    cardImageEnabledTestEn?: boolean;
 }
 
 /** 卓情報 */

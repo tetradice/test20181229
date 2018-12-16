@@ -146,7 +146,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                         let left = 4 + c * (100 + 8);
                         let selected = deckBuildState.selectedCardIds.indexOf(cardId) >= 0;
                         
-                        cardElements.push(<Card clickableClass target={card} cardData={boardModel.getCardData(card, state.setting.language)} opened descriptionViewable left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={state.zoom}></Card>);
+                        cardElements.push(<Card clickableClass target={card} cardData={boardModel.getCardData(card, state.setting.language, state.setting.cardImageEnabledTestEn)} opened descriptionViewable left={left} top={top} selected={selected} onclick={() => actions.selectCard(cardId)} zoom={state.zoom}></Card>);
                     });
                 });
 

@@ -66,7 +66,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
 
         let trs: JSX.Element[] = [];
         for (let cardId of utils.getMegamiCardIds(state.cardListSelectedMegami, state.board.cardSet, null, true)) {
-            let c = new models.CardData(state.board.cardSet, cardId, state.setting.language);
+            let c = new models.CardData(state.board.cardSet, cardId, state.setting.language, state.setting.cardImageEnabledTestEn);
             let typeCaptions = [];
             if(c.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>{t('攻撃')}</span>);
             if(c.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>{t('行動')}</span>);

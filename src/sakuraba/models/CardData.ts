@@ -12,16 +12,20 @@ export class CardData {
     /** 言語設定 */
     languageSetting: LanguageSetting;
 
+    /** カード画像表示フラグ */
+    cardImageEnabled: boolean;
+
     /** 複製元のカードID */
     duplicatingCardId: string | null = null;
 
     /** 傘が開いている場合の情報を使用するかどうか */
     usedOpenedCardData: boolean = false;
 
-    constructor(cardSet: CardSet, cardId: string, languageSetting: LanguageSetting, duplicatingCardId?: string){
+    constructor(cardSet: CardSet, cardId: string, languageSetting: LanguageSetting, cardImageEnabled: boolean, duplicatingCardId?: string){
         this.cardSet = cardSet;
         this.cardId = cardId;
         this.languageSetting = languageSetting;
+        this.cardImageEnabled = cardImageEnabled;
         if(duplicatingCardId){
             this.duplicatingCardId = duplicatingCardId;
         }
@@ -32,7 +36,7 @@ export class CardData {
     }
 
     get duplicatingBaseData(): CardDataItem {
-        return CARD_DATA[this.duplicatingCardId][this.cardId];
+        return CARD_DATA[this.cardSet][this.duplicatingCardId];
     }
 
     /** 言語を元に適切なテキストを選択 */
@@ -147,7 +151,7 @@ export class CardData {
     }
     /** 追加札の追加元データ */
     get extraFromData(): CardData {
-        return new CardData(this.cardSet, this.extraFrom, this.languageSetting);
+        return new CardData(this.cardSet, this.extraFrom, this.languageSetting, this.cardImageEnabled);
     }
     /** 交換先 */
     get exchangableTo(): CardDataItem['exchangableTo'] {
@@ -156,99 +160,115 @@ export class CardData {
     
     /** 交換先データ */
     get exchangableToData(): CardData {
-        return new CardData(this.cardSet, this.exchangableTo, this.languageSetting);
+        return new CardData(this.cardSet, this.exchangableTo, this.languageSetting, this.cardImageEnabled);
     }
 
 
 
+
+    /** カード画像のURLを取得 */
+    getCardImageUrl(): string {
+        let imageName = 'na_' + this.cardId.replace(/-/g, '_').toLowerCase();
+        return `//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/cards/resized/en/${imageName}.png`;
+    }
+
     /** カードの説明用ポップアップHTMLを取得する */
     getDescriptionHtml(): string {
-        let cardTitleHtml = `<ruby><rb>${this.name}</rb><rp>(</rp><rt>${this.ruby}</rt><rp>)</rp></ruby>`
-        let html = `<div class='ui header' style='margin-right: 2em;'>${cardTitleHtml}`
+        let html = '';
 
-        html += `</div><div class='ui content'>`
-        if (this.baseType === 'special') {
-            html += `<div class='ui top right attached label'>${t("消費", { lng: this.languageSetting.cardText })}: ${this.cost}</div>`;
-        }
-
-        let closedSymbol = t('[閉]', { lng: this.languageSetting.cardText });
-        let openedSymbol = t('[開]', { lng: this.languageSetting.cardText });
-
-        let typeCaptions = [];
-        if (this.types.indexOf('attack') >= 0) typeCaptions.push(`<span class='card-type-attack'>${t('攻撃', { lng: this.languageSetting.cardText })}</span>`);
-        if (this.types.indexOf('action') >= 0) typeCaptions.push(`<span class='card-type-action'>${t('行動', { lng: this.languageSetting.cardText })}</span>`);
-        if (this.types.indexOf('enhance') >= 0) typeCaptions.push(`<span class='card-type-enhance'>${t('付与', { lng: this.languageSetting.cardText })}</span>`);
-        if (this.types.indexOf('variable') >= 0) typeCaptions.push(`<span class='card-type-variable'>${t('不定', { lng: this.languageSetting.cardText })}</span>`);
-        if (this.types.indexOf('reaction') >= 0) typeCaptions.push(`<span class='card-type-reaction'>${t('対応', { lng: this.languageSetting.cardText })}</span>`);
-        if (this.types.indexOf('fullpower') >= 0) typeCaptions.push(`<span class='card-type-fullpower'>${t('全力', { lng: this.languageSetting.cardText })}</span>`);
-        if (this.types.indexOf('transform') >= 0) typeCaptions.push(`<span class='card-type-transform'>Transform</span>`);
-        html += `${typeCaptions.join('/')}`;
-        if (this.range !== undefined) {
-            if (this.rangeOpened !== undefined) {
-                html += `<span style='margin-left: 1em;'>${t('適正距離', { lng: this.languageSetting.cardText })} ${closedSymbol}${this.range} ${openedSymbol}${this.rangeOpened}</span>`
-            } else {
-                html += `<span style='margin-left: 1em;'>${t('適正距離', { lng: this.languageSetting.cardText })}${this.range}</span>`;
-            }
-        }
-        html += `<br>`;
-        if (this.types.indexOf('enhance') >= 0) {
-            html += `${t('カード説明-納N', { capacity: this.capacity, lng: this.languageSetting.cardText })}<br>`;
-        }
-
-        if (this.damageOpened !== undefined) {
-            // 傘の開閉によって効果が分かれる攻撃カード
-            html += `${closedSymbol} ${this.damage}<br>`;
-            html += `${this.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
-            html += (this.text ? '<br>' : '');
-            html += `${openedSymbol} ${this.damageOpened}<br>`;
-            html += `${this.textOpened.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
-        } else if (this.textOpened) {
-            // 傘の開閉によって効果が分かれる非攻撃カード
-            html += `${closedSymbol} ${this.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
-            html += (this.text ? '<br>' : '');
-            html += `${openedSymbol} ${this.textOpened.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+        // 画像表示モードかどうかで処理を変更
+        if (this.cardImageEnabled) {
+            html = `<img src="${this.getCardImageUrl()}" width="309" height="432">`;
 
         } else {
-            if (this.damage !== undefined) {
-                html += `${this.damage}<br>`;
-            }
-            html += `${this.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
-        }
-        // 追加札で、かつ追加元が指定されている場合
-        if (this.extra && this.extraFrom) {
-            html += `<div class="extra-from">${t('追加 ≫ CARDNAME', { cardName: this.extraFromData.name, lng: this.languageSetting.cardText })}</div>`
-        }
-        html += `</div>`;
 
-        if (this.megami === 'kururu') {
-            // 歯車枠のスタイリング。言語によって処理を変える
-            if (this.languageSetting.cardText === 'ja'){
-                html = html.replace(/<([攻行付対全]+)>/g, (str, arg) => {
-                    let replaced = arg.replace(/攻+/, (str2) => `<span class='card-type-attack'>${str2}</span>`)
-                        .replace(/行+/, (str2) => `<span class='card-type-action'>${str2}</span>`)
-                        .replace(/付+/, (str2) => `<span class='card-type-enhance'>${str2}</span>`)
-                        .replace(/対+/, (str2) => `<span class='card-type-reaction'>${str2}</span>`)
-                        .replace(/全+/, (str2) => `<span class='card-type-fullpower'>${str2}</span>`)
-                    return `<${replaced}>`;
-                });
-            } else if (this.languageSetting.cardText === 'zh-Hans-CN') {
-                html = html.replace(/机巧：([红蓝绿紫黄]+)+/g, (str, arg) => {
-                    let replaced = arg.replace(/红+/, (str2) => `<span class='card-type-attack'>${str2}</span>`)
-                        .replace(/蓝+/, (str2) => `<span class='card-type-action'>${str2}</span>`)
-                        .replace(/绿+/, (str2) => `<span class='card-type-enhance'>${str2}</span>`)
-                        .replace(/紫+/, (str2) => `<span class='card-type-reaction'>${str2}</span>`)
-                        .replace(/黄+/, (str2) => `<span class='card-type-fullpower'>${str2}</span>`)
-                    return `机巧：${replaced}`;
-                });
-            } else if (this.languageSetting.cardText === 'en') {
-                html = html.replace(/Mechanism \((ATK|ACT|ENH|REA|THR| )+\)/g, (str, arg) => {
-                    let replaced = arg.replace(/(?:ATK ?)+/, (str2) => `<span class='card-type-attack'>${str2}</span>`)
-                        .replace(/(?:ACT ?)+/, (str2) => `<span class='card-type-action'>${str2}</span>`)
-                        .replace(/(?:ENH ?)+/, (str2) => `<span class='card-type-enhance'>${str2}</span>`)
-                        .replace(/(?:REA ?)+/, (str2) => `<span class='card-type-reaction'>${str2}</span>`)
-                        .replace(/(?:THR ?)+/, (str2) => `<span class='card-type-fullpower'>${str2}</span>`)
-                    return `Mechanism (${replaced})`;
-                });
+            let cardTitleHtml = `<ruby><rb>${this.name}</rb><rp>(</rp><rt>${this.ruby}</rt><rp>)</rp></ruby>`
+            html = `<div class='ui header' style='margin-right: 2em;'>${cardTitleHtml}`
+
+            html += `</div><div class='ui content'>`
+            if (this.baseType === 'special') {
+                html += `<div class='ui top right attached label'>${t("消費", { lng: this.languageSetting.cardText })}: ${this.cost}</div>`;
+            }
+
+            let closedSymbol = t('[閉]', { lng: this.languageSetting.cardText });
+            let openedSymbol = t('[開]', { lng: this.languageSetting.cardText });
+
+            let typeCaptions = [];
+            if (this.types.indexOf('attack') >= 0) typeCaptions.push(`<span class='card-type-attack'>${t('攻撃', { lng: this.languageSetting.cardText })}</span>`);
+            if (this.types.indexOf('action') >= 0) typeCaptions.push(`<span class='card-type-action'>${t('行動', { lng: this.languageSetting.cardText })}</span>`);
+            if (this.types.indexOf('enhance') >= 0) typeCaptions.push(`<span class='card-type-enhance'>${t('付与', { lng: this.languageSetting.cardText })}</span>`);
+            if (this.types.indexOf('variable') >= 0) typeCaptions.push(`<span class='card-type-variable'>${t('不定', { lng: this.languageSetting.cardText })}</span>`);
+            if (this.types.indexOf('reaction') >= 0) typeCaptions.push(`<span class='card-type-reaction'>${t('対応', { lng: this.languageSetting.cardText })}</span>`);
+            if (this.types.indexOf('fullpower') >= 0) typeCaptions.push(`<span class='card-type-fullpower'>${t('全力', { lng: this.languageSetting.cardText })}</span>`);
+            if (this.types.indexOf('transform') >= 0) typeCaptions.push(`<span class='card-type-transform'>Transform</span>`);
+            html += `${typeCaptions.join('/')}`;
+            if (this.range !== undefined) {
+                if (this.rangeOpened !== undefined) {
+                    html += `<span style='margin-left: 1em;'>${t('適正距離', { lng: this.languageSetting.cardText })} ${closedSymbol}${this.range} ${openedSymbol}${this.rangeOpened}</span>`
+                } else {
+                    html += `<span style='margin-left: 1em;'>${t('適正距離', { lng: this.languageSetting.cardText })}${this.range}</span>`;
+                }
+            }
+            html += `<br>`;
+            if (this.types.indexOf('enhance') >= 0) {
+                html += `${t('カード説明-納N', { capacity: this.capacity, lng: this.languageSetting.cardText })}<br>`;
+            }
+
+            if (this.damageOpened !== undefined) {
+                // 傘の開閉によって効果が分かれる攻撃カード
+                html += `${closedSymbol} ${this.damage}<br>`;
+                html += `${this.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+                html += (this.text ? '<br>' : '');
+                html += `${openedSymbol} ${this.damageOpened}<br>`;
+                html += `${this.textOpened.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+            } else if (this.textOpened) {
+                // 傘の開閉によって効果が分かれる非攻撃カード
+                html += `${closedSymbol} ${this.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+                html += (this.text ? '<br>' : '');
+                html += `${openedSymbol} ${this.textOpened.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+
+            } else {
+                if (this.damage !== undefined) {
+                    html += `${this.damage}<br>`;
+                }
+                html += `${this.text.replace(/----\n/g, '<hr>').replace(/\n/g, '<br>')}`;
+            }
+            // 追加札で、かつ追加元が指定されている場合
+            if (this.extra && this.extraFrom) {
+                html += `<div class="extra-from">${t('追加 ≫ CARDNAME', { cardName: this.extraFromData.name, lng: this.languageSetting.cardText })}</div>`
+            }
+            html += `</div>`;
+
+            if (this.megami === 'kururu') {
+                // 歯車枠のスタイリング。言語によって処理を変える
+                if (this.languageSetting.cardText === 'ja'){
+                    html = html.replace(/<([攻行付対全]+)>/g, (str, arg) => {
+                        let replaced = arg.replace(/攻+/, (str2) => `<span class='card-type-attack'>${str2}</span>`)
+                            .replace(/行+/, (str2) => `<span class='card-type-action'>${str2}</span>`)
+                            .replace(/付+/, (str2) => `<span class='card-type-enhance'>${str2}</span>`)
+                            .replace(/対+/, (str2) => `<span class='card-type-reaction'>${str2}</span>`)
+                            .replace(/全+/, (str2) => `<span class='card-type-fullpower'>${str2}</span>`)
+                        return `<${replaced}>`;
+                    });
+                } else if (this.languageSetting.cardText === 'zh-Hans-CN') {
+                    html = html.replace(/机巧：([红蓝绿紫黄]+)+/g, (str, arg) => {
+                        let replaced = arg.replace(/红+/, (str2) => `<span class='card-type-attack'>${str2}</span>`)
+                            .replace(/蓝+/, (str2) => `<span class='card-type-action'>${str2}</span>`)
+                            .replace(/绿+/, (str2) => `<span class='card-type-enhance'>${str2}</span>`)
+                            .replace(/紫+/, (str2) => `<span class='card-type-reaction'>${str2}</span>`)
+                            .replace(/黄+/, (str2) => `<span class='card-type-fullpower'>${str2}</span>`)
+                        return `机巧：${replaced}`;
+                    });
+                } else if (this.languageSetting.cardText === 'en') {
+                    html = html.replace(/Mechanism \((ATK|ACT|ENH|REA|THR| )+\)/g, (str, arg) => {
+                        let replaced = arg.replace(/(?:ATK ?)+/, (str2) => `<span class='card-type-attack'>${str2}</span>`)
+                            .replace(/(?:ACT ?)+/, (str2) => `<span class='card-type-action'>${str2}</span>`)
+                            .replace(/(?:ENH ?)+/, (str2) => `<span class='card-type-enhance'>${str2}</span>`)
+                            .replace(/(?:REA ?)+/, (str2) => `<span class='card-type-reaction'>${str2}</span>`)
+                            .replace(/(?:THR ?)+/, (str2) => `<span class='card-type-fullpower'>${str2}</span>`)
+                        return `Mechanism (${replaced})`;
+                    });
+                }
             }
         }
 
