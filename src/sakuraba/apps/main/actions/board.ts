@@ -5,6 +5,7 @@ import { Megami, CARD_DATA } from "sakuraba";
 import cardActions from './card';
 import { ActionsType } from ".";
 import { ActionLogBody } from "sakuraba/typings/state";
+import firebase from "firebase";
 
 type LogParam = {text?: LogValue, body?: ActionLogBody, visibility?: LogVisibility};
 
@@ -56,6 +57,23 @@ export default {
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         if(newState.socket){
             newState.socket.emit('updateBoard', { tableId: newState.tableId, side: newState.side, board: newState.board, appendedActionLogs: appendLogs });
+
+            // firestore
+            var db = firebase.firestore();
+
+            let storedData = {};
+            for(let key of Object.keys(newState.board)){
+                storedData[key] = newState.board[key];
+            }
+            console.log(storedData);
+
+            db.collection("sakuraba-boards").doc('1234').set(storedData)
+                .then(function () {
+                    console.log("Document written with ID: ");
+                })
+                .catch(function (error) {
+                    console.error("Error adding document: ", error);
+                });
         }
 
         // 履歴を忘れるモードの場合は、ボード履歴を削除し、元に戻せないようにする

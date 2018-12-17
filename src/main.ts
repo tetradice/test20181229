@@ -11,7 +11,8 @@ import { ClientSocket } from "sakuraba/socket";
 import * as utils from "sakuraba/utils";
 import toastr from "toastr";
 import { CARD_DATA, SAKURA_TOKEN_MAX } from "./sakuraba";
-
+import * as firebase from 'firebase/app';
+import 'firebase/firestore';
 
 declare var params: {
     tableId: string;
@@ -36,6 +37,24 @@ function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery
 
 $(function () {
     try {
+
+
+        // firebase初期化
+        firebase.initializeApp({
+            apiKey: "AIzaSyBiZ1J-vGSM0rvmhntLO_IxKC8mLCFRJcI",
+            authDomain: "furuyoni-simurator-test.firebaseapp.com",
+            databaseURL: "https://furuyoni-simurator-test.firebaseio.com",
+            projectId: "furuyoni-simurator-test",
+            storageBucket: "furuyoni-simurator-test.appspot.com",
+            messagingSenderId: "263152473970"
+        });
+        var db = firebase.firestore();
+        db.collection("sakuraba-boards").doc('1234')
+            .onSnapshot(doc => {
+                var source = doc.metadata.hasPendingWrites ? "Local" : "Server";
+                console.log(source, " data: ", doc.data());
+            });
+
         // 言語設定の初期化。初期化完了後にメイン処理に入る
         i18next
             .use(LocizeBackend)
