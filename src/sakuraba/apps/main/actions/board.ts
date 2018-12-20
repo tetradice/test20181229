@@ -55,26 +55,36 @@ export default {
         appendLogs = newState.actionLog.slice(oldLength);
 
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
-        if(newState.socket){
-            newState.socket.emit('updateBoard', { tableId: newState.tableId, side: newState.side, board: newState.board, appendedActionLogs: appendLogs });
+        var db = firebase.firestore();
 
-            // firestore
-            var db = firebase.firestore();
-
-            let storedData = {};
-            for(let key of Object.keys(newState.board)){
-                storedData[key] = newState.board[key];
+        let storedBoardData = {};
+        for(let key of Object.keys(newState.board)){
+            if (typeof newState.board[key] !== 'function'){
+                storedBoardData[key] = newState.board[key];
             }
-            console.log(storedData);
-
-            db.collection("sakuraba-boards").doc('1234').set(storedData)
-                .then(function () {
-                    console.log("Document written with ID: ");
-                })
-                .catch(function (error) {
-                    console.error("Error adding document: ", error);
-                });
         }
+
+        let tableRef = db.collection("sakuraba_tables").doc(newState.tableId);
+        let actionLogsRef = tableRef.collection('sakuraba_actionLogs');
+        db.runTransaction(function(tran){
+            return tran.get(tableRef).then(table => {
+                console.log('got table: ', table);
+                tran.update(tableRef, { board: storedBoardData });
+                appendLogs.forEach(log => {
+                    let storedLog = {};
+                    for (let key of Object.keys(log)) {
+                        if (typeof log[key] !== 'function' && log[key] !== undefined) {
+                            storedLog[key] = log[key];
+                        }
+                    }
+                    console.log("storedLog: ", storedLog);
+                    tran.set(actionLogsRef.doc(), storedLog);
+                });
+                
+            })
+        }).then(function(){
+            console.log("Board written in operate");
+        });
 
         // 履歴を忘れるモードの場合は、ボード履歴を削除し、元に戻せないようにする
         if(p.undoType === 'notBack'){

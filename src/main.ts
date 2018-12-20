@@ -49,11 +49,7 @@ $(function () {
             messagingSenderId: "263152473970"
         });
         var db = firebase.firestore();
-        db.collection("sakuraba-boards").doc('1234')
-            .onSnapshot(doc => {
-                var source = doc.metadata.hasPendingWrites ? "Local" : "Server";
-                console.log(source, " data: ", doc.data());
-            });
+
 
         // 言語設定の初期化。初期化完了後にメイン処理に入る
         i18next
@@ -72,13 +68,9 @@ $(function () {
                     , referenceLng: 'ja'
                 }
             }, function () {
-                // socket.ioに接続し、ラッパーを作成
-                const ioSocket = io();
-                const socket = new ClientSocket(ioSocket);
 
                 // 初期ステートを生成
                 const st: state.State = utils.createInitialState();
-                st.socket = socket;
                 st.tableId = params.tableId;
                 st.side = params.side;
                 st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
@@ -989,11 +981,41 @@ $(function () {
                     }
                 });
 
-                // 初期情報をリクエスト
-                socket.emit('requestFirstTableData', { tableId: params.tableId });
+                // 初期データを取得し、メイン処理をスタート
+                let sakurabaTablesRef = db.collection("sakuraba_tables");
+                let board = null;
+                let actionLogs = null;
+                let chatLogs = null;
+                let tableRef = sakurabaTablesRef.doc(params.tableId);
+                
+                tableRef.get().then((doc) => {
+                    // まずはボードデータを取得して保持
+                    // ボードデータが存在しなければ新しいボードデータを生成し、保存する
+                    if(doc.exists){
+                        board = doc.data().board;
+                        console.log("board data get: ", board);
+                    } else {
+                        board = appActions.getState().board;
+                        tableRef.set({board: board});
+                        console.log("board data append: ", board);
+                    }
 
-                // ボード情報を受信した場合、メイン処理をスタート
-                socket.on('onFirstTableDataReceived', (p: { board: state.Board, actionLogs: state.ActionLogRecord[], chatLogs: state.ChatLogRecord[] }) => {
+                    // 次にサブコレクションの操作ログを全件取得
+                    return tableRef.collection('actionLogs').get();
+
+                }).then((actionLogsDoc) => {
+                    // 操作ログを保持
+                    actionLogs = actionLogsDoc.docs.map(x => x.data());
+                    console.log("actionLogs data get: ", actionLogs);
+
+                    // 最後にサブコレクションのチャットログを全件取得
+                    return tableRef.collection('chatLogs').get();
+
+                }).then((chatLogsDoc) => {
+                    // チャットログを保持
+                    chatLogs = chatLogsDoc.docs.map(x => x.data());
+                    console.log("chatLogs data get: ", actionLogs);
+
                     // ユーザー設定のセット
                     let settingJson = localStorage.getItem('Setting');
                     if (settingJson) {
@@ -1006,35 +1028,35 @@ $(function () {
                     }
 
                     // ボード情報のセット
-                    appActions.setBoard(p.board);
+                    appActions.setBoard(board);
 
                     // 領域情報を再更新
                     appActions.updateBoardRegionInfo();
 
                     // ログ情報のセット
-                    appActions.setActionLogs(p.actionLogs);
-                    appActions.setChatLogs(p.chatLogs);
+                    appActions.setActionLogs(actionLogs);
+                    appActions.setChatLogs(chatLogs);
 
-                    // まだ名前が決定していなければ、名前の決定処理
-                    // 観戦者かどうかで名前の処理を分ける
-                    if (params.side === 'watcher') {
-                        // 観戦者の場合
-                        // まずログインしてきた観戦者に、観戦者セッションIDが割り当てられているかどうかを確認
-                        let sessionId = localStorage.getItem(`table${params.tableId}:watcherSessionId`);
-                        if (sessionId) {
-                            // セッションIDがあれば、そのセッションIDでログイン
-                            socket.emit('watcherLogin', { tableId: params.tableId, sessionId: sessionId });
-                        } else {
-                            // セッションIDがなければ、新たなセッションIDを割り当てて、そのIDでログイン
-                            sessionId = randomstring.generate({ readable: true, length: 16 });
-                            localStorage.setItem(`table${params.tableId}:watcherSessionId`, sessionId);
-                            socket.emit('watcherLogin', { tableId: params.tableId, sessionId: sessionId });
-                        }
-                    } else {
+                    // // まだ名前が決定していなければ、名前の決定処理
+                    // // 観戦者かどうかで名前の処理を分ける
+                    // if (params.side === 'watcher') {
+                    //     // 観戦者の場合
+                    //     // まずログインしてきた観戦者に、観戦者セッションIDが割り当てられているかどうかを確認
+                    //     let sessionId = localStorage.getItem(`table${params.tableId}:watcherSessionId`);
+                    //     if (sessionId) {
+                    //         // セッションIDがあれば、そのセッションIDでログイン
+                    //         socket.emit('watcherLogin', { tableId: params.tableId, sessionId: sessionId });
+                    //     } else {
+                    //         // セッションIDがなければ、新たなセッションIDを割り当てて、そのIDでログイン
+                    //         sessionId = randomstring.generate({ readable: true, length: 16 });
+                    //         localStorage.setItem(`table${params.tableId}:watcherSessionId`, sessionId);
+                    //         socket.emit('watcherLogin', { tableId: params.tableId, sessionId: sessionId });
+                    //     }
+                    // } else {
                         // 観戦者でない場合
-                        if (p.board.playerNames[params.side] === null) {
+                        if (board.playerNames[params.side] === null) {
                             let playerCommonName = (params.side === 'p1' ? t('プレイヤー1') : t('プレイヤー2'));
-                            utils.userInputModal(`<p>${t('dialog:ふるよにボードシミュレーターへようこそ。あなたはSIDEとして卓に参加します。', { side: playerCommonName})}</p><p>${t('プレイヤー名：')}</p>`, ($elem) => {
+                            utils.userInputModal(`<p>${t('dialog:ふるよにボードシミュレーターへようこそ。あなたはSIDEとして卓に参加します。', { side: playerCommonName })}</p><p>${t('プレイヤー名：')}</p>`, ($elem) => {
                                 let playerName = $('#INPUT-MODAL input').val() as string;
                                 if (playerName === '') {
                                     playerName = playerCommonName;
@@ -1049,59 +1071,16 @@ $(function () {
 
                                 utils.messageModal(t('dialog:ゲームを始める準備ができたら、まずは「メガミ選択」ボタンをクリックしてください。'));
                             });
-                        }
-                    }
-
+                         }
+                    // }
                 });
 
-                // 他のプレイヤーがボード情報を更新した場合、画面上のボード情報も差し換える
-                socket.on('onBoardReceived', (p) => {
-                    appActions.setBoard(p.board);
-
-                    // 追加ログがあれば
-                    if (p.appendedActionLogs !== null) {
-                        // ログも追加
-                        appActions.appendReceivedActionLogs(p.appendedActionLogs);
-
-                        // 受け取ったログをtoastrで表示
-                        let st = appActions.getState();
-                        let targetLogs = p.appendedActionLogs.filter((log) => utils.logIsVisible(log, st.side));
-                        let msg = targetLogs.map((log) => utils.translateLog(log.body, st.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
-                        let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
-
-                        toastr.info(msg, `${name}:`);
-                    }
-
-                });
-
-                // 観戦者名の入力を要求された
-                socket.on('requestWatcherName', (p) => {
-                    utils.userInputModal(`<p>${t('dialog:ふるよにボードシミュレーターへようこそ。あなたは観戦者として卓に参加します。')}</p><p>${t('観戦者名：')}</p>`, ($elem) => {
-                        let playerName = $('#INPUT-MODAL input').val() as string;
-                        if (playerName === '') {
-                            playerName = `${t('観戦者')} ${socket.ioSocket.id}`;
-                        }
-                        let sessionId = localStorage.getItem(`table${params.tableId}:watcherSessionId`);
-                        socket.emit('watcherNameInput', { tableId: params.tableId, sessionId: sessionId, name: playerName });
+                // 更新時の処理を紐づける
+                sakurabaTablesRef.doc(params.tableId)
+                    .onSnapshot(doc => {
+                        var source = doc.metadata.hasPendingWrites ? "Local" : "Server";
+                        console.log(source, "onSnapshot data: ", doc.data());
                     });
-                });
-
-                // 観戦者ログイン成功
-                socket.on('onWatcherLoginSuccess', (p) => {
-                    let sessionId = localStorage.getItem(`table${params.tableId}:watcherSessionId`);
-                    appActions.setWatcherInfo({ watchers: p.watchers, currentWatcherSessionId: sessionId });
-                    appActions.operate({
-                        log: ['log:観戦者として卓に参加しました', null],
-                        undoType: 'notBack',
-                        proc: () => {
-                        }
-                    });
-                });
-
-                // 観戦者情報が更新された
-                socket.on('onWatcherChanged', (p) => {
-                    appActions.setWatcherInfo({ watchers: p.watchers });
-                });
 
                 // // ★集計
                 // // すべてのカード情報を取得
@@ -1151,35 +1130,12 @@ $(function () {
                 // });
 
 
-                // 他のプレイヤーがチャットログを追加した場合の処理
-                socket.on('onChatLogAppended', (p) => {
-                    // ログ追加
-                    appActions.appendReceivedChatLogs(p.appendedChatLogs);
-
-                    // 受け取ったログをtoastrで表示
-                    let st = appActions.getState();
-                    let targetLogs = p.appendedChatLogs.filter((log) => utils.logIsVisible(log, st.side));
-                    let msg = targetLogs.map((log) => log.body).join('<br>');
-                    let name = (targetLogs[0].side === 'watcher' ? (st.board.watchers[targetLogs[0].watcherSessionId] ? st.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
-                    toastr.success(msg, `${name}:`, { toastClass: 'toast chat' });
-                });
 
                 // toastrの標準オプションを設定
                 toastr.options = {
                     hideDuration: 300
                     , showDuration: 300
                 };
-
-                // 相手プレイヤーからの通知を受け取った場合、toastを時間無制限で表示
-                socket.on('onNotifyReceived', (p: { senderSide: PlayerSide, message: string }) => {
-                    let st = appActions.getState();
-                    toastr.info(p.message, t('NAMEより通知:', { name: st.board.playerNames[p.senderSide] }), {
-                        timeOut: 0
-                        , extendedTimeOut: 0
-                        , tapToDismiss: false
-                        , closeButton: true
-                    });
-                });
 
                 // モーダルでEnterを押下した場合、ボタンを押下したものと扱う
                 $('body').keydown(function (e) {
