@@ -1,7 +1,7 @@
 /** 初期ステートを生成 */
 export function createInitialState(): state.State{
   let st: state.State = {
-        stateDataVersion: 1
+        stateDataVersion: 2
       , board: {
             objects: []
           , playerNames: {p1: null, p2: null}
@@ -37,7 +37,11 @@ export function createInitialState(): state.State{
       
       , cardListSelectedMegami: 'yurina'
 
-      , setting: {megamiFaceViewMode: 'background1', language: {allEqual: true, ui: 'ja', uniqueName: 'ja', cardText: 'ja'}}
+      , setting: {
+        settingDataVersion: 2
+        , megamiFaceViewMode: 'background1'
+        , language: {allEqual: true, ui: 'ja', uniqueName: 'ja', cardText: 'ja'}
+      }
 
       , environment: 'development'
   }

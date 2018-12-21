@@ -1,14 +1,18 @@
 import _ from "lodash";
 import i18next = require("i18next");
-import { settings } from "cluster";
-import { createInitialState } from "sakuraba/utils";
+import * as utils from "sakuraba/utils";
 
 export default {
     /** 設定を上書き */
-    setSetting: (newSetting: state.Setting) => (state: state.State) => {
-        // 言語設定がなければ、現在の設定で上書きする
-        if(newSetting.language === undefined){
-            newSetting.language = state.setting.language;
+    setSetting: (newSetting: state.VersionUnspecifiedSetting) => (state: state.State) => {
+        // バージョンで判定
+        if(newSetting['settingDataVersion'] === undefined){
+            // バージョン1 -> 2へのマイグレーション
+            // 初期設定で上書きする
+            let refState = utils.createInitialState();
+            (newSetting as state.Setting).language = refState.setting.language;
+            (newSetting as state.Setting).cardImageEnabledTestEn = refState.setting.cardImageEnabledTestEn;
+            (newSetting as state.Setting).settingDataVersion = 2;
         }
 
         return {setting: newSetting} as Partial<state.State>;

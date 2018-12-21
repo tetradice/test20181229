@@ -978,7 +978,7 @@ $(function () {
                     // ユーザー設定のセット
                     let settingJson = localStorage.getItem('Setting');
                     if (settingJson) {
-                        appActions.setSetting(JSON.parse(settingJson));
+                        appActions.setSetting(JSON.parse(settingJson) as state.VersionUnspecifiedSetting);
                     }
                     // // 設定の強制上書き
                     // st.setting.cardImageEnabledTestEn = (params.lang === 'en');
