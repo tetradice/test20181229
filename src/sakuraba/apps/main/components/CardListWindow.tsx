@@ -149,7 +149,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
                                 {options}
                             </select>
                         </div>
-                        <div class={cardSetCss}>{t('カードセット')}: {utils.getCardSetName(this.cardSet)}</div>
+                        <div class={cardSetCss}>{t('カードセット')}: {utils.getCardSetName(state.board.cardSet)}</div>
                     </div>
                 </div>
                 {cardList}

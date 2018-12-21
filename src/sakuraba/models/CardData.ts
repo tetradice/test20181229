@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { CardDataItem, CARD_DATA } from "sakuraba";
+import { CardDataItem, CARD_DATA, S3_UPDATED_CARD_DATA } from "sakuraba";
 import { t } from "i18next";
 
 export class CardData {
@@ -169,6 +169,23 @@ export class CardData {
     /** カード画像のURLを取得 */
     getCardImageUrl(): string {
         let imageName = 'na_' + this.cardId.replace(/-/g, '_').toLowerCase();
+
+        // トランスフォームカードの場合
+        if(this.baseType === 'transform'){
+            imageName = 'na_' + this.cardId.replace(/-/g, '_').toLowerCase();
+        }
+
+        // シーズン3処理
+        if(this.cardSet === 'na-s3'){
+            // シーズン2に存在し、かつシーズン3で更新があるカードの場合、後ろに_s3を付ける
+            if (CARD_DATA['na-s2'][this.cardId] && S3_UPDATED_CARD_DATA[this.cardId]){
+                imageName = imageName + '_s3';
+            }
+            // トコヨ「陽の音」のみ、置換先が変わっているため特殊処理
+            if (this.cardId === '04-tokoyo-A1-n-5'){
+                imageName = imageName + '_s3';
+            }
+        }
         return `//inazumaapps.info/furuyoni_simulator/deliv/furuyoni_commons/furuyoni_na/cards/resized/en/${imageName}.png`;
     }
 
@@ -178,7 +195,11 @@ export class CardData {
 
         // 画像表示モードかどうかで処理を変更
         if (this.cardImageEnabled) {
-            html = `<img src="${this.getCardImageUrl()}" width="309" height="432">`;
+            if(this.baseType === 'transform'){
+                html = `<img src="${this.getCardImageUrl()}" width="430" height="311">`;
+            } else {
+                html = `<img src="${this.getCardImageUrl()}" width="309" height="432">`;
+            }
 
         } else {
 

@@ -40,6 +40,13 @@ export const Card = (p: Param) => {
         , lineHeight: `1.3`
     };
 
+    // Transformカードの場合は幅と高さを入れ替える
+    if(p.cardData.baseType === 'transform'){
+        let newWidth = styles.height;
+        styles.height = styles.width;
+        styles.width = newWidth;
+    }
+
     // 使用済にあるtransformカードの場合横にする
     if (p.target.region === 'used' && p.cardData.baseType === 'transform') {
         let oldW = styles.width;

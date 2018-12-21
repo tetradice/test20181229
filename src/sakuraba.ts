@@ -286,7 +286,7 @@ CARD_DATA['na-s2'] = {
 };
 
 // シーズン3
-const season3CardData: { [key: string]: CardDataItem } = {
+export const S3_UPDATED_CARD_DATA: { [key: string]: CardDataItem } = {
     '02-saine-o-n-3': { megami: 'saine', name: '石突き', nameEn: 'Hilt Slam', nameZh: '岩突', ruby: 'いしづき', rubyEn: '', baseType: 'normal', types: ['attack', 'reaction'], range: '2-3', damage: '2/1', text: '【攻撃後】八相-あなたのオーラが0ならば、ダスト→間合：1', textZh: '【攻击后】八相-如果你的装中没有樱花结晶，那么虚（1）→距', textEn: 'After Attack: Idea - If you have Sakura tokens on your Aura:\n\nShadow (1)→ Distance' }
     , '02-saine-o-n-6': { megami: 'saine', name: '衝音晶', nameEn: 'Wavering Crystal', nameZh: '冲音晶', ruby: 'しょうおんしょう', rubyEn: '', baseType: 'normal', types: ['enhance', 'reaction'], capacity: '1', text: '【展開時】対応した《攻撃》は-1/+0となる。\n【破棄時】攻撃『適正距離0-10、1/-、対応不可』を行い、ダスト→間合：1', textZh: '【展开时】对应的攻击获得-1/-0 \n【破弃时】进行一次“攻击距离0-10 伤害1/- 不可被对应”的攻击。然后虚（1）→距', textEn: 'Initialize: The attack you played this card as a Reaction to gets -1/+0.\n\nDisenchant: You attack with "Range: 0-10, Damage: 1/-, No Reactions". Then:\nShadow (1)→ Distance.' }
 
@@ -341,8 +341,8 @@ const season3CardData: { [key: string]: CardDataItem } = {
 };
 
 CARD_DATA['na-s3'] = _.extend({}, CARD_DATA['na-s2']);
-for (let key in season3CardData){
-    let data = season3CardData[key];
+for (let key in S3_UPDATED_CARD_DATA){
+    let data = S3_UPDATED_CARD_DATA[key];
     if(data === null){
         delete CARD_DATA['na-s3'][key];
     } else {
