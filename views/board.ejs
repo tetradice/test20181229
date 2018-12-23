@@ -848,7 +848,13 @@
 </div>
 
 <script type="text/javascript">
-    var params = {tableId: '<%= tableId %>', side: '<%= side %>', environment: '<%= environment %>', lang: '<%= lang %>'};
+    var params = {
+        tableId: '<%= tableId %>'
+        , side: '<%= side %>'
+        , environment: '<%= environment %>'
+        , lang: '<%= lang %>'
+        , firebaseAuthInfo: '<%= firebaseAuthInfo %>'
+    };
     // グローバル変数初期化
     var draggingFrom = null;
 

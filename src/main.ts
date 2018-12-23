@@ -11,6 +11,8 @@ import { ClientSocket } from "sakuraba/socket";
 import * as utils from "sakuraba/utils";
 import toastr from "toastr";
 import { CARD_DATA, SAKURA_TOKEN_MAX } from "./sakuraba";
+import { Base64 } from 'js-base64';
+
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 
@@ -20,13 +22,7 @@ declare var params: {
     environment: 'production' | 'development';
     lang: Language;
 
-    firebaseApiKey: string;
-    firebaseAuthDomain: string;
-    firebaseDatabaseURL: string;
-    firebaseProjectId: string;
-    firebaseStorageBucket: string;
-    firebaseMessagingSenderId: string;
-
+    firebaseAuthInfo: string;
 }
 
 function messageModal(desc: string) {
@@ -54,7 +50,7 @@ $(function () {
                 , lng: params.lang
                 , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'miniquiz']
                 , load: 'currentOnly' // 対象となった言語のみ読み込む
-                , debug: true
+                , debug: (params.environment === 'development')
                 , parseMissingKeyHandler: (k: string) => `[${k}]`
                 , fallbackLng: false
                 , backend: {
@@ -973,13 +969,15 @@ $(function () {
                 });
 
                 // firebase初期化
+                let firebaseAuthInfoList = Base64.decode(params.firebaseAuthInfo).split(' ');
+                console.log(firebaseAuthInfoList);
                 firebase.initializeApp({
-                    apiKey: params.firebaseApiKey,
-                    authDomain: params.firebaseAuthDomain,
-                    databaseURL: params.firebaseDatabaseURL,
-                    projectId: params.firebaseProjectId,
-                    storageBucket: params.firebaseStorageBucket,
-                    messagingSenderId: params.firebaseMessagingSenderId,
+                    apiKey: firebaseAuthInfoList[0],
+                    authDomain: firebaseAuthInfoList[1],
+                    databaseURL: firebaseAuthInfoList[2],
+                    projectId: firebaseAuthInfoList[3],
+                    storageBucket: firebaseAuthInfoList[4],
+                    messagingSenderId: firebaseAuthInfoList[5],
                 });
                 var db = firebase.firestore();
 
