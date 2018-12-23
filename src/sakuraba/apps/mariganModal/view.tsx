@@ -13,11 +13,13 @@ import { t } from "i18next";
 function setPopup(){
     // ポップアップ初期化
     $('[data-html],[data-content]').popup({
+        variation: 'wide',
         delay: {show: 500, hide: 0},
         onShow: function(): false | void{
             //if(draggingFrom !== null) return false;
-            lastResort: true
+            
         },
+        lastResort: true
     });
 }
 // メインビューの定義

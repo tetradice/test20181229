@@ -187,10 +187,10 @@ const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 const io = socketIO(server);
 
 /** Redis上に保存されたボードデータを取得 */
-function getStoredBoard(tableId: string, callback: (board: state.Board) => void){
+function getStoredBoard(tableId: string, callback: (board: state.VersionUnspecifiedBoard) => void){
   // ボード情報を取得
   RedisClient.GET(`sakuraba:tables:${tableId}:board`, (err, json) => {
-    let boardData = JSON.parse(json) as state.Board;
+    let boardData = JSON.parse(json) as state.VersionUnspecifiedBoard;
 
     // カードセット情報がなければ初期値をセット
     if(boardData.cardSet === undefined){
@@ -203,7 +203,7 @@ function getStoredBoard(tableId: string, callback: (board: state.Board) => void)
 }
 
 /** Redisへボードデータを保存 */
-function saveBoard(tableId: string, board: state.Board, callback: () => void){
+function saveBoard(tableId: string, board: state.VersionUnspecifiedBoard, callback: () => void){
   // ボード情報を保存
   RedisClient.SET(`sakuraba:tables:${tableId}:board`, JSON.stringify(board), (err, success) => {
     // コールバックを実行

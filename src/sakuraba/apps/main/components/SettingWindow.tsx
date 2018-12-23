@@ -4,6 +4,7 @@ import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
 import { ZIndex } from "sakuraba/const";
 import { t } from "i18next";
+import { isJsxClosingFragment } from "typescript";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -45,6 +46,18 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
             });
         };
         
+        let cardImageSelectArea: hyperapp.Children = null;
+        if(state.setting.language.ui === 'en'){
+            cardImageSelectArea = (
+                <div class="inline field">
+                    <label>{t('カード画像の表示')}</label>
+                    <select class="ui dropdown" onchange={(e: Event) => actions.setCardImageEnabled($(e.target).val() === 'en')}>
+                        <option value="">{t('カード画像-なし')}</option>
+                        <option value="en" selected={state.setting.cardImageEnabledTestEn}>{t('カード画像-英語')}</option>
+                    </select>
+                </div>
+            );
+        }
 
         return (
             <div id="SETTING-WINDOW"
@@ -59,6 +72,9 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                             <label>{t('メガミのフェイスアップ画像表示')}</label>
                         </div>
                     </div>
+
+                    {cardImageSelectArea}
+
                 </form>
             </div>
         )

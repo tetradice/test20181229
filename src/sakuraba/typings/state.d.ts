@@ -6,6 +6,10 @@ export as namespace state;
 /** ステート (バージョン不明) */
 export type VersionUnspecifiedState = state_1.State | State;
 
+/** ボード (バージョン不明) */
+export type VersionUnspecifiedBoard = state_1.Board | Board;
+
+
 /** 設定オブジェクト (バージョン不明) */
 export type VersionUnspecifiedSetting = state_1.Setting | Setting;
 

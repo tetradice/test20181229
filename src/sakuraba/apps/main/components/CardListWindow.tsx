@@ -22,6 +22,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
             // SemanticUI ポップアップ初期化
             $(elem).find('[data-html]').popup({
                 hoverable: true,
+                variation: 'wide',
                 delay: {show: 500, hide: 0},
                 onShow: function(): false | void{
                     if(dragInfo.draggingFrom !== null) return false;

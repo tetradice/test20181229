@@ -58,6 +58,9 @@ export interface Board {
     watchers: { [sessionId: string]: WatcherInfo };
     megamis: { p1: Megami[], p2: Megami[] };
 
+    // 選択しているカードセット
+    cardSet: CardSet;
+
     /** 集中力 */
     vigors: { p1: VigorValue, p2: VigorValue };
 

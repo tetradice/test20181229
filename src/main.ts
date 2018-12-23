@@ -64,7 +64,6 @@ $(function () {
                 st.viewingSide = (params.side === 'watcher' ? 'p1' : params.side);
                 st.environment = params.environment;
                 st.setting.language = {allEqual: true, ui: params.lang, uniqueName: params.lang, cardText: params.lang};
-                st.setting.cardImageEnabledTestEn = true;
 
                 // ズーム設定を調整
                 // コントロールパネルとチャットエリアの幅を350pxぶんは確保できるように調整

@@ -23,5 +23,12 @@ export default {
         let newSetting = _.assign({}, state.setting);
         newSetting.megamiFaceViewMode = value;
         return {setting: newSetting} as Partial<state.State>;
-    }
+    },
+
+    /** カード画像表示ON/OFFを設定する */
+    setCardImageEnabled: (value: boolean) => (state: state.State) => {
+        let newSetting = _.assign({}, state.setting);
+        newSetting.cardImageEnabledTestEn = value;
+        return { setting: newSetting } as Partial<state.State>;
+    },
 }

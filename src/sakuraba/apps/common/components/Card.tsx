@@ -40,11 +40,11 @@ export const Card = (p: Param) => {
         , lineHeight: `1.3`
     };
 
-    // Transformカードの場合は幅と高さを入れ替える
+    // Transformカードの場合はサイズを変更
     if(p.cardData.baseType === 'transform'){
         let newWidth = styles.height;
-        styles.height = styles.width;
-        styles.width = newWidth;
+        styles.width = `${140 * p.zoom}px`;
+        styles.height = `${101 * p.zoom}px`
     }
 
     // 使用済にあるtransformカードの場合横にする
@@ -93,6 +93,7 @@ export const Card = (p: Param) => {
         // SemanticUI ポップアップ初期化
         $(element).popup({
             hoverable: true,
+            variation: (p.cardData.cardImageEnabled ? 'very wide' : 'wide'),
             delay: { show: 500, hide: 0 },
             onShow: function (): false | void {
                 if (!p.descriptionViewable) return false;
