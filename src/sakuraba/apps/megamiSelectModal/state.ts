@@ -20,7 +20,7 @@ export namespace State {
         , side: PlayerSide
         , zoom: number
         , setting: Setting
-        , promiseResolve: (selectedCards: Megami[]) => void
+        , promiseResolve: (selectedMegamis: Megami[]) => void
         , promiseReject: Function
     ): State{
         return {

@@ -17,7 +17,7 @@ export const actions = {
             newSelectedMegamis.push(megami)
         }
 
-        return {selectedCards: newSelectedMegamis};
+        return {selectedMegamis: newSelectedMegamis};
     },
 
     /** ボードの状態を取得 */

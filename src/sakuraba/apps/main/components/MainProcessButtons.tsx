@@ -9,6 +9,17 @@ import * as apps from "sakuraba/apps";
 import { t } from "i18next";
 import i18next = require("i18next");
 
+// メガミ選択ダイアログでのボタン表示更新
+function updateMegamiSelectModalView() {
+    let megami1 = $('#MEGAMI1-SELECTION').val() as string;
+    let megami2 = $('#MEGAMI2-SELECTION').val() as string;
+
+    if (megami1 !== '' && megami2 !== '') {
+        $('#MEGAMI-SELECT-MODAL .positive.button').removeClass('disabled');
+    } else {
+        $('#MEGAMI-SELECT-MODAL .positive.button').addClass('disabled');
+    }
+}
 
 /** 処理を進めるためのボタンを表示 */
 export const MainProcessButtons = (p: {left: number}) => (state: state.State, actions: ActionsType) => {
@@ -20,77 +31,86 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         if(state.side === 'watcher') throw `Forbidden operation for watcher`  // 観戦者は実行不可能な操作
         let side = state.side;
 
-        // メガミ選択ダイアログでのボタン表示更新
-        function updateMegamiSelectModalView(){
-            let megami1 = $('#MEGAMI1-SELECTION').val() as string;
-            let megami2 = $('#MEGAMI2-SELECTION').val() as string;
-
-            if(megami1 !== '' && megami2 !== ''){
-                $('#MEGAMI-SELECT-MODAL .positive.button').removeClass('disabled');
-            } else {
-                $('#MEGAMI-SELECT-MODAL .positive.button').addClass('disabled');
-            }
-        }
-        
-        // ドロップダウンの選択肢を設定
-        $('#MEGAMI1-SELECTION').empty().append('<option></option>');
-        $('#MEGAMI2-SELECTION').empty().append('<option></option>');
-        for(let megami of utils.getMegamiKeys(state.board.cardSet)){
-            $('#MEGAMI1-SELECTION').append(`<option value='${megami}'>${utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, megami)}</option>`);
-            $('#MEGAMI2-SELECTION').append(`<option value='${megami}'>${utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, megami)}</option>`);
-        }
-    
-        $.fn.form.settings.rules.originalMegamiEqual = function(value) {
-            let megami1 = $('#MEGAMI1-SELECTION').val() as sakuraba.Megami;
-            let megami2 = $('#MEGAMI2-SELECTION').val() as sakuraba.Megami;
-            let megami1Base = (sakuraba.MEGAMI_DATA[megami1].base || megami1);
-            let megami2Base = (sakuraba.MEGAMI_DATA[megami2].base || megami2);
-
-            return megami1Base !== megami2Base;
-        };
-        let megami2Rule: SemanticUI.Form.Field = {
-              identifier: 'megami2'
-            , rules: [
-                {type: 'originalMegamiEqual', prompt: t('同じメガミを選択することはできません。')}
-            ]
-        };
-        $('#MEGAMI-SELECT-MODAL .ui.form').form({
-            fields: {
-                megami2: megami2Rule
-            }
-        });
-        $('#MEGAMI-SELECT-MODAL').modal({closable: false, autofocus: false, onShow: function(){
-            let megamis = state.board.megamis[state.side];
-
-            // メガミが選択済みであれば、あらかじめドロップダウンに設定しておく
-            if(megamis !== null && megamis.length >= 1){
-                $('#MEGAMI1-SELECTION').val(megamis[0]);
-                $('#MEGAMI2-SELECTION').val(megamis[1]);
-            }
-            updateMegamiSelectModalView(); // 表示を更新
-           
-        }, onApprove:function(){
-            if(!$('#MEGAMI-SELECT-MODAL .ui.form').form('validate form')){
-                return false;
-            }
-            
-            // 選択したメガミを設定
-            let megamis = [$('#MEGAMI1-SELECTION').val() as sakuraba.Megami, $('#MEGAMI2-SELECTION').val() as sakuraba.Megami];
-
-            actions.operate({
-                log: ['log:メガミを選択しました', null],
-                proc: () => {
-                    //actions.appendActionLog({text: `-> ${utils.getMegamiDispName(megamis[0])}、${utils.getMegamiDispName(megamis[1])}`, hidden: true});
-                    actions.setMegamis({side: side, megami1: megamis[0], megami2: megamis[1]});
-                }
+        if(state.setting.cardImageEnabledTestEn){
+            new Promise<sakuraba.Megami[]>((resolve, reject) => {
+                let st = apps.megamiSelectModal.State.create(
+                      state.board.cardSet
+                    , side
+                    , state.zoom
+                    , state.setting
+                    , resolve
+                    , reject
+                );
+                apps.megamiSelectModal.run(st, document.getElementById('COMMON-MODAL-PLACEHOLDER'));
+            }).then((selectedMegamis) => {
             });
 
-            return undefined;
-        }}).modal('show');
+            
+        } else {
+            // ドロップダウンの選択肢を設定
+            $('#MEGAMI1-SELECTION').empty().append('<option></option>');
+            $('#MEGAMI2-SELECTION').empty().append('<option></option>');
+            for (let megami of utils.getMegamiKeys(state.board.cardSet)) {
+                $('#MEGAMI1-SELECTION').append(`<option value='${megami}'>${utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, megami)}</option>`);
+                $('#MEGAMI2-SELECTION').append(`<option value='${megami}'>${utils.getMegamiDispNameWithSymbol(state.setting.language.uniqueName, megami)}</option>`);
+            }
 
-        $('#MEGAMI1-SELECTION, #MEGAMI2-SELECTION').on('change', function(e){
-            updateMegamiSelectModalView();
-        });
+            $.fn.form.settings.rules.originalMegamiEqual = function (value) {
+                let megami1 = $('#MEGAMI1-SELECTION').val() as sakuraba.Megami;
+                let megami2 = $('#MEGAMI2-SELECTION').val() as sakuraba.Megami;
+                let megami1Base = (sakuraba.MEGAMI_DATA[megami1].base || megami1);
+                let megami2Base = (sakuraba.MEGAMI_DATA[megami2].base || megami2);
+
+                return megami1Base !== megami2Base;
+            };
+            let megami2Rule: SemanticUI.Form.Field = {
+                identifier: 'megami2'
+                , rules: [
+                    { type: 'originalMegamiEqual', prompt: t('同じメガミを選択することはできません。') }
+                ]
+            };
+            $('#MEGAMI-SELECT-MODAL .ui.form').form({
+                fields: {
+                    megami2: megami2Rule
+                }
+            });
+            $('#MEGAMI-SELECT-MODAL').modal({
+                closable: false, autofocus: false, onShow: function () {
+                    let megamis = state.board.megamis[state.side];
+
+                    // メガミが選択済みであれば、あらかじめドロップダウンに設定しておく
+                    if (megamis !== null && megamis.length >= 1) {
+                        $('#MEGAMI1-SELECTION').val(megamis[0]);
+                        $('#MEGAMI2-SELECTION').val(megamis[1]);
+                    }
+                    updateMegamiSelectModalView(); // 表示を更新
+
+                }, onApprove: function () {
+                    if (!$('#MEGAMI-SELECT-MODAL .ui.form').form('validate form')) {
+                        return false;
+                    }
+
+                    // 選択したメガミを設定
+                    let megamis = [$('#MEGAMI1-SELECTION').val() as sakuraba.Megami, $('#MEGAMI2-SELECTION').val() as sakuraba.Megami];
+
+                    actions.operate({
+                        log: ['log:メガミを選択しました', null],
+                        proc: () => {
+                            //actions.appendActionLog({text: `-> ${utils.getMegamiDispName(megamis[0])}、${utils.getMegamiDispName(megamis[1])}`, hidden: true});
+                            actions.setMegamis({ side: side, megami1: megamis[0], megami2: megamis[1] });
+                        }
+                    });
+
+                    return undefined;
+                }
+            }).modal('show');
+
+            $('#MEGAMI1-SELECTION, #MEGAMI2-SELECTION').on('change', function (e) {
+                updateMegamiSelectModalView();
+            });
+        }
+
+
     }
 
     /** デッキ構築処理 */
@@ -254,7 +274,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
             // マリガンダイアログを起動
             let board = new models.Board(state.board);
             
-            let promise = new Promise<state.Card[]>((resolve, reject) => {
+            new Promise<state.Card[]>((resolve, reject) => {
                 let cards = board.getRegionCards(side, 'hand', null);
                 let st = apps.mariganModal.State.create(state.board.cardSet, side, cards, state.zoom, state.setting, resolve, reject);
                 apps.mariganModal.run(st, document.getElementById('COMMON-MODAL-PLACEHOLDER'));            

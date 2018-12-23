@@ -28,32 +28,33 @@ export interface MegamiDataItem {
     symbolEn: string;
     symbolZh: string;
 
+    tarotNo: string;
     base?: string;
     anotherID?: string;
     notExistCardSets?: CardSet[];
 }
 const MEGAMI_DATA_BASE = {
-    'yurina': { name: 'ユリナ', nameZh: '摇波', nameEn: 'Yurina', symbol: '刀', symbolZh: '刀', symbolEn: 'Katana' }
-    , 'yurina-a1': { name: '第一章ユリナ', nameZh: '第一章摇波', nameEn: 'First Chapter Yurina', symbol: '古刀', symbolZh: '古刀', symbolEn: 'Kotō', base: 'yurina', anotherID: 'A1' }
-    , 'saine': { name: 'サイネ', nameZh: '细音', nameEn: 'Saine', symbol: '薙刀', symbolZh: '薙刀', symbolEn: 'Naginata' }
-    , 'saine-a1': { name: '第二章サイネ', nameZh: '第二章细音', nameEn: 'Second Chapter Saine', symbol: '琵琶', symbolZh: '琵琶', symbolEn: 'Biwa', base: 'saine', anotherID: 'A1' }
-    , 'himika': { name: 'ヒミカ', nameZh: '绯弥香', nameEn: 'Himika', symbol: '銃', symbolZh: '火枪', symbolEn: 'Arquebus' }
-    , 'himika-a1': { name: '原初ヒミカ', nameZh: '原初绯弥香', nameEn: 'Originally Himika', symbol: '炎', symbolZh: '炎', symbolEn: 'Flame', base: 'himika', anotherID: 'A1' }
-    , 'tokoyo': { name: 'トコヨ', nameZh: '常世', nameEn: 'Tokoyo', symbol: '扇', symbolZh: '扇', symbolEn: 'Fan' }
-    , 'tokoyo-a1': { name: '旅芸人トコヨ', nameZh: '旅艺人常世', nameEn: 'Bard Tokoyo', symbol: '笛', symbolZh: '笛', symbolEn: 'Flute', base: 'tokoyo', anotherID: 'A1' }
-    , 'oboro': { name: 'オボロ', nameZh: '胧', nameEn: 'Oboro', symbol: '忍', symbolZh: '忍', symbolEn: 'Ninjutsu' }
-    , 'oboro-a1': { name: '第三章オボロ', nameZh: '第三章胧', nameEn: 'Third Chapter Oboro', symbol: '戦略', symbolZh: '战略', symbolEn: 'Strategy', base: 'oboro', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[] }
-    , 'yukihi': { name: 'ユキヒ', nameZh: '雪灯', nameEn: 'Yukihi', symbol: '傘/簪', symbolZh: '伞/簪', symbolEn: 'Umbrella/Hairpin' }
-    , 'shinra': { name: 'シンラ', nameZh: '森罗', nameEn: 'Shinra', symbol: '書', symbolZh: '书', symbolEn: 'Scroll' }
-    , 'hagane': { name: 'ハガネ', nameZh: '破钟', nameEn: 'Hagane', symbol: '槌', symbolZh: '锤', symbolEn: 'Hammer' }
-    , 'chikage': { name: 'チカゲ', nameZh: '千影', nameEn: 'Chikage', symbol: '毒', symbolZh: '毒', symbolEn: 'Poison' }
-    , 'chikage-a1': { name: '第四章チカゲ', nameZh: '第四章千影', nameEn: 'Fourth Chapter Chikage', symbol: '絆', symbolZh: '绊', symbolEn: 'Kizuna', base: 'chikage', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[] }
-    , 'kururu': { name: 'クルル', nameZh: '枢', nameEn: 'Kururu', symbol: '絡繰', symbolZh: '机械', symbolEn: 'Karakuri' }
-    , 'thallya': { name: 'サリヤ', nameZh: '萨莉娅', nameEn: 'Thallya', symbol: '乗騎', symbolZh: '车', symbolEn: 'Mount' }
-    , 'raira': { name: 'ライラ', nameZh: '雷螺', nameEn: 'Raira', symbol: '爪', symbolZh: '爪', symbolEn: 'Claw' }
-    , 'utsuro': { name: 'ウツロ', nameZh: '虚', nameEn: 'Utsuro', symbol: '鎌', symbolZh: '镰', symbolEn: 'Scythe' }
-    , 'utsuro-a1': { name: '終章ウツロ', nameZh: '终章虚', nameEn: 'Final Chapter Utsuro', symbol: '塵', symbolZh: '尘', symbolEn: 'Dust', base: 'utsuro', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[] }
-    , 'honoka': { name: 'ホノカ', nameZh: '穗乃香', nameEn: 'Honoka', symbol: '旗', symbolZh: '旗', symbolEn: 'Flag', notExistCardSets: ['na-s2'] as CardSet[] }
+    'yurina': { name: 'ユリナ', nameZh: '摇波', nameEn: 'Yurina', symbol: '刀', symbolZh: '刀', symbolEn: 'Katana', tarotNo: '01' }
+    , 'yurina-a1': { name: '第一章ユリナ', nameZh: '第一章摇波', nameEn: 'First Chapter Yurina', symbol: '古刀', symbolZh: '古刀', symbolEn: 'Kotō', base: 'yurina', anotherID: 'A1', tarotNo: '01' }
+    , 'saine': { name: 'サイネ', nameZh: '细音', nameEn: 'Saine', symbol: '薙刀', symbolZh: '薙刀', symbolEn: 'Naginata', tarotNo: '02' }
+    , 'saine-a1': { name: '第二章サイネ', nameZh: '第二章细音', nameEn: 'Second Chapter Saine', symbol: '琵琶', symbolZh: '琵琶', symbolEn: 'Biwa', base: 'saine', anotherID: 'A1', tarotNo: '02' }
+    , 'himika': { name: 'ヒミカ', nameZh: '绯弥香', nameEn: 'Himika', symbol: '銃', symbolZh: '火枪', symbolEn: 'Arquebus', tarotNo: '03' }
+    , 'himika-a1': { name: '原初ヒミカ', nameZh: '原初绯弥香', nameEn: 'Originally Himika', symbol: '炎', symbolZh: '炎', symbolEn: 'Flame', base: 'himika', anotherID: 'A1', tarotNo: '03' }
+    , 'tokoyo': { name: 'トコヨ', nameZh: '常世', nameEn: 'Tokoyo', symbol: '扇', symbolZh: '扇', symbolEn: 'Fan', tarotNo: '04' }
+    , 'tokoyo-a1': { name: '旅芸人トコヨ', nameZh: '旅艺人常世', nameEn: 'Bard Tokoyo', symbol: '笛', symbolZh: '笛', symbolEn: 'Flute', base: 'tokoyo', anotherID: 'A1', tarotNo: '04' }
+    , 'oboro': { name: 'オボロ', nameZh: '胧', nameEn: 'Oboro', symbol: '忍', symbolZh: '忍', symbolEn: 'Ninjutsu', tarotNo: '05' }
+    , 'oboro-a1': { name: '第三章オボロ', nameZh: '第三章胧', nameEn: 'Third Chapter Oboro', symbol: '戦略', symbolZh: '战略', symbolEn: 'Strategy', base: 'oboro', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[], tarotNo: '05' }
+    , 'yukihi': { name: 'ユキヒ', nameZh: '雪灯', nameEn: 'Yukihi', symbol: '傘/簪', symbolZh: '伞/簪', symbolEn: 'Umbrella/Hairpin', tarotNo: '06' }
+    , 'shinra': { name: 'シンラ', nameZh: '森罗', nameEn: 'Shinra', symbol: '書', symbolZh: '书', symbolEn: 'Scroll', tarotNo: '07' }
+    , 'hagane': { name: 'ハガネ', nameZh: '破钟', nameEn: 'Hagane', symbol: '槌', symbolZh: '锤', symbolEn: 'Hammer', tarotNo: '08' }
+    , 'chikage': { name: 'チカゲ', nameZh: '千影', nameEn: 'Chikage', symbol: '毒', symbolZh: '毒', symbolEn: 'Poison', tarotNo: '09' }
+    , 'chikage-a1': { name: '第四章チカゲ', nameZh: '第四章千影', nameEn: 'Fourth Chapter Chikage', symbol: '絆', symbolZh: '绊', symbolEn: 'Kizuna', base: 'chikage', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[], tarotNo: '09' }
+    , 'kururu': { name: 'クルル', nameZh: '枢', nameEn: 'Kururu', symbol: '絡繰', symbolZh: '机械', symbolEn: 'Karakuri', tarotNo: '10' }
+    , 'thallya': { name: 'サリヤ', nameZh: '萨莉娅', nameEn: 'Thallya', symbol: '乗騎', symbolZh: '车', symbolEn: 'Mount', tarotNo: '11' }
+    , 'raira': { name: 'ライラ', nameZh: '雷螺', nameEn: 'Raira', symbol: '爪', symbolZh: '爪', symbolEn: 'Claw', tarotNo: '12' }
+    , 'utsuro': { name: 'ウツロ', nameZh: '虚', nameEn: 'Utsuro', symbol: '鎌', symbolZh: '镰', symbolEn: 'Scythe', tarotNo: '13' }
+    , 'utsuro-a1': { name: '終章ウツロ', nameZh: '终章虚', nameEn: 'Final Chapter Utsuro', symbol: '塵', symbolZh: '尘', symbolEn: 'Dust', base: 'utsuro', anotherID: 'A1', notExistCardSets: ['na-s2'] as CardSet[], tarotNo: '13' }
+    , 'honoka': { name: 'ホノカ', nameZh: '穗乃香', nameEn: 'Honoka', symbol: '旗', symbolZh: '旗', symbolEn: 'Flag', notExistCardSets: ['na-s2'] as CardSet[], tarotNo: '14' }
 };
 export type Megami = keyof (typeof MEGAMI_DATA_BASE);
 export const MEGAMI_DATA: {[megami in Megami]: MegamiDataItem} = MEGAMI_DATA_BASE;

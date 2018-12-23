@@ -45,13 +45,18 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                 }
             });
         };
+
+        const imageEnabledChange = (e: Event) => {
+            actions.setCardImageEnabled($(e.target).val() === 'en');
+            localStorage.setItem('Setting', JSON.stringify(actions.getState().setting));
+        };
         
         let cardImageSelectArea: hyperapp.Children = null;
         if(state.setting.language.ui === 'en'){
             cardImageSelectArea = (
                 <div class="inline field">
                     <label>{t('カード画像の表示')}</label>
-                    <select class="ui dropdown" onchange={(e: Event) => actions.setCardImageEnabled($(e.target).val() === 'en')}>
+                    <select class="ui dropdown" onchange={imageEnabledChange}>
                         <option value="">{t('カード画像-なし')}</option>
                         <option value="en" selected={state.setting.cardImageEnabledTestEn}>{t('カード画像-英語')}</option>
                     </select>
