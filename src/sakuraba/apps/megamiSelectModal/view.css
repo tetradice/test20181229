@@ -1,0 +1,14 @@
+
+
+.outer {
+    width: 100%;
+    overflow: scroll;
+    max-height: 320px;
+    position: relative;
+}
+
+.cardArea {
+    width: 320px;
+    height: 180px;
+    position: relative;
+}
