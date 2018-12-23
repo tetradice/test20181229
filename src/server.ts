@@ -17,6 +17,7 @@ import FilesystemBackend = require('i18next-node-fs-backend');
 import i18nextMiddleware = require('i18next-express-middleware');
 import webpackNodeExternals = require('webpack-node-externals');
 import { Base64 } from 'js-base64';
+const admin = require('firebase-admin');
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
 const PORT = process.env.PORT || 3000;
@@ -29,6 +30,10 @@ const browserSyncConfigurations = { "files": ["**/*.js", "views/*.ejs"] };
 
 
 let app = express();
+admin.initializeApp({
+  credential: admin.credential.cert(JSON.parse(process.env.GOOGLE_CLOUD_KEYFILE_JSON))
+});
+var db: firebase.firestore.Firestore = admin.firestore();
 
 if(process.env.ENVIRONMENT === 'development'){
   const browserSync = require('browser-sync');
@@ -71,14 +76,12 @@ app
   // プレイヤーとして卓URLにアクセスしたときの処理
   const playerRoute = (req: express.Request, res: express.Response, lang: Language) => {
     // キーに対応する情報の取得を試みる
-    RedisClient.HGET(`sakuraba:player-key-map`, req.params.key, (err, dataJson) => {
-      if(dataJson !== null){
-        let data = JSON.parse(dataJson);
-
+    db.collection('sakuraba_player-key-map').doc(req.params.key).get().then((doc) => {
+      if(doc.exists){
         // 描画スタート
         res.render('board', {
-          tableId: data.tableId
-          , side: data.side
+          tableId: doc.data().tableNo
+          , side: doc.data().side
           , environment: process.env.ENVIRONMENT
           , version: VERSION
           , lang: lang
@@ -92,37 +95,51 @@ app
         res.end('NotFound : ' + req.path);
       }
     });
+
+    // RedisClient.HGET(`sakuraba:player-key-map`, req.params.key, (err, dataJson) => {
+
+    // });
   };
 
 // 卓作成処理
 const tableCreateRoute = (req: express.Request, res: express.Response, langCode?: string) => {
-  // 新しい卓番号を採番
-  RedisClient.INCR(`sakuraba:currentTableNo`, (err, newTableNo) => {
-    // トランザクションを張る
-    var multiClient = RedisClient.multi();
+  // 現在の卓番号を取得
+  let metaRef = db.collection('sakuraba_metadata').doc('0');
+  db.runTransaction((tran) => {
+    return tran.get(metaRef).then((metaDataDoc) => {
+      // 新しい卓番号を採番して記録
+      let lastTableNo = 0;
+      if (metaDataDoc.exists) {
+        lastTableNo = metaDataDoc.data().lastTableNo;
+      }
+      let newTableNo = lastTableNo + 1;
+      tran.set(metaRef, { lastTableNo: newTableNo });
 
-    // 卓を追加
-    let state = utils.createInitialState();
-    multiClient.SET(`sakuraba:tables:${newTableNo}:board`, JSON.stringify(state.board));
-    multiClient.SET(`sakuraba:tables:${newTableNo}:watchers`, JSON.stringify({}));
+      // 新しい卓を生成して記録
+      let state = utils.createInitialState();
+      let newTable: store.Table = {
+          board: state.board
+        , stateDataVersion: 2
+        , lastLogNo: 0
+      };
+      tran.set(db.collection('sakuraba_tables').doc(newTableNo.toString()), newTable);
 
+      // 卓へアクセスするための、プレイヤー1用アクセスキー、プレイヤー2用アクセスキーを生成
+      let p1Key = randomstring.generate({
+        length: 12
+        , readable: true
+      });
+      let p2Key = randomstring.generate({
+        length: 12
+        , readable: true
+      });
 
-    // 卓へアクセスするための、プレイヤー1用アクセスキー、プレイヤー2用アクセスキーを生成
-    let p1Key = randomstring.generate({
-      length: 12
-      , readable: true
-    });
-    let p2Key = randomstring.generate({
-      length: 12
-      , readable: true
-    });
-
-    multiClient.HSET(`sakuraba:player-key-map`, p1Key, JSON.stringify({ tableId: newTableNo, side: 'p1' }));
-    multiClient.HSET(`sakuraba:player-key-map`, p2Key, JSON.stringify({ tableId: newTableNo, side: 'p2' }));
-
-    multiClient.EXEC((err, replies) => {
-      console.log(JSON.stringify(err));
-      console.log(JSON.stringify(replies));
+      // プレイヤーキーと卓の紐づけを記録
+      let keyMapRef = db.collection('sakuraba_player-key-map');
+      let p1Ref = keyMapRef.doc(p1Key);
+      tran.set(p1Ref, { tableNo: newTableNo, side: 'p1' });
+      let p2Ref = keyMapRef.doc(p2Key);
+      tran.set(p2Ref, { tableNo: newTableNo, side: 'p2' });
 
       // 卓にアクセスするためのURLを生成
       let urlBase: string;
@@ -137,9 +154,11 @@ const tableCreateRoute = (req: express.Request, res: express.Response, langCode?
       let p2Url = `${urlBase}/${langCode ? langCode + '/' : ''}play/${p2Key}`;
       let watchUrl = `${urlBase}/${langCode ? langCode + '/' : ''}watch/${newTableNo}`;
 
+      // 生成したURL情報を返す
       res.json({ p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl });
     });
   });
+
 }
 
 app
@@ -212,83 +231,6 @@ const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 const io = socketIO(server);
 
-/** Redis上に保存されたボードデータを取得 */
-function getStoredBoard(tableId: string, callback: (board: state.VersionUnspecifiedBoard) => void){
-  // ボード情報を取得
-  RedisClient.GET(`sakuraba:tables:${tableId}:board`, (err, json) => {
-    let boardData = JSON.parse(json) as state.VersionUnspecifiedBoard;
-
-    // カードセット情報がなければ初期値をセット
-    if(boardData.cardSet === undefined){
-      boardData.cardSet = 'na-s2';
-    }
-
-    // コールバックを実行
-    callback(boardData);
-  });
-}
-
-/** Redisへボードデータを保存 */
-function saveBoard(tableId: string, board: state.VersionUnspecifiedBoard, callback: () => void){
-  // ボード情報を保存
-  RedisClient.SET(`sakuraba:tables:${tableId}:board`, JSON.stringify(board), (err, success) => {
-    // コールバックを実行
-    callback();
-  });
-}
-
-/** Redis上に保存されたアクションログを取得 */
-function getStoredActionLogs(tableId: string, callback: (logs: state.ActionLogRecord[]) => void){
-  // ログを取得
-  RedisClient.LRANGE(`sakuraba:tables:${tableId}:actionLogs`, 0, -1, (err, jsons) => {
-
-    let logs = jsons.map((json) => JSON.parse(json) as state.ActionLogRecord); 
-
-    // コールバックを実行
-    callback(logs);
-  });
-}
-
-/** Redis上に保存されたチャットログを取得 */
-function getStoredChatLogs(tableId: string, callback: (logs: state.ChatLogRecord[]) => void){
-  // ログを取得
-  RedisClient.LRANGE(`sakuraba:tables:${tableId}:chatLogs`, 0, -1, (err, jsons) => {
-
-    let logs = jsons.map((json) => JSON.parse(json) as state.ChatLogRecord); 
-
-    // コールバックを実行
-    callback(logs);
-  });
-}
-
-/** Redisへアクションログデータを追加 */
-function appendActionLogs(tableId: string, logs: state.ActionLogRecord[], callback: (logs: state.ActionLogRecord[]) => void){
-  // ログをトランザクションで追加
-  let commands: string[][] = [];
-  logs.forEach((log) => {
-    commands.push(['RPUSH', `sakuraba:tables:${tableId}:actionLogs`, JSON.stringify(log)]);
-  });
-  RedisClient.multi(commands).exec((err, success) => {
-    // コールバックを実行
-    console.log('appendActionLogs response: ', success);
-    callback(logs);
-  });
-}
-
-/** Redisへチャットログデータを追加 */
-function appendChatLogs(tableId: string, logs: state.ChatLogRecord[], callback: (logs: state.ChatLogRecord[]) => void){
-  // ログをトランザクションで追加
-  let commands: string[][] = [];
-  logs.forEach((log) => {
-    commands.push(['RPUSH', `sakuraba:tables:${tableId}:chatLogs`, JSON.stringify(log)]);
-  });
-  RedisClient.multi(commands).exec((err, success) => {
-    // コールバックを実行
-    console.log('appendChatLogs response: ', success);
-    callback(logs);
-  });
-}
-
 io.on('connection', (ioSocket) => {
   let connectedTableId = null;
   let connectedWatcherSessionId = null;
@@ -314,52 +256,6 @@ io.on('connection', (ioSocket) => {
         });
       });
     }
-  });
-  
-  // 初期情報のリクエスト
-  socket.on('requestFirstTableData', (p) => {
-    // テーブルIDを記憶
-    connectedTableId = p.tableId;
-
-    // roomにjoin
-    socket.ioSocket.join(p.tableId);
-
-    // ボード情報を取得
-    getStoredBoard(p.tableId, (board) => {
-      // アクションログ情報を取得
-      getStoredActionLogs(p.tableId, (actionLogs) => {
-        // チャットログ情報を取得
-        getStoredChatLogs(p.tableId, (chatLogs) => {
-          socket.emit('onFirstTableDataReceived', {board: board, actionLogs: actionLogs, chatLogs: chatLogs, watchers: {}});
-        });
-      });
-    });
-  });
-
-  // ボード状態の更新
-  socket.on('updateBoard', (p) => {
-    // ボード情報を取得
-    getStoredBoard(p.tableId, (board) => {
-      // 送信されたボード情報を上書き
-      saveBoard(p.tableId, p.board, () => {
-        // ボードが更新されたイベントを他ユーザーに配信
-        socket.broadcastEmit(p.tableId, 'onBoardReceived', {board: p.board, appendedActionLogs: p.appendedActionLogs});
-      });
-    });
-    // ログがあればサーバー側DBにログを追加
-    if(p.appendedActionLogs !== null){
-      appendActionLogs(p.tableId, p.appendedActionLogs, (logs) => {
-        // 送信成功後は何もしない
-      });
-    }
-  });
-
-  // チャットログ追加
-  socket.on('appendChatLog', (p) => {
-    appendChatLogs(p.tableId, [p.appendedChatLog], (logs) => {
-      // チャットログ追加イベントを他ユーザーに配信
-      socket.broadcastEmit(p.tableId, 'onChatLogAppended', {appendedChatLogs: logs});
-    });
   });
 
   // 通知送信
