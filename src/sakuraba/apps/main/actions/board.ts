@@ -6,6 +6,7 @@ import cardActions from './card';
 import { ActionsType } from ".";
 import { ActionLogBody } from "sakuraba/typings/state";
 import firebase from "firebase";
+import { StoreName } from "sakuraba/const";
 
 type LogParam = {text?: LogValue, body?: ActionLogBody, visibility?: LogVisibility};
 
@@ -54,36 +55,31 @@ export default {
         let oldLength = state.actionLog.length;
         appendLogs = newState.actionLog.slice(oldLength);
 
-        // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
+        // 処理の実行が終わったら、Firestoreへ更新後のボードの内容と、アクションログを送信
         var db = firebase.firestore();
 
-        let storedBoardData = {};
-        for(let key of Object.keys(newState.board)){
-            if (typeof newState.board[key] !== 'function'){
-                storedBoardData[key] = newState.board[key];
-            }
-        }
-
-        let tableRef = db.collection("sakuraba_tables").doc(newState.tableId);
-        let actionLogsRef = tableRef.collection('sakuraba_actionLogs');
+        let tableRef = db.collection(StoreName.TABLES).doc(newState.tableId);
+        let logsRef = tableRef.collection(StoreName.LOGS);
         db.runTransaction(function(tran){
-            return tran.get(tableRef).then(table => {
-                console.log('got table: ', table);
-                tran.update(tableRef, { board: storedBoardData });
+            return tran.get(tableRef).then(tableSS => {
+                let table = tableSS.data() as store.Table;
+                let logNo = table.lastLogNo;
                 appendLogs.forEach(log => {
-                    let storedLog = {};
-                    for (let key of Object.keys(log)) {
-                        if (typeof log[key] !== 'function' && log[key] !== undefined) {
-                            storedLog[key] = log[key];
-                        }
-                    }
-                    console.log("storedLog: ", storedLog);
-                    tran.set(actionLogsRef.doc(), storedLog);
+                    logNo++;
+                    let storedLog = utils.convertForFirestore(log);
+                    tran.set(logsRef.doc(_.padStart(logNo.toString(), 8, "0")), storedLog);
                 });
-                
+
+                let tableObj: store.Table = {
+                    board: utils.convertForFirestore(newState.board)
+                    , stateDataVersion: 2
+                    , lastLogNo: logNo
+                };
+
+                tran.update(tableRef, tableObj);
             })
         }).then(function(){
-            console.log("Board written in operate");
+            console.log("Board written to firestore");
         });
 
         // 履歴を忘れるモードの場合は、ボード履歴を削除し、元に戻せないようにする

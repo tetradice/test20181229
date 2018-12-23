@@ -4,7 +4,7 @@ import LocizeBackend from 'i18next-locize-backend';
 import _ from "lodash";
 import * as randomstring from 'randomstring';
 import * as apps from "sakuraba/apps";
-import { BOARD_BASE_WIDTH, ZIndex } from "sakuraba/const";
+import { BOARD_BASE_WIDTH, ZIndex, StoreName } from "sakuraba/const";
 import dragInfo from "sakuraba/dragInfo";
 import * as models from "sakuraba/models";
 import { ClientSocket } from "sakuraba/socket";
@@ -37,20 +37,6 @@ function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery
 
 $(function () {
     try {
-
-
-        // firebase初期化
-        firebase.initializeApp({
-            apiKey: "AIzaSyBiZ1J-vGSM0rvmhntLO_IxKC8mLCFRJcI",
-            authDomain: "furuyoni-simurator-test.firebaseapp.com",
-            databaseURL: "https://furuyoni-simurator-test.firebaseio.com",
-            projectId: "furuyoni-simurator-test",
-            storageBucket: "furuyoni-simurator-test.appspot.com",
-            messagingSenderId: "263152473970"
-        });
-        var db = firebase.firestore();
-
-
         // 言語設定の初期化。初期化完了後にメイン処理に入る
         i18next
             .use(LocizeBackend)
@@ -88,9 +74,6 @@ $(function () {
 
                 // アプリケーション起動
                 let appActions = apps.main.run(st, document.getElementById('BOARD'));
-
-                // アプリケーション起動まで完了したら、ローダーの表示を隠す
-                $('#LOADER').removeClass('active');
 
                 let contextMenuShowingAfterDrop: boolean = false;
                 const processOnDragEnd = () => {
@@ -981,40 +964,36 @@ $(function () {
                     }
                 });
 
+                // firebase初期化
+                firebase.initializeApp({
+                    apiKey: "AIzaSyBiZ1J-vGSM0rvmhntLO_IxKC8mLCFRJcI",
+                    authDomain: "furuyoni-simurator-test.firebaseapp.com",
+                    databaseURL: "https://furuyoni-simurator-test.firebaseio.com",
+                    projectId: "furuyoni-simurator-test",
+                    storageBucket: "furuyoni-simurator-test.appspot.com",
+                    messagingSenderId: "263152473970"
+                });
+                var db = firebase.firestore();
+
                 // 初期データを取得し、メイン処理をスタート
-                let sakurabaTablesRef = db.collection("sakuraba_tables");
-                let board = null;
-                let actionLogs = null;
-                let chatLogs = null;
+                let sakurabaTablesRef = db.collection(StoreName.TABLES);
+                let board: state.Board = null;
+                let actionLogs: state.ActionLogRecord[] = null;
+                let chatLogs: state.ChatLogRecord[] = null;
                 let tableRef = sakurabaTablesRef.doc(params.tableId);
                 
                 tableRef.get().then((doc) => {
                     // まずはボードデータを取得して保持
-                    // ボードデータが存在しなければ新しいボードデータを生成し、保存する
-                    if(doc.exists){
-                        board = doc.data().board;
-                        console.log("board data get: ", board);
-                    } else {
-                        board = appActions.getState().board;
-                        tableRef.set({board: board});
-                        console.log("board data append: ", board);
-                    }
+                    board = (doc.data() as store.Table).board;
 
-                    // 次にサブコレクションの操作ログを全件取得
-                    return tableRef.collection('actionLogs').get();
+                    // 次にサブコレクションのログを全件取得 (ID順にソートする)
+                    return tableRef.collection(StoreName.LOGS).orderBy(firebase.firestore.FieldPath.documentId()).get();
 
-                }).then((actionLogsDoc) => {
-                    // 操作ログを保持
-                    actionLogs = actionLogsDoc.docs.map(x => x.data());
-                    console.log("actionLogs data get: ", actionLogs);
-
-                    // 最後にサブコレクションのチャットログを全件取得
-                    return tableRef.collection('chatLogs').get();
-
-                }).then((chatLogsDoc) => {
-                    // チャットログを保持
-                    chatLogs = chatLogsDoc.docs.map(x => x.data());
-                    console.log("chatLogs data get: ", actionLogs);
+                }).then((logsDoc) => {
+                    // ログをアクションログとチャットログに分けて保持
+                    let allLogs = logsDoc.docs.map(x => x.data() as state.LogRecord);
+                    actionLogs = allLogs.filter(x => x.type === 'a') as state.ActionLogRecord[];
+                    chatLogs = allLogs.filter(x => x.type === 'c') as state.ChatLogRecord[];
 
                     // ユーザー設定のセット
                     let settingJson = localStorage.getItem('Setting');
@@ -1036,6 +1015,9 @@ $(function () {
                     // ログ情報のセット
                     appActions.setActionLogs(actionLogs);
                     appActions.setChatLogs(chatLogs);
+
+                    // アプリケーション起動まで完了したら、ローダーの表示を隠す
+                    $('#LOADER').removeClass('active');
 
                     // // まだ名前が決定していなければ、名前の決定処理
                     // // 観戦者かどうかで名前の処理を分ける
@@ -1075,11 +1057,11 @@ $(function () {
                     // }
                 });
 
-                // 更新時の処理を紐づける
+                // データ更新時の処理を紐づける
                 sakurabaTablesRef.doc(params.tableId)
                     .onSnapshot(doc => {
                         var source = doc.metadata.hasPendingWrites ? "Local" : "Server";
-                        console.log(source, "onSnapshot data: ", doc.data());
+                        console.log(source, "table onSnapshot data: ", doc.data());
                     });
 
                 // // ★集計

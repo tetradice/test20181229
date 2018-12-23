@@ -16,3 +16,8 @@ export namespace ZIndex {
     
     export const MEGAMI_FACE = -1;
 }
+
+export namespace StoreName {
+    export const TABLES = "sakuraba_tables";
+    export const LOGS = "logs";
+}

@@ -21,7 +21,8 @@ export default {
 
         // 保存
         let append: state.ActionLogRecord = {
-              body: logBody
+              type: 'a'
+            , body: logBody
             , time: moment().format()
             , side: state.side
             , watcherSessionId: (state.side === 'watcher' ? state.currentWatcherSessionId : null)
