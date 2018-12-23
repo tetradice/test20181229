@@ -7,4 +7,7 @@ export interface Table {
 
     board: state.Board;
     lastLogNo: number;
+
+    updatedAt: string;
+    updatedBy: string;
 }

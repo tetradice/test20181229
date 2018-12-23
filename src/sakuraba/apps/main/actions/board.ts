@@ -7,6 +7,8 @@ import { ActionsType } from ".";
 import { ActionLogBody } from "sakuraba/typings/state";
 import firebase from "firebase";
 import { StoreName } from "sakuraba/const";
+import moment = require("moment");
+import { flipSide } from "sakuraba/utils";
 
 type LogParam = {text?: LogValue, body?: ActionLogBody, visibility?: LogVisibility};
 
@@ -74,6 +76,9 @@ export default {
                     board: utils.convertForFirestore(newState.board)
                     , stateDataVersion: 2
                     , lastLogNo: logNo
+
+                    , updatedAt: moment().format()
+                    , updatedBy: state.side
                 };
 
                 tran.update(tableRef, tableObj);

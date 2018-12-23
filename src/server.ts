@@ -58,6 +58,10 @@ i18next
     }
   });
 
+const firebaseAuthInfo = Base64.encode(
+  `${process.env.FIREBASE_API_KEY} ${process.env.FIREBASE_AUTH_DOMAIN} ${process.env.FIREBASE_DATABASE_URL} ${process.env.FIREBASE_PROJECT_ID} ${process.env.FIREBASE_STORAGE_BUCKET} ${process.env.FIREBASE_MESSAGING_SENDER_ID}`
+);
+
 app
   .set('views', __dirname + '/../views/')
   .set('view engine', 'ejs')
@@ -76,7 +80,7 @@ app
   // プレイヤーとして卓URLにアクセスしたときの処理
   const playerRoute = (req: express.Request, res: express.Response, lang: Language) => {
     // キーに対応する情報の取得を試みる
-    db.collection('sakuraba_player-key-map').doc(req.params.key).get().then((doc) => {
+    db.collection(StoreName.PLAYER_KEY_MAP).doc(req.params.key).get().then((doc) => {
       if(doc.exists){
         // 描画スタート
         res.render('board', {
@@ -86,9 +90,7 @@ app
           , version: VERSION
           , lang: lang
 
-          , firebaseAuthInfo: Base64.encode(
-            `${process.env.FIREBASE_API_KEY} ${process.env.FIREBASE_AUTH_DOMAIN} ${process.env.FIREBASE_DATABASE_URL} ${process.env.FIREBASE_PROJECT_ID} ${process.env.FIREBASE_STORAGE_BUCKET} ${process.env.FIREBASE_MESSAGING_SENDER_ID}`
-            )
+          , firebaseAuthInfo: firebaseAuthInfo
         })
       } else {
         res.status(404);
@@ -121,6 +123,9 @@ const tableCreateRoute = (req: express.Request, res: express.Response, langCode?
           board: state.board
         , stateDataVersion: 2
         , lastLogNo: 0
+
+        , updatedAt: null
+        , updatedBy: null
       };
       tran.set(db.collection(StoreName.TABLES).doc(newTableNo.toString()), newTable);
 
@@ -174,13 +179,13 @@ app
   })
   // 卓URL (観戦者用)
   .get('/zh/watch/:tableId', (req, res) => {
-    res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'zh-Hans-CN'})
+    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'zh-Hans-CN', firebaseAuthInfo: firebaseAuthInfo})
   })
   .get('/en/watch/:tableId', (req, res) => {
-    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'en' })
+    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'en', firebaseAuthInfo: firebaseAuthInfo })
   })
   .get('/watch/:tableId', (req, res) => {
-    res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja'})
+    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja', firebaseAuthInfo: firebaseAuthInfo})
   })
   // トップページ
   .get('/zh', (req, res) => {
