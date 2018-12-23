@@ -10,7 +10,7 @@ import { ServerSocket } from 'sakuraba/socket';
 import * as utils from 'sakuraba/utils';
 import nodemailer from 'nodemailer';
 import bodyParser from 'body-parser';
-import { VERSION } from 'sakuraba/const';
+import { VERSION, StoreName } from 'sakuraba/const';
 import i18next = require('i18next');
 import LocizeBackend = require('i18next-node-locize-backend');
 import FilesystemBackend = require('i18next-node-fs-backend');
@@ -104,7 +104,7 @@ app
 // 卓作成処理
 const tableCreateRoute = (req: express.Request, res: express.Response, langCode?: string) => {
   // 現在の卓番号を取得
-  let metaRef = db.collection('sakuraba_metadata').doc('0');
+  let metaRef = db.collection(StoreName.METADATA).doc('0');
   db.runTransaction((tran) => {
     return tran.get(metaRef).then((metaDataDoc) => {
       // 新しい卓番号を採番して記録
@@ -122,7 +122,7 @@ const tableCreateRoute = (req: express.Request, res: express.Response, langCode?
         , stateDataVersion: 2
         , lastLogNo: 0
       };
-      tran.set(db.collection('sakuraba_tables').doc(newTableNo.toString()), newTable);
+      tran.set(db.collection(StoreName.TABLES).doc(newTableNo.toString()), newTable);
 
       // 卓へアクセスするための、プレイヤー1用アクセスキー、プレイヤー2用アクセスキーを生成
       let p1Key = randomstring.generate({
@@ -135,7 +135,7 @@ const tableCreateRoute = (req: express.Request, res: express.Response, langCode?
       });
 
       // プレイヤーキーと卓の紐づけを記録
-      let keyMapRef = db.collection('sakuraba_player-key-map');
+      let keyMapRef = db.collection(StoreName.PLAYER_KEY_MAP);
       let p1Ref = keyMapRef.doc(p1Key);
       tran.set(p1Ref, { tableNo: newTableNo, side: 'p1' });
       let p2Ref = keyMapRef.doc(p2Key);

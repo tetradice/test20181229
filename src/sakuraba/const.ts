@@ -20,4 +20,6 @@ export namespace ZIndex {
 export namespace StoreName {
     export const TABLES = "sakuraba_tables";
     export const LOGS = "logs";
+    export const METADATA = "sakuraba_metadata";
+    export const PLAYER_KEY_MAP = "sakuraba_playerKeyMap";
 }
