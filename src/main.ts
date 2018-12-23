@@ -977,10 +977,13 @@ $(function () {
                     // ユーザー設定のセット
                     let settingJson = localStorage.getItem('Setting');
                     if (settingJson) {
-                        appActions.setSetting(JSON.parse(settingJson) as state.VersionUnspecifiedSetting);
+                        let newSetting = JSON.parse(settingJson) as state.VersionUnspecifiedSetting;
+                        // 設定の強制上書き
+                        if (newSetting['settingDataVersion']){
+                            (newSetting as state.Setting).language = { allEqual: true, ui: params.lang, uniqueName: params.lang, cardText: params.lang };
+                        }
+                        appActions.setSetting(newSetting);
                     }
-                    // // 設定の強制上書き
-                    // st.setting.cardImageEnabledTestEn = (params.lang === 'en');
 
                     // ボード情報のセット
                     appActions.setBoard(p.board);
