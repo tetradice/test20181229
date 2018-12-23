@@ -38,7 +38,7 @@ i18next
   .init({
     defaultNS: 'common'
     , lng: 'ja'
-    , ns: ['common', 'log', 'cardset', 'help-window', 'dialog']
+    , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'about-window']
     , load: 'currentOnly' // 対象となった言語のみ読み込む
     , debug: true
     , fallbackLng: false

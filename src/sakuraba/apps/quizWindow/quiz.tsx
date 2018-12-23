@@ -1,6 +1,8 @@
 import { CARD_DATA, CardDataItem, MEGAMI_DATA, ALL_CARD_ID_LIST } from "sakuraba";
 import _ from "lodash";
 import { h } from "hyperapp";
+import { t } from "i18next";
+import * as models from "sakuraba/models";
 
 // 指定した配列から1つの要素をランダムに選出して返す
 function pick<T>(array: T[]): T | null{
@@ -56,12 +58,14 @@ const QuizTypeList: QuizType[] = [
 export class QuizMaker {
     difficult: QuizDifficult = 'normal';
     cardSet: CardSet;
+    language: LanguageSetting;
 
-    constructor(cardSet: CardSet){
+    constructor(cardSet: CardSet, language: LanguageSetting){
         this.cardSet = cardSet;
+        this.language = language;
     }
 
-    getCardTitleHtml(cardData: CardDataItem){
+    getCardTitleHtml(cardData: models.CardData){
         let megamiName = MEGAMI_DATA[cardData.megami].name;
         if(cardData.megami === 'utsuro' && cardData.baseType === 'special'){
             // ウツロの切札のみ、読み仮名を付与 (読み仮名がないと判別しにくいため)
@@ -76,14 +80,14 @@ export class QuizMaker {
         let quiz = new Quiz();
 
         // すべてのカード情報を取得
-        let allCards: {id: string, data: CardDataItem}[] = [];
+        let allCards: { id: string, data: models.CardData}[] = [];
         for(let cardId of ALL_CARD_ID_LIST[this.cardSet]){
-            allCards.push({ id: cardId, data: CARD_DATA[this.cardSet][cardId]});
+            allCards.push({ id: cardId, data: new models.CardData(this.cardSet, cardId, this.language, false)});
         }
 
         // 変数初期化
-        let successCard: {id: string, data: CardDataItem};
-        let failCards: {id: string, data: CardDataItem}[] = [];
+        let successCard: {id: string, data: models.CardData};
+        let failCards: {id: string, data: models.CardData}[] = [];
 
         // ランダムに問題の種類を決定する
         let quizType = pick(QuizTypeList);
@@ -102,7 +106,7 @@ export class QuizMaker {
                 let border = pick([1, 2, 3, 4, 5]);
                 successCard = pick(targetCards.filter((card) => card.cost <= border));
                 failCards = pickMultiple(targetCards.filter((card) => card.cost > border), 3);
-                quiz.text = `次のうち、消費が${border}以下の切札はどれ？`;
+                quiz.text = t(`miniquiz:次のうち、消費がN以下の切札はどれ？`, {border: border});
             }
             if(condType === 'higher'){
                 // 消費n以上
@@ -110,18 +114,18 @@ export class QuizMaker {
                 successCard = pick(targetCards.filter((card) => card.cost >= border));
                 // 消費がnより小さいカードを3枚抽出
                 failCards = pickMultiple(targetCards.filter((card) => card.cost < border), 3);
-                quiz.text = `次のうち、消費が${border}以上の切札はどれ？`;
+                quiz.text = t(`miniquiz:次のうち、消費がN以上の切札はどれ？`, {border: border});
             }
             if(condType === 'notEqual'){
                 // 消費がnでない
                 let v = pick([0, 1, 2, 3, 4, 5, 6]);
                 successCard = pick(targetCards.filter((card) => card.cost !== v));
                 failCards = pickMultiple(targetCards.filter((card) => card.cost === v), 3);
-                quiz.text = `次のうち、消費が${v}でない切札はどれ？`;
+                quiz.text = t(`miniquiz:次のうち、消費がNでない切札はどれ？`, { value: v });
             }
             // 回答をシャッフルして問題作成
             let cards = _.shuffle([].concat(successCard, failCards));
-            let explanations: hyperapp.Children[] = ["各切札の消費は下記の通りです。", <br />];
+            let explanations: hyperapp.Children[] = [t("各切札の消費は下記の通りです。"), <br />];
             cards.forEach((card) => {
                 quiz.addAnswer(this.getCardTitleHtml(card.data), (card === successCard));
                 explanations.push(<br />, `${card.data.name}: ${card.cost}`);
@@ -143,26 +147,26 @@ export class QuizMaker {
                 let border = pick([2, 2, 3, 3, 4]);
                 successCard = pick(targetCards.filter((card) => card.auraDamage !== '-' && parseInt(card.auraDamage) >= border));
                 failCards = pickMultiple(targetCards.filter((card) => card.auraDamage !== '-' && parseInt(card.auraDamage) <border), 3);
-                quiz.text = <span>次のうち、オーラダメージが{border}以上の攻撃札はどれ？<br /><span style={{fontSize: '0.8em', color: 'gray'}}>(ダメージが "－" の札は除く)</span></span>
+                quiz.text = <span>{t('miniquiz:次のうち、オーラダメージがN以上の攻撃札はどれ？', {border: border})}<br /><span style={{fontSize: '0.8em', color: 'gray'}}>{t('(ダメージが "－" の札は除く)')}</span></span>
             }
             if(condType === 'auraEqual'){
                 // オーラダメージがn
                 let v = pick(['0', '1', '2', '2', '3', '3', '-']);
                 successCard = pick(targetCards.filter((card) => card.auraDamage === v));
                 failCards = pickMultiple(targetCards.filter((card) => card.auraDamage !== v), 3);
-                quiz.text = <span>次のうち、オーラダメージが{v}の攻撃札はどれ？</span>
+                quiz.text = <span>{t('miniquiz:次のうち、オーラダメージがNの攻撃札はどれ？', {value: v})}</span>
             }
             if(condType === 'lifeEqual'){
                 // ライフダメージがn
                 let v = pick(['0', '1', '1', '2', '2', '3', '3', '4', '5', '-']);
                 successCard = pick(targetCards.filter((card) => card.lifeDamage === v));
                 failCards = pickMultiple(targetCards.filter((card) => card.lifeDamage !== v), 3);
-                quiz.text = <span>次のうち、ライフダメージが{v}の攻撃札はどれ？</span>
+                quiz.text = <span>{t('miniquiz:次のうち、ライフダメージがNの攻撃札はどれ？', {value: v})}</span>
             }
 
             // 回答をシャッフルして問題作成
             let cards = _.shuffle([].concat(successCard, failCards));
-            let explanations: hyperapp.Children[] = ["各カードのダメージは下記の通りです。", <br />];
+            let explanations: hyperapp.Children[] = [t("miniquiz:各カードのダメージは下記の通りです。"), <br />];
             cards.forEach((card: typeof targetCards[0]) => {
                 quiz.addAnswer(this.getCardTitleHtml(card.data), (card === successCard));
                 explanations.push(<br />, `${card.data.name}: ${card.data.damage}`);
@@ -180,20 +184,20 @@ export class QuizMaker {
                 // 全力を持つ
                 successCard = pick(targetCards.filter((card) => card.data.types[1] === 'fullpower'));
                 failCards = pickMultiple(targetCards.filter((card) => card.data.types[1] !== 'fullpower'), 3);
-                quiz.text = <span>次のうち、「全力」カードはどれ？</span>
+                quiz.text = <span>{t('miniquiz:次のうち、「全力」カードはどれ？')}</span>
             }
             if(condType === 'notFullpower'){
                 // 全力でない
                 successCard = pick(targetCards.filter((card) => card.data.types[1] !== 'fullpower'));
                 failCards = pickMultiple(targetCards.filter((card) => card.data.types[1] === 'fullpower'), 3);
-                quiz.text = <span>次のうち、「全力」ではないカードはどれ？</span>
+                quiz.text = <span>{t('miniquiz:次のうち、「全力」ではないカードはどれ？')}</span>
             }
             if(condType === 'notAttack'){
                 // 攻撃でない
                 // この問題の場合、明らかに攻撃であるカードは除外する
                 // また、クルルのカードはすべて攻撃ではないため除外する
                 targetCards = targetCards.filter(c => {
-                    let name = c.data.name;
+                    let name = c.data.baseData.name; // 日本語名で判断
                     if(name === '一閃') return false;
                     if(name === '居合') return false;
                     if(/斬/.test(name)) return false;
@@ -229,21 +233,21 @@ export class QuizMaker {
 
                 successCard = pick(targetCards.filter((card) => card.data.types[0] !== 'attack'));
                 failCards = pickMultiple(targetCards.filter((card) => card.data.types[0] === 'attack'), 3);
-                quiz.text = <span>次のうち、「攻撃」ではないカードはどれ？</span>
+                quiz.text = <span>{t('miniquiz:次のうち、「攻撃」ではないカードはどれ？')}</span>
             }
 
             // 回答をシャッフルして問題作成
             let cards = _.shuffle([].concat(successCard, failCards));
-            let explanations: hyperapp.Children[] = ["各カードのタイプは下記の通りです。", <br />];
+            let explanations: hyperapp.Children[] = [t("miniquiz:各カードのタイプは下記の通りです。"), <br />];
             cards.forEach((card: typeof targetCards[0]) => {
                 quiz.addAnswer(this.getCardTitleHtml(card.data), (card === successCard));
                 let typeCaptions = [];
-                if(card.data.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>攻撃</span>);
-                if(card.data.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>行動</span>);
-                if(card.data.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>付与</span>);
-                if(card.data.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>不定</span>);
-                if(card.data.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>対応</span>);
-                if(card.data.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>全力</span>);
+                if(card.data.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>{t('攻撃')}</span>);
+                if(card.data.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>{t('行動')}</span>);
+                if(card.data.types.indexOf('enhance') >= 0) typeCaptions.push(<span class='card-type-enhance'>{t('付与')}</span>);
+                if(card.data.types.indexOf('variable') >= 0) typeCaptions.push(<span class='card-type-variable'>{t('不定')}</span>);
+                if(card.data.types.indexOf('reaction') >= 0) typeCaptions.push(<span class='card-type-reaction'>{t('対応')}</span>);
+                if(card.data.types.indexOf('fullpower') >= 0) typeCaptions.push(<span class='card-type-fullpower'>{t('全力')}</span>);
                 explanations.push(<br />, `${card.data.name}: `, (typeCaptions.length === 2 ? [typeCaptions[0], '/', typeCaptions[1]] : typeCaptions[0]));
             });
             quiz.explanation = explanations;

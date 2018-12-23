@@ -250,7 +250,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     }
 
     const quizOpen = () => {
-        let st = apps.quizWindow.State.create(state.board.cardSet);
+        let st = apps.quizWindow.State.create(state.board.cardSet, state.setting.language);
         apps.quizWindow.run(st, document.getElementById('QUIZ-WINDOW-CONTAINER'));            
     };
 

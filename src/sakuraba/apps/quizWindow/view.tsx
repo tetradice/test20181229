@@ -4,6 +4,7 @@ import { State } from "./state";
 
 import * as css from "./view.css"
 import _ from "lodash";
+import { t } from "i18next";
 
 
 // ウインドウの表示状態をローカルストレージに保存
@@ -43,10 +44,10 @@ const view: View<State, ActionsType> = (state, actions) => {
             <div style={{paddingTop: '4em', width: '100%'}}>
                 <div class={`ui vertical menu`} style={{width: '70%', marginLeft: 'auto', marginRight: 'auto'}}>
                     <a class="item" onclick={() => actions.setNewQuiz()}>
-                        開始
+                        {t('miniquiz:開始')}
                     </a>
                     <a class="item" onclick={() => actions.hide()}>
-                        閉じる
+                        {t('miniquiz:閉じる')}
                     </a>
                 </div>
             </div>
@@ -83,13 +84,13 @@ const view: View<State, ActionsType> = (state, actions) => {
             if (state.currentQuiz.answers[state.selectedAnswerIndex].correct) {
                 result = (
                     <p class={css.correct}>
-                        <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}><i class="icon circle outline"></i></span> 正解
+                        <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}><i class="icon circle outline"></i></span> {t('miniquiz:正解')}
                     </p>
                 );
             } else {
                 result = (
                     <p class={css.incorrect}>
-                        <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}><i class="icon times"></i></span> 不正解
+                        <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}><i class="icon times"></i></span> {t('miniquiz:不正解')}
                     </p>
                 );
             }
@@ -98,32 +99,43 @@ const view: View<State, ActionsType> = (state, actions) => {
                 <div>
                     <div class="ui vertical menu" style={{width: '100%', marginTop: '2em'}}>
                         <a class="item" onclick={() => actions.setNewQuiz()}>
-                            次の問題
+                            {t('miniquiz:次の問題')}
                         </a>
                     </div>
-                    <p style={{textAlign: 'right'}}><a href="#" onclick={() => { $('#QUIZ-EXPLANATION').toggle(); return false}}>解説を表示</a></p>
+                    <p style={{ textAlign: 'right' }}><a href="#" onclick={() => { $('#QUIZ-EXPLANATION').toggle(); return false }}>{t('miniquiz:解説を表示')}</a></p>
                     <div class="ui message" id="QUIZ-EXPLANATION" style={{display: 'none'}}>{state.currentQuiz.explanation}</div>
                 </div>
             );
 
         }
-        let summary: hyperapp.Children;
+        let summaryText: string;
         let totalCount = state.correctCount + state.incorrectCount;
+
         if(totalCount >= 1){
-            summary = <span>{totalCount}問中 {state.correctCount}問正解 （正答率: {Math.round(state.correctCount * 100 / (totalCount))}%）</span>;
+            let params = {
+                totalCount: totalCount
+                , correctCount: state.correctCount
+                , correctPercentage: Math.round(state.correctCount * 100 / (totalCount))
+            };
+            t('miniquiz:N問中N問正解（正答率:N%）', params);
         } else {
-            summary = <span>{totalCount}問中 0問正解 （正答率: 0%）</span>;
+            let params = {
+                totalCount: totalCount
+                , correctCount: 0
+                , correctPercentage: 0
+            };
+            t('miniquiz:N問中N問正解（正答率:N%）', params);
         }
 
         mainDiv = (
             <div style={{paddingTop: '1em', width: '100%'}}>
-                <p><strong>問{state.questionNumber}</strong>　{state.currentQuiz.text}</p>
+                <p><strong>{t('miniquiz:問N', {number: state.questionNumber})}</strong>　{state.currentQuiz.text}</p>
                 <div class="ui vertical menu" style={{width: '100%'}}>
                     {answerItems}
                 </div>
                 {result}
                 {nextButton}
-                <div style={{position: 'absolute', fontSize: '0.8rem', color: 'gray', right: '2em', bottom: '1em'}}>{summary}</div>
+                <div style={{ position: 'absolute', fontSize: '0.8rem', color: 'gray', right: '2em', bottom: '1em' }}>{summaryText}</div>
             </div>
         );
 
@@ -133,7 +145,7 @@ const view: View<State, ActionsType> = (state, actions) => {
         <div id="QUIZ-WINDOW"
           class={`ui segment draggable ui-widget-content ${css.quizWindow}`}
           oncreate={oncreate}>
-            <div class="ui top attached label">ふるよにミニクイズ<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.hide()}><i class="times icon"></i></a></div>
+            <div class="ui top attached label">{t('miniquiz:ふるよにミニクイズ')}<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.hide()}><i class="times icon"></i></a></div>
             {mainDiv}
         </div>
     );

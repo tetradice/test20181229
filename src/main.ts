@@ -43,7 +43,7 @@ $(function () {
             .init({
                 defaultNS: 'common'
                 , lng: params.lang
-                , ns: ['common', 'log', 'cardset', 'help-window', 'dialog']
+                , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'miniquiz']
                 , load: 'currentOnly' // 対象となった言語のみ読み込む
                 , debug: true
                 , parseMissingKeyHandler: (k: string) => `[${k}]`

@@ -630,118 +630,117 @@
     </div>
     <div class="actions">
         <div class="ui positive labeled icon button">
-        OK
+        <%= t('OK') %>
         <i class="checkmark icon"></i>
         </div>
     </div>
 </div>
 
 <div class="ui modal" id="ABOUT-MODAL">
-        <div class="header">ふるよにボードシミュレーターについて</div>
+        <div class="header"><%= t('about-window:ふるよにボードシミュレーターについて') %></div>
     <div class="scrolling content">
         <p>
-        ふるよにボードシミュレーター β版 (version <%= version %>)<br>
-        制作: ポン (<a href="https://twitter.com/tetradice" target="_blank">Twitter</a>)<br>
+        <%= t('ふるよにボードシミュレーター β版') %> (<%= t('about-window:version')%> <%= version %>)<br>
+        <%- t('about-window:制作者名HTML') %><br>
         <br>
-        このWebサービスは開発中のものです。<br>
-        意見、要望、感想、バグ報告などは、<a href="https://twitter.com/tetradice" target="_blank">Twitter</a>か、<a href="https://disboard.org/ja/server/444124341849030666" target="_blank">Discordサーバー「ふるよにミカン」</a>、もしくは<a href="https://its.morphball.net/projects/furuyoni_simulator/issues/new?issue[subject]=%EF%BC%88%E5%85%A5%E5%8A%9B%E4%B8%8D%E8%A6%81%EF%BC%89" target="_blank">要望・バグ報告ポスト</a>までお送りください。
+        <%- t('about-window:本文HTML') %>
         </p>
-        <p><strong>ライセンス情報:</strong></p>
+        <p><strong><%= t('about-window:ライセンス情報') %>:</strong></p>
         <ul>
             <li><a href="https://main-bakafire.ssl-lolipop.jp/furuyoni/na/rule.html" target="_blank">ふるよにコモンズ</a>
                 <ul>
-                    <li>制作: BakaFire,TOKIAME</li>
-                    <li>ライセンス: <a href="https://main-bakafire.ssl-lolipop.jp/furuyoni/na/rule.html" target="_blank">https://main-bakafire.ssl-lolipop.jp/furuyoni/na/rule.html</a></li>
+                    <li><%= t('about-window:制作')%>: BakaFire,TOKIAME</li>
+                    <li><%= t('about-window:ライセンス')%>: <a href="https://main-bakafire.ssl-lolipop.jp/furuyoni/na/rule.html" target="_blank">https://main-bakafire.ssl-lolipop.jp/furuyoni/na/rule.html</a></li>
                 </ul>
             </li>
             <li><a href="https://jquery.com/" target="_blank">JQuery</a>
                 <ul>
-                        <li>制作: jQuery Foundation</li>
-                        <li>ライセンス: <a href="https://jquery.org/license/" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: jQuery Foundation</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://jquery.org/license/" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="https://semantic-ui.com/" target="_blank">Semantic UI</a>
                 <ul>
-                        <li>制作: Jack Lukic</li>
-                        <li>ライセンス: <a href="https://github.com/Semantic-Org/Semantic-UI/blob/master/LICENSE.md" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: Jack Lukic</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/Semantic-Org/Semantic-UI/blob/master/LICENSE.md" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="//www.toastrjs.com" target="_blank">Toastr</a>
                 <ul>
-                        <li>制作: John Papa, Tim Ferrell and Hans Fjällemark</li>
-                        <li>ライセンス: <a href="https://github.com/CodeSeven/toastr/blob/master/LICENSE" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: John Papa, Tim Ferrell and Hans Fjällemark</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/CodeSeven/toastr/blob/master/LICENSE" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="//socket.io/" target="_blank">socket.io</a>
                 <ul>
-                        <li>制作: Automattic</li>
-                        <li>ライセンス: <a href="https://github.com/socketio/socket.io/blob/master/LICENSE" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: Automattic</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/socketio/socket.io/blob/master/LICENSE" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="//redis.js.org/" target="_blank">redis - a node.js redis client</a>
                 <ul>
-                        <li>制作: NodeRedis</li>
-                        <li>ライセンス: <a href="https://github.com/NodeRedis/node_redis/blob/master/LICENSE" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: NodeRedis</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/NodeRedis/node_redis/blob/master/LICENSE" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="https://github.com/klughammer/node-randomstring" target="_blank">randomstring</a>
                 <ul>
-                        <li>制作: Elias Klughammer</li>
-                        <li>ライセンス: <a href="https://github.com/klughammer/node-randomstring/blob/master/LICENSE" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: Elias Klughammer</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/klughammer/node-randomstring/blob/master/LICENSE" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="//momentjs.com/" target="_blank">moment.js</a>
                 <ul>
-                        <li>制作: Iskren Ivov Chernev</li>
-                        <li>ライセンス: <a href="https://github.com/moment/moment/blob/develop/LICENSE" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: Iskren Ivov Chernev</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/moment/moment/blob/develop/LICENSE" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="https://lodash.com/" target="_blank">Lodash</a>
                 <ul>
-                        <li>制作: JS Foundation and other contributors</li>
-                        <li>ライセンス: <a href="https://github.com/lodash/lodash/blob/master/LICENSE" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: JS Foundation and other contributors</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/lodash/lodash/blob/master/LICENSE" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="//swisnl.github.io/jQuery-contextMenu/" target="_blank">jQuery contextmenu</a>
                 <ul>
-                        <li>制作: SWIS BV</li>
-                        <li>ライセンス: <a href="https://github.com/swisnl/jQuery-contextMenu/blob/master/LICENSE" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: SWIS BV</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/swisnl/jQuery-contextMenu/blob/master/LICENSE" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="//expressjs.com/" target="_blank">Express</a> 
                 <ul>
-                        <li>制作: TJ Holowaychuk, Roman Shtylman and Douglas Christopher Wilson</li>
-                        <li>ライセンス: <a href="https://github.com/expressjs/express/blob/HEAD/LICENSE" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: TJ Holowaychuk, Roman Shtylman and Douglas Christopher Wilson</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/expressjs/express/blob/HEAD/LICENSE" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="https://github.com/jorgebucaran/hyperapp" target="_blank">hyperapp</a> 
                 <ul>
-                        <li>制作: Jorge Bucaran</li>
-                        <li>ライセンス: <a href="https://github.com/jorgebucaran/hyperapp/blob/master/LICENSE.md" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: Jorge Bucaran</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/jorgebucaran/hyperapp/blob/master/LICENSE.md" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="//ejs.co/" target="_blank">EJS</a> 
                 <ul>
-                        <li>制作: Matthew Eernisse</li>
-                        <li>ライセンス: <a href="//www.apache.org/licenses/" target="_blank">Apache License Version 2.0</a></li>
+                        <li><%= t('about-window:制作')%>: Matthew Eernisse</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="//www.apache.org/licenses/" target="_blank">Apache License Version 2.0</a></li>
                 </ul>
             </li>
             <li><a href="https://webpack.js.org/" target="_blank">webpack and plugins (css-loader, style-loader)</a>
                 <ul>
-                        <li>制作: Tobias Koppers @sokra</li>
-                        <li>ライセンス: <a href="https://github.com/webpack/webpack/blob/master/LICENSE" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: Tobias Koppers @sokra</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/webpack/webpack/blob/master/LICENSE" target="_blank">MIT</a></li>
                 </ul>
             </li>
             <li><a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a>
                 <ul>
-                        <li>制作: Microsoft Co.</li>
-                        <li>ライセンス: <a href="https://github.com/Microsoft/TypeScript/blob/master/LICENSE.txt" target="_blank">Apache License</a></li>
+                        <li><%= t('about-window:制作')%>: Microsoft Co.</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/Microsoft/TypeScript/blob/master/LICENSE.txt" target="_blank">Apache License</a></li>
                 </ul>
             </li>
             <li><a href="https://github.com/s-panferov/awesome-typescript-loader/" target="_blank">awesome-typescript-loader</a>
                 <ul>
-                        <li>制作: Stanislav Panferov</li>
-                        <li>ライセンス: <a href="https://github.com/s-panferov/awesome-typescript-loader/blob/master/LICENSE.md" target="_blank">MIT</a></li>
+                        <li><%= t('about-window:制作')%>: Stanislav Panferov</li>
+                        <li><%= t('about-window:ライセンス')%>: <a href="https://github.com/s-panferov/awesome-typescript-loader/blob/master/LICENSE.md" target="_blank">MIT</a></li>
                 </ul>
             </li>
 
