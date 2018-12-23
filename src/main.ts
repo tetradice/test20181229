@@ -19,6 +19,14 @@ declare var params: {
     side: SheetSide;
     environment: 'production' | 'development';
     lang: Language;
+
+    firebaseApiKey: string;
+    firebaseAuthDomain: string;
+    firebaseDatabaseURL: string;
+    firebaseProjectId: string;
+    firebaseStorageBucket: string;
+    firebaseMessagingSenderId: string;
+
 }
 
 function messageModal(desc: string) {
@@ -966,12 +974,12 @@ $(function () {
 
                 // firebase初期化
                 firebase.initializeApp({
-                    apiKey: "AIzaSyBiZ1J-vGSM0rvmhntLO_IxKC8mLCFRJcI",
-                    authDomain: "furuyoni-simurator-test.firebaseapp.com",
-                    databaseURL: "https://furuyoni-simurator-test.firebaseio.com",
-                    projectId: "furuyoni-simurator-test",
-                    storageBucket: "furuyoni-simurator-test.appspot.com",
-                    messagingSenderId: "263152473970"
+                    apiKey: params.firebaseApiKey,
+                    authDomain: params.firebaseAuthDomain,
+                    databaseURL: params.firebaseDatabaseURL,
+                    projectId: params.firebaseProjectId,
+                    storageBucket: params.firebaseStorageBucket,
+                    messagingSenderId: params.firebaseMessagingSenderId,
                 });
                 var db = firebase.firestore();
 

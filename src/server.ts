@@ -73,7 +73,23 @@ app
     RedisClient.HGET(`sakuraba:player-key-map`, req.params.key, (err, dataJson) => {
       if(dataJson !== null){
         let data = JSON.parse(dataJson);
-        res.render('board', {tableId: data.tableId, side: data.side, environment: process.env.ENVIRONMENT, version: VERSION, lang: lang})
+
+        // 描画スタート
+        res.render('board', {
+          tableId: data.tableId
+          , side: data.side
+          , environment: process.env.ENVIRONMENT
+          , version: VERSION
+          , lang: lang
+
+          , firebaseApiKey: process.env.FIREBASE_API_KEY
+          , firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN
+          , firebaseDatabaseURL: process.env.FIREBASE_DATABASE_URL
+          , projectId: process.env.FIREBASE_PROJECT_ID
+          , storageBucket: process.env.FIREBASE_STORAGE_BUCKET
+          , messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID
+
+        })
       } else {
         res.status(404);
         res.end('NotFound : ' + req.path);
