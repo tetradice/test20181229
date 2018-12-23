@@ -61,7 +61,7 @@ export class CardData {
     }
     /** 読み仮名 */
     get ruby(): CardDataItem['ruby'] {
-        return this.selectText(this.languageSetting.uniqueName, this.baseData.ruby, '', '');
+        return this.selectText(this.languageSetting.uniqueName, this.baseData.ruby, '', this.baseData.rubyEn);
     }
     /** 分類 (通常/切札/Transform) */
     get baseType(): CardDataItem['baseType'] {
