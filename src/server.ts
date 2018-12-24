@@ -169,22 +169,28 @@ const tableCreateRoute = (req: express.Request, res: express.Response, langCode?
 app
   // 卓URL (プレイヤー)
   .get('/zh/play/:key', (req, res) => {
+    ((req as any).i18n as i18next.i18n).changeLanguage('zh-Hans-CN');
     playerRoute(req, res, 'zh-Hans-CN');
   })
   .get('/en/play/:key', (req, res) => {
+    ((req as any).i18n as i18next.i18n).changeLanguage('en');
     playerRoute(req, res, 'en');
   })
   .get('/play/:key', (req, res) => {
+    ((req as any).i18n as i18next.i18n).changeLanguage('ja');
     playerRoute(req, res, 'ja');
   })
   // 卓URL (観戦者用)
   .get('/zh/watch/:tableId', (req, res) => {
+    ((req as any).i18n as i18next.i18n).changeLanguage('zh-Hans-CN');
     res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'zh-Hans-CN', firebaseAuthInfo: firebaseAuthInfo})
   })
   .get('/en/watch/:tableId', (req, res) => {
+    ((req as any).i18n as i18next.i18n).changeLanguage('en');
     res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'en', firebaseAuthInfo: firebaseAuthInfo })
   })
   .get('/watch/:tableId', (req, res) => {
+    ((req as any).i18n as i18next.i18n).changeLanguage('ja');
     res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja', firebaseAuthInfo: firebaseAuthInfo})
   })
   // トップページ
