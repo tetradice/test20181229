@@ -970,7 +970,6 @@ $(function () {
 
                 // firebase初期化
                 let firebaseAuthInfoList = Base64.decode(params.firebaseAuthInfo).split(' ');
-                console.log(firebaseAuthInfoList);
                 firebase.initializeApp({
                     apiKey: firebaseAuthInfoList[0],
                     authDomain: firebaseAuthInfoList[1],
@@ -1061,57 +1060,62 @@ $(function () {
                             });
                          }
                     // }
-                });
 
-                // ボードデータ更新時の処理を紐づける
-                sakurabaTablesRef.doc(params.tableId)
-                    .onSnapshot(doc => {
-                        var source = doc.metadata.hasPendingWrites ? "Local" : "Server";
-                        console.log(source, "table onSnapshot data: ", doc.data());
-                        if(!doc.metadata.hasPendingWrites){
-                            let tableData = doc.data() as store.Table;
-                            appActions.setBoard(tableData.board);
+                    // ここまでの処理が終わったら、変更時イベントを設定
+                    // ボードデータ更新時の処理を紐づける
+                    sakurabaTablesRef.doc(params.tableId)
+                        .onSnapshot(doc => {
+                            var source = doc.metadata.hasPendingWrites ? "Local" : "Server";
+                            console.log(source, "table onSnapshot data: ", doc.data());
+                            if(doc.metadata.fromCache) return console.log("from cache");
+                            if (!doc.metadata.hasPendingWrites) {
+                                let tableData = doc.data() as store.Table;
+                                appActions.setBoard(tableData.board);
 
-                            // // 追加ログがあれば
-                            // if (p.appendedActionLogs !== null) {
-                            //     // ログも追加
-                            //     appActions.appendReceivedActionLogs(p.appendedActionLogs);
+                                // // 追加ログがあれば
+                                // if (p.appendedActionLogs !== null) {
+                                //     // ログも追加
+                                //     appActions.appendReceivedActionLogs(p.appendedActionLogs);
 
-                            //     // 受け取ったログをtoastrで表示
-                            //     let st = appActions.getState();
-                            //     let targetLogs = p.appendedActionLogs.filter((log) => utils.logIsVisible(log, st.side));
-                            //     let msg = targetLogs.map((log) => utils.translateLog(log.body, st.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
-                            //     let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+                                //     // 受け取ったログをtoastrで表示
+                                //     let st = appActions.getState();
+                                //     let targetLogs = p.appendedActionLogs.filter((log) => utils.logIsVisible(log, st.side));
+                                //     let msg = targetLogs.map((log) => utils.translateLog(log.body, st.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
+                                //     let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
 
-                            //     toastr.info(msg, `${name}:`);
-                            // }
-                        }
-                    });
-
-                // 操作ログ更新時の処理を紐づける
-                tableRef.collection(StoreName.LOGS).where('type', '==', 'a')
-                    .onSnapshot(querySnapshot => {
-                        var source = querySnapshot.metadata.hasPendingWrites ? "Local" : "Server";
-                        console.log(source, "logs onSnapshot: ");
-
-                        let appendedLogs: state.ActionLogRecord[] = [];
-                        querySnapshot.docChanges().forEach(function (change) {
-                            if (change.type === "added") {
-                                appendedLogs.push(change.doc.data() as state.ActionLogRecord);
+                                //     toastr.info(msg, `${name}:`);
+                                // }
                             }
                         });
 
-                        // ログも追加
-                        appActions.appendReceivedActionLogs(appendedLogs);
+                    // 操作ログ更新時の処理を紐づける
+                    tableRef.collection(StoreName.LOGS).where('type', '==', 'a')
+                        .onSnapshot(querySnapshot => {
+                            var source = querySnapshot.metadata.hasPendingWrites ? "Local" : "Server";
+                            console.log(source, "logs onSnapshot: ");
+                            if (querySnapshot.metadata.fromCache) return console.log("from cache");
 
-                        // 受け取ったログをtoastrで表示
-                        let st = appActions.getState();
-                        let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, st.side));
-                        let msg = targetLogs.map((log) => utils.translateLog(log.body, st.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
-                        let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+                            let appendedLogs: state.ActionLogRecord[] = [];
+                            querySnapshot.docChanges().forEach(function (change) {
+                                if (change.type === "added") {
+                                    appendedLogs.push(change.doc.data() as state.ActionLogRecord);
+                                }
+                            });
 
-                        toastr.info(msg, `${name}:`);
-                    });
+                            // ログも追加
+                            appActions.appendReceivedActionLogs(appendedLogs);
+
+                            // 受け取ったログをtoastrで表示
+                            let st = appActions.getState();
+                            let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, st.side));
+                            let msg = targetLogs.map((log) => utils.translateLog(log.body, st.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
+                            let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+
+                            toastr.info(msg, `${name}:`);
+                        });
+
+                });
+
 
 
                 // // ★集計
