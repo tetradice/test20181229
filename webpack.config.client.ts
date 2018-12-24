@@ -7,7 +7,8 @@ const config: webpack.Configuration = {
 
   // メインとなるJavaScriptファイル（エントリーポイント）
   entry: {
-    "main": "./src/main.ts"
+      "toppage": "./src/toppage.ts"
+      , "main": "./src/main.ts"
   },
   // ファイルの出力設定
   output: {

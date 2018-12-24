@@ -22,6 +22,8 @@ const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, '../index.html');
 const MAIN_JS = path.join(__dirname, 'main.js');
 const MAIN_JS_MAP = path.join(__dirname, 'main.js.map');
+const TOPPAGE_JS = path.join(__dirname, 'toppage.js');
+const TOPPAGE_JS_MAP = path.join(__dirname, 'toppage.js.map');
 const browserSyncConfigurations = { "files": ["**/*.js", "views/*.ejs"] };
 
 
@@ -35,10 +37,11 @@ if(process.env.ENVIRONMENT === 'development'){
 
 i18next
   .use(LocizeBackend)
+  .use(i18nextMiddleware.LanguageDetector)
   .init({
     defaultNS: 'common'
+    , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'about-window', 'toppage']
     , lng: 'ja'
-    , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'about-window']
     , load: 'currentOnly' // 対象となった言語のみ読み込む
     , debug: true
     , fallbackLng: false
@@ -60,7 +63,9 @@ app
   .get('/locales/resources.json', i18nextMiddleware.getResourcesHandler(i18next, {})) // serves resources for consumers (browser)
 
   .get('/dist/main.js', (req, res) => res.sendFile(MAIN_JS) )
-  .get('/dist/main.js.map', (req, res) => res.sendFile(MAIN_JS_MAP) );
+  .get('/dist/main.js.map', (req, res) => res.sendFile(MAIN_JS_MAP))
+  .get('/dist/toppage.js', (req, res) => res.sendFile(TOPPAGE_JS))
+  .get('/dist/toppage.js.map', (req, res) => res.sendFile(TOPPAGE_JS_MAP));
 
   // プレイヤーとして卓URLにアクセスしたときの処理
   const playerRoute = (req: express.Request, res: express.Response, lang: Language) => {
@@ -146,10 +151,18 @@ app
     res.render('board', {tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja'})
   })
   // トップページ
-  .get('/zh', (req, res) => res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'zh-Hans-CN'}) )
-  .get('/en', (req, res) => res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'en' }))
-  .get('/', (req, res) => res.render('index', {environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja'}) )
-
+  .get('/zh', (req, res) => {
+    req.i18n.changeLanguage('zh-Hans-CN');
+    res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'zh-Hans-CN', i18next: i18next });
+  })
+  .get('/en', (req, res) => {
+    req.i18n.changeLanguage('en');
+    res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'en', i18next: i18next });
+  })
+  .get('/', (req, res) => {
+    req.i18n.changeLanguage('ja');
+    res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja', i18next: i18next });
+  })
   // 新しい卓の作成
   .post('/zh/tables.create', (req, res) => tableCreateRoute(req, res, 'zh'))
   .post('/en/tables.create', (req, res) => tableCreateRoute(req, res, 'en'))

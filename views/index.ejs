@@ -13,7 +13,7 @@
 
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title><%= t('ふるよにボードシミュレーター β版') %></title>
+    <title><%= t('toppage:ふるよにボードシミュレーター β版') %></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="//inazumaapps.info/furuyoni_simulator/deliv/semantic/dist/semantic.min.css">
     <style type="text/css">
@@ -39,7 +39,7 @@
       <div class="ui fixed menu">
           <div class="ui container">
             <div class="header item">
-                ふるよにボードシミュレーター β版　<span style="color: silver">(ver <%= version %>)</span>
+                <%- t('toppage:ふるよにボードシミュレーター β版') %> <span style="color: silver">(<%- t('toppage:ver') %> <%- version %>)</span>
             </div>
           </div>
         </div>
@@ -47,23 +47,23 @@
           <div class="ui huge loader"></div>
           <div class="ui grid">
             <div class="eight wide column">
-              <button class="ui primary button" id="NEW-BOARD-BUTTON">新しい卓を作る</button>
-              <p>新しい卓を作り、自分や他の人が参加できる状態にします。<br>（ユーザー登録は不要です）</p>
+              <button class="ui primary button" id="NEW-BOARD-BUTTON"><%- t('toppage:新しい卓を作る') %></button>
+              <p><%- i18next.t('toppage:新しい卓を作り、自分や他の人が参加できる状態にします。') %><br><%- t('toppage:（ユーザー登録は不要です）') %></p>
         
               <div class="ui segment" id="RESULT-AREA" style="display: none; overflow: auto;">
-                <p>新しい卓を作成しました。下記のURLにアクセスすることで、決闘への参加や観戦が可能です。</p>
+                <p><%- t('toppage:新しい卓を作成しました。下記のURLにアクセスすることで、決闘への参加や観戦が可能です。') %></p>
                 <table class="ui definition table">
                   <tbody>
                     <tr>
-                      <td class="collapsing">プレイヤー1の参加用URL</td>
+                      <td class="collapsing"><%- t('toppage:プレイヤー1の参加用URL') %></td>
                       <td><a id="P1-URL" href="#" target="_blank"></a></td>
                     </tr>
                     <tr>
-                      <td>プレイヤー2の参加用URL</td>
+                      <td><%- t('toppage:プレイヤー2の参加用URL') %></td>
                       <td><a id="P2-URL" href="#" target="_blank"></a></td>
                     </tr>
                     <tr>
-                      <td>観戦用URL</td>
+                      <td><%- t('toppage:観戦用URL') %></td>
                       <td><a id="WATCH-URL" href="#" target="_blank"></a></td>
                     </tr>
                   </tbody>
@@ -72,72 +72,45 @@
               </div>
 
               <div class="ui segment" id="HISTORY-AREA" style="margin-top: 4em;">
-                <h4 class="ui header">これまでに作成した卓の履歴</h4>
-                <p id="HISTORY-NO-DATA-DESC" style="display: none;">作成した卓はありません。</p>
+                <h4 class="ui header"><%- t('toppage:これまでに作成した卓の履歴') %></h4>
+                <p id="HISTORY-NO-DATA-DESC" style="display: none;"><%- t('toppage:作成した卓はありません。') %></p>
                 <div class="ui styled accordion" style="display: none;">
                 </div>
                 <div class="ui divider"></div>
-                <p style="font-size: small;">※履歴はPC（端末）ごとに記録されており、ほかの人には見えません。</p>
+                <p style="font-size: small;"><%- t('toppage:※履歴はPC（端末）ごとに記録されており、ほかの人には見えません。') %></p>
               </div>
             </div>
             <div class="one wide column">
             </div>
             <div class="seven wide column">
               <h3 class="ui dividing header" style="margin-top: 4em;">
-                必要環境
+                <%- t('toppage:必要環境') %>
               </h3>
               <p>
-                <strong>PC版のブラウザ （Google Chrome, Edge, FireFox, Opera）</strong><br>
-                ※Google Chrome推奨<br>
+                <strong><%- t('toppage:PC版のブラウザ （Google Chrome, Edge, FireFox, Opera）') %></strong><br>
+                <%- t('toppage:※Google Chrome推奨') %><br>
                 <br>
-                Internet Explorer、タブレット、スマホには対応しておりません。
+                <%- t('toppage:Internet Explorer、タブレット、スマホには対応しておりません。') %>
               </p>
         
               <h3 class="ui dividing header" style="margin-top: 3em;">
-                ふるよにボードシミュレーターとは
+                <%- t('toppage:ふるよにボードシミュレーターとは') %>
               </h3>
-              <p>
-                　PCのブラウザから遊べる、ボードゲーム「<a href="https://main-bakafire.ssl-lolipop.jp/furuyoni/">桜降る代に決闘を</a>」のシミュレーターです。<br>
-                　オンラインでの対戦や観戦が可能なため、友達との対戦に使用することができます。また、1人で2つの画面を開くことで、1人盤回しに使用することも可能です。
-              </p>
-              <p><a href="//inazumaapps.info/furuyoni_simulator/deliv/WS000609.PNG"><img src="//inazumaapps.info/furuyoni_simulator/deliv/WS000609.PNG" style="width: 100%; border: 1px solid silver;"></a></p>
-              <p>
-                　ただし、これはあくまで「シミュレーター」で、<strong>対戦ツールではない</strong>ことにご注意ください。そのため、既存の対戦ツールと比べると、ルールや盤上の管理はあまり自動でやってくれません。（カードや桜花結晶の移動、攻撃したときのライフ減少などは、プレイヤーが自分でやる必要があります）
-              </p>
-              <p>
-                　また、上記の性質から、対戦を円滑に進めるためにDiscordなどによるボイスチャットの使用をお薦めします。
-              </p>
-              <p>
-                　対戦相手を探したい場合は、下記のDiscordサーバーもご利用ください。
-                <ul>
-                <li><a href="https://disboard.org/ja/server/444124341849030666" target="_blank">ふるよにミカン</a> (ポン運営 / 雑談あり、雰囲気ゆるめのサーバー)</li>
-                <li><a href="https://twitter.com/tot8109/status/994176939962187776" target="_blank">ふるよに熱帯部屋</a> (totさん運営 / ネット対戦人口多め。BGEngineによる対戦も行われています)</li>
-              </ul>
-              </p>
-          
+              <%- t('toppage:本文-ふるよにボードシミュレーターとは') %>
               <h3 class="ui dividing header" style="margin-top: 3em;">
-                現在のバージョン（β版）についての注意
+                <%- t('toppage:現在のバージョン（β版）についての注意') %>
               </h3>
-              <ul>
-                <li>現在のβ版では、新幕シーズン3に存在する全14柱のメガミ（アナザーメガミ含む）を使用可能です。（はじまりの決闘のホノカとウツロは使用できません）</li>
-                <li>試作中のバージョンのため、未完成部分やバグが多数含まれている可能性があります。</li>
-                <li>開発およびサポートは、公式のデジタルゲーム版がリリースされるまでは継続されます。それ以降は予告なく中止される可能性があります。</li>
-              </ul>
-        
-              <h3 class="ui dividing header" style="margin-top: 3em;">
-                連絡先
-              </h3>
-              <p>意見、要望、感想、バグ報告などは、下記のどれかまでお送りください。</p>
-              <ul>
-                <li><a href="https://twitter.com/tetradice" target="_blank">制作者（ポン）のTwitter</a></li>
-                <li><a href="https://disboard.org/ja/server/444124341849030666" target="_blank">Discordサーバー「ふるよにミカン」</a></li>
-                <li><a href="https://its.morphball.net/projects/furuyoni_simulator/issues/new?issue[subject]=%EF%BC%88%E5%85%A5%E5%8A%9B%E4%B8%8D%E8%A6%81%EF%BC%89"
-                    target="_blank">要望・バグ報告ポスト</a>　※ログイン不要</li>
-              </ul>
+              <%- t('toppage:本文-現在のバージョン（β版）についての注意') %>
 
               <h3 class="ui dividing header" style="margin-top: 3em;">
-                更新履歴
+                <%- t('toppage:連絡先') %>
               </h3>
+              <%- t('toppage:本文-連絡先') %>
+
+              <h3 class="ui dividing header" style="margin-top: 3em;">
+                <%- t('toppage:更新履歴') %>
+              </h3>
+              <% if(lang === 'ja'){ %>
               <dl>
                 <dt>2018年12月15日 (土)</dt>
                   <dd>β版 0.6.2をリリース
@@ -289,61 +262,18 @@
                 <dt>2018年10月14日 (日)</dt>
                 <dd>α版 0.1.0をリリース</dd>
               </dl>
+              <% } else { %>
+              <p><%- t('toppage:更新履歴は日本語版のトップページを参照してください。') %></p>
+              <% } %>
             </div>
           </div>
 
-    <p id='server-time'></p>
-    <script type="text/javascript" src="//inazumaapps.info/furuyoni_simulator/deliv/jquery-3.3.1.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
-    <script type="text/javascript" src="//inazumaapps.info/furuyoni_simulator/deliv/semantic/dist/semantic.js"></script>
     <script>
-      // var socket = io();
-      // var el = document.getElementById('server-time');
-      // socket.on('time', function(timeString) {
-      //   el.innerHTML = 'Server time: ' + timeString;
-      // });
-
-      $(function(){
-        var tableHistory = JSON.parse(localStorage.getItem('tableHistory'));
-        if(tableHistory === null) tableHistory = [];
-        $('.ui.accordion').accordion({duration: 100});
-
-        if(tableHistory.length >= 1){
-          tableHistory.forEach(function(data){
-            var dt = new Date(data.time);
-            $('.ui.accordion').append('<div class="title"><i class="dropdown icon"></i>' + moment(dt).format('YYYY/M/D HH:mm:ss') + 'に作成した卓</div>');
-            $('.ui.accordion').append('<div class="content">プレイヤー1の参加用URL: <a target="_blank" href="' + data.p1Url + '">' + data.p1Url + '</a><br />プレイヤー2の参加用URL: <a target="_blank" href="' + data.p2Url + '">' + data.p2Url + '</a><br />観戦用URL: <a target="_blank" href="' + data.watchUrl + '">' + data.watchUrl + '</a><br /></div>');
-          });
-          $('.ui.accordion').show();
-        } else {
-          $('#HISTORY-NO-DATA-DESC').show();
-        }
-
-
-        $('#NEW-BOARD-BUTTON').click(function(e){
-          $('.ui.loader').addClass('active');
-
-          $.post('tables.create', function(data, textStatus){
-            console.log(data);
-            $('#P1-URL').text(data.p1Url).attr('href', data.p1Url);
-            $('#P2-URL').text(data.p2Url).attr('href', data.p2Url);
-            $('#WATCH-URL').text(data.watchUrl).attr('href', data.watchUrl);
-            $('#RESULT-AREA').show();
-
-            // 作った卓のURLをローカルストレージに記憶
-            var pushedData = $.extend({}, data, {time: Date.now()});
-            tableHistory.unshift(pushedData);
-            localStorage.setItem("tableHistory", JSON.stringify(tableHistory));
-
-            $('.ui.accordion').prepend('<div class="content">プレイヤー1の参加用URL: <a target="_blank" href="' + pushedData.p1Url + '">' + pushedData.p1Url + '</a><br />プレイヤー2の参加用URL: <a target="_blank" href="' + pushedData.p2Url + '">' + pushedData.p2Url + '</a><br />観戦用URL: <a target="_blank" href="' + pushedData.watchUrl + '">' + pushedData.watchUrl + '</a><br /></div>');
-            $('.ui.accordion').prepend('<div class="title"><i class="dropdown icon"></i>' + moment(pushedData.time).format('YYYY/M/D HH:mm:ss') + 'に作成した卓</div>');
-
-            $('.ui.loader').removeClass('active');
-
-          });
-        });
-      });
+      var params = {environment: '<%= environment %>', lang: '<%= lang %>'};
     </script>
+    <script type="text/javascript" src="//inazumaapps.info/furuyoni_simulator/deliv/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="//inazumaapps.info/furuyoni_simulator/deliv/semantic/dist/semantic.js"></script>
+    <script type="text/javascript" src="/dist/toppage.js"></script>
      </div>
   </body>
 </html>

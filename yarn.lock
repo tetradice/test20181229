@@ -198,6 +198,12 @@
     "@types/events" "*"
     "@types/node" "*"
 
+"@types/semantic-ui-accordion@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@types/semantic-ui-accordion/-/semantic-ui-accordion-2.2.2.tgz#2f3b9d60a981d9eddc3705619079defaacc3aee0"
+  dependencies:
+    "@types/jquery" "*"
+
 "@types/semantic-ui-api@*":
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/@types/semantic-ui-api/-/semantic-ui-api-2.2.4.tgz#ea9cad381b38b77f95fa3bf679d7c5273c7b20dd"

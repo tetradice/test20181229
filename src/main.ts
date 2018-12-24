@@ -39,7 +39,7 @@ $(function () {
         // 言語設定の初期化。初期化完了後にメイン処理に入る
         i18next
             .use(LocizeBackend)
-            .use(languageDetector)
+            // .use(languageDetector)
             .init({
                 defaultNS: 'common'
                 , lng: params.lang
@@ -47,6 +47,7 @@ $(function () {
                 , load: 'currentOnly' // 対象となった言語のみ読み込む
                 , debug: true
                 , parseMissingKeyHandler: (k: string) => `[${k}]`
+                , fallbackLng: false
                 , backend: {
                     projectId: '5dfcd5bf-69f5-4e2c-b607-66b6ad4836ec'
                     , referenceLng: 'ja'
