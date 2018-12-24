@@ -43,7 +43,7 @@ if(process.env.ENVIRONMENT === 'development'){
 
 i18next
   .use(LocizeBackend)
-  .use(i18nextMiddleware.LanguageDetector)
+  //.use(i18nextMiddleware.LanguageDetector)
   .init({
     defaultNS: 'common'
     , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'about-window', 'toppage']
@@ -189,15 +189,15 @@ app
   })
   // トップページ
   .get('/zh', (req, res) => {
-    req.i18n.changeLanguage('zh-Hans-CN');
+    ((req as any).i18n as i18next.i18n).changeLanguage('zh-Hans-CN');
     res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'zh-Hans-CN', i18next: i18next });
   })
   .get('/en', (req, res) => {
-    req.i18n.changeLanguage('en');
+    ((req as any).i18n as i18next.i18n).changeLanguage('en');
     res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'en', i18next: i18next });
   })
   .get('/', (req, res) => {
-    req.i18n.changeLanguage('ja');
+    ((req as any).i18n as i18next.i18n).changeLanguage('ja');
     res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja', i18next: i18next });
   })
   // 新しい卓の作成
