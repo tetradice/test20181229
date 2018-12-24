@@ -2,8 +2,9 @@ import { h, Children } from "hyperapp";
 import moment from "moment";
 import * as utils from "sakuraba/utils";
 import { ActionsType } from "../actions";
-import { BOARD_BASE_WIDTH } from "sakuraba/const";
+import { BOARD_BASE_WIDTH, StoreName } from "sakuraba/const";
 import { t } from "i18next";
+import firebase from "firebase";
 
 /** チャット */
 export const ChatLogArea = (p: {logs: state.ChatLogRecord[]}) => (state: state.State, actions: ActionsType) => {
@@ -51,10 +52,10 @@ export const ChatLogArea = (p: {logs: state.ChatLogRecord[]}) => (state: state.S
         let newChatLogs = actions.appendChatLog(log);
         $text.val('');
 
-        // ソケットにチャットログの更新を通知
-        if(state.socket){
-            state.socket.emit('appendChatLog', { tableId: state.tableId, appendedChatLog: newChatLogs.chatLog[newChatLogs.chatLog.length - 1]});
-        }
+        // チャットログを追加
+        let db = firebase.firestore();
+        let logsRef = db.collection(StoreName.TABLES).doc(state.tableId.toString()).collection(StoreName.LOGS);
+        logsRef.doc().set(newChatLogs.chatLog[newChatLogs.chatLog.length - 1]);
     };
 
     return (

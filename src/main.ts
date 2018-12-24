@@ -1064,10 +1064,9 @@ $(function () {
                     // ここまでの処理が終わったら、変更時イベントを設定
                     // ボードデータ更新時の処理を紐づける
                     sakurabaTablesRef.doc(params.tableId)
-                        .onSnapshot(doc => {
+                        .onSnapshot(function(doc){
                             var source = doc.metadata.hasPendingWrites ? "Local" : "Server";
                             console.log(source, "table onSnapshot data: ", doc.data());
-                            if(doc.metadata.fromCache) return console.log("from cache");
                             if (!doc.metadata.hasPendingWrites) {
                                 let tableData = doc.data() as store.Table;
                                 appActions.setBoard(tableData.board);
@@ -1090,10 +1089,9 @@ $(function () {
 
                     // 操作ログ更新時の処理を紐づける
                     tableRef.collection(StoreName.LOGS).where('type', '==', 'a')
-                        .onSnapshot(querySnapshot => {
+                        .onSnapshot(function(querySnapshot){
                             var source = querySnapshot.metadata.hasPendingWrites ? "Local" : "Server";
                             console.log(source, "logs onSnapshot: ");
-                            if (querySnapshot.metadata.fromCache) return console.log("from cache");
 
                             let appendedLogs: state.ActionLogRecord[] = [];
                             querySnapshot.docChanges().forEach(function (change) {
@@ -1112,6 +1110,32 @@ $(function () {
                             let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
 
                             toastr.info(msg, `${name}:`);
+                        });
+
+
+                    // チャットログ更新時の処理を紐づける
+                    tableRef.collection(StoreName.LOGS).where('type', '==', 'c')
+                        .onSnapshot(function (querySnapshot) {
+                            var source = querySnapshot.metadata.hasPendingWrites ? "Local" : "Server";
+                            console.log(source, "chat logs onSnapshot: ");
+
+                            let appendedLogs: state.ChatLogRecord[] = [];
+                            querySnapshot.docChanges().forEach(function (change) {
+                                console.log(change);
+                                if (change.type === "added") {
+                                    appendedLogs.push(change.doc.data() as state.ChatLogRecord);
+                                }
+                            });
+
+                            // ログも追加
+                            appActions.appendReceivedChatLogs(appendedLogs);
+
+                            // 受け取ったログをtoastrで表示
+                            let st = appActions.getState();
+                            let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, st.side));
+                            let msg = targetLogs.map((log) => log.body).join('<br>');
+                            let name = (targetLogs[0].side === 'watcher' ? (st.board.watchers[targetLogs[0].watcherSessionId] ? st.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
+                            toastr.success(msg, `${name}:`, { toastClass: 'toast chat' });
                         });
 
                 });
