@@ -968,7 +968,7 @@ $(function () {
                 });
 
                 // firebase初期化
-                let firebaseAuthInfoList = Base64.decode(params.firebaseAuthInfo).split(' ');
+                    const firebaseAuthInfoList = Base64.decode(params.firebaseAuthInfo).split(' ');
                 firebase.initializeApp({
                     apiKey: firebaseAuthInfoList[0],
                     authDomain: firebaseAuthInfoList[1],
@@ -977,7 +977,8 @@ $(function () {
                     storageBucket: firebaseAuthInfoList[4],
                     messagingSenderId: firebaseAuthInfoList[5],
                 });
-                var db = firebase.firestore();
+                const db = firebase.firestore();
+                appActions.setFirestore(db);
 
                 // 初期データを取得し、メイン処理をスタート
                 let sakurabaTablesRef = db.collection(StoreName.TABLES);

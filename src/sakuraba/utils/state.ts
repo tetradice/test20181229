@@ -34,6 +34,7 @@ export function createInitialState(): state.State{
       , cardListVisible: false
       , bgmPlaying: false
       , zoom: 1
+      , firestore: null
       
       , cardListSelectedMegami: 'yurina'
 

@@ -231,7 +231,7 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
         let notifyType = $('[name=notifyType]').val();
         let notifyItem = notifyData.find(item => item.key === notifyType);
-        state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: notifyItem.message});
+        //state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: notifyItem.message});
 
         // 送信完了
         toastr.success(t('Oへ通知しました。', {opponent: opponentName}), '', {timeOut: 5000});

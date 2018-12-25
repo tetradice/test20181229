@@ -5,12 +5,47 @@ import { Megami, CARD_DATA } from "sakuraba";
 import cardActions from './card';
 import { ActionsType } from ".";
 import { ActionLogBody } from "sakuraba/typings/state";
-import firebase from "firebase";
+import firebase, { firestore } from "firebase";
 import { StoreName } from "sakuraba/const";
 import moment = require("moment");
 import { flipSide } from "sakuraba/utils";
 
 type LogParam = {text?: LogValue, body?: ActionLogBody, visibility?: LogVisibility};
+
+// Firestoreへ新しいボード情報を送信
+function sendBoardToFirestore(db: firestore.Firestore, tableId: string, side: SheetSide, newBoard: state.Board, appendLogs: state.LogRecord[]){
+    let tableRef = db.collection(StoreName.TABLES).doc(tableId);
+    let logsRef = tableRef.collection(StoreName.LOGS);
+
+    // トランザクション開始
+    db.runTransaction(function (tran) {
+        // テーブル情報を取得
+        return tran.get(tableRef).then(tableSS => {
+            let table = tableSS.data() as store.Table;
+            let logNo = table.lastLogNo;
+            // ログNOを採番しながら登録
+            appendLogs.forEach(log => {
+                logNo++;
+                log.no = logNo; // 付番
+                let storedLog = utils.convertForFirestore(log);
+                tran.set(logsRef.doc(logNo.toString()), storedLog);
+            });
+
+            let tableObj: store.Table = {
+                board: utils.convertForFirestore(newBoard)
+                , stateDataVersion: 2
+                , lastLogNo: logNo
+
+                , updatedAt: moment().format()
+                , updatedBy: side
+            };
+
+            tran.update(tableRef, tableObj);
+        })
+    }).then(function () {
+        console.log("Board written to firestore");
+    });
+}
 
 export default {
     /** 複数の操作を行い、必要に応じてUndo履歴、ログを設定。同時にソケットに変更後ボードを送信 */
@@ -58,39 +93,9 @@ export default {
         appendLogs = newState.actionLog.slice(oldLength);
 
         // 処理の実行が終わったら、Firestoreへ更新後のボードの内容と、アクションログを送信
-        var db = firebase.firestore();
-
-        let tableRef = db.collection(StoreName.TABLES).doc(newState.tableId);
-        let logsRef = tableRef.collection(StoreName.LOGS);
-
-        // トランザクション開始
-        db.runTransaction(function(tran){
-            // テーブル情報を取得
-            return tran.get(tableRef).then(tableSS => {
-                let table = tableSS.data() as store.Table;
-                let logNo = table.lastLogNo;
-                // ログNOを採番しながら登録
-                appendLogs.forEach(log => {
-                    logNo++;
-                    log.no = logNo; // 付番
-                    let storedLog = utils.convertForFirestore(log);
-                    tran.set(logsRef.doc(logNo.toString()), storedLog);
-                });
-
-                let tableObj: store.Table = {
-                      board: utils.convertForFirestore(newState.board)
-                    , stateDataVersion: 2
-                    , lastLogNo: logNo
-
-                    , updatedAt: moment().format()
-                    , updatedBy: state.side
-                };
-
-                tran.update(tableRef, tableObj);
-            })
-        }).then(function(){
-            console.log("Board written to firestore");
-        });
+        if(state.firestore){
+            sendBoardToFirestore(state.firestore, state.tableId, state.side, newState.board, appendLogs);
+        }
 
         // 履歴を忘れるモードの場合は、ボード履歴を削除し、元に戻せないようにする
         if(p.undoType === 'notBack'){
@@ -139,13 +144,12 @@ export default {
         newFuture.push({board: state.board, appendedLogs: recoveredHistItem.appendedLogs});
 
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
-        let appendLogs: state.ActionLogRecord[] = [];
         let newActionLogs = actions.appendActionLog({text: ['log:直前の操作を取り消しました', null]}).actionLog;
         let appendedLogs = [newActionLogs[newActionLogs.length - 1]];
-
-        if(state.socket){
-            state.socket.emit('updateBoard', { tableId: state.tableId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: appendedLogs});
+        if (state.firestore) {
+            sendBoardToFirestore(state.firestore, state.tableId, state.side, recoveredHistItem.board, appendedLogs);
         }
+
         return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board} as Partial<state.State>;
     },
 
@@ -159,10 +163,10 @@ export default {
 
         // 処理の実行が終わったら、socket.ioで更新後のボードの内容と、アクションログを送信
         recoveredHistItem.appendedLogs.forEach(log => actions.appendActionLog({ body: log.body as state.ActionLogBody, visibility: log.visibility}));
-
-        if(state.socket){
-            state.socket.emit('updateBoard', { tableId: state.tableId, side: state.side, board: recoveredHistItem.board, appendedActionLogs: recoveredHistItem.appendedLogs});
+        if (state.firestore) {
+            sendBoardToFirestore(state.firestore, state.tableId, state.side, recoveredHistItem.board, recoveredHistItem.appendedLogs);
         }
+
         return {boardHistoryPast: newPast, boardHistoryFuture: newFuture, board: recoveredHistItem.board} as Partial<state.State>;
     },
 

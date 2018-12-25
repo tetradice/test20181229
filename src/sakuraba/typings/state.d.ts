@@ -1,5 +1,5 @@
 import { Megami } from "sakuraba";
-import { ClientSocket } from "../socket";
+import { firestore } from "firebase";
 
 export as namespace state;
 
@@ -22,7 +22,7 @@ export interface State {
     boardHistoryFuture: BoardHistoryItem[];
 
     zoom: number;
-    socket?: ClientSocket;
+    firestore: firestore.Firestore;
     tableId?: string;
     
     /** 自分の席位置 (p1/p2/観戦者) */

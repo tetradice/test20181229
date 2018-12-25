@@ -11,11 +11,13 @@ import sakuraTokenActions from './sakuraToken';
 let actionsTemp5 = Object.assign({}, actionsTemp4, sakuraTokenActions);
 import settingActions from './setting';
 let actionsTemp6 = Object.assign({}, actionsTemp5, settingActions);
+import firestoreActions from './firestore';
+let actionsTemp7 = Object.assign({}, actionsTemp6, firestoreActions);
 import miscActions from './misc';
-let actionsTemp7 = Object.assign({}, actionsTemp6, miscActions);
+let actionsTemp8 = Object.assign({}, actionsTemp7, miscActions);
 
 import { WiredActions } from 'hyperapp-types';
 
-export const actions = actionsTemp7;
+export const actions = actionsTemp8;
 
 export type ActionsType = WiredActions<state.State, typeof actions>;
