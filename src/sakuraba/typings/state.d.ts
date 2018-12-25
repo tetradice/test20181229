@@ -167,6 +167,7 @@ export interface SakuraToken extends BoardObjectBase {
 
 /** ログ1行分のデータ */
 export interface LogRecord {
+    no: number;
     type: 'c' | 'a';
     time: string; // momentから変換した値を渡す
     side?: SheetSide;

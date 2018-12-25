@@ -4,7 +4,8 @@ import moment = require('moment');
 export default {
     appendChatLog: (p: { text: string }) => (state: state.State) => {
         let append: state.ChatLogRecord = {
-            type: 'c'
+              no: null // DBへの保存時に採番
+            , type: 'c'
             , body: p.text
             , time: moment().format()
             , side: state.side

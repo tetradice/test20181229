@@ -21,7 +21,8 @@ export default {
 
         // 保存
         let append: state.ActionLogRecord = {
-              type: 'a'
+              no: null // DBへの保存時に採番
+            , type: 'a'
             , body: logBody
             , time: moment().format()
             , side: state.side

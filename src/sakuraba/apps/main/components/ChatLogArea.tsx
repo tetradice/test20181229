@@ -49,13 +49,44 @@ export const ChatLogArea = (p: {logs: state.ChatLogRecord[]}) => (state: state.S
     const onSend = (e: MouseEvent) => {
         let $text = $(e.target).closest('.ui.input').find('input[type=text]');
         let log = {text: $text.val() as string};
-        let newChatLogs = actions.appendChatLog(log);
+        let newChatLogs = actions.appendChatLog(log).chatLog;
         $text.val('');
 
-        // チャットログを追加
+        // 処理の実行が終わったら、Firestoreへチャットログを送信
         let db = firebase.firestore();
-        let logsRef = db.collection(StoreName.TABLES).doc(state.tableId.toString()).collection(StoreName.LOGS);
-        logsRef.doc().set(newChatLogs.chatLog[newChatLogs.chatLog.length - 1]);
+        let newState = actions.getState();
+
+        let tableRef = db.collection(StoreName.TABLES).doc(newState.tableId);
+        let logsRef = tableRef.collection(StoreName.LOGS);
+
+        // トランザクション開始
+        db.runTransaction(function (tran) {
+            // テーブル情報を取得
+            return tran.get(tableRef).then(tableSS => {
+                let table = tableSS.data() as store.Table;
+                let logNo = table.lastLogNo;
+                // ログNOを採番しながら登録
+                newChatLogs.forEach(log => {
+                    logNo++;
+                    log.no = logNo; // 付番
+                    let storedLog = utils.convertForFirestore(log);
+                    tran.set(logsRef.doc(logNo.toString()), storedLog);
+                });
+
+                // ボード情報は更新しない
+                let tableObj: Partial<store.Table> = {
+                      stateDataVersion: 2
+                    , lastLogNo: logNo
+
+                    , updatedAt: moment().format()
+                    , updatedBy: state.side
+                };
+
+                tran.update(tableRef, tableObj);
+            })
+        }).then(function () {
+            console.log("ChatLog written to firestore");
+        });
     };
 
     return (

@@ -62,18 +62,23 @@ export default {
 
         let tableRef = db.collection(StoreName.TABLES).doc(newState.tableId);
         let logsRef = tableRef.collection(StoreName.LOGS);
+
+        // トランザクション開始
         db.runTransaction(function(tran){
+            // テーブル情報を取得
             return tran.get(tableRef).then(tableSS => {
                 let table = tableSS.data() as store.Table;
                 let logNo = table.lastLogNo;
+                // ログNOを採番しながら登録
                 appendLogs.forEach(log => {
                     logNo++;
+                    log.no = logNo; // 付番
                     let storedLog = utils.convertForFirestore(log);
-                    tran.set(logsRef.doc(_.padStart(logNo.toString(), 8, "0")), storedLog);
+                    tran.set(logsRef.doc(logNo.toString()), storedLog);
                 });
 
                 let tableObj: store.Table = {
-                    board: utils.convertForFirestore(newState.board)
+                      board: utils.convertForFirestore(newState.board)
                     , stateDataVersion: 2
                     , lastLogNo: logNo
 

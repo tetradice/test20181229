@@ -1092,24 +1092,34 @@ $(function () {
                         .onSnapshot(function(querySnapshot){
                             var source = querySnapshot.metadata.hasPendingWrites ? "Local" : "Server";
                             console.log(source, "logs onSnapshot: ");
+                            let st = appActions.getState();
+
+                            // 現在の最大ログNOを取得
+                            let maxLogNo = _.maxBy(st.actionLog, log => log.no).no;
 
                             let appendedLogs: state.ActionLogRecord[] = [];
                             querySnapshot.docChanges().forEach(function (change) {
                                 if (change.type === "added") {
-                                    appendedLogs.push(change.doc.data() as state.ActionLogRecord);
+                                    let log = change.doc.data() as state.ActionLogRecord;
+                                    if(log.no > maxLogNo){
+                                        appendedLogs.push(log);
+                                    }
                                 }
                             });
 
-                            // ログも追加
-                            appActions.appendReceivedActionLogs(appendedLogs);
+                            // 新しいログがあれば
+                            if(appendedLogs.length >= 1){
 
-                            // 受け取ったログをtoastrで表示
-                            let st = appActions.getState();
-                            let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, st.side));
-                            let msg = targetLogs.map((log) => utils.translateLog(log.body, st.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
-                            let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+                                // ログ追加
+                                appActions.appendReceivedActionLogs(appendedLogs);
 
-                            toastr.info(msg, `${name}:`);
+                                // 受け取ったログをtoastrで表示
+                                let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, st.side));
+                                let msg = targetLogs.map((log) => utils.translateLog(log.body, st.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
+                                let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+
+                                toastr.info(msg, `${name}:`);
+                            }
                         });
 
 
@@ -1117,25 +1127,35 @@ $(function () {
                     tableRef.collection(StoreName.LOGS).where('type', '==', 'c')
                         .onSnapshot(function (querySnapshot) {
                             var source = querySnapshot.metadata.hasPendingWrites ? "Local" : "Server";
-                            console.log(source, "chat logs onSnapshot: ");
+                            console.log(source, "chatlogs onSnapshot: ");
+                            let st = appActions.getState();
+
+                            // 現在の最大ログNOを取得
+                            let maxLogNo = _.maxBy(st.chatLog, log => log.no).no;
 
                             let appendedLogs: state.ChatLogRecord[] = [];
                             querySnapshot.docChanges().forEach(function (change) {
-                                console.log(change);
                                 if (change.type === "added") {
-                                    appendedLogs.push(change.doc.data() as state.ChatLogRecord);
+                                    let log = change.doc.data() as state.ChatLogRecord;
+                                    if (log.no > maxLogNo) {
+                                        appendedLogs.push(log);
+                                    }
                                 }
                             });
 
-                            // ログも追加
-                            appActions.appendReceivedChatLogs(appendedLogs);
+                            // 新しいログがあれば
+                            if (appendedLogs.length >= 1) {
 
-                            // 受け取ったログをtoastrで表示
-                            let st = appActions.getState();
-                            let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, st.side));
-                            let msg = targetLogs.map((log) => log.body).join('<br>');
-                            let name = (targetLogs[0].side === 'watcher' ? (st.board.watchers[targetLogs[0].watcherSessionId] ? st.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
-                            toastr.success(msg, `${name}:`, { toastClass: 'toast chat' });
+                                // ログ追加
+                                appActions.appendReceivedChatLogs(appendedLogs);
+
+                                // 受け取ったログをtoastrで表示
+                                let st = appActions.getState();
+                                let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, st.side));
+                                let msg = targetLogs.map((log) => log.body).join('<br>');
+                                let name = (targetLogs[0].side === 'watcher' ? (st.board.watchers[targetLogs[0].watcherSessionId] ? st.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
+                                toastr.success(msg, `${name}:`, { toastClass: 'toast chat' });
+                            }
                         });
 
                 });
