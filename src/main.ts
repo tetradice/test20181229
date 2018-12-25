@@ -7,7 +7,6 @@ import * as apps from "sakuraba/apps";
 import { BOARD_BASE_WIDTH, ZIndex, StoreName } from "sakuraba/const";
 import dragInfo from "sakuraba/dragInfo";
 import * as models from "sakuraba/models";
-import { ClientSocket } from "sakuraba/socket";
 import * as utils from "sakuraba/utils";
 import toastr from "toastr";
 import { CARD_DATA, SAKURA_TOKEN_MAX } from "./sakuraba";
@@ -1024,22 +1023,32 @@ $(function () {
                     // アプリケーション起動まで完了したら、ローダーの表示を隠す
                     $('#LOADER').removeClass('active');
 
-                    // // まだ名前が決定していなければ、名前の決定処理
-                    // // 観戦者かどうかで名前の処理を分ける
-                    // if (params.side === 'watcher') {
-                    //     // 観戦者の場合
-                    //     // まずログインしてきた観戦者に、観戦者セッションIDが割り当てられているかどうかを確認
-                    //     let sessionId = localStorage.getItem(`table${params.tableId}:watcherSessionId`);
-                    //     if (sessionId) {
-                    //         // セッションIDがあれば、そのセッションIDでログイン
-                    //         socket.emit('watcherLogin', { tableId: params.tableId, sessionId: sessionId });
-                    //     } else {
-                    //         // セッションIDがなければ、新たなセッションIDを割り当てて、そのIDでログイン
-                    //         sessionId = randomstring.generate({ readable: true, length: 16 });
-                    //         localStorage.setItem(`table${params.tableId}:watcherSessionId`, sessionId);
-                    //         socket.emit('watcherLogin', { tableId: params.tableId, sessionId: sessionId });
-                    //     }
-                    // } else {
+                    // まだ名前が決定していなければ、名前の決定処理
+                    // 観戦者かどうかで名前の処理を分ける
+                    if (params.side === 'watcher') {
+                        // 観戦者の場合
+                        utils.userInputModal(`<p>${t('dialog:ふるよにボードシミュレーターへようこそ。あなたは観戦者として卓に参加します。')}</p><p>${t('観戦者名：')}</p>`, ($elem) => {
+                            let watcherName = $('#INPUT-MODAL input').val() as string;
+                            let sessionId = randomstring.generate({ readable: true, length: 16 });
+                            if (watcherName === '') {
+                                watcherName = `${t('観戦者')} ${sessionId}`;
+                            }
+
+                            // DBに名前を保存
+                            db.collection(StoreName.TABLES).doc(params.tableId).collection(StoreName.WATCHERS).doc(sessionId).set({ name: watcherName }).then(function () {
+                                localStorage.setItem(`table${params.tableId}:watcherSessionId`, sessionId);
+
+                                // 画面を閉じたら観戦者情報を削除する
+                                $(window).on('beforeunload', function (e) {
+                                    db.collection(StoreName.TABLES).doc(params.tableId).collection(StoreName.WATCHERS).doc(sessionId).delete().then(function(){
+                                    });
+                                    e.preventDefault();
+                                    return undefined;
+                                });
+                            });
+                        });
+
+                    } else {
                         // 観戦者でない場合
                         if (board.playerNames[params.side] === null) {
                             let playerCommonName = (params.side === 'p1' ? t('プレイヤー1') : t('プレイヤー2'));
@@ -1059,7 +1068,7 @@ $(function () {
                                 utils.messageModal(t('dialog:ゲームを始める準備ができたら、まずは「メガミ選択」ボタンをクリックしてください。'));
                             });
                          }
-                    // }
+                    }
 
                     // ここまでの処理が終わったら、変更時イベントを設定
                     // ボードデータ更新時の処理を紐づける
@@ -1070,20 +1079,6 @@ $(function () {
                             if (!doc.metadata.hasPendingWrites) {
                                 let tableData = doc.data() as store.Table;
                                 appActions.setBoard(tableData.board);
-
-                                // // 追加ログがあれば
-                                // if (p.appendedActionLogs !== null) {
-                                //     // ログも追加
-                                //     appActions.appendReceivedActionLogs(p.appendedActionLogs);
-
-                                //     // 受け取ったログをtoastrで表示
-                                //     let st = appActions.getState();
-                                //     let targetLogs = p.appendedActionLogs.filter((log) => utils.logIsVisible(log, st.side));
-                                //     let msg = targetLogs.map((log) => utils.translateLog(log.body, st.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
-                                //     let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
-
-                                //     toastr.info(msg, `${name}:`);
-                                // }
                             }
                         });
 
@@ -1158,7 +1153,24 @@ $(function () {
                             }
                         });
 
+                    // 観戦者情報更新時の処理を紐づける
+                    tableRef.collection(StoreName.WATCHERS)
+                        .onSnapshot(function (querySnapshot) {
+                            var source = querySnapshot.metadata.hasPendingWrites ? "Local" : "Server";
+                            console.log(source, "watchers onSnapshot: ");
+                            let st = appActions.getState();
+
+                            let guestInfo: { [sessionId: string]: WatcherInfo } = {};
+                            querySnapshot.docs.forEach(d => {
+                                guestInfo[d.id] = {name: d.data().name, online: true};
+                            });
+
+                            // ステートの観戦者情報を更新
+                            appActions.setWatcherInfo({ watchers: guestInfo });
+                        });
                 });
+
+
 
 
 
