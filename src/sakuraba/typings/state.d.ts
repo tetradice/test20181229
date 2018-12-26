@@ -36,6 +36,7 @@ export interface State {
 
     actionLog: ActionLogRecord[];
     chatLog: ChatLogRecord[];
+    notifyLog: NotifyLogRecord[];
 
     actionLogVisible: boolean;
     helpVisible: boolean;
@@ -168,7 +169,7 @@ export interface SakuraToken extends BoardObjectBase {
 /** ログ1行分のデータ */
 export interface LogRecord {
     no: number;
-    type: 'c' | 'a';
+    type: 'c' | 'a' | 'n';
     time: string; // momentから変換した値を渡す
     side?: SheetSide;
     watcherSessionId?: string;
@@ -184,6 +185,11 @@ export interface ChatLogRecord extends LogRecord {
 export interface ActionLogRecord extends LogRecord {
     type: 'a';
     body: ActionLogBody;
+}
+
+export interface NotifyLogRecord extends LogRecord {
+    type: 'n';
+    body: string;
 }
 
 

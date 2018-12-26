@@ -4,7 +4,7 @@ import * as utils from "sakuraba/utils";
 import * as css from "./ControlPanel.css"
 import * as models from "sakuraba/models";
 import toastr from "toastr";
-import { BOARD_BASE_WIDTH } from "sakuraba/const";
+import { BOARD_BASE_WIDTH, StoreName } from "sakuraba/const";
 import * as apps from "sakuraba/apps"
 import i18next, { t } from 'i18next';
 
@@ -232,6 +232,13 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
         let notifyType = $('[name=notifyType]').val();
         let notifyItem = notifyData.find(item => item.key === notifyType);
         //state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: notifyItem.message});
+
+        // 通知ログを追加
+        let newNotifyLogs = actions.appendNotifyLog({ text: notifyItem.message}).notifyLog;
+        let appendedNotifyLog = newNotifyLogs[newNotifyLogs.length - 1];
+
+        // Firestoreへ通知ログを送信
+        utils.sendLogToFirestore(state.firestore, state.tableId, [appendedNotifyLog], state.side);
 
         // 送信完了
         toastr.success(t('Oへ通知しました。', {opponent: opponentName}), '', {timeOut: 5000});

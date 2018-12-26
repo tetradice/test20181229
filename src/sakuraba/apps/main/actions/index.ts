@@ -15,9 +15,11 @@ import firestoreActions from './firestore';
 let actionsTemp7 = Object.assign({}, actionsTemp6, firestoreActions);
 import miscActions from './misc';
 let actionsTemp8 = Object.assign({}, actionsTemp7, miscActions);
+import notifyLogActions from './notifyLog';
+let actionsTemp9 = Object.assign({}, actionsTemp8, notifyLogActions);
 
 import { WiredActions } from 'hyperapp-types';
 
-export const actions = actionsTemp8;
+export const actions = actionsTemp9;
 
 export type ActionsType = WiredActions<state.State, typeof actions>;

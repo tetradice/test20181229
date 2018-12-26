@@ -28,6 +28,7 @@ export function createInitialState(): state.State{
 
       , actionLog: []
       , chatLog: []
+      , notifyLog: []
       , actionLogVisible: false
       , helpVisible: false
       , settingVisible: false

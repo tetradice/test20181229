@@ -968,7 +968,7 @@ $(function () {
                 });
 
                 // firebase初期化
-                    const firebaseAuthInfoList = Base64.decode(params.firebaseAuthInfo).split(' ');
+                const firebaseAuthInfoList = Base64.decode(params.firebaseAuthInfo).split(' ');
                 firebase.initializeApp({
                     apiKey: firebaseAuthInfoList[0],
                     authDomain: firebaseAuthInfoList[1],
@@ -978,6 +978,7 @@ $(function () {
                     messagingSenderId: firebaseAuthInfoList[5],
                 });
                 const db = firebase.firestore();
+                db.settings({ timestampsInSnapshots: true});
                 appActions.setFirestore(db);
 
                 // 初期データを取得し、メイン処理をスタート
@@ -985,20 +986,22 @@ $(function () {
                 let board: state.Board = null;
                 let actionLogs: state.ActionLogRecord[] = null;
                 let chatLogs: state.ChatLogRecord[] = null;
+                let notifyLogs: state.NotifyLogRecord[] = null;
                 let tableRef = sakurabaTablesRef.doc(params.tableId);
                 
                 tableRef.get().then((doc) => {
                     // まずはボードデータを取得して保持
                     board = (doc.data() as store.Table).board;
 
-                    // 次にサブコレクションのログを全件取得 (ID順にソートする)
-                    return tableRef.collection(StoreName.LOGS).orderBy(firebase.firestore.FieldPath.documentId()).get();
+                    // 次にサブコレクションのログを全件取得 (NO順にソートする)
+                    return tableRef.collection(StoreName.LOGS).orderBy('no').get();
 
                 }).then((logsDoc) => {
                     // ログをアクションログとチャットログに分けて保持
                     let allLogs = logsDoc.docs.map(x => x.data() as state.LogRecord);
                     actionLogs = allLogs.filter(x => x.type === 'a') as state.ActionLogRecord[];
                     chatLogs = allLogs.filter(x => x.type === 'c') as state.ChatLogRecord[];
+                    notifyLogs = allLogs.filter(x => x.type === 'n') as state.NotifyLogRecord[];
 
                     // ユーザー設定のセット
                     let settingJson = localStorage.getItem('Setting');
@@ -1020,6 +1023,7 @@ $(function () {
                     // ログ情報のセット
                     appActions.setActionLogs(actionLogs);
                     appActions.setChatLogs(chatLogs);
+                    appActions.setNotifyLogs(notifyLogs);
 
                     // アプリケーション起動まで完了したら、ローダーの表示を隠す
                     $('#LOADER').removeClass('active');
@@ -1083,36 +1087,46 @@ $(function () {
                             }
                         });
 
+                    function logChangeProcess<T extends state.LogRecord>(querySnapshot: firebase.firestore.QuerySnapshot, stateLogs: T[]){
+                        // 現在受信済みの最大ログNOを取得
+                        let maxLog = _.maxBy(stateLogs, log => log.no);
+                        let maxLogNo = (maxLog ? maxLog.no : 0);
+
+                        // どのログが追加されたログかを判定
+                        let appendedLogs: T[] = [];
+                        querySnapshot.docChanges().forEach(function (change) {
+                            if (change.type === "added") {
+                                let log = change.doc.data() as T;
+                                if (log.no > maxLogNo) {
+                                    appendedLogs.push(log);
+                                }
+                            }
+                        });
+
+                        // 追加されたログを返す
+                        return appendedLogs;
+                    }
+
                     // 操作ログ更新時の処理を紐づける
-                    tableRef.collection(StoreName.LOGS).where('type', '==', 'a')
+                    tableRef.collection(StoreName.LOGS).where('type', '==', 'a').orderBy('no')
                         .onSnapshot(function(querySnapshot){
                             var source = querySnapshot.metadata.hasPendingWrites ? "Local" : "Server";
-                            console.log(source, "logs onSnapshot: ");
-                            let st = appActions.getState();
+                            console.log(source, "actionlogs onSnapshot: ");
 
-                            // 現在の最大ログNOを取得
-                            let maxLogNo = _.maxBy(st.actionLog, log => log.no).no;
-
-                            let appendedLogs: state.ActionLogRecord[] = [];
-                            querySnapshot.docChanges().forEach(function (change) {
-                                if (change.type === "added") {
-                                    let log = change.doc.data() as state.ActionLogRecord;
-                                    if(log.no > maxLogNo){
-                                        appendedLogs.push(log);
-                                    }
-                                }
-                            });
+                            let newState = appActions.getState();
+                            let appendedLogs = logChangeProcess(querySnapshot, newState.actionLog);
 
                             // 新しいログがあれば
-                            if(appendedLogs.length >= 1){
+                            if (appendedLogs.length >= 1) {
 
                                 // ログ追加
                                 appActions.appendReceivedActionLogs(appendedLogs);
+                                console.log(appendedLogs);
 
                                 // 受け取ったログをtoastrで表示
-                                let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, st.side));
-                                let msg = targetLogs.map((log) => utils.translateLog(log.body, st.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
-                                let name = (targetLogs[0].side === 'watcher' ? st.board.watchers[targetLogs[0].watcherSessionId].name : st.board.playerNames[targetLogs[0].side]);
+                                let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, newState.side));
+                                let msg = targetLogs.map((log) => utils.translateLog(log.body, newState.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
+                                let name = (targetLogs[0].side === 'watcher' ? newState.board.watchers[targetLogs[0].watcherSessionId].name : newState.board.playerNames[targetLogs[0].side]);
 
                                 toastr.info(msg, `${name}:`);
                             }
@@ -1120,24 +1134,13 @@ $(function () {
 
 
                     // チャットログ更新時の処理を紐づける
-                    tableRef.collection(StoreName.LOGS).where('type', '==', 'c')
+                    tableRef.collection(StoreName.LOGS).where('type', '==', 'c').orderBy('no')
                         .onSnapshot(function (querySnapshot) {
                             var source = querySnapshot.metadata.hasPendingWrites ? "Local" : "Server";
                             console.log(source, "chatlogs onSnapshot: ");
-                            let st = appActions.getState();
 
-                            // 現在の最大ログNOを取得
-                            let maxLogNo = _.maxBy(st.chatLog, log => log.no).no;
-
-                            let appendedLogs: state.ChatLogRecord[] = [];
-                            querySnapshot.docChanges().forEach(function (change) {
-                                if (change.type === "added") {
-                                    let log = change.doc.data() as state.ChatLogRecord;
-                                    if (log.no > maxLogNo) {
-                                        appendedLogs.push(log);
-                                    }
-                                }
-                            });
+                            let newState = appActions.getState();
+                            let appendedLogs = logChangeProcess(querySnapshot, newState.chatLog);
 
                             // 新しいログがあれば
                             if (appendedLogs.length >= 1) {
@@ -1146,11 +1149,39 @@ $(function () {
                                 appActions.appendReceivedChatLogs(appendedLogs);
 
                                 // 受け取ったログをtoastrで表示
-                                let st = appActions.getState();
-                                let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, st.side));
+                                let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, newState.side));
                                 let msg = targetLogs.map((log) => log.body).join('<br>');
-                                let name = (targetLogs[0].side === 'watcher' ? (st.board.watchers[targetLogs[0].watcherSessionId] ? st.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
+                                let name = (targetLogs[0].side === 'watcher' ? (newState.board.watchers[targetLogs[0].watcherSessionId] ? newState.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
                                 toastr.success(msg, `${name}:`, { toastClass: 'toast chat' });
+                            }
+                        });
+
+                    // 通知ログ更新時の処理を紐づける
+                    tableRef.collection(StoreName.LOGS).where('type', '==', 'n').orderBy('no')
+                        .onSnapshot(function (querySnapshot) {
+                            var source = querySnapshot.metadata.hasPendingWrites ? "Local" : "Server";
+                            console.log(source, "notifyLogs onSnapshot: ");
+
+                            let newState = appActions.getState();
+                            let appendedLogs = logChangeProcess(querySnapshot, newState.notifyLog);
+
+                            // 新しいログがあれば
+                            if (appendedLogs.length >= 1) {
+
+                                // ログ追加
+                                appActions.appendReceivedNotifyLogs(appendedLogs);
+
+                                // 受け取ったログをtoastrで表示
+                                let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, newState.side));
+                                let msg = targetLogs.map((log) => log.body).join('<br>');
+                                let name = newState.board.playerNames[targetLogs[0].side];
+
+                                toastr.info(msg, t('NAMEより通知', { name: name }), {
+                                    timeOut: 0
+                                    , extendedTimeOut: 0
+                                    , tapToDismiss: false
+                                    , closeButton: true
+                                });
                             }
                         });
 

@@ -6,7 +6,6 @@ import * as path from 'path';
 import * as redis from 'redis';
 import * as randomstring from 'randomstring';
 import * as sakuraba from 'sakuraba';
-import { ServerSocket } from 'sakuraba/socket';
 import * as utils from 'sakuraba/utils';
 import nodemailer from 'nodemailer';
 import bodyParser from 'body-parser';
@@ -240,76 +239,3 @@ app
   
 
 const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
-
-const io = socketIO(server);
-
-io.on('connection', (ioSocket) => {
-  let connectedTableId = null;
-  let connectedWatcherSessionId = null;
-  const socket = new ServerSocket(ioSocket);
-
-  console.log(`Client connected - ${ioSocket.id}`);
-  ioSocket.on('disconnect', () => {
-    console.log(`Client disconnect - ${ioSocket.id}, ${connectedTableId}, ${connectedWatcherSessionId}`)
-
-    // もし観戦者が切断したなら、観戦者情報を削除
-    if(connectedWatcherSessionId !== null){
-      RedisClient.GET(`sakuraba:tables:${connectedTableId}:watchers`, (err, json) => {
-        let watchers = JSON.parse(json) as { [sessionId: string]: WatcherInfo };
-
-        // 観戦者情報を更新して、ログイン応答を返す
-        if(watchers[connectedWatcherSessionId] !== undefined){
-          watchers[connectedWatcherSessionId].online = false;
-        }
-        RedisClient.SET(`sakuraba:tables:${connectedTableId}:watchers`, JSON.stringify(watchers), (err, json) => {
-          socket.emit('onWatcherLoginSuccess', { watchers: watchers });
-          socket.broadcastEmit(connectedTableId, 'onWatcherChanged', { watchers: watchers });
-          connectedWatcherSessionId = connectedWatcherSessionId;
-        });
-      });
-    }
-  });
-
-  // 通知送信
-  socket.on('notify', (p) => {
-      // ログが追加されたイベントを他ユーザーに配信
-      socket.broadcastEmit(p.tableId, 'onNotifyReceived', {senderSide: p.senderSide, message: p.message});
-  });
-
-  // 観戦者ログイン
-  socket.on('watcherLogin', (p) => {
-    // 観戦者情報を取得
-    RedisClient.GET(`sakuraba:tables:${p.tableId}:watchers`, (err, json) => {
-      let watchers = JSON.parse(json) as { [sessionId: string]: WatcherInfo };
-
-      // 送信されたセッションIDに対応する観戦者がいるかどうかで応答を変更
-      if (watchers[p.sessionId] !== undefined) {
-        // 観戦者情報を更新して、ログイン応答を返す
-        watchers[p.sessionId].online = true;
-        RedisClient.SET(`sakuraba:tables:${p.tableId}:watchers`, JSON.stringify(watchers), (err, json) => {
-          socket.emit('onWatcherLoginSuccess', { watchers: watchers });
-          socket.broadcastEmit(p.tableId, 'onWatcherChanged', { watchers: watchers });
-          connectedWatcherSessionId = p.sessionId;
-        });
-      } else {
-        socket.emit('requestWatcherName', {});
-      }
-    });
-  });
-
-  // 観戦者名決定
-  socket.on('watcherNameInput', (p) => {
-    // 観戦者情報を取得
-    RedisClient.GET(`sakuraba:tables:${p.tableId}:watchers`, (err, json) => {
-      let watchers = JSON.parse(json) as { [sessionId: string]: WatcherInfo };
-
-      // 観戦者情報を更新して、ログイン応答を返す
-      watchers[p.sessionId] = {name: p.name, online: true};
-      RedisClient.SET(`sakuraba:tables:${p.tableId}:watchers`, JSON.stringify(watchers), (err, json) => {
-        socket.emit('onWatcherLoginSuccess', { watchers: watchers });
-        socket.broadcastEmit(p.tableId, 'onWatcherChanged', { watchers: watchers });
-        connectedWatcherSessionId = p.sessionId;
-      });
-    });
-  });
-});
