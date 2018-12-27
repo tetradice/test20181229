@@ -273,33 +273,27 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
         const marigan = () => {
             // マリガンダイアログを起動
             let board = new models.Board(state.board);
-            
+
             new Promise<state.Card[]>((resolve, reject) => {
                 let cards = board.getRegionCards(side, 'hand', null);
                 let st = apps.mariganModal.State.create(state.board.cardSet, side, cards, state.zoom, state.setting, resolve, reject);
-                apps.mariganModal.run(st, document.getElementById('COMMON-MODAL-PLACEHOLDER'));            
+                apps.mariganModal.run(st, document.getElementById('COMMON-MODAL-PLACEHOLDER'));
             }).then((selectedCards) => {
-                // 一部のカードを山札の底に戻し、同じ枚数だけカードを引き直す
-                actions.operate({
-                    undoType: 'notBack',
-                    log: ['log:手札N枚を山札の底に置き、同じ枚数のカードを引き直しました', {count: selectedCards.length}],
-                    proc: () => {
-                        // 選択したカードを山札の底に移動
-                        selectedCards.forEach(card => {
-                            actions.moveCard({from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitleKey: 'log:CardNamePrefix-山札へ戻す'});
-                        });
+                // 選択したカードを山札の底に移動
+                selectedCards.forEach(card => {
+                    actions.moveCard({ from: card.id, to: [side, 'library', null], toPosition: 'first', cardNameLogging: true, cardNameLogTitleKey: 'log:CardNamePrefix-山札へ戻す' });
+                });
 
-                        // 手札n枚を引く
-                        actions.draw({number: selectedCards.length});
-            
-                        // マリガンフラグON
-                        actions.setMariganFlag({side: side, value: true});
+                // 手札n枚を引く
+                actions.draw({ number: selectedCards.length });
 
-                        // 盤面をセットアップ
-                        actions.oprBoardSetup();
-                    }
-                })
+                // マリガンフラグON
+                actions.setMariganFlag({ side: side, value: true });
 
+                // 盤面をセットアップ
+                actions.oprBoardSetup({ appendLog: {type: 'ls', key: 'log:手札N枚を山札の底に置き、同じ枚数のカードを引き直しました', params: { count: selectedCards.length }} });
+
+                // メッセージ表示
                 utils.messageModal(t("dialog:桜花決闘を開始しました。場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。"));
             });
         };
@@ -310,7 +304,7 @@ export const MainProcessButtons = (p: {left: number}) => (state: state.State, ac
                 actions.setMariganFlag({side: side, value: true});
 
                 // 盤面のカードや桜花結晶などを配置して、メッセージを表示
-                actions.oprBoardSetup({});
+                actions.oprBoardSetup();
                 utils.messageModal(t("dialog:桜花決闘を開始しました。場のカードや桜花結晶を移動したい場合は、マウスでドラッグ操作を行ってください。"));
 
             });

@@ -1042,9 +1042,22 @@ $(function () {
                             // DBに名前を保存
                             db.collection(StoreName.TABLES).doc(params.tableId).collection(StoreName.WATCHERS).doc(sessionId).set({ name: watcherName }).then(function () {
                                 localStorage.setItem(`table${params.tableId}:watcherSessionId`, sessionId);
+                                console.log("append watcher: ", sessionId, watcherName);
                                 
                                 // 現在のセッションIDを記憶
                                 appActions.setCurrentWatcherSessionId(sessionId);
+
+                                // 観戦者情報に追加
+                                let st = appActions.getState();
+                                let newWatchers = _.extend({}, st.board.watchers);
+                                newWatchers[sessionId] = {name: watcherName};
+                                appActions.setWatcherInfo({ watchers: newWatchers });
+
+                                // Firestoreへログを送信
+                                let newLogs = appActions.appendActionLog({
+                                    text: ['log:観戦者として卓に参加しました', null]
+                                }).actionLog;
+                                utils.sendLogToFirestore(db, params.tableId, [newLogs[newLogs.length - 1]], params.side);
 
                                 // 画面を閉じたら観戦者情報を削除する
                                 $(window).on('beforeunload', function (e) {
@@ -1213,16 +1226,21 @@ $(function () {
                     tableRef.collection(StoreName.WATCHERS)
                         .onSnapshot(function (querySnapshot) {
                             var source = querySnapshot.metadata.hasPendingWrites ? "Local" : "Server";
-                            console.log(source, "watchers onSnapshot: ");
+                            console.log(source, "watchers onSnapshot: ", querySnapshot.docs.map(d => [d.id, d.data()]));
                             let st = appActions.getState();
 
-                            let watcherInfo: { [sessionId: string]: state.WatcherInfo } = {};
-                            querySnapshot.docs.forEach(d => {
-                                watcherInfo[d.id] = {name: d.data().name};
-                            });
+                            // サーバーから受信した場合、情報を更新
+                            if(!querySnapshot.metadata.hasPendingWrites){
+                                let watcherInfo: { [sessionId: string]: state.WatcherInfo } = {};
+                                querySnapshot.docs.forEach(d => {
+                                    watcherInfo[d.id] = {name: d.data().name};
+                                });
+                                console.log(st.currentWatcherSessionId);
+                                console.log(watcherInfo);
 
-                            // ステートの観戦者情報を更新
-                            appActions.setWatcherInfo({ watchers: watcherInfo });
+                                // ステートの観戦者情報を更新
+                                appActions.setWatcherInfo({ watchers: watcherInfo });
+                            }
                         });
                 });
 

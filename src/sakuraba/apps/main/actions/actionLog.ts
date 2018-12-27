@@ -19,6 +19,15 @@ export default {
             logBody = utils.convertLogValueForState(p.text);
         }
 
+        // インデントありの場合
+        if(p.indent){
+            if(Array.isArray(logBody)){
+                logBody.unshift('->');
+            } else {
+                logBody = ['->', logBody];
+            }
+        }
+
         // 保存
         let append: state.ActionLogRecord = {
               no: null // DBへの保存時に採番

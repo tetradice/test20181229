@@ -193,8 +193,6 @@ export default {
 
     /** 自身の観戦者IDをセット */
     setCurrentWatcherSessionId: (currentWatcherSessionId: string) => (state: state.State) => {
-        let newBoard = _.merge({}, state.board);
-
         return { currentWatcherSessionId: currentWatcherSessionId } as Partial<state.State>;
     },
 
@@ -556,7 +554,7 @@ export default {
     },
 
     /** 桜花結晶などを配置する */
-    oprBoardSetup: () => (state: state.State, actions: ActionsType) => {
+    oprBoardSetup: (p: {appendLog?: ActionLogBody}) => (state: state.State, actions: ActionsType) => {
         actions.operate({
             undoType: 'notBack',
             proc: () => {
@@ -631,6 +629,11 @@ export default {
                 // 第三章オボロがいればゲーム外に桜花結晶を追加
                 if (board.megamis[state.side].find(m => m === 'oboro-a1')) {
                     actions.addSakuraToken({ side: state.side, region: 'out-of-game', number: 2 });
+                }
+
+                // 追加ログ
+                if(p.appendLog){
+                    actions.appendActionLog({body: p.appendLog});
                 }
 
             }
