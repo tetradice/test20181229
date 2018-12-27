@@ -26,7 +26,8 @@ export default {
             , body: logBody
             , time: moment().format()
             , side: state.side
-            , watcherSessionId: (state.side === 'watcher' ? state.currentWatcherSessionId : null)
+            , watcherSessionId: (state.side === 'watcher' ? state.currentWatcherSessionId : undefined)
+            , watcherName: (state.side === 'watcher' && state.board.watchers[state.currentWatcherSessionId] ? state.board.watchers[state.currentWatcherSessionId].name : undefined)
             , visibility: (p.visibility ? p.visibility : 'shown')
             , indent: p.indent
         };

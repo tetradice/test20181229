@@ -23,11 +23,6 @@ type Language = 'ja' | 'zh-Hans-CN' | 'en';
 /** 言語設定オブジェクト */
 type LanguageSetting = {allEqual: boolean, ui: Language, uniqueName: Language, cardText: Language};
 
-/** 観戦者情報 */
-interface WatcherInfo {
-    name: string;
-    online: boolean;
-}
 
 // for webpack css-loader
 declare module "*.css" {

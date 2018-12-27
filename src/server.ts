@@ -48,7 +48,7 @@ i18next
     , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'about-window', 'toppage']
     , lng: 'ja'
     , load: 'currentOnly' // 対象となった言語のみ読み込む
-    , debug: true
+    , debug: false
     , fallbackLng: false
     , parseMissingKeyHandler: (k: string) => `[${k}]`
     , backend: {

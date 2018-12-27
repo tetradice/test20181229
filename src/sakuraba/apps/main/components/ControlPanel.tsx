@@ -199,7 +199,6 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
     let firstWatcher = true;
     for(let sessionId in state.board.watchers){
         let watcher = state.board.watchers[sessionId];
-        if(!watcher.online) continue; // オフラインの観戦者は表示しない
     
         let name = watcher.name;
         if(!firstWatcher) watcherNameElements.push(<span>、</span>);
@@ -231,7 +230,6 @@ export const ControlPanel = () => (state: state.State, actions: ActionsType) => 
 
         let notifyType = $('[name=notifyType]').val();
         let notifyItem = notifyData.find(item => item.key === notifyType);
-        //state.socket.emit('notify', {tableId: state.tableId, senderSide: state.side, message: notifyItem.message});
 
         // 通知ログを追加
         let newNotifyLogs = actions.appendNotifyLog({ text: notifyItem.message}).notifyLog;

@@ -24,7 +24,7 @@ export const ActionLogWindow = (p: {shown: boolean, logs: state.ActionLogRecord[
             let logTime = moment(log.time);
             let timeStr = (logTime.isSame(now, 'date') ? logTime.format('H:mm') : logTime.format('YYYY/M/D H:mm'));
             let bodyStyle = (log.visibility === 'ownerOnly' ? {color: 'green'} : null);
-            let name = (log.side === 'watcher' ? (state.board.watchers[log.watcherSessionId] ? state.board.watchers[log.watcherSessionId].name : '?') : state.board.playerNames[log.side]);
+            let name = (log.side === 'watcher' ? (log.watcherName || '?') : state.board.playerNames[log.side]);
 
             logElements.push(
                 <div>

@@ -49,7 +49,7 @@ $(function () {
                 , lng: params.lang
                 , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'miniquiz']
                 , load: 'currentOnly' // 対象となった言語のみ読み込む
-                , debug: (params.environment === 'development')
+                , debug: false
                 , parseMissingKeyHandler: (k: string) => `[${k}]`
                 , fallbackLng: false
                 , backend: {
@@ -1042,6 +1042,9 @@ $(function () {
                             // DBに名前を保存
                             db.collection(StoreName.TABLES).doc(params.tableId).collection(StoreName.WATCHERS).doc(sessionId).set({ name: watcherName }).then(function () {
                                 localStorage.setItem(`table${params.tableId}:watcherSessionId`, sessionId);
+                                
+                                // 現在のセッションIDを記憶
+                                appActions.setCurrentWatcherSessionId(sessionId);
 
                                 // 画面を閉じたら観戦者情報を削除する
                                 $(window).on('beforeunload', function (e) {
@@ -1090,7 +1093,8 @@ $(function () {
                             }
                         });
 
-                    function logChangeProcess<T extends state.LogRecord>(querySnapshot: firebase.firestore.QuerySnapshot, stateLogs: T[]){
+                    // ログ変更時に追加されたログを取得する処理
+                    function getAppendedLogs<T extends state.LogRecord>(querySnapshot: firebase.firestore.QuerySnapshot, stateLogs: T[]){
                         // 現在受信済みの最大ログNOを取得
                         let maxLog = _.maxBy(stateLogs, log => log.no);
                         let maxLogNo = (maxLog ? maxLog.no : 0);
@@ -1117,7 +1121,7 @@ $(function () {
                             console.log(source, "actionlogs onSnapshot: ");
 
                             let newState = appActions.getState();
-                            let appendedLogs = logChangeProcess(querySnapshot, newState.actionLog);
+                            let appendedLogs = getAppendedLogs(querySnapshot, newState.actionLog);
 
                             // 新しいログがあれば
                             if (appendedLogs.length >= 1) {
@@ -1128,10 +1132,16 @@ $(function () {
 
                                 // 受け取ったログをtoastrで表示
                                 let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, newState.side));
-                                let msg = targetLogs.map((log) => utils.translateLog(log.body, newState.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
-                                let name = (targetLogs[0].side === 'watcher' ? newState.board.watchers[targetLogs[0].watcherSessionId].name : newState.board.playerNames[targetLogs[0].side]);
 
-                                toastr.info(msg, `${name}:`);
+                                // ID別にグループ化 (グループのキーは p1 / p2 / 観戦者セッションIDのいずれか)
+                                let grouped = _.groupBy(targetLogs, (log: state.ActionLogRecord) => (log.side === 'watcher' ? log.watcherSessionId : log.side));
+                                for(let key in grouped){
+                                    let logsInGroup = grouped[key];
+                                    let isPlayer = (key === 'p1' || key === 'p2');
+                                    let name = (isPlayer ? newState.board.playerNames[key] : logsInGroup[0].watcherName);
+                                    let msg = logsInGroup.map((log) => utils.translateLog(log.body, newState.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
+                                    toastr.info(msg, `${name}:`);
+                                }
                             }
                         });
 
@@ -1143,7 +1153,7 @@ $(function () {
                             console.log(source, "chatlogs onSnapshot: ");
 
                             let newState = appActions.getState();
-                            let appendedLogs = logChangeProcess(querySnapshot, newState.chatLog);
+                            let appendedLogs = getAppendedLogs(querySnapshot, newState.chatLog);
 
                             // 新しいログがあれば
                             if (appendedLogs.length >= 1) {
@@ -1153,9 +1163,15 @@ $(function () {
 
                                 // 受け取ったログをtoastrで表示
                                 let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, newState.side));
-                                let msg = targetLogs.map((log) => log.body).join('<br>');
-                                let name = (targetLogs[0].side === 'watcher' ? (newState.board.watchers[targetLogs[0].watcherSessionId] ? newState.board.watchers[targetLogs[0].watcherSessionId].name : '?') : st.board.playerNames[targetLogs[0].side]);
-                                toastr.success(msg, `${name}:`, { toastClass: 'toast chat' });
+                                // ID別にグループ化 (グループのキーは p1 / p2 / 観戦者セッションIDのいずれか)
+                                let grouped = _.groupBy(targetLogs, (log: state.ChatLogRecord) => (log.side === 'watcher' ? log.watcherSessionId : log.side));
+                                for (let key in grouped) {
+                                    let logsInGroup = grouped[key];
+                                    let isPlayer = (key === 'p1' || key === 'p2');
+                                    let name = (isPlayer ? newState.board.playerNames[key] : logsInGroup[0].watcherName);
+                                    let msg = logsInGroup.map((log) => log.body).join('<br>');
+                                    toastr.success(msg, `${name}:`, { toastClass: 'toast chat' });
+                                }
                             }
                         });
 
@@ -1166,7 +1182,7 @@ $(function () {
                             console.log(source, "notifyLogs onSnapshot: ");
 
                             let newState = appActions.getState();
-                            let appendedLogs = logChangeProcess(querySnapshot, newState.notifyLog);
+                            let appendedLogs = getAppendedLogs(querySnapshot, newState.notifyLog);
 
                             // 新しいログがあれば
                             if (appendedLogs.length >= 1) {
@@ -1176,15 +1192,20 @@ $(function () {
 
                                 // 受け取ったログをtoastrで表示
                                 let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, newState.side));
-                                let msg = targetLogs.map((log) => log.body).join('<br>');
-                                let name = newState.board.playerNames[targetLogs[0].side];
+                                // ID別にグループ化 (グループのキーは p1 / p2のいずれか)
+                                let grouped = _.groupBy(targetLogs, (log: state.NotifyLogRecord) => log.side);
+                                for (let key in grouped) {
+                                    let logsInGroup = grouped[key];
+                                    let name = newState.board.playerNames[key];
+                                    let msg = logsInGroup.map((log) => log.body).join('<br>');
 
-                                toastr.info(msg, t('NAMEより通知', { name: name }), {
-                                    timeOut: 0
-                                    , extendedTimeOut: 0
-                                    , tapToDismiss: false
-                                    , closeButton: true
-                                });
+                                    toastr.info(msg, t('NAMEより通知', { name: name }), {
+                                        timeOut: 0
+                                        , extendedTimeOut: 0
+                                        , tapToDismiss: false
+                                        , closeButton: true
+                                    });
+                                }
                             }
                         });
 
@@ -1195,13 +1216,13 @@ $(function () {
                             console.log(source, "watchers onSnapshot: ");
                             let st = appActions.getState();
 
-                            let guestInfo: { [sessionId: string]: WatcherInfo } = {};
+                            let watcherInfo: { [sessionId: string]: state.WatcherInfo } = {};
                             querySnapshot.docs.forEach(d => {
-                                guestInfo[d.id] = {name: d.data().name, online: true};
+                                watcherInfo[d.id] = {name: d.data().name};
                             });
 
                             // ステートの観戦者情報を更新
-                            appActions.setWatcherInfo({ watchers: guestInfo });
+                            appActions.setWatcherInfo({ watchers: watcherInfo });
                         });
                 });
 

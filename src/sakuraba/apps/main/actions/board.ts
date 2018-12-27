@@ -184,11 +184,18 @@ export default {
     },
 
     /** 観戦者情報をセット */
-    setWatcherInfo: (p: {watchers: {[sessionId: string]: WatcherInfo}, currentWatcherSessionId?: string}) => (state: state.State) => {
+    setWatcherInfo: (p: {watchers: {[sessionId: string]: state.WatcherInfo}}) => (state: state.State) => {
         let newBoard = _.merge({}, state.board);
         newBoard.watchers = p.watchers;
         
-        return {board: newBoard, currentWatcherSessionId: (p.currentWatcherSessionId === undefined ? null : p.currentWatcherSessionId)} as Partial<state.State>;
+        return {board: newBoard} as Partial<state.State>;
+    },
+
+    /** 自身の観戦者IDをセット */
+    setCurrentWatcherSessionId: (currentWatcherSessionId: string) => (state: state.State) => {
+        let newBoard = _.merge({}, state.board);
+
+        return { currentWatcherSessionId: currentWatcherSessionId } as Partial<state.State>;
     },
 
     /** 指定したサイドのメガミを設定する */

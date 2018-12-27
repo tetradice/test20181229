@@ -171,8 +171,9 @@ export interface LogRecord {
     no: number;
     type: 'c' | 'a' | 'n';
     time: string; // momentから変換した値を渡す
-    side?: SheetSide;
-    watcherSessionId?: string;
+    side: SheetSide;
+    watcherSessionId?: string; // 観戦者の場合のみ設定
+    watcherName?: string; // 観戦者の場合のみ設定
     visibility: LogVisibility;
     indent?: boolean;
 }
@@ -217,4 +218,9 @@ export interface ActionLogCardSetNameItem {
 export interface ActionLogMegamiNameItem {
     type: 'mn';
     megami: Megami;
+}
+
+/** 観戦者情報 */
+export interface WatcherInfo {
+    name: string;
 }

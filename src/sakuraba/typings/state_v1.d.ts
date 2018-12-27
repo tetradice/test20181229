@@ -1,5 +1,4 @@
 import { Megami } from "sakuraba";
-import { ClientSocket } from "../socket";
 
 export as namespace state_1
 
@@ -12,7 +11,7 @@ export interface State {
     boardHistoryFuture: BoardHistoryItem[];
 
     zoom: number;
-    socket?: ClientSocket;
+    socket?: any;
     tableId?: string;
 
     /** 自分の席位置 (p1/p2/観戦者) */
@@ -153,4 +152,10 @@ export interface LogRecord {
     side?: SheetSide;
     watcherSessionId?: string;
     visibility: LogVisibility;
+}
+
+/** 観戦者情報 */
+export interface WatcherInfo {
+    name: string;
+    online: boolean;
 }
