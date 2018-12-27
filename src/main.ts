@@ -1083,7 +1083,10 @@ $(function () {
                             console.log(source, "table onSnapshot data: ", doc.data());
                             if (!doc.metadata.hasPendingWrites) {
                                 let tableData = doc.data() as store.Table;
-                                appActions.setBoard(tableData.board);
+                                // 自分以外による変更であれば更新
+                                if(tableData.updatedBy !== params.side){
+                                    appActions.setBoard(tableData.board);
+                                }
                             }
                         });
 
