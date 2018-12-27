@@ -46,8 +46,8 @@ if(process.env.ENVIRONMENT === 'development'){
 }
 
 i18next
-  .use(LocizeBackend)
-  //.use(i18nextMiddleware.LanguageDetector)
+  .use(FilesystemBackend)
+  .use(i18nextMiddleware.LanguageDetector)
   .init({
     defaultNS: 'common'
     , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'about-window', 'toppage']
@@ -57,8 +57,7 @@ i18next
     , fallbackLng: false
     , parseMissingKeyHandler: (k: string) => `[${k}]`
     , backend: {
-      projectId: '5dfcd5bf-69f5-4e2c-b607-66b6ad4836ec'
-      , referenceLng: 'ja'
+      loadPath: './locales/{{lng}}/{{ns}}.json'
     }
   });
 

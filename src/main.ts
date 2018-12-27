@@ -1,6 +1,7 @@
 import i18next, { t } from 'i18next';
 import languageDetector from 'i18next-browser-languagedetector';
-import LocizeBackend from 'i18next-locize-backend';
+// import LocizeBackend from 'i18next-locize-backend';
+import XHRBackend from 'i18next-xhr-backend';
 import _ from "lodash";
 import * as randomstring from 'randomstring';
 import * as apps from "sakuraba/apps";
@@ -42,8 +43,9 @@ $(function () {
     try {
         // 言語設定の初期化。初期化完了後にメイン処理に入る
         i18next
-            .use(LocizeBackend)
-            // .use(languageDetector)
+            //.use(LocizeBackend)
+            .use(XHRBackend)
+            .use(languageDetector)
             .init({
                 defaultNS: 'common'
                 , lng: params.lang
@@ -51,11 +53,12 @@ $(function () {
                 , load: 'currentOnly' // 対象となった言語のみ読み込む
                 , debug: false
                 , parseMissingKeyHandler: (k: string) => `[${k}]`
-                , fallbackLng: false
+                , fallbackLng: 'ja'
                 , backend: {
-                    projectId: '5dfcd5bf-69f5-4e2c-b607-66b6ad4836ec'
-                    , referenceLng: 'ja'
+                    allowMultiLoading: true
+                    , loadPath: '/locales/resources.json?lng={{lng}}&ns={{ns}}',
                 }
+
             }, function () {
 
                 // 初期ステートを生成

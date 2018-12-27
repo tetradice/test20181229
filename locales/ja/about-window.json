@@ -1,0 +1,9 @@
+{
+  "version": "version",
+  "ふるよにボードシミュレーターについて": "ふるよにボードシミュレーターについて",
+  "ライセンス": "ライセンス",
+  "ライセンス情報": "ライセンス情報",
+  "制作": "制作",
+  "制作者名HTML": "制作: ポン (<a href=\"https://twitter.com/tetradice\" target=\"_blank\">Twitter</a>)",
+  "本文HTML": "このWebサービスは開発中のものです。<br>\n意見、要望、感想、バグ報告などは、<a href=\"https://twitter.com/tetradice\" target=\"_blank\">Twitter</a>か、<a href=\"https://disboard.org/ja/server/444124341849030666\" target=\"_blank\">Discordサーバー「ふるよにミカン」</a>、もしくは<a href=\"https://its.morphball.net/projects/furuyoni_simulator/issues/new?issue[subject]=%EF%BC%88%E5%85%A5%E5%8A%9B%E4%B8%8D%E8%A6%81%EF%BC%89\" target=\"_blank\">要望・バグ報告ポスト</a>までお送りください。\n"
+}
