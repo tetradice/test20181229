@@ -4,14 +4,14 @@ import { firestore } from "firebase";
 export as namespace state;
 
 /** ステート (バージョン不明) */
-export type VersionUnspecifiedState = state_1.State | State;
+export type VersionUnspecifiedState = state_v1.State | State;
 
 /** ボード (バージョン不明) */
-export type VersionUnspecifiedBoard = state_1.Board | Board;
+export type VersionUnspecifiedBoard = state_v1.Board | Board;
 
 
 /** 設定オブジェクト (バージョン不明) */
-export type VersionUnspecifiedSetting = state_1.Setting | Setting;
+export type VersionUnspecifiedSetting = state_v1.Setting | Setting;
 
 /** ステート */
 export interface State {

@@ -1,5 +1,6 @@
 node_modules
 /.env
+/.[0-9].env
 /public/semantic/src
 /public/semantic/tasks
 /public/semantic/gulpfile.js

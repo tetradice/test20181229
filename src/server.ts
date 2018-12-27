@@ -16,6 +16,11 @@ import FilesystemBackend = require('i18next-node-fs-backend');
 import i18nextMiddleware = require('i18next-express-middleware');
 import webpackNodeExternals = require('webpack-node-externals');
 import { Base64 } from 'js-base64';
+import _ from 'lodash';
+import moment = require('moment');
+import { firestore } from 'firebase';
+import { promisify } from 'util';
+import { exists } from 'fs';
 const admin = require('firebase-admin');
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
@@ -210,10 +215,86 @@ app
   .post('/en/tables.create', (req, res) => tableCreateRoute(req, res, 'en'))
   .post('/tables.create', (req, res) => tableCreateRoute(req, res))
 
-
-  .post('/tables.create', (req, res) => {
-
+  // Redisからコンバート
+  .get('/.convert/:tableIdStart-:tableIdEnd', (req, res) => {
+    for (let i = parseInt(req.params.tableIdStart); i <= parseInt(req.params.tableIdEnd); i++){
+      convertRedisTable(i.toString());
+    }
+    res.status(200).send('Complete.');
   })
+  .get('/.convertSum/:tableIdStart-:tableIdEnd', (req, res) => {
+    // 現在の卓番号を取得
+    const getAsync = promisify(RedisClient.get).bind(RedisClient) as (key: string) => Promise<string>;
+    const llenAsync = promisify(RedisClient.llen).bind(RedisClient) as (key: string) => Promise<number>;
+    const existsAsync = promisify(RedisClient.exists).bind(RedisClient) as (key: string) => Promise<boolean>;
+
+    getAsync('sakuraba:currentTableNo').then(function(v){
+      console.log("currentTableNo: %s", v);
+      let currentTableNo = parseInt(v);
+
+      // アクションログの数をすべての卓について取得し、結果を出力する関数
+      async function getActionLogTotalCount(start: number, end: number){
+        let total = 0;
+        for (let i = start; i <= end && i <= currentTableNo; i++) {
+          if (await existsAsync(`sakuraba:tables:${i}:board`)){
+            total += 1;
+          } else {
+            console.log(`!! table ${i} board not found!`);
+          }
+
+          let c = await llenAsync(`sakuraba:tables:${i}:actionLogs`);
+          total += c;
+          console.log(`table ${i} actionLogs x${c}`);
+
+          c = await llenAsync(`sakuraba:tables:${i}:chatLogs`);
+          total += c;
+          console.log(`table ${i} chatLogs x${c}`);
+
+        }
+        console.log(`total: ${total}`);
+      }
+
+      getActionLogTotalCount(parseInt(req.params.tableIdStart), parseInt(req.params.tableIdEnd));
+    });
+    
+    res.status(200).send('Complete.');
+  })
+  .get('/.convertAll', (req, res) => {
+    let tableId: string = req.params.tableId;
+    RedisClient.HGETALL(`sakuraba:player-key-map`, (err, data) => {
+      if (data !== null) {
+        let batch: firestore.WriteBatch;
+        let op = 0;
+
+        batch = db.batch();
+        for(let key in data){
+          let rec = JSON.parse(data[key]);
+          batch.set(db.collection(StoreName.PLAYER_KEY_MAP).doc(key), { side: rec.side, tableNo: rec.tableId});
+          console.log(rec);
+          op++;
+
+          if(op >= 400){
+            batch.commit().then(function () {
+              console.log("wrote.");
+            }).catch(function (reason) {
+              res.status(400).send(reason);
+            });
+            batch = db.batch();
+          }
+        }
+        batch.commit().then(function(){
+          res.status(200).send('OK.');
+        }).catch(function(reason){
+          res.status(400).send(reason);
+        });
+
+        
+
+      }
+    });
+  })
+
+
   .post('/.error-send', (req, res) => {
     let sendgrid_username   = process.env.SENDGRID_USERNAME;
     let sendgrid_password   = process.env.SENDGRID_PASSWORD;
@@ -239,3 +320,96 @@ app
   
 
 const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
+
+
+function convertRedisTable(tableId: string){
+  getStoredBoard(tableId, (board) => {
+    getStoredActionLogs(tableId, (actionLogs) => {
+      getStoredChatLogs(tableId, (chatLogs) => {
+        console.log("convert table %s", tableId);
+        if(board){
+          let tableRef = db.collection(StoreName.TABLES).doc(tableId);
+          let newActionLogs = utils.convertV1ActionLogs(actionLogs, 1, board.watchers);
+          let newChatLogs = utils.convertV1ChatLogs(chatLogs, newActionLogs.length + 1, board.watchers);
+
+          // オペレーションのリストを作る
+          let operations: ['set' | 'delete', firestore.DocumentReference, any][] = [];
+
+          operations.push(['delete', tableRef, null]);
+          let newTable: store.Table = {
+            board: board
+            , lastLogNo: newActionLogs.length + newChatLogs.length
+            , stateDataVersion: 2
+            , updatedAt: moment().format()
+            , updatedBy: 'convertBatch'
+          };
+          operations.push(['set', tableRef, newTable]);
+
+          let logsRef = tableRef.collection(StoreName.LOGS);
+          let newLogs = (newActionLogs as state.LogRecord[]).concat(newChatLogs);
+          for (let log of newLogs) {
+            operations.push(['set', logsRef.doc(log.no.toString()), log]);
+          }
+
+          //console.log("%d operations", operations.length);
+
+          for(let i = 0; i < Math.ceil(operations.length / 100); i++){
+            //console.log(i);
+            //console.log("  - seq %d", i);
+            let batch = db.batch();
+            for (let j = 0; (i * 100 + j) < operations.length && j < 100; j++){
+              let [op, ref, data] = operations[i * 100 + j];
+              if(op === 'set'){
+                batch.set(ref, data);
+              }
+              if(op === 'delete'){
+                batch.delete(ref);
+              }
+            }
+            //batch.commit();
+          }
+          //console.log("completed.")
+        }
+      });
+    });
+  });
+}
+/** Redis上に保存されたボードデータを取得 */
+function getStoredBoard(tableId: string, callback: (board: state_v1.Board) => void) {
+  // ボード情報を取得
+  RedisClient.GET(`sakuraba:tables:${tableId}:board`, (err, json) => {
+    let boardData = JSON.parse(json) as state_v1.Board;
+
+    // カードセット情報がなければ初期値をセット
+    if (boardData && boardData.cardSet === undefined) {
+      boardData.cardSet = 'na-s2';
+    }
+
+    // コールバックを実行
+    callback(boardData);
+  });
+}
+
+/** Redis上に保存されたアクションログを取得 */
+function getStoredActionLogs(tableId: string, callback: (logs: state_v1.LogRecord[]) => void) {
+  // ログを取得
+  RedisClient.LRANGE(`sakuraba:tables:${tableId}:actionLogs`, 0, -1, (err, jsons) => {
+
+    let logs = jsons.map((json) => JSON.parse(json) as state_v1.LogRecord);
+
+    // コールバックを実行
+    callback(logs);
+  });
+}
+
+/** Redis上に保存されたチャットログを取得 */
+function getStoredChatLogs(tableId: string, callback: (logs: state_v1.LogRecord[]) => void) {
+  // ログを取得
+  RedisClient.LRANGE(`sakuraba:tables:${tableId}:chatLogs`, 0, -1, (err, jsons) => {
+
+    let logs = jsons.map((json) => JSON.parse(json) as state_v1.LogRecord);
+
+    // コールバックを実行
+    callback(logs);
+  });
+}

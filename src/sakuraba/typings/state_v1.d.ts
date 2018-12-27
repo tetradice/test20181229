@@ -1,6 +1,6 @@
 import { Megami } from "sakuraba";
 
-export as namespace state_1
+export as namespace state_v1
 
 /** ステート */
 export interface State {

@@ -1,4 +1,5 @@
 import { nl2br } from "./misc";
+import _ from "lodash";
 
 export function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery) => false | void){
     // すべてのポップアップを非表示にする
@@ -38,4 +39,52 @@ export function userInputModal(desc: string, decideCallback: (this: JQuery, $ele
     $('#INPUT-MODAL')
         .modal({closable: false, onApprove:decideCallback})
         .modal('show');
+}
+
+/** V1のアクションログを最新の形式へコンバート */
+export function convertV1ActionLogs(v1Logs: state_v1.LogRecord[], startingNo: number, watchers: {[sessionId: string]: state_v1.WatcherInfo}): state.ActionLogRecord[]{
+    let newLogs: state.ActionLogRecord[] = [];
+    let currentNo = startingNo;
+    for(let v1Log of v1Logs){
+        let newLog: state.ActionLogRecord = {
+              no: currentNo
+            , type: 'a'
+            , body: v1Log.body
+            , visibility: v1Log.visibility
+            , time: v1Log.time
+            , side: v1Log.side
+        };
+        if (v1Log.side === 'watcher') {
+            newLog.watcherSessionId = v1Log.watcherSessionId;
+            newLog.watcherName = (watchers[v1Log.watcherSessionId] ? watchers[v1Log.watcherSessionId].name : '?');
+        }
+        newLogs.push(newLog);
+        currentNo++;
+    }
+
+    return newLogs;
+}
+
+/** V1のチャットログを最新の形式へコンバート */
+export function convertV1ChatLogs(v1Logs: state_v1.LogRecord[], startingNo: number, watchers: {[sessionId: string]: state_v1.WatcherInfo}): state.ChatLogRecord[] {
+    let newLogs: state.ChatLogRecord[] = [];
+    let currentNo = startingNo;
+    for (let v1Log of v1Logs) {
+        let newLog: state.ChatLogRecord = {
+            no: currentNo
+            , type: 'c'
+            , body: v1Log.body
+            , visibility: v1Log.visibility
+            , time: v1Log.time
+            , side: v1Log.side
+        };
+        if(v1Log.side === 'watcher'){
+            newLog.watcherSessionId = v1Log.watcherSessionId;
+            newLog.watcherName = (watchers[v1Log.watcherSessionId] ? watchers[v1Log.watcherSessionId].name : '?');
+        }
+        newLogs.push(newLog);
+        currentNo++;
+    }
+
+    return newLogs;
 }
