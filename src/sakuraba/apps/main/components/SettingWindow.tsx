@@ -5,6 +5,7 @@ import { ActionsType } from "../actions";
 import { ZIndex } from "sakuraba/const";
 import { t } from "i18next";
 import { isJsxClosingFragment } from "typescript";
+import i18next = require("i18next");
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -48,21 +49,43 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
 
         const imageEnabledChange = (e: Event) => {
             actions.setCardImageEnabled($(e.target).val() === 'en');
+
+            // ローカルストレージに保存
             localStorage.setItem('Setting', JSON.stringify(actions.getState().setting));
+        };
+
+        const languageChange = (e: Event) => {
+            let newLanguage = $(e.target).val() as Language;
+
+            // 処理前にローダーを表示して言語をロード
+            $('#LOADER').addClass('active');
+            i18next.loadLanguages(newLanguage, () => {
+                // i18nextの言語を変更
+                i18next.changeLanguage(newLanguage);
+
+                // 言語設定の変更
+                actions.setLanguage(newLanguage);
+
+                // ローカルストレージに保存
+                localStorage.setItem('Setting', JSON.stringify(actions.getState().setting));
+
+                $('#LOADER').removeClass('active');
+            });
+
         };
         
         let cardImageSelectArea: hyperapp.Children = null;
-        if(state.setting.language.ui === 'en'){
-            cardImageSelectArea = (
-                <div class="inline field">
-                    <label>{t('カード画像の表示')}</label>
-                    <select class="ui dropdown" onchange={imageEnabledChange}>
-                        <option value="">{t('カード画像-なし')}</option>
-                        <option value="en" selected={state.setting.cardImageEnabledTestEn}>{t('カード画像-英語')}</option>
-                    </select>
-                </div>
-            );
-        }
+        // if(state.setting.language.ui === 'en'){
+        //     cardImageSelectArea = (
+        //         <div class="inline field">
+        //             <label>{t('カード画像の表示')}</label>
+        //             <select class="ui dropdown" onchange={imageEnabledChange}>
+        //                 <option value="">{t('カード画像-なし')}</option>
+        //                 <option value="en" selected={state.setting.cardImageEnabledTestEn}>{t('カード画像-英語')}</option>
+        //             </select>
+        //         </div>
+        //     );
+        // }
 
         return (
             <div id="SETTING-WINDOW"
@@ -77,7 +100,14 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                             <label>{t('メガミのフェイスアップ画像表示')}</label>
                         </div>
                     </div>
-
+                    <div class="inline field">
+                        <label>{t('表示言語')}</label>
+                        <select class="ui dropdown" onchange={languageChange}>
+                            <option value="ja" selected={state.setting.language.ui === 'ja'}>日本語</option>
+                            <option value="en" selected={state.setting.language.ui === 'en'}>English</option>
+                            <option value="zh-Hans-CN" selected={state.setting.language.ui === 'zh-Hans-CN'}>简体中文</option>
+                        </select>
+                    </div>
                     {cardImageSelectArea}
 
                 </form>

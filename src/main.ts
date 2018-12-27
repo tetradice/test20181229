@@ -1006,12 +1006,35 @@ $(function () {
                     // ユーザー設定のセット
                     let settingJson = localStorage.getItem('Setting');
                     if (settingJson) {
-                        let newSetting = JSON.parse(settingJson) as state.VersionUnspecifiedSetting;
+                        console.log("Setting: ", settingJson);
+                        let gotSetting = JSON.parse(settingJson) as state.VersionUnspecifiedSetting;
                         // 設定の強制上書き
-                        if (newSetting['settingDataVersion']){
-                            (newSetting as state.Setting).language = { allEqual: true, ui: params.lang, uniqueName: params.lang, cardText: params.lang };
+                        // if (newSetting['settingDataVersion']){
+                        //     (newSetting as state.Setting).language = { allEqual: true, ui: params.lang, uniqueName: params.lang, cardText: params.lang };
+                        // }
+                        // 設定のコンバート
+                        let oldSetting = appActions.getState().setting;
+                        let newSetting: state.Setting;
+                        if(gotSetting['settingDataVersion']){
+                            newSetting = (gotSetting as state.Setting);
+                        } else {
+                            newSetting = oldSetting;
+                            newSetting.megamiFaceViewMode = (gotSetting as state_v1.Setting).megamiFaceViewMode;
                         }
+
                         appActions.setSetting(newSetting);
+
+                        // 言語設定が異なる場合はロードする
+                        if(newSetting.language.ui !== oldSetting.language.ui){
+                            let newLanguage = newSetting.language.ui;
+                            i18next.loadLanguages(newLanguage, () => {
+                                // i18nextの言語を変更
+                                i18next.changeLanguage(newLanguage);
+
+                                // 言語設定の変更
+                                appActions.setLanguage(newLanguage);
+                            });
+                        };
                     }
 
                     // ボード情報のセット
@@ -1041,9 +1064,6 @@ $(function () {
 
                             // DBに名前を保存
                             db.collection(StoreName.TABLES).doc(params.tableId).collection(StoreName.WATCHERS).doc(sessionId).set({ name: watcherName }).then(function () {
-                                localStorage.setItem(`table${params.tableId}:watcherSessionId`, sessionId);
-                                console.log("append watcher: ", sessionId, watcherName);
-                                
                                 // 現在のセッションIDを記憶
                                 appActions.setCurrentWatcherSessionId(sessionId);
 
@@ -1141,7 +1161,6 @@ $(function () {
 
                                 // ログ追加
                                 appActions.appendReceivedActionLogs(appendedLogs);
-                                console.log(appendedLogs);
 
                                 // 受け取ったログをtoastrで表示
                                 let targetLogs = appendedLogs.filter((log) => utils.logIsVisible(log, newState.side));
@@ -1235,8 +1254,6 @@ $(function () {
                                 querySnapshot.docs.forEach(d => {
                                     watcherInfo[d.id] = {name: d.data().name};
                                 });
-                                console.log(st.currentWatcherSessionId);
-                                console.log(watcherInfo);
 
                                 // ステートの観戦者情報を更新
                                 appActions.setWatcherInfo({ watchers: watcherInfo });

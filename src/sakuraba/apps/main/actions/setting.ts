@@ -1,10 +1,11 @@
 import _ from "lodash";
 import i18next = require("i18next");
 import * as utils from "sakuraba/utils";
+import { ActionsType } from ".";
 
 export default {
     /** 設定を上書き */
-    setSetting: (newSetting: state.VersionUnspecifiedSetting) => (state: state.State) => {
+    setSetting: (newSetting: state.VersionUnspecifiedSetting) => (state: state.State, actions: ActionsType) => {
         // バージョンで判定
         if(newSetting['settingDataVersion'] === undefined){
             // バージョン1 -> 2へのマイグレーション
@@ -24,7 +25,12 @@ export default {
         newSetting.megamiFaceViewMode = value;
         return {setting: newSetting} as Partial<state.State>;
     },
-
+    /** 言語を設定する */
+    setLanguage: (value: Language) => (state: state.State) => {
+        let newSetting = _.assign({}, state.setting);
+        newSetting.language = {allEqual: true, ui: value, cardText: value, uniqueName: value};
+        return { setting: newSetting } as Partial<state.State>;
+    },
     /** カード画像表示ON/OFFを設定する */
     setCardImageEnabled: (value: boolean) => (state: state.State) => {
         let newSetting = _.assign({}, state.setting);
