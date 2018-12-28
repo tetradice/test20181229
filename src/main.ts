@@ -1,7 +1,8 @@
 import i18next, { t } from 'i18next';
 import languageDetector from 'i18next-browser-languagedetector';
 // import LocizeBackend from 'i18next-locize-backend';
-import XHRBackend from 'i18next-xhr-backend';
+import FetchBackend from 'i18next-fetch-backend';
+import BackendAdapter from 'i18next-multiload-backend-adapter';
 import _ from "lodash";
 import * as randomstring from 'randomstring';
 import * as apps from "sakuraba/apps";
@@ -44,21 +45,24 @@ $(function () {
         // 言語設定の初期化。初期化完了後にメイン処理に入る
         i18next
             //.use(LocizeBackend)
-            .use(XHRBackend)
+            .use(BackendAdapter)
             .use(languageDetector)
             .init({
                 defaultNS: 'common'
-                , lng: params.lang
                 , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'miniquiz']
-                , load: 'currentOnly' // 対象となった言語のみ読み込む
-                , debug: false
+                , load: 'languageOnly' // 言語コード分のみ読み込む
+                , preload: ['ja', 'en', 'zh'] // 対応しているすべての言語を先に読み込んでおく
+                , debug: true
                 , parseMissingKeyHandler: (k: string) => `[${k}]`
                 , fallbackLng: 'ja'
                 , backend: {
-                    allowMultiLoading: true
-                    , loadPath: '/locales/resources.json?lng={{lng}}&ns={{ns}}',
+                      backend: FetchBackend
+                    , backendOption: {
+                          allowMultiLoading: true
+                        , loadPath: '/locales/resources.json?lng={{lng}}&ns={{ns}}'
+                      }
                 }
-
+                
             }, function () {
 
                 // 初期ステートを生成

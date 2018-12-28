@@ -396,10 +396,6 @@
   dependencies:
     "@types/i18next" "^2"
 
-"@types/i18next-xhr-backend@^1.4.1":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@types/i18next-xhr-backend/-/i18next-xhr-backend-1.4.1.tgz#9da90a5e3086014d09c612b05e11a77170d30277"
-
 "@types/i18next@*":
   version "12.1.0"
   resolved "https://registry.yarnpkg.com/@types/i18next/-/i18next-12.1.0.tgz#7c3fd3dbe03f9531147033773bbd0ca4f474a180"
@@ -3250,9 +3246,17 @@ i18next-express-middleware@^1.5.0:
   dependencies:
     cookies "0.7.1"
 
+i18next-fetch-backend@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/i18next-fetch-backend/-/i18next-fetch-backend-2.0.0.tgz#6f62c3419ad824f9471baef9d5adf2eccc9d1ca4"
+
 i18next-locize-backend@^1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/i18next-locize-backend/-/i18next-locize-backend-1.6.0.tgz#4a95c19fa2bee623c1d61ce5a80a76a123f7ff92"
+
+i18next-multiload-backend-adapter@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/i18next-multiload-backend-adapter/-/i18next-multiload-backend-adapter-0.1.1.tgz#8351b4f56d317d4b626c7eb6fdd15a66b501face"
 
 i18next-node-fs-backend@^2.1.0:
   version "2.1.0"
@@ -3266,10 +3270,6 @@ i18next-node-locize-backend@^2.4.1:
   resolved "https://registry.yarnpkg.com/i18next-node-locize-backend/-/i18next-node-locize-backend-2.4.1.tgz#0fbe02352bea3af023df8c45b095790b8818a1c0"
   dependencies:
     request "2.79.0"
-
-i18next-xhr-backend@^1.5.1:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/i18next-xhr-backend/-/i18next-xhr-backend-1.5.1.tgz#50282610780c6a696d880dfa7f4ac1d01e8c3ad5"
 
 i18next@^12.0.0:
   version "12.0.0"
