@@ -35,7 +35,7 @@ $(function () {
                 if (tableHistory.length >= 1) {
                     tableHistory.forEach(function (data) {
                         var dt = new Date(data.time);
-                        $('.ui.accordion').append('<div class="title"><i class="dropdown icon"></i>' + moment(dt).format('YYYY/M/D HH:mm:ss') + t('toppage:(TIME)に作成した卓') + '</div>');
+                        $('.ui.accordion').append('<div class="title"><i class="dropdown icon"></i>' + t('toppage:TIMEに作成した卓', { time: moment(dt).format('YYYY/M/D HH:mm:ss') }) + '</div>');
                         $('.ui.accordion').append(`<div class="content">${t('toppage:プレイヤー1の参加用URL')}: <a target="_blank" href="` + data.p1Url + '">' + data.p1Url + `</a><br />${t('toppage:プレイヤー2の参加用URL')}: <a target="_blank" href="` + data.p2Url + '">' + data.p2Url + `</a><br />${t('toppage:観戦用URL')}: <a target="_blank" href="` + data.watchUrl + '">' + data.watchUrl + '</a><br /></div>');
                     });
                     $('.ui.accordion').show();
@@ -59,7 +59,7 @@ $(function () {
                         localStorage.setItem("tableHistory", JSON.stringify(tableHistory));
 
                         $('.ui.accordion').prepend(`<div class="content">${t('toppage:プレイヤー1の参加用URL')}: <a target="_blank" href="` + pushedData.p1Url + '">' + pushedData.p1Url + `</a><br />${t('toppage:プレイヤー2の参加用URL')}: <a target="_blank" href="` + pushedData.p2Url + '">' + pushedData.p2Url + `</a><br />${t('toppage:観戦用URL')}: <a target="_blank" href="` + pushedData.watchUrl + '">' + pushedData.watchUrl + '</a><br /></div>');
-                        $('.ui.accordion').prepend('<div class="title"><i class="dropdown icon"></i>' + moment(pushedData.time).format('YYYY/M/D HH:mm:ss') + t('toppage:(TIME)に作成した卓') + '</div>');
+                        $('.ui.accordion').prepend('<div class="title"><i class="dropdown icon"></i>' + t('toppage:TIMEに作成した卓', { time: moment(pushedData.time).format('YYYY/M/D HH:mm:ss')}) + '</div>');
 
                         $('.ui.loader').removeClass('active');
 

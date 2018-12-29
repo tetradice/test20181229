@@ -1,7 +1,7 @@
 {
-  "(TIME)に作成した卓": "A board created on",
   "Internet Explorer、タブレット、スマホには対応しておりません。": "It does not correspond to Internet Explorer, tablet, and smartphone.",
   "PC版のブラウザ （Google Chrome, Edge, FireFox, Opera）": "PC version of browser (Google Chrome, Edge, FireFox, Opera)",
+  "TIMEに作成した卓": "A board created on {{time}}",
   "ver": "ver",
   "※Google Chrome推奨": "※ Google Chrome recommended",
   "※履歴はPC（端末）ごとに記録されており、ほかの人には見えません。": "※ History is recorded for each PC (terminal), it is not visible to other people.",
