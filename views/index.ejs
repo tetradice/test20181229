@@ -39,8 +39,21 @@
       <div class="ui fixed menu">
           <div class="ui container">
             <div class="header item">
-                <%- t('toppage:ふるよにボードシミュレーター β版') %> <span style="color: silver">(<%- t('toppage:ver') %> <%- version %>)</span>
+                <span><%- t('toppage:ふるよにボードシミュレーター β版') %></span>
+                <span style="color: silver">&nbsp;(<%- t('toppage:ver') %> <%- version %>)</span>
             </div>
+            <div class="right menu">
+              <div class="ui simple dropdown item" style="border-right: 1px solid rgba(34,36,38,.1);">
+                言語 / Language
+                <i class="dropdown icon"></i>
+                <div class="menu">
+                  <a class="item" href="?lng=ja"><i class="check icon" style="visibility: <%= (lang === 'ja' ? 'visible' : 'hidden') %>;"></i>日本語</a>
+                  <a class="item" href="?lng=zh-hans"><i class="check icon" style="visibility: <%= (lang === 'zh-Hans' ? 'visible' : 'hidden') %>;"></i>简体中文</a>
+                  <a class="item" href="?lng=en"><i class="check icon" style="visibility: <%= (lang === 'en' ? 'visible' : 'hidden') %>;"></i>English</a>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
         <div class="ui main container">
@@ -48,7 +61,7 @@
           <div class="ui grid">
             <div class="eight wide column">
               <button class="ui primary button" id="NEW-BOARD-BUTTON"><%- t('toppage:新しい卓を作る') %></button>
-              <p><%- i18next.t('toppage:新しい卓を作り、自分や他の人が参加できる状態にします。') %><br><%- t('toppage:（ユーザー登録は不要です）') %></p>
+              <p><%- t('toppage:新しい卓を作り、自分や他の人が参加できる状態にします。') %><br><%- t('toppage:（ユーザー登録は不要です）') %></p>
         
               <div class="ui segment" id="RESULT-AREA" style="display: none; overflow: auto;">
                 <p><%- t('toppage:新しい卓を作成しました。下記のURLにアクセスすることで、決闘への参加や観戦が可能です。') %></p>
@@ -263,7 +276,7 @@
                 <dd>α版 0.1.0をリリース</dd>
               </dl>
               <% } else { %>
-              <p><%- t('toppage:更新履歴は日本語版のトップページを参照してください。') %></p>
+                <p><a href="?lng=ja"><%- t('toppage:更新履歴は日本語版のトップページを参照してください。') %></a></p>
               <% } %>
             </div>
           </div>

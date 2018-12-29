@@ -1,26 +1,23 @@
 'use strict';
 
 import express = require('express');
-import socketIO = require('socket.io');
 import * as path from 'path';
 import * as redis from 'redis';
 import * as randomstring from 'randomstring';
-import * as sakuraba from 'sakuraba';
 import * as utils from 'sakuraba/utils';
 import nodemailer from 'nodemailer';
 import bodyParser from 'body-parser';
 import { VERSION, StoreName } from 'sakuraba/const';
 import i18next = require('i18next');
-import LocizeBackend = require('i18next-node-locize-backend');
+// import LocizeBackend = require('i18next-node-locize-backend');
 import FilesystemBackend = require('i18next-node-fs-backend');
 import i18nextMiddleware = require('i18next-express-middleware');
-import webpackNodeExternals = require('webpack-node-externals');
+// import webpackNodeExternals = require('webpack-node-externals');
 import { Base64 } from 'js-base64';
 import _ from 'lodash';
 import moment = require('moment');
 import { firestore } from 'firebase';
 import { promisify } from 'util';
-import { exists } from 'fs';
 const admin = require('firebase-admin');
 
 const RedisClient = redis.createClient(process.env.REDIS_URL);
@@ -51,13 +48,16 @@ i18next
   .init({
     defaultNS: 'common'
     , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'about-window', 'toppage']
-    , lng: 'ja'
-    , load: 'currentOnly' // 対象となった言語のみ読み込む
+    , load: 'all' // 対象となった言語のみ読み込む
     , debug: false
     , fallbackLng: false
     , parseMissingKeyHandler: (k: string) => `[${k}]`
     , backend: {
       loadPath: './locales/{{lng}}/{{ns}}.json'
+    }
+
+    , detection: {
+      caches: ['cookie']
     }
   });
 
@@ -100,14 +100,10 @@ app
         res.end('NotFound : ' + req.path);
       }
     });
-
-    // RedisClient.HGET(`sakuraba:player-key-map`, req.params.key, (err, dataJson) => {
-
-    // });
   };
 
 // 卓作成処理
-const tableCreateRoute = (req: express.Request, res: express.Response, langCode?: string) => {
+const tableCreateRoute = (req: express.Request, res: express.Response) => {
   // 現在の卓番号を取得
   let metaRef = db.collection(StoreName.METADATA).doc('0');
   db.runTransaction((tran) => {
@@ -158,9 +154,9 @@ const tableCreateRoute = (req: express.Request, res: express.Response, langCode?
         urlBase = req.protocol + '://' + req.hostname + ':' + PORT;
       }
 
-      let p1Url = `${urlBase}/${langCode ? langCode + '/' : ''}play/${p1Key}`;
-      let p2Url = `${urlBase}/${langCode ? langCode + '/' : ''}play/${p2Key}`;
-      let watchUrl = `${urlBase}/${langCode ? langCode + '/' : ''}watch/${newTableNo}`;
+      let p1Url = `${urlBase}/play/${p1Key}`;
+      let p2Url = `${urlBase}/play/${p2Key}`;
+      let watchUrl = `${urlBase}/watch/${newTableNo}`;
 
       // 生成したURL情報を返す
       res.json({ p1Url: p1Url, p2Url: p2Url, watchUrl: watchUrl });
@@ -171,47 +167,20 @@ const tableCreateRoute = (req: express.Request, res: express.Response, langCode?
 
 app
   // 卓URL (プレイヤー)
-  .get('/zh/play/:key', (req, res) => {
-    ((req as any).i18n as i18next.i18n).changeLanguage('zh-Hans-CN');
-    playerRoute(req, res, 'zh-Hans-CN');
-  })
-  .get('/en/play/:key', (req, res) => {
-    ((req as any).i18n as i18next.i18n).changeLanguage('en');
-    playerRoute(req, res, 'en');
-  })
   .get('/play/:key', (req, res) => {
-    ((req as any).i18n as i18next.i18n).changeLanguage('ja');
     playerRoute(req, res, 'ja');
   })
   // 卓URL (観戦者用)
-  .get('/zh/watch/:tableId', (req, res) => {
-    ((req as any).i18n as i18next.i18n).changeLanguage('zh-Hans-CN');
-    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'zh-Hans-CN', firebaseAuthInfo: firebaseAuthInfo})
-  })
-  .get('/en/watch/:tableId', (req, res) => {
-    ((req as any).i18n as i18next.i18n).changeLanguage('en');
-    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'en', firebaseAuthInfo: firebaseAuthInfo })
-  })
   .get('/watch/:tableId', (req, res) => {
-    ((req as any).i18n as i18next.i18n).changeLanguage('ja');
     res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja', firebaseAuthInfo: firebaseAuthInfo})
   })
   // トップページ
-  .get('/zh', (req, res) => {
-    ((req as any).i18n as i18next.i18n).changeLanguage('zh-Hans-CN');
-    res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'zh-Hans-CN', i18next: i18next });
-  })
-  .get('/en', (req, res) => {
-    ((req as any).i18n as i18next.i18n).changeLanguage('en');
-    res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'en', i18next: i18next });
-  })
+
   .get('/', (req, res) => {
-    ((req as any).i18n as i18next.i18n).changeLanguage('ja');
-    res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja', i18next: i18next });
+    let i18n = ((req as any).i18n as i18next.i18n);
+    res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: i18n.language });
   })
   // 新しい卓の作成
-  .post('/zh/tables.create', (req, res) => tableCreateRoute(req, res, 'zh'))
-  .post('/en/tables.create', (req, res) => tableCreateRoute(req, res, 'en'))
   .post('/tables.create', (req, res) => tableCreateRoute(req, res))
 
   // Redisからコンバート

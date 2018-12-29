@@ -1,6 +1,7 @@
 import i18next, { t } from 'i18next';
-import languageDetector from 'i18next-browser-languagedetector';
-import LocizeBackend from 'i18next-locize-backend';
+//import LocizeBackend from 'i18next-locize-backend';
+import FetchBackend from 'i18next-fetch-backend';
+import BackendAdapter from 'i18next-multiload-backend-adapter';
 import moment = require('moment');
 
 declare var params: {
@@ -12,18 +13,19 @@ $(function () {
     try {
         // 言語設定の初期化。初期化完了後にメイン処理に入る
         i18next
-            .use(LocizeBackend)
-            // .use(languageDetector)
+            .use(BackendAdapter)
             .init({
                 defaultNS: 'common'
-                , lng: params.lang
+                , lng: params.lang // 言語設定はexpressが判別したものを引き継ぐ
                 , ns: ['common', 'toppage']
-                , load: 'currentOnly' // 対象となった言語のみ読み込む
                 , parseMissingKeyHandler: (k: string) => `[${k}]`
                 , fallbackLng: false
                 , backend: {
-                    projectId: '5dfcd5bf-69f5-4e2c-b607-66b6ad4836ec'
-                    , referenceLng: 'ja'
+                    backend: FetchBackend
+                    , backendOption: {
+                        allowMultiLoading: true
+                        , loadPath: '/locales/resources.json?lng={{lng}}&ns={{ns}}'
+                    }
                 }
             }, function () {
                 var tableHistory = JSON.parse(localStorage.getItem('tableHistory'));

@@ -50,7 +50,6 @@ $(function () {
             .init({
                 defaultNS: 'common'
                 , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'miniquiz']
-                , load: 'languageOnly' // 言語コード分のみ読み込む
                 , preload: ['ja', 'en', 'zh'] // 対応しているすべての言語を先に読み込んでおく
                 , debug: true
                 , parseMissingKeyHandler: (k: string) => `[${k}]`
