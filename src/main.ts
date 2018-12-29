@@ -42,6 +42,35 @@ function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery
 
 $(function () {
     try {
+
+        // Local Storageからユーザー設定を取得
+        let storedSetting: state.VersionUnspecifiedSetting = null;
+        let settingJson = localStorage.getItem('Setting');
+        if (settingJson) {
+            console.log("Setting: ", settingJson);
+            storedSetting = JSON.parse(settingJson) as state.VersionUnspecifiedSetting;
+
+            // 取得したユーザー設定がV1のものなら、設定のコンバート
+            let newSetting: state.Setting;
+            if (storedSetting['settingDataVersion']) {
+                newSetting = (storedSetting as state.Setting);
+            } else {
+                newSetting = utils.createInitialState().setting; // 初期設定を元にする
+                newSetting.megamiFaceViewMode = (storedSetting as state_v1.Setting).megamiFaceViewMode;
+            }
+        }
+
+        // 初期言語の決定
+        // ユーザーが設定画面で設定した言語があれば、その言語を使用
+        // なければサーバー側が判別した言語を共用
+        let startLanguage: Language = params.lang;
+        if (storedSetting && storedSetting['stateDataVersion']){
+            let storedUILang = (storedSetting as state.Setting).language.ui;
+            if(storedUILang){
+                startLanguage = storedUILang;
+            }
+        }
+
         // 言語設定の初期化。初期化完了後にメイン処理に入る
         i18next
             //.use(LocizeBackend)
@@ -50,6 +79,7 @@ $(function () {
             .init({
                 defaultNS: 'common'
                 , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'miniquiz']
+                , lng: startLanguage
                 , preload: ['ja', 'en', 'zh'] // 対応しているすべての言語を先に読み込んでおく
                 , debug: true
                 , parseMissingKeyHandler: (k: string) => `[${k}]`
@@ -1008,40 +1038,6 @@ $(function () {
                     actionLogs = allLogs.filter(x => x.type === 'a') as state.ActionLogRecord[];
                     chatLogs = allLogs.filter(x => x.type === 'c') as state.ChatLogRecord[];
                     notifyLogs = allLogs.filter(x => x.type === 'n') as state.NotifyLogRecord[];
-
-                    // ユーザー設定のセット
-                    let settingJson = localStorage.getItem('Setting');
-                    if (settingJson) {
-                        console.log("Setting: ", settingJson);
-                        let gotSetting = JSON.parse(settingJson) as state.VersionUnspecifiedSetting;
-                        // 設定の強制上書き
-                        // if (newSetting['settingDataVersion']){
-                        //     (newSetting as state.Setting).language = { allEqual: true, ui: params.lang, uniqueName: params.lang, cardText: params.lang };
-                        // }
-                        // 設定のコンバート
-                        let oldSetting = appActions.getState().setting;
-                        let newSetting: state.Setting;
-                        if(gotSetting['settingDataVersion']){
-                            newSetting = (gotSetting as state.Setting);
-                        } else {
-                            newSetting = oldSetting;
-                            newSetting.megamiFaceViewMode = (gotSetting as state_v1.Setting).megamiFaceViewMode;
-                        }
-
-                        appActions.setSetting(newSetting);
-
-                        // 言語設定が異なる場合はロードする
-                        if(newSetting.language.ui !== oldSetting.language.ui){
-                            let newLanguage = newSetting.language.ui;
-                            i18next.loadLanguages(newLanguage, () => {
-                                // i18nextの言語を変更
-                                i18next.changeLanguage(newLanguage);
-
-                                // 言語設定の変更
-                                appActions.setLanguage(newLanguage);
-                            });
-                        };
-                    }
 
                     // ボード情報のセット
                     appActions.setBoard(board);

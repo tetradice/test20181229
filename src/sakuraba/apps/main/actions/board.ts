@@ -632,7 +632,7 @@ export default {
                 }
 
                 // 追加ログ
-                if(p.appendLog){
+                if(p && p.appendLog){
                     actions.appendActionLog({body: p.appendLog});
                 }
 

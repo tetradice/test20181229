@@ -81,7 +81,7 @@ app
   .get('/dist/toppage.js.map', (req, res) => res.sendFile(TOPPAGE_JS_MAP));
 
   // プレイヤーとして卓URLにアクセスしたときの処理
-  const playerRoute = (req: express.Request, res: express.Response, lang: Language) => {
+  const playerRoute = (req: express.Request, res: express.Response, lang: string) => {
     // キーに対応する情報の取得を試みる
     db.collection(StoreName.PLAYER_KEY_MAP).doc(req.params.key).get().then((doc) => {
       if(doc.exists){
@@ -168,11 +168,13 @@ const tableCreateRoute = (req: express.Request, res: express.Response) => {
 app
   // 卓URL (プレイヤー)
   .get('/play/:key', (req, res) => {
-    playerRoute(req, res, 'ja');
+    let i18n = ((req as any).i18n as i18next.i18n);
+    playerRoute(req, res, i18n.language);
   })
   // 卓URL (観戦者用)
   .get('/watch/:tableId', (req, res) => {
-    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: 'ja', firebaseAuthInfo: firebaseAuthInfo})
+    let i18n = ((req as any).i18n as i18next.i18n);
+    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: i18n.language, firebaseAuthInfo: firebaseAuthInfo})
   })
   // トップページ
 
