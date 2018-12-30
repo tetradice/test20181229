@@ -44,7 +44,7 @@ export class CardData {
         if (lang === 'en') {
             return en;
         }
-        if (lang === 'zh-Hans-CN') {
+        if (lang === 'zh-Hans') {
             return zh;
         }
         return ja;
@@ -271,7 +271,7 @@ export class CardData {
                             .replace(/全+/, (str2) => `<span class='card-type-fullpower'>${str2}</span>`)
                         return `<${replaced}>`;
                     });
-                } else if (this.languageSetting.cardText === 'zh-Hans-CN') {
+                } else if (this.languageSetting.cardText === 'zh-Hans') {
                     html = html.replace(/机巧：([红蓝绿紫黄]+)+/g, (str, arg) => {
                         let replaced = arg.replace(/红+/, (str2) => `<span class='card-type-attack'>${str2}</span>`)
                             .replace(/蓝+/, (str2) => `<span class='card-type-action'>${str2}</span>`)

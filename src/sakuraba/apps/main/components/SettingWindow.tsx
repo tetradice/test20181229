@@ -105,7 +105,7 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                         <select class="ui dropdown" onchange={languageChange}>
                             <option value="ja" selected={state.setting.language.ui === 'ja'}>日本語</option>
                             <option value="en" selected={state.setting.language.ui === 'en'}>English</option>
-                            <option value="zh-Hans-CN" selected={state.setting.language.ui === 'zh-Hans-CN'}>简体中文</option>
+                            <option value="zh-Hans" selected={state.setting.language.ui === 'zh-Hans'}>简体中文</option>
                         </select>
                     </div>
                     {cardImageSelectArea}
