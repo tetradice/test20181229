@@ -7,6 +7,7 @@ export interface State {
     cards: state.Card[];
     selectedCards: state.Card[];
     zoom: number;
+    detectedLanguage: Language;
     setting: Setting;
 
     promiseResolve: (selectedCards: state.Card[]) => void;
@@ -20,6 +21,7 @@ export namespace State {
         , side: PlayerSide
         , cards: state.Card[]
         , zoom: number
+        , detectedLanguage: Language
         , setting: Setting
         , promiseResolve: (selectedCards: state.Card[]) => void
         , promiseReject: Function
@@ -31,6 +33,7 @@ export namespace State {
             , cards: cards
             , selectedCards: []
             , zoom: zoom
+            , detectedLanguage: detectedLanguage
             , setting: setting
             
             , promiseResolve: promiseResolve

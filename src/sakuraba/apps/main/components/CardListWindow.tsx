@@ -72,7 +72,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
             let cards: hyperapp.Children[] = [];
             let i = 0;
             for (let cardId of utils.getMegamiCardIds(state.cardListSelectedMegami, state.board.cardSet, null, true)) {
-                let c = new models.CardData(state.board.cardSet, cardId, state.setting.language, state.setting.cardImageEnabledTestEn);
+                let c = new models.CardData(state.board.cardSet, cardId, state.detectedLanguage, state.setting.language, state.setting.cardImageEnabledTestEn);
                 let card = utils.createCard(`cardlist-${cardId}`, cardId, null, 'p1');
                 card.openState = 'opened';
                 cards.push(
@@ -90,7 +90,7 @@ export const CardListWindow = (p: {shown: boolean}) => (state: state.State, acti
         } else {
             let trs: JSX.Element[] = [];
             for (let cardId of utils.getMegamiCardIds(state.cardListSelectedMegami, state.board.cardSet, null, true)) {
-                let c = new models.CardData(state.board.cardSet, cardId, state.setting.language, state.setting.cardImageEnabledTestEn);
+                let c = new models.CardData(state.board.cardSet, cardId, state.detectedLanguage, state.setting.language, state.setting.cardImageEnabledTestEn);
                 let typeCaptions = [];
                 if (c.types.indexOf('attack') >= 0) typeCaptions.push(<span class='card-type-attack'>{t('攻撃')}</span>);
                 if (c.types.indexOf('action') >= 0) typeCaptions.push(<span class='card-type-action'>{t('行動')}</span>);

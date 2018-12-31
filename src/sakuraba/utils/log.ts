@@ -39,13 +39,13 @@ function convertLogParamValueForState(val: LogParamValue): state.ActionLogBody {
 /**
  * ログオブジェクトを翻訳する (パラメータの中に翻訳対象オブジェクトが含まれていれば再帰的に翻訳)
  */
-export function translateLog(log: state.ActionLogBody, languageSetting: LanguageSetting): string {
+export function translateLog(log: state.ActionLogBody, detectedLanguage: Language, languageSetting: LanguageSetting): string {
     if (!log) return "";
 
     let buf = "";
     if (Array.isArray(log)) {
         // 配列が渡された場合、全要素を翻訳して結合
-        return log.map(x => translateLog(x, languageSetting)).join('');
+        return log.map(x => translateLog(x, detectedLanguage, languageSetting)).join('');
 
     } else {
         // 固定文字列
@@ -61,7 +61,7 @@ export function translateLog(log: state.ActionLogBody, languageSetting: Language
 
             let params = {};
             for (let k in log.params) {
-                params[k] = translateLog(log.params[k], languageSetting); // パラメータも再帰的に翻訳する
+                params[k] = translateLog(log.params[k], detectedLanguage, languageSetting); // パラメータも再帰的に翻訳する
             }
 
             // i18nextで翻訳した結果を返す
@@ -70,7 +70,7 @@ export function translateLog(log: state.ActionLogBody, languageSetting: Language
 
         // カード名
         if (log.type === 'cn') {
-            let cardData = new models.CardData(log.cardSet, log.cardId, languageSetting, false);
+            let cardData = new models.CardData(log.cardSet, log.cardId, detectedLanguage, languageSetting, false);
             return cardData.name;
         }
 

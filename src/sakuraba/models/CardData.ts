@@ -9,6 +9,8 @@ export class CardData {
     /** 対象のカードID */
     cardId: string;
 
+    /** サーバー側が判別した言語 */
+    detectedLanguage: Language;
     /** 言語設定 */
     languageSetting: LanguageSetting;
 
@@ -21,9 +23,18 @@ export class CardData {
     /** 傘が開いている場合の情報を使用するかどうか */
     usedOpenedCardData: boolean = false;
 
-    constructor(cardSet: CardSet, cardId: string, languageSetting: LanguageSetting, cardImageEnabled: boolean, duplicatingCardId?: string){
+    /** コンストラクタ */
+    constructor(
+          cardSet: CardSet
+        , cardId: string
+        , detectedLanguage: Language
+        , languageSetting: LanguageSetting
+        , cardImageEnabled: boolean
+        , duplicatingCardId?: string
+    ){
         this.cardSet = cardSet;
         this.cardId = cardId;
+        this.detectedLanguage = detectedLanguage;
         this.languageSetting = languageSetting;
         this.cardImageEnabled = cardImageEnabled;
         if(duplicatingCardId){
@@ -50,6 +61,24 @@ export class CardData {
         return ja;
     }
 
+    /** メガミ名、カード名の言語 */
+    get uniqueNameLanguage(): Language {
+        if(this.languageSetting.type === 'auto'){
+            return this.detectedLanguage;
+        } else {
+            return this.languageSetting.uniqueName;
+        }
+    }
+
+    /** カードテキストの言語 */
+    get cardTextLanguage(): Language {
+        if(this.languageSetting.type === 'auto'){
+            return this.detectedLanguage;
+        } else {
+            return this.languageSetting.cardText;
+        }
+    }
+
     /** メガミ */
     get megami(): CardDataItem['megami'] {
         let data = (this.duplicatingCardId ? this.duplicatingBaseData : this.baseData);
@@ -57,11 +86,11 @@ export class CardData {
     }
     /** カード名 */
     get name(): CardDataItem['name'] {
-        return this.selectText(this.languageSetting.uniqueName, this.baseData.name, this.baseData.nameZh, this.baseData.nameEn);
+        return this.selectText(this.uniqueNameLanguage, this.baseData.name, this.baseData.nameZh, this.baseData.nameEn);
     }
     /** 読み仮名 */
     get ruby(): CardDataItem['ruby'] {
-        return this.selectText(this.languageSetting.uniqueName, this.baseData.ruby, '', this.baseData.rubyEn);
+        return this.selectText(this.uniqueNameLanguage, this.baseData.ruby, '', this.baseData.rubyEn);
     }
     /** 分類 (通常/切札/Transform) */
     get baseType(): CardDataItem['baseType'] {
@@ -138,7 +167,7 @@ export class CardData {
 
     /** 説明テキスト */
     get textOpened(): CardDataItem['textOpened'] {
-        return this.selectText(this.languageSetting.uniqueName, this.baseData.textOpened, this.baseData.textOpenedZh, this.baseData.textOpenedEn);
+        return this.selectText(this.uniqueNameLanguage, this.baseData.textOpened, this.baseData.textOpenedZh, this.baseData.textOpenedEn);
     }
 
     /** 追加札かどうか(デッキ構築の時に選択できず、ゲーム開始時に追加札領域に置かれる) */
@@ -151,7 +180,7 @@ export class CardData {
     }
     /** 追加札の追加元データ */
     get extraFromData(): CardData {
-        return new CardData(this.cardSet, this.extraFrom, this.languageSetting, this.cardImageEnabled);
+        return new CardData(this.cardSet, this.extraFrom, this.detectedLanguage, this.languageSetting, this.cardImageEnabled);
     }
     /** 交換先 */
     get exchangableTo(): CardDataItem['exchangableTo'] {
@@ -160,7 +189,7 @@ export class CardData {
     
     /** 交換先データ */
     get exchangableToData(): CardData {
-        return new CardData(this.cardSet, this.exchangableTo, this.languageSetting, this.cardImageEnabled);
+        return new CardData(this.cardSet, this.exchangableTo, this.detectedLanguage, this.languageSetting, this.cardImageEnabled);
     }
 
 

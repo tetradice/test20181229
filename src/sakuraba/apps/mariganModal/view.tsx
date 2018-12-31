@@ -47,7 +47,7 @@ const view: View<State, ActionsType> = (state, actions) => {
             }
         };
         
-        cardElements.push(<Card clickableClass target={card} cardData={new models.CardData(state.cardSet, card.cardId, state.setting.language, state.setting.cardImageEnabledTestEn)} opened descriptionViewable left={left} top={top} selected={selected} selectedIndex={(selected ? selectedIndex : null)} onclick={onclick} zoom={state.zoom}></Card>);
+        cardElements.push(<Card clickableClass target={card} cardData={new models.CardData(state.cardSet, card.cardId, state.detectedLanguage, state.setting.language, state.setting.cardImageEnabledTestEn)} opened descriptionViewable left={left} top={top} selected={selected} selectedIndex={(selected ? selectedIndex : null)} onclick={onclick} zoom={state.zoom}></Card>);
     });
 
     const oncreate = (elem: HTMLElement) => {

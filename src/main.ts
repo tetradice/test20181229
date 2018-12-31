@@ -1179,7 +1179,7 @@ $(function () {
                                     let logsInGroup = grouped[key];
                                     let isPlayer = (key === 'p1' || key === 'p2');
                                     let name = (isPlayer ? newState.board.playerNames[key] : logsInGroup[0].watcherName);
-                                    let msg = logsInGroup.map((log) => utils.translateLog(log.body, newState.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
+                                    let msg = logsInGroup.map((log) => utils.translateLog(log.body, newState.detectedLanguage, newState.setting.language)).join('<br>'); // ログが多言語化に対応していれば、i18nextを通す
                                     toastr.info(msg, `${name}:`);
                                 }
                             }

@@ -58,11 +58,12 @@ const QuizTypeList: QuizType[] = [
 export class QuizMaker {
     difficult: QuizDifficult = 'normal';
     cardSet: CardSet;
-    language: LanguageSetting;
+    detectedLanguage: Language;
+    languageSetting: LanguageSetting;
 
     constructor(cardSet: CardSet, language: LanguageSetting){
         this.cardSet = cardSet;
-        this.language = language;
+        this.languageSetting = language;
     }
 
     getCardTitleHtml(cardData: models.CardData){
@@ -82,7 +83,7 @@ export class QuizMaker {
         // すべてのカード情報を取得
         let allCards: { id: string, data: models.CardData}[] = [];
         for(let cardId of ALL_CARD_ID_LIST[this.cardSet]){
-            allCards.push({ id: cardId, data: new models.CardData(this.cardSet, cardId, this.language, false)});
+            allCards.push({ id: cardId, data: new models.CardData(this.cardSet, cardId, this.detectedLanguage, this.languageSetting, false)});
         }
 
         // 変数初期化
