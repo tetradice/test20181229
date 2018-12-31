@@ -6,6 +6,7 @@ import { ZIndex } from "sakuraba/const";
 import { t } from "i18next";
 import { isJsxClosingFragment } from "typescript";
 import i18next = require("i18next");
+import _ from "lodash";
 
 // ウインドウの表示状態をローカルストレージに保存
 function saveWindowState(elem: HTMLElement){
@@ -85,7 +86,6 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
             }
 
             // 処理前にローダーを表示して言語をロード
-            $('#LOADER').addClass('active');
             i18next.loadLanguages(newLanguageSetting.ui || state.detectedLanguage, () => {
                 // i18nextの言語を変更
                 i18next.changeLanguage(newLanguageSetting.ui || state.detectedLanguage);
@@ -95,12 +95,30 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
 
                 // ローカルストレージに保存
                 localStorage.setItem('Setting', JSON.stringify(actions.getState().setting));
-
-                $('#LOADER').removeClass('active');
             });
-
         };
         
+        
+        const individualLanguageChange = (e: Event, type: keyof LanguageSetting) => {
+            let currentState = actions.getState();
+            let newLanguage = $(e.target).val() as Language;
+            let newLanguageSetting = _.extend({}, currentState.setting.language);
+            newLanguageSetting[type] = newLanguage;
+
+            // 処理前にローダーを表示して言語をロード
+            i18next.loadLanguages(newLanguageSetting.ui || currentState.detectedLanguage, () => {
+                // i18nextの言語を変更
+                i18next.changeLanguage(newLanguageSetting.ui || currentState.detectedLanguage);
+
+                // 言語設定の変更
+                actions.setLanguage(newLanguageSetting);
+
+                // ローカルストレージに保存
+                localStorage.setItem('Setting', JSON.stringify(actions.getState().setting));
+            });
+        };
+        
+
         let cardImageSelectArea: hyperapp.Children = null;
         // if(state.setting.language.ui === 'en'){
         //     cardImageSelectArea = (
@@ -120,7 +138,7 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                 <div>
                     <div class="inline field">
                         <label>{t('表示言語-UI')}</label>
-                        <select class="ui dropdown">
+                        <select class="ui dropdown" onchange={e => individualLanguageChange(e, 'ui')}>
                             <option value="ja" selected={state.setting.language.ui === 'ja'}>日本語</option>
                             <option value="en" selected={state.setting.language.ui === 'en'}>English</option>
                             <option value="zh-Hans" selected={state.setting.language.ui === 'zh-Hans'}>简体中文</option>
@@ -128,7 +146,7 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                     </div>
                     <div class="inline field">
                         <label>{t('表示言語-メガミ、カード名')}</label>
-                        <select class="ui dropdown">
+                        <select class="ui dropdown" onchange={e => individualLanguageChange(e, 'uniqueName')}>
                             <option value="ja" selected={state.setting.language.uniqueName === 'ja'}>日本語</option>
                             <option value="en" selected={state.setting.language.uniqueName === 'en'}>English</option>
                             <option value="zh-Hans" selected={state.setting.language.uniqueName === 'zh-Hans'}>简体中文</option>
@@ -136,7 +154,7 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                     </div>
                     <div class="inline field">
                         <label>{t('表示言語-カードテキスト')}</label>
-                        <select class="ui dropdown">
+                        <select class="ui dropdown" onchange={e => individualLanguageChange(e, 'cardText')}>
                             <option value="ja" selected={state.setting.language.cardText === 'ja'}>日本語</option>
                             <option value="en" selected={state.setting.language.cardText === 'en'}>English</option>
                             <option value="zh-Hans" selected={state.setting.language.cardText === 'zh-Hans'}>简体中文</option>
