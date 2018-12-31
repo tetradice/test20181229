@@ -42,8 +42,9 @@ export function createInitialState(): state.State{
       , setting: {
         settingDataVersion: 2
         , megamiFaceViewMode: 'background1'
-        , language: {allEqual: true, ui: 'ja', uniqueName: 'ja', cardText: 'ja'}
+        , language: {type: 'auto', ui: null, uniqueName: null, cardText: null}
       }
+      , detectedLanguage: null
 
       , environment: 'development'
   }

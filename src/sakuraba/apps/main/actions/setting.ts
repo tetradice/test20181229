@@ -25,12 +25,14 @@ export default {
         newSetting.megamiFaceViewMode = value;
         return {setting: newSetting} as Partial<state.State>;
     },
-    /** 言語を設定する */
-    setLanguage: (value: Language) => (state: state.State) => {
+
+    /** 言語設定を更新する */
+    setLanguage: (value: LanguageSetting) => (state: state.State) => {
         let newSetting = _.assign({}, state.setting);
-        newSetting.language = {allEqual: true, ui: value, cardText: value, uniqueName: value};
+        newSetting.language = value;
         return { setting: newSetting } as Partial<state.State>;
     },
+
     /** カード画像表示ON/OFFを設定する */
     setCardImageEnabled: (value: boolean) => (state: state.State) => {
         let newSetting = _.assign({}, state.setting);

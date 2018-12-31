@@ -18,9 +18,12 @@ import _ from 'lodash';
 import moment = require('moment');
 import { firestore } from 'firebase';
 import { promisify } from 'util';
-const admin = require('firebase-admin');
+const firebase = require('firebase');
+import 'firebase/firestore';
+// const admin = require('firebase-admin');
 
-const RedisClient = redis.createClient(process.env.REDIS_URL);
+//const RedisClient = redis.createClient(process.env.REDIS_URL);
+const RedisClient: redis.RedisClient = null;
 const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, '../index.html');
 const MAIN_JS = path.join(__dirname, 'main.js');
@@ -31,10 +34,19 @@ const browserSyncConfigurations = { "files": ["**/*.js", "views/*.ejs"] };
 
 
 let app = express();
-admin.initializeApp({
-  credential: admin.credential.cert(JSON.parse(process.env.GOOGLE_CLOUD_KEYFILE_JSON))
+// admin.initializeApp({
+firebase.initializeApp({
+  // credential: admin.credential.cert(JSON.parse(process.env.GOOGLE_CLOUD_KEYFILE_JSON))
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.FIREBASE_DATABASE_URL,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
 });
-var db: firebase.firestore.Firestore = admin.firestore();
+
+// var db: firebase.firestore.Firestore = admin.firestore();
+var db: firebase.firestore.Firestore = firebase.firestore();
 
 if(process.env.ENVIRONMENT === 'development'){
   const browserSync = require('browser-sync');
@@ -48,16 +60,12 @@ i18next
   .init({
     defaultNS: 'common'
     , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'about-window', 'toppage']
-    , load: 'all' // 対象となった言語のみ読み込む
+    , load: 'all'
     , debug: false
     , fallbackLng: false
     , parseMissingKeyHandler: (k: string) => `[${k}]`
     , backend: {
       loadPath: './locales/{{lng}}/{{ns}}.json'
-    }
-
-    , detection: {
-      caches: ['cookie']
     }
   });
 
@@ -165,21 +173,28 @@ const tableCreateRoute = (req: express.Request, res: express.Response) => {
 
 }
 
+// 言語をCookieに記憶する処理
+const setLangCookie = (lang: string, res: express.Response) => {
+  res.cookie('i18next', lang, {maxAge: 60 * 60 * 24 * 30});
+}
+
 app
   // 卓URL (プレイヤー)
   .get('/play/:key', (req, res) => {
     let i18n = ((req as any).i18n as i18next.i18n);
+    setLangCookie(i18n.language, res); // 自動判別した言語をcookieに記憶
     playerRoute(req, res, i18n.language);
   })
   // 卓URL (観戦者用)
   .get('/watch/:tableId', (req, res) => {
     let i18n = ((req as any).i18n as i18next.i18n);
+    setLangCookie(i18n.language, res); // 自動判別した言語をcookieに記憶
     res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: i18n.language, firebaseAuthInfo: firebaseAuthInfo})
   })
   // トップページ
-
   .get('/', (req, res) => {
     let i18n = ((req as any).i18n as i18next.i18n);
+    setLangCookie(i18n.language, res); // 自動判別した言語をcookieに記憶
     res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: i18n.language });
   })
   // 新しい卓の作成

@@ -20,8 +20,11 @@ type LogParamValue = string | number | state.ActionLogCardNameItem | state.Actio
 /** 言語 (この値はi18nextに設定される) */
 type Language = 'ja' | 'zh-Hans' | 'en';
 
+/** 言語タイプ (自動判別 / 全体指定 / 個別指定) */
+type LanguageType = 'auto' | 'allEqual' | 'individual';
+
 /** 言語設定オブジェクト */
-type LanguageSetting = {allEqual: boolean, ui: Language, uniqueName: Language, cardText: Language};
+type LanguageSetting = {type: LanguageType, ui: Language, uniqueName: Language, cardText: Language};
 
 
 // for webpack css-loader

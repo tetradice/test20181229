@@ -55,16 +55,43 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
         };
 
         const languageChange = (e: Event) => {
-            let newLanguage = $(e.target).val() as Language;
+            let newLanguage = $(e.target).val();
+            let newLanguageSetting: LanguageSetting;
+
+            if(newLanguage === 'auto'){
+                // 自動判別
+                newLanguageSetting = {
+                    type: 'auto'
+                  , ui: null
+                  , uniqueName: null
+                  , cardText: null
+                }
+            } else if(newLanguage === 'individual'){
+                // 個別指定
+                newLanguageSetting = {
+                    type: 'individual'
+                  , ui: state.detectedLanguage
+                  , uniqueName: state.detectedLanguage
+                  , cardText: state.detectedLanguage
+                }
+            } else {
+                // 全体指定
+                newLanguageSetting = {
+                    type: 'allEqual'
+                    , ui: newLanguage as Language
+                    , uniqueName: newLanguage as Language
+                    , cardText: newLanguage as Language
+                }
+            }
 
             // 処理前にローダーを表示して言語をロード
             $('#LOADER').addClass('active');
-            i18next.loadLanguages(newLanguage, () => {
+            i18next.loadLanguages(newLanguageSetting.ui || state.detectedLanguage, () => {
                 // i18nextの言語を変更
-                i18next.changeLanguage(newLanguage);
+                i18next.changeLanguage(newLanguageSetting.ui || state.detectedLanguage);
 
                 // 言語設定の変更
-                actions.setLanguage(newLanguage);
+                actions.setLanguage(newLanguageSetting);
 
                 // ローカルストレージに保存
                 localStorage.setItem('Setting', JSON.stringify(actions.getState().setting));
@@ -87,12 +114,44 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
         //     );
         // }
 
+        let languageParticleSettingArea: hyperapp.Children = null;
+        if(state.setting.language.type === 'individual'){
+            languageParticleSettingArea = (
+                <div>
+                    <div class="inline field">
+                        <label>{t('表示言語-UI')}</label>
+                        <select class="ui dropdown">
+                            <option value="ja" selected={state.setting.language.ui === 'ja'}>日本語</option>
+                            <option value="en" selected={state.setting.language.ui === 'en'}>English</option>
+                            <option value="zh-Hans" selected={state.setting.language.ui === 'zh-Hans'}>简体中文</option>
+                        </select>
+                    </div>
+                    <div class="inline field">
+                        <label>{t('表示言語-メガミ、カード名')}</label>
+                        <select class="ui dropdown">
+                            <option value="ja" selected={state.setting.language.uniqueName === 'ja'}>日本語</option>
+                            <option value="en" selected={state.setting.language.uniqueName === 'en'}>English</option>
+                            <option value="zh-Hans" selected={state.setting.language.uniqueName === 'zh-Hans'}>简体中文</option>
+                        </select>
+                    </div>
+                    <div class="inline field">
+                        <label>{t('表示言語-カードテキスト')}</label>
+                        <select class="ui dropdown">
+                            <option value="ja" selected={state.setting.language.cardText === 'ja'}>日本語</option>
+                            <option value="en" selected={state.setting.language.cardText === 'en'}>English</option>
+                            <option value="zh-Hans" selected={state.setting.language.cardText === 'zh-Hans'}>简体中文</option>
+                        </select>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div id="SETTING-WINDOW"
-             style={{position: 'absolute', width: "35rem", paddingBottom: '3rem', backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW}}
-              class="ui segment draggable ui-widget-content resizable"
-              oncreate={oncreate}>
-                <div class="ui top attached label">{t('設定')}<a style={{display: 'block', float: 'right', padding: '2px'}} onclick={() => actions.toggleSettingVisible()}><i class="times icon"></i></a></div>
+                style={{ position: 'absolute', width: "35rem", paddingBottom: '3rem', backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: ZIndex.FLOAT_WINDOW }}
+                class="ui segment draggable ui-widget-content resizable"
+                oncreate={oncreate}>
+                <div class="ui top attached label">{t('設定')}<a style={{ display: 'block', float: 'right', padding: '2px' }} onclick={() => actions.toggleSettingVisible()}><i class="times icon"></i></a></div>
                 <form class="ui form">
                     <div class="inline field">
                         <div class={`ui checkbox`} data-key="MEGAMI-FACE-VIEW-MODE">
@@ -100,16 +159,18 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                             <label>{t('メガミのフェイスアップ画像表示')}</label>
                         </div>
                     </div>
+                    {cardImageSelectArea}
                     <div class="inline field">
                         <label>{t('表示言語')}</label>
                         <select class="ui dropdown" onchange={languageChange}>
-                            <option value="ja" selected={state.setting.language.ui === 'ja'}>日本語</option>
-                            <option value="en" selected={state.setting.language.ui === 'en'}>English</option>
-                            <option value="zh-Hans" selected={state.setting.language.ui === 'zh-Hans'}>简体中文</option>
+                            <option value="auto" selected={state.setting.language.type === 'auto'}>{t('表示言語-指定なし (自動判別)')}</option>
+                            <option value="ja" selected={state.setting.language.type === 'allEqual' && state.setting.language.ui === 'ja'}>日本語</option>
+                            <option value="en" selected={state.setting.language.type === 'allEqual' && state.setting.language.ui === 'en'}>English</option>
+                            <option value="zh-Hans" selected={state.setting.language.type === 'allEqual' && state.setting.language.ui === 'zh-Hans'}>简体中文</option>
+                            <option value="individual" selected={state.setting.language.type === 'individual'}>{t('表示言語-個別に指定')}</option>
                         </select>
                     </div>
-                    {cardImageSelectArea}
-
+                    {languageParticleSettingArea}
                 </form>
             </div>
         )

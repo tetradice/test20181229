@@ -47,6 +47,7 @@ export interface State {
     cardListSelectedMegami: Megami;
 
     setting: Setting;
+    detectedLanguage: Language;
 
     environment: 'production' | 'development';
 }
