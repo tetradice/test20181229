@@ -1885,7 +1885,7 @@ i18next
     defaultNS: 'common',
     ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'about-window', 'toppage'],
     load: 'all',
-    debug: true,
+    debug: false,
     fallbackLng: false,
     parseMissingKeyHandler: function (k) { return "[" + k + "]"; },
     backend: {
@@ -2001,6 +2001,7 @@ app
     // トップページ
     .get('/', function (req, res) {
     var i18n = req.i18n;
+    console.log("[*] Language = ", i18n.language);
     setLangCookie(i18n.language, res); // 自動判別した言語をcookieに記憶
     res.render('index', { environment: process.env.ENVIRONMENT, version: const_1.VERSION, lang: i18n.language });
 })
