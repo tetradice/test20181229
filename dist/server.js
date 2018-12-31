@@ -1885,7 +1885,7 @@ i18next
     defaultNS: 'common',
     ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'about-window', 'toppage'],
     load: 'all',
-    debug: false,
+    debug: true,
     fallbackLng: false,
     parseMissingKeyHandler: function (k) { return "[" + k + "]"; },
     backend: {
