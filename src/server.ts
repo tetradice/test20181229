@@ -47,6 +47,7 @@ firebase.initializeApp({
 
 // var db: firebase.firestore.Firestore = admin.firestore();
 var db: firebase.firestore.Firestore = firebase.firestore();
+db.settings({ timestampsInSnapshots: true});
 
 if(process.env.ENVIRONMENT === 'development'){
   const browserSync = require('browser-sync');
