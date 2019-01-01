@@ -5,7 +5,7 @@ import * as sakuraba from "sakuraba";
 export function getMegamiDispNameWithSymbol(lang: Language, megami: sakuraba.Megami): string {
     let data = sakuraba.MEGAMI_DATA[megami];
 
-    if (lang === 'zh-Hans') {
+    if (lang === 'zh') {
         return `${data.nameZh}(${data.symbolZh})`
     } else if (lang === 'en') {
         return `${data.nameEn} (${data.symbolEn})`
@@ -18,7 +18,7 @@ export function getMegamiDispNameWithSymbol(lang: Language, megami: sakuraba.Meg
 export function getMegamiDispName(lang: Language, megami: sakuraba.Megami): string {
     let data = sakuraba.MEGAMI_DATA[megami];
 
-    if (lang === 'zh-Hans') {
+    if (lang === 'zh') {
         return `${data.nameZh}`
     } else if (lang === 'en') {
         return `${data.nameEn}`

@@ -82,7 +82,7 @@ $(function () {
                 defaultNS: 'common'
                 , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'miniquiz']
                 , lng: startLanguage
-                , preload: ['ja', 'en', 'zh-Hans'] // 対応しているすべての言語を先に読み込んでおく
+                , preload: ['ja', 'en', 'zh'] // 対応しているすべての言語を先に読み込んでおく
                 , debug: false
                 , parseMissingKeyHandler: (k: string) => `[${k}]`
                 , fallbackLng: 'ja'

@@ -18,7 +18,7 @@ type LogValue = [string, { [key: string]: LogParamValue} | null];
 type LogParamValue = string | number | state.ActionLogCardNameItem | state.ActionLogCardSetNameItem | state.ActionLogCardSetNameItem | LogValue;
 
 /** 言語 (この値はi18nextに設定される) */
-type Language = 'ja' | 'zh-Hans' | 'en';
+type Language = 'ja' | 'zh' | 'en';
 
 /** 言語タイプ (自動判別 / 全体指定 / 個別指定) */
 type LanguageType = 'auto' | 'allEqual' | 'individual';

@@ -141,7 +141,7 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                         <select class="ui dropdown" onchange={e => individualLanguageChange(e, 'ui')}>
                             <option value="ja" selected={state.setting.language.ui === 'ja'}>日本語</option>
                             <option value="en" selected={state.setting.language.ui === 'en'}>English</option>
-                            <option value="zh-Hans" selected={state.setting.language.ui === 'zh-Hans'}>简体中文</option>
+                            <option value="zh" selected={state.setting.language.ui === 'zh'}>简体中文</option>
                         </select>
                     </div>
                     <div class="inline field">
@@ -149,7 +149,7 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                         <select class="ui dropdown" onchange={e => individualLanguageChange(e, 'uniqueName')}>
                             <option value="ja" selected={state.setting.language.uniqueName === 'ja'}>日本語</option>
                             <option value="en" selected={state.setting.language.uniqueName === 'en'}>English</option>
-                            <option value="zh-Hans" selected={state.setting.language.uniqueName === 'zh-Hans'}>简体中文</option>
+                            <option value="zh" selected={state.setting.language.uniqueName === 'zh'}>简体中文</option>
                         </select>
                     </div>
                     <div class="inline field">
@@ -157,7 +157,7 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                         <select class="ui dropdown" onchange={e => individualLanguageChange(e, 'cardText')}>
                             <option value="ja" selected={state.setting.language.cardText === 'ja'}>日本語</option>
                             <option value="en" selected={state.setting.language.cardText === 'en'}>English</option>
-                            <option value="zh-Hans" selected={state.setting.language.cardText === 'zh-Hans'}>简体中文</option>
+                            <option value="zh" selected={state.setting.language.cardText === 'zh'}>简体中文</option>
                         </select>
                     </div>
                 </div>
@@ -184,7 +184,7 @@ export const SettingWindow = (p: {shown: boolean}) => (state: state.State, actio
                             <option value="auto" selected={state.setting.language.type === 'auto'}>{t('表示言語-指定なし (自動判別)')}</option>
                             <option value="ja" selected={state.setting.language.type === 'allEqual' && state.setting.language.ui === 'ja'}>日本語</option>
                             <option value="en" selected={state.setting.language.type === 'allEqual' && state.setting.language.ui === 'en'}>English</option>
-                            <option value="zh-Hans" selected={state.setting.language.type === 'allEqual' && state.setting.language.ui === 'zh-Hans'}>简体中文</option>
+                            <option value="zh" selected={state.setting.language.type === 'allEqual' && state.setting.language.ui === 'zh'}>简体中文</option>
                             <option value="individual" selected={state.setting.language.type === 'individual'}>{t('表示言語-個別に指定')}</option>
                         </select>
                     </div>
