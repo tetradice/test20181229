@@ -9,6 +9,7 @@ import { MegamiTarots } from "sakuraba/apps/common/components";
 import { StackedCards } from "sakuraba/apps/common/components/StackedCards";
 import { BOARD_BASE_WIDTH } from "sakuraba/const";
 import { t } from "i18next";
+import { Helmet } from 'hyperapp-helmet';
 
 /** レイアウト種別 */
 type LayoutType = 'horizontal' | 'horizontal-distance' | 'vertical' | 'stacked';
@@ -494,6 +495,9 @@ const view: View<state.State, ActionsType> = (state, actions) => {
 
     return (
         <div>
+            <Helmet key="main">
+                <title>{t('ふるよにボードシミュレーター')}</title>
+            </Helmet>
             <div id="BOARD-PLAYAREA" style={{width: `${BOARD_BASE_WIDTH * state.zoom}px`}}>
                 {objectNodes}
                 {frameNodes}

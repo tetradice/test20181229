@@ -72,6 +72,7 @@
     "emotion": "^9.2.12",
     "hyperapp-debug": "^0.0.1-beta.10",
     "hyperapp-devtools": "^0.3.0",
+    "hyperapp-helmet": "^1.0.1",
     "hyperapp-types": "^0.3.0",
     "i18next-fetch-backend": "^2.0.0",
     "i18next-multiload-backend-adapter": "^0.1.1",

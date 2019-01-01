@@ -43963,6 +43963,138 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
 
 /***/ }),
 
+/***/ "./node_modules/hyperapp-helmet/dist/index.js":
+/*!****************************************************!*\
+  !*** ./node_modules/hyperapp-helmet/dist/index.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var traverse_1 = __importDefault(__webpack_require__(/*! traverse */ "./node_modules/traverse/index.js"));
+var HELMET_PARENT_CLASS_NAME = 'hyperapp-helmet-parent';
+var HELMET_CHILD_CLASS_NAME = 'hyperapp-helmet-child';
+var NodeToDOM = function (_a) {
+    var nodeName = _a.nodeName, attributes = _a.attributes, children = _a.children;
+    var element = document.createElement(nodeName);
+    if (typeof attributes !== 'undefined') {
+        var attrs = new Map(Object.entries(attributes));
+        attrs.forEach(function (attrVal, attrKey) {
+            element.setAttribute(attrKey.toLowerCase(), attrVal);
+        });
+    }
+    element.textContent = children
+        .filter(function (child) { return !!child; })
+        .reduce(function (acc, child) {
+        return acc + child;
+    }, '');
+    children
+        .filter(function (child) { return !!child; })
+        .map(function (child) { return NodeToDOM(child); });
+    return element;
+};
+var updateTitle = function (helmet) {
+    var title = helmet.titleNode.children
+        .filter(function (child) { return !!child; })
+        .reduce(function (acc, child) {
+        return acc + child;
+    }, '');
+    if (title !== document.title) {
+        document.title = title;
+    }
+};
+var appendOthers = function (helmet) {
+    var headElement = document.getElementsByTagName('head')[0];
+    helmet.otherNodes
+        .map(function (child) { return NodeToDOM(child); })
+        .forEach(function (t) { return headElement.appendChild(t); });
+};
+var appendHelmet = function (helmet) {
+    updateTitle(helmet);
+    appendOthers(helmet);
+};
+var removeHelmet = function (helmet) {
+    var selector = "." + HELMET_CHILD_CLASS_NAME + "." + helmet.key;
+    var headElement = document.getElementsByTagName('head')[0];
+    var oldTags = Array.prototype.slice.call(headElement.querySelectorAll(selector));
+    oldTags.forEach(function (t) {
+        headElement.removeChild(t);
+    });
+};
+var updateHelmet = function (helmet) {
+    removeHelmet(helmet);
+    appendHelmet(helmet);
+};
+var setupNodes = function (key, nodes) {
+    var titleNode = nodes.filter(function (node) { return node.nodeName === 'title'; })[0];
+    var tagNames = ['meta', 'base', 'link', 'style', 'script'];
+    var otherNodes = nodes
+        .filter(function (node) { return tagNames.includes(node.nodeName); })
+        .map(function (child) {
+        return __assign({}, child, { attributes: __assign({}, child.attributes, { class: [HELMET_CHILD_CLASS_NAME, key].join(' ') }) });
+    });
+    return [titleNode, otherNodes];
+};
+exports.Helmet = function (attributes, children) {
+    var key = attributes.key;
+    var _a = setupNodes(key, children), titleNode = _a[0], otherNodes = _a[1];
+    var helmet = {
+        key: key,
+        titleNode: titleNode,
+        otherNodes: otherNodes
+    };
+    var oncreate = function () {
+        updateHelmet(helmet);
+    };
+    var onupdate = function () {
+        updateHelmet(helmet);
+    };
+    var onremove = function (_e, done) {
+        removeHelmet(helmet);
+        done();
+    };
+    return (hyperapp_1.h("template", { key: key, id: key, class: HELMET_PARENT_CLASS_NAME, style: { display: 'none' }, oncreate: oncreate, onupdate: onupdate, onremove: onremove },
+        titleNode,
+        otherNodes));
+};
+var resolveNode = function (node, state, actions) {
+    return typeof node !== 'function'
+        ? node
+        : resolveNode(node(state, actions), state, actions);
+};
+exports.getHelmetNodes = function (view, state, actions) {
+    var nodes = resolveNode(view, state, actions);
+    return traverse_1.default(nodes).reduce(function (acc, node) {
+        if (node && node.nodeName === 'template') {
+            var attributes = node.attributes;
+            if (attributes && attributes.class === HELMET_PARENT_CLASS_NAME) {
+                return acc.concat(node.children);
+            }
+        }
+        return acc;
+    }, []);
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/hyperapp/src/index.js":
 /*!********************************************!*\
   !*** ./node_modules/hyperapp/src/index.js ***!
@@ -99781,6 +99913,331 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
 
 /***/ }),
 
+/***/ "./node_modules/traverse/index.js":
+/*!****************************************!*\
+  !*** ./node_modules/traverse/index.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var traverse = module.exports = function (obj) {
+    return new Traverse(obj);
+};
+
+function Traverse (obj) {
+    this.value = obj;
+}
+
+Traverse.prototype.get = function (ps) {
+    var node = this.value;
+    for (var i = 0; i < ps.length; i ++) {
+        var key = ps[i];
+        if (!node || !hasOwnProperty.call(node, key)) {
+            node = undefined;
+            break;
+        }
+        node = node[key];
+    }
+    return node;
+};
+
+Traverse.prototype.has = function (ps) {
+    var node = this.value;
+    for (var i = 0; i < ps.length; i ++) {
+        var key = ps[i];
+        if (!node || !hasOwnProperty.call(node, key)) {
+            return false;
+        }
+        node = node[key];
+    }
+    return true;
+};
+
+Traverse.prototype.set = function (ps, value) {
+    var node = this.value;
+    for (var i = 0; i < ps.length - 1; i ++) {
+        var key = ps[i];
+        if (!hasOwnProperty.call(node, key)) node[key] = {};
+        node = node[key];
+    }
+    node[ps[i]] = value;
+    return value;
+};
+
+Traverse.prototype.map = function (cb) {
+    return walk(this.value, cb, true);
+};
+
+Traverse.prototype.forEach = function (cb) {
+    this.value = walk(this.value, cb, false);
+    return this.value;
+};
+
+Traverse.prototype.reduce = function (cb, init) {
+    var skip = arguments.length === 1;
+    var acc = skip ? this.value : init;
+    this.forEach(function (x) {
+        if (!this.isRoot || !skip) {
+            acc = cb.call(this, acc, x);
+        }
+    });
+    return acc;
+};
+
+Traverse.prototype.paths = function () {
+    var acc = [];
+    this.forEach(function (x) {
+        acc.push(this.path); 
+    });
+    return acc;
+};
+
+Traverse.prototype.nodes = function () {
+    var acc = [];
+    this.forEach(function (x) {
+        acc.push(this.node);
+    });
+    return acc;
+};
+
+Traverse.prototype.clone = function () {
+    var parents = [], nodes = [];
+    
+    return (function clone (src) {
+        for (var i = 0; i < parents.length; i++) {
+            if (parents[i] === src) {
+                return nodes[i];
+            }
+        }
+        
+        if (typeof src === 'object' && src !== null) {
+            var dst = copy(src);
+            
+            parents.push(src);
+            nodes.push(dst);
+            
+            forEach(objectKeys(src), function (key) {
+                dst[key] = clone(src[key]);
+            });
+            
+            parents.pop();
+            nodes.pop();
+            return dst;
+        }
+        else {
+            return src;
+        }
+    })(this.value);
+};
+
+function walk (root, cb, immutable) {
+    var path = [];
+    var parents = [];
+    var alive = true;
+    
+    return (function walker (node_) {
+        var node = immutable ? copy(node_) : node_;
+        var modifiers = {};
+        
+        var keepGoing = true;
+        
+        var state = {
+            node : node,
+            node_ : node_,
+            path : [].concat(path),
+            parent : parents[parents.length - 1],
+            parents : parents,
+            key : path.slice(-1)[0],
+            isRoot : path.length === 0,
+            level : path.length,
+            circular : null,
+            update : function (x, stopHere) {
+                if (!state.isRoot) {
+                    state.parent.node[state.key] = x;
+                }
+                state.node = x;
+                if (stopHere) keepGoing = false;
+            },
+            'delete' : function (stopHere) {
+                delete state.parent.node[state.key];
+                if (stopHere) keepGoing = false;
+            },
+            remove : function (stopHere) {
+                if (isArray(state.parent.node)) {
+                    state.parent.node.splice(state.key, 1);
+                }
+                else {
+                    delete state.parent.node[state.key];
+                }
+                if (stopHere) keepGoing = false;
+            },
+            keys : null,
+            before : function (f) { modifiers.before = f },
+            after : function (f) { modifiers.after = f },
+            pre : function (f) { modifiers.pre = f },
+            post : function (f) { modifiers.post = f },
+            stop : function () { alive = false },
+            block : function () { keepGoing = false }
+        };
+        
+        if (!alive) return state;
+        
+        function updateState() {
+            if (typeof state.node === 'object' && state.node !== null) {
+                if (!state.keys || state.node_ !== state.node) {
+                    state.keys = objectKeys(state.node)
+                }
+                
+                state.isLeaf = state.keys.length == 0;
+                
+                for (var i = 0; i < parents.length; i++) {
+                    if (parents[i].node_ === node_) {
+                        state.circular = parents[i];
+                        break;
+                    }
+                }
+            }
+            else {
+                state.isLeaf = true;
+                state.keys = null;
+            }
+            
+            state.notLeaf = !state.isLeaf;
+            state.notRoot = !state.isRoot;
+        }
+        
+        updateState();
+        
+        // use return values to update if defined
+        var ret = cb.call(state, state.node);
+        if (ret !== undefined && state.update) state.update(ret);
+        
+        if (modifiers.before) modifiers.before.call(state, state.node);
+        
+        if (!keepGoing) return state;
+        
+        if (typeof state.node == 'object'
+        && state.node !== null && !state.circular) {
+            parents.push(state);
+            
+            updateState();
+            
+            forEach(state.keys, function (key, i) {
+                path.push(key);
+                
+                if (modifiers.pre) modifiers.pre.call(state, state.node[key], key);
+                
+                var child = walker(state.node[key]);
+                if (immutable && hasOwnProperty.call(state.node, key)) {
+                    state.node[key] = child.node;
+                }
+                
+                child.isLast = i == state.keys.length - 1;
+                child.isFirst = i == 0;
+                
+                if (modifiers.post) modifiers.post.call(state, child);
+                
+                path.pop();
+            });
+            parents.pop();
+        }
+        
+        if (modifiers.after) modifiers.after.call(state, state.node);
+        
+        return state;
+    })(root).node;
+}
+
+function copy (src) {
+    if (typeof src === 'object' && src !== null) {
+        var dst;
+        
+        if (isArray(src)) {
+            dst = [];
+        }
+        else if (isDate(src)) {
+            dst = new Date(src.getTime ? src.getTime() : src);
+        }
+        else if (isRegExp(src)) {
+            dst = new RegExp(src);
+        }
+        else if (isError(src)) {
+            dst = { message: src.message };
+        }
+        else if (isBoolean(src)) {
+            dst = new Boolean(src);
+        }
+        else if (isNumber(src)) {
+            dst = new Number(src);
+        }
+        else if (isString(src)) {
+            dst = new String(src);
+        }
+        else if (Object.create && Object.getPrototypeOf) {
+            dst = Object.create(Object.getPrototypeOf(src));
+        }
+        else if (src.constructor === Object) {
+            dst = {};
+        }
+        else {
+            var proto =
+                (src.constructor && src.constructor.prototype)
+                || src.__proto__
+                || {}
+            ;
+            var T = function () {};
+            T.prototype = proto;
+            dst = new T;
+        }
+        
+        forEach(objectKeys(src), function (key) {
+            dst[key] = src[key];
+        });
+        return dst;
+    }
+    else return src;
+}
+
+var objectKeys = Object.keys || function keys (obj) {
+    var res = [];
+    for (var key in obj) res.push(key)
+    return res;
+};
+
+function toS (obj) { return Object.prototype.toString.call(obj) }
+function isDate (obj) { return toS(obj) === '[object Date]' }
+function isRegExp (obj) { return toS(obj) === '[object RegExp]' }
+function isError (obj) { return toS(obj) === '[object Error]' }
+function isBoolean (obj) { return toS(obj) === '[object Boolean]' }
+function isNumber (obj) { return toS(obj) === '[object Number]' }
+function isString (obj) { return toS(obj) === '[object String]' }
+
+var isArray = Array.isArray || function isArray (xs) {
+    return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+var forEach = function (xs, fn) {
+    if (xs.forEach) return xs.forEach(fn)
+    else for (var i = 0; i < xs.length; i++) {
+        fn(xs[i], i, xs);
+    }
+};
+
+forEach(objectKeys(Traverse.prototype), function (key) {
+    traverse[key] = function (obj) {
+        var args = [].slice.call(arguments, 1);
+        var t = new Traverse(obj);
+        return t[key].apply(t, args);
+    };
+});
+
+var hasOwnProperty = Object.hasOwnProperty || function (obj, key) {
+    return key in obj;
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/tslib/tslib.es6.js":
 /*!*****************************************!*\
   !*** ./node_modules/tslib/tslib.es6.js ***!
@@ -106671,6 +107128,7 @@ var components_1 = __webpack_require__(/*! sakuraba/apps/common/components */ ".
 var StackedCards_1 = __webpack_require__(/*! sakuraba/apps/common/components/StackedCards */ "./src/sakuraba/apps/common/components/StackedCards.tsx");
 var const_1 = __webpack_require__(/*! sakuraba/const */ "./src/sakuraba/const.ts");
 var i18next_1 = __webpack_require__(/*! i18next */ "./node_modules/i18next/dist/es/index.js");
+var hyperapp_helmet_1 = __webpack_require__(/*! hyperapp-helmet */ "./node_modules/hyperapp-helmet/dist/index.js");
 /** オブジェクトの配置(座標の決定)を行う */
 function layoutObjects(objects, layoutType, areaWidth, objectWidth, padding, spacing) {
     var ret = [];
@@ -107050,6 +107508,8 @@ var view = function (state, actions) {
     var opponentSideMagemi2FaceLeft = (state.board.firstDrawFlags[opponentSide] ? (hasMachineTarot[opponentSide] ? 690 : 490) : (380 + 820 - 480));
     var opponentSideMagemiSize = [480, 160];
     return (hyperapp_1.h("div", null,
+        hyperapp_1.h(hyperapp_helmet_1.Helmet, { key: "main" },
+            hyperapp_1.h("title", null, i18next_1.t('ふるよにボードシミュレーター'))),
         hyperapp_1.h("div", { id: "BOARD-PLAYAREA", style: { width: const_1.BOARD_BASE_WIDTH * state.zoom + "px" } },
             objectNodes,
             frameNodes,
