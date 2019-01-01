@@ -717,7 +717,7 @@ var CardData = /** @class */ (function () {
         if (lang === 'en') {
             return en;
         }
-        if (lang === 'zh-Hans') {
+        if (lang === 'zh') {
             return zh;
         }
         return ja;
@@ -1040,7 +1040,7 @@ var CardData = /** @class */ (function () {
                         return "<" + replaced + ">";
                     });
                 }
-                else if (this.languageSetting.cardText === 'zh-Hans') {
+                else if (this.languageSetting.cardText === 'zh') {
                     html = html.replace(/机巧：([红蓝绿紫黄]+)+/g, function (str, arg) {
                         var replaced = arg.replace(/红+/, function (str2) { return "<span class='card-type-attack'>" + str2 + "</span>"; })
                             .replace(/蓝+/, function (str2) { return "<span class='card-type-action'>" + str2 + "</span>"; })
@@ -1478,7 +1478,7 @@ var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.
 /** メガミの表示名を取得（象徴武器表示あり） */
 function getMegamiDispNameWithSymbol(lang, megami) {
     var data = sakuraba.MEGAMI_DATA[megami];
-    if (lang === 'zh-Hans') {
+    if (lang === 'zh') {
         return data.nameZh + "(" + data.symbolZh + ")";
     }
     else if (lang === 'en') {
@@ -1492,7 +1492,7 @@ exports.getMegamiDispNameWithSymbol = getMegamiDispNameWithSymbol;
 /** メガミの表示名を取得 */
 function getMegamiDispName(lang, megami) {
     var data = sakuraba.MEGAMI_DATA[megami];
-    if (lang === 'zh-Hans') {
+    if (lang === 'zh') {
         return "" + data.nameZh;
     }
     else if (lang === 'en') {

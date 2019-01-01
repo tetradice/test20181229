@@ -2777,9 +2777,15 @@ var MaybeDocument = /** @class */ (function () {
  */
 var Document = /** @class */ (function (_super) {
     tslib_1.__extends(Document, _super);
-    function Document(key, version, data, options) {
+    function Document(key, version, data, options, 
+    /**
+     * Memoized serialized form of the document for optimization purposes (avoids repeated
+     * serialization). Might be undefined.
+     */
+    proto) {
         var _this = _super.call(this, key, version) || this;
         _this.data = data;
+        _this.proto = proto;
         _this.hasLocalMutations = !!options.hasLocalMutations;
         _this.hasCommittedMutations = !!options.hasCommittedMutations;
         return _this;
@@ -4806,6 +4812,12 @@ var SortedSet = /** @class */ (function () {
         var iter = this.data.getIteratorFrom(elem);
         return iter.hasNext() ? iter.getNext().key : null;
     };
+    SortedSet.prototype.getIterator = function () {
+        return new SortedSetIterator(this.data.getIterator());
+    };
+    SortedSet.prototype.getIteratorFrom = function (key) {
+        return new SortedSetIterator(this.data.getIteratorFrom(key));
+    };
     /** Inserts or updates an element */
     SortedSet.prototype.add = function (elem) {
         return this.copy(this.data.remove(elem).insert(elem, true));
@@ -4859,6 +4871,18 @@ var SortedSet = /** @class */ (function () {
         return result;
     };
     return SortedSet;
+}());
+var SortedSetIterator = /** @class */ (function () {
+    function SortedSetIterator(iter) {
+        this.iter = iter;
+    }
+    SortedSetIterator.prototype.getNext = function () {
+        return this.iter.getNext().key;
+    };
+    SortedSetIterator.prototype.hasNext = function () {
+        return this.iter.hasNext();
+    };
+    return SortedSetIterator;
 }());
 
 /**
@@ -5781,6 +5805,9 @@ function mapCodeFromHttpStatus(status) {
 var EMPTY_MAYBE_DOCUMENT_MAP = new SortedMap(DocumentKey.comparator);
 function maybeDocumentMap() {
     return EMPTY_MAYBE_DOCUMENT_MAP;
+}
+function nullableMaybeDocumentMap() {
+    return maybeDocumentMap();
 }
 var EMPTY_DOCUMENT_MAP = new SortedMap(DocumentKey.comparator);
 function documentMap() {
@@ -7227,7 +7254,7 @@ var JsonProtoSerializer = /** @class */ (function () {
         var key = this.fromName(doc.found.name);
         var version = this.fromVersion(doc.found.updateTime);
         var fields = this.fromFields(doc.found.fields || {});
-        return new Document(key, version, fields, {});
+        return new Document(key, version, fields, {}, doc.found);
     };
     JsonProtoSerializer.prototype.fromMissing = function (result) {
         assert(!!result.missing, 'Tried to deserialize a missing document from a found document.');
@@ -7349,7 +7376,9 @@ var JsonProtoSerializer = /** @class */ (function () {
             var key = this.fromName(entityChange.document.name);
             var version = this.fromVersion(entityChange.document.updateTime);
             var fields = this.fromFields(entityChange.document.fields || {});
-            var doc = new Document(key, version, fields, {});
+            // The document may soon be re-serialized back to protos in order to store it in local
+            // persistence. Memoize the encoded form to avoid encoding it again.
+            var doc = new Document(key, version, fields, {}, entityChange.document);
             var updatedTargetIds = entityChange.targetIds || [];
             var removedTargetIds = entityChange.removedTargetIds || [];
             watchChange = new DocumentWatchChange(updatedTargetIds, removedTargetIds, doc.key, doc);
@@ -9646,7 +9675,14 @@ var SimpleDb = /** @class */ (function () {
     function SimpleDb(db) {
         this.db = db;
     }
-    /** Opens the specified database, creating or upgrading it if necessary. */
+    /**
+     * Opens the specified database, creating or upgrading it if necessary.
+     *
+     * Note that `version` must not be a downgrade. IndexedDB does not support downgrading the schema
+     * version. We currently do not support any way to do versioning outside of IndexedDB's versioning
+     * mechanism, as only version-upgrade transactions are allowed to do things like create
+     * objectstores.
+     */
     SimpleDb.openOrCreate = function (name, version, schemaConverter) {
         assert(SimpleDb.isAvailable(), 'IndexedDB not supported in current environment.');
         debug(LOG_TAG$1, 'Opening database:', name);
@@ -9666,7 +9702,17 @@ var SimpleDb = /** @class */ (function () {
                     'Close all tabs that access Firestore and reload this page to proceed.'));
             };
             request.onerror = function (event) {
-                reject(event.target.error);
+                var error$$1 = event.target.error;
+                if (error$$1.name === 'VersionError') {
+                    reject(new FirestoreError(Code.FAILED_PRECONDITION, 'A newer version of the Firestore SDK was previously used and so the persisted ' +
+                        'data is not compatible with the version of the SDK you are now using. The SDK ' +
+                        'will operate with persistence disabled. If you need persistence, please ' +
+                        're-upgrade to a newer version of the SDK or else clear the persisted IndexedDB ' +
+                        'data for your app to start fresh.'));
+                }
+                else {
+                    reject(error$$1);
+                }
             };
             request.onupgradeneeded = function (event) {
                 debug(LOG_TAG$1, 'Database "' + name + '" requires upgrade from version:', event.oldVersion);
@@ -9734,6 +9780,11 @@ var SimpleDb = /** @class */ (function () {
             .catch(function (error$$1) {
             // Abort the transaction if there was an error.
             transaction.abort(error$$1);
+            // We cannot actually recover, and calling `abort()` will cause the transaction's
+            // completion promise to be rejected. This in turn means that we won't use
+            // `transactionFnResult` below. We return a rejection here so that we don't add the
+            // possibility of returning `void` to the type of `transactionFnResult`.
+            return PersistencePromise.reject(error$$1);
         })
             .toPromise();
         // Wait for the transaction to complete (i.e. IndexedDb's onsuccess event to
@@ -10541,6 +10592,32 @@ var RemoteDocumentChangeBuffer = /** @class */ (function () {
         }
     };
     /**
+     * Looks up several entries in the cache, forwarding to
+     * `RemoteDocumentCache.getEntry()`.
+     *
+     * @param transaction The transaction in which to perform any persistence
+     *     operations.
+     * @param documentKeys The keys of the entries to look up.
+     * @return A map of cached `Document`s or `NoDocument`s, indexed by key. If an
+     *     entry cannot be found, the corresponding key will be mapped to a null
+     *     value.
+     */
+    RemoteDocumentChangeBuffer.prototype.getEntries = function (transaction, documentKeys) {
+        var _this = this;
+        // Record the size of everything we load from the cache so we can compute
+        // a delta later.
+        return this.getAllFromCache(transaction, documentKeys).next(function (_a) {
+            var maybeDocuments = _a.maybeDocuments, sizeMap = _a.sizeMap;
+            // Note: `getAllFromCache` returns two maps instead of a single map from
+            // keys to `DocumentSizeEntry`s. This is to allow returning the
+            // `NullableMaybeDocumentMap` directly, without a conversion.
+            sizeMap.forEach(function (documentKey, size) {
+                _this.documentSizes.set(documentKey, size);
+            });
+            return maybeDocuments;
+        });
+    };
+    /**
      * Applies buffered changes to the underlying RemoteDocumentCache, using
      * the provided transaction.
      */
@@ -10679,6 +10756,80 @@ var IndexedDbRemoteDocumentCache = /** @class */ (function () {
                     size: dbDocumentSize(dbRemoteDoc)
                 }
                 : null;
+        });
+    };
+    IndexedDbRemoteDocumentCache.prototype.getEntries = function (transaction, documentKeys) {
+        var _this = this;
+        var results = nullableMaybeDocumentMap();
+        return this.forEachDbEntry(transaction, documentKeys, function (key, dbRemoteDoc) {
+            if (dbRemoteDoc) {
+                results = results.insert(key, _this.serializer.fromDbRemoteDocument(dbRemoteDoc));
+            }
+            else {
+                results = results.insert(key, null);
+            }
+        }).next(function () { return results; });
+    };
+    /**
+     * Looks up several entries in the cache.
+     *
+     * @param documentKeys The set of keys entries to look up.
+     * @return A map of MaybeDocuments indexed by key (if a document cannot be
+     *     found, the key will be mapped to null) and a map of sizes indexed by
+     *     key (zero if the key cannot be found).
+     */
+    IndexedDbRemoteDocumentCache.prototype.getSizedEntries = function (transaction, documentKeys) {
+        var _this = this;
+        var results = nullableMaybeDocumentMap();
+        var sizeMap = new SortedMap(DocumentKey.comparator);
+        return this.forEachDbEntry(transaction, documentKeys, function (key, dbRemoteDoc) {
+            if (dbRemoteDoc) {
+                results = results.insert(key, _this.serializer.fromDbRemoteDocument(dbRemoteDoc));
+                sizeMap = sizeMap.insert(key, dbDocumentSize(dbRemoteDoc));
+            }
+            else {
+                results = results.insert(key, null);
+                sizeMap = sizeMap.insert(key, 0);
+            }
+        }).next(function () {
+            return { maybeDocuments: results, sizeMap: sizeMap };
+        });
+    };
+    IndexedDbRemoteDocumentCache.prototype.forEachDbEntry = function (transaction, documentKeys, callback) {
+        if (documentKeys.isEmpty()) {
+            return PersistencePromise.resolve();
+        }
+        var range = IDBKeyRange.bound(documentKeys.first().path.toArray(), documentKeys.last().path.toArray());
+        var keyIter = documentKeys.getIterator();
+        var nextKey = keyIter.getNext();
+        return remoteDocumentsStore(transaction)
+            .iterate({ range: range }, function (potentialKeyRaw, dbRemoteDoc, control) {
+            var potentialKey = DocumentKey.fromSegments(potentialKeyRaw);
+            // Go through keys not found in cache.
+            while (nextKey && DocumentKey.comparator(nextKey, potentialKey) < 0) {
+                callback(nextKey, null);
+                nextKey = keyIter.getNext();
+            }
+            if (nextKey && nextKey.isEqual(potentialKey)) {
+                // Key found in cache.
+                callback(nextKey, dbRemoteDoc);
+                nextKey = keyIter.hasNext() ? keyIter.getNext() : null;
+            }
+            // Skip to the next key (if there is one).
+            if (nextKey) {
+                control.skip(nextKey.path.toArray());
+            }
+            else {
+                control.done();
+            }
+        })
+            .next(function () {
+            // The rest of the keys are not in the cache. One case where `iterate`
+            // above won't go through them is when the cache is empty.
+            while (nextKey) {
+                callback(nextKey, null);
+                nextKey = keyIter.hasNext() ? keyIter.getNext() : null;
+            }
         });
     };
     IndexedDbRemoteDocumentCache.prototype.getDocumentsMatchingQuery = function (transaction, query) {
@@ -10821,6 +10972,9 @@ var IndexedDbRemoteDocumentChangeBuffer = /** @class */ (function (_super) {
     };
     IndexedDbRemoteDocumentChangeBuffer.prototype.getFromCache = function (transaction, documentKey) {
         return this.documentCache.getSizedEntry(transaction, documentKey);
+    };
+    IndexedDbRemoteDocumentChangeBuffer.prototype.getAllFromCache = function (transaction, documentKeys) {
+        return this.documentCache.getSizedEntries(transaction, documentKeys);
     };
     return IndexedDbRemoteDocumentChangeBuffer;
 }(RemoteDocumentChangeBuffer));
@@ -12101,7 +12255,9 @@ var LocalSerializer = /** @class */ (function () {
     /** Encodes a document for storage locally. */
     LocalSerializer.prototype.toDbRemoteDocument = function (maybeDoc) {
         if (maybeDoc instanceof Document) {
-            var doc = this.remoteSerializer.toDocument(maybeDoc);
+            var doc = maybeDoc.proto
+                ? maybeDoc.proto
+                : this.remoteSerializer.toDocument(maybeDoc);
             var hasCommittedMutations = maybeDoc.hasCommittedMutations;
             return new DbRemoteDocument(
             /* unknownDocument= */ null, 
@@ -12347,6 +12503,13 @@ var LruScheduler = /** @class */ (function () {
             this.gcTask = null;
         }
     };
+    Object.defineProperty(LruScheduler.prototype, "started", {
+        get: function () {
+            return this.gcTask !== null;
+        },
+        enumerable: true,
+        configurable: true
+    });
     LruScheduler.prototype.scheduleGC = function () {
         var _this = this;
         assert(this.gcTask === null, 'Cannot schedule GC while a task is pending');
@@ -12357,7 +12520,8 @@ var LruScheduler = /** @class */ (function () {
             _this.hasRun = true;
             return _this.localStore
                 .collectGarbage(_this.garbageCollector)
-                .then(function () { return _this.scheduleGC(); });
+                .then(function () { return _this.scheduleGC(); })
+                .catch(ignoreIfPrimaryLeaseLoss);
         });
     };
     return LruScheduler;
@@ -13224,6 +13388,29 @@ function isPrimaryLeaseLostError(err) {
         err.message === PRIMARY_LEASE_LOST_ERROR_MSG);
 }
 /**
+ * Verifies the error thrown by a LocalStore operation. If a LocalStore
+ * operation fails because the primary lease has been taken by another client,
+ * we ignore the error (the persistence layer will immediately call
+ * `applyPrimaryLease` to propagate the primary state change). All other errors
+ * are re-thrown.
+ *
+ * @param err An error returned by a LocalStore operation.
+ * @return A Promise that resolves after we recovered, or the original error.
+ */
+function ignoreIfPrimaryLeaseLoss(err) {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            if (isPrimaryLeaseLostError(err)) {
+                debug(LOG_TAG$2, 'Unexpectedly lost primary lease');
+            }
+            else {
+                throw err;
+            }
+            return [2 /*return*/];
+        });
+    });
+}
+/**
  * Helper to get a typed SimpleDbStore for the primary client object store.
  */
 function primaryClientStore(txn) {
@@ -13455,6 +13642,19 @@ var LocalDocumentsView = /** @class */ (function () {
             return doc;
         });
     };
+    // Returns the view of the given `docs` as they would appear after applying
+    // all mutations in the given `batches`.
+    LocalDocumentsView.prototype.applyLocalMutationsToDocuments = function (transaction, docs, batches) {
+        var results = nullableMaybeDocumentMap();
+        docs.forEach(function (key, localView) {
+            for (var _i = 0, batches_1 = batches; _i < batches_1.length; _i++) {
+                var batch = batches_1[_i];
+                localView = batch.applyToLocalView(key, localView);
+            }
+            results = results.insert(key, localView);
+        });
+        return results;
+    };
     /**
      * Gets the local view of the documents identified by `keys`.
      *
@@ -13463,21 +13663,29 @@ var LocalDocumentsView = /** @class */ (function () {
      */
     LocalDocumentsView.prototype.getDocuments = function (transaction, keys) {
         var _this = this;
+        return this.remoteDocumentCache
+            .getEntries(transaction, keys)
+            .next(function (docs) { return _this.getLocalViewOfDocuments(transaction, docs); });
+    };
+    /**
+     * Similar to `getDocuments`, but creates the local view from the given
+     * `baseDocs` without retrieving documents from the local store.
+     */
+    LocalDocumentsView.prototype.getLocalViewOfDocuments = function (transaction, baseDocs) {
+        var _this = this;
         return this.mutationQueue
-            .getAllMutationBatchesAffectingDocumentKeys(transaction, keys)
+            .getAllMutationBatchesAffectingDocumentKeys(transaction, baseDocs)
             .next(function (batches) {
-            var promises = [];
+            var docs = _this.applyLocalMutationsToDocuments(transaction, baseDocs, batches);
             var results = maybeDocumentMap();
-            keys.forEach(function (key) {
-                promises.push(_this.getDocumentInternal(transaction, key, batches).next(function (maybeDoc) {
-                    // TODO(http://b/32275378): Don't conflate missing / deleted.
-                    if (!maybeDoc) {
-                        maybeDoc = new NoDocument(key, SnapshotVersion.forDeletedDoc());
-                    }
-                    results = results.insert(key, maybeDoc);
-                }));
+            docs.forEach(function (key, maybeDoc) {
+                // TODO(http://b/32275378): Don't conflate missing / deleted.
+                if (!maybeDoc) {
+                    maybeDoc = new NoDocument(key, SnapshotVersion.forDeletedDoc());
+                }
+                results = results.insert(key, maybeDoc);
             });
-            return PersistencePromise.waitFor(promises).next(function () { return results; });
+            return results;
         });
     };
     /** Performs a query against the local view of all documents. */
@@ -13982,10 +14190,16 @@ var LocalStore = /** @class */ (function () {
                     }
                 }
             });
-            var changedDocKeys = documentKeySet();
+            var changedDocs = maybeDocumentMap();
+            var updatedKeys = documentKeySet();
             remoteEvent.documentUpdates.forEach(function (key, doc) {
-                changedDocKeys = changedDocKeys.add(key);
-                promises.push(documentBuffer.getEntry(txn, key).next(function (existingDoc) {
+                updatedKeys = updatedKeys.add(key);
+            });
+            // Each loop iteration only affects its "own" doc, so it's safe to get all the remote
+            // documents in advance in a single call.
+            promises.push(documentBuffer.getEntries(txn, updatedKeys).next(function (existingDocs) {
+                remoteEvent.documentUpdates.forEach(function (key, doc) {
+                    var existingDoc = existingDocs.get(key);
                     // If a document update isn't authoritative, make sure we don't
                     // apply an old document version to the remote cache. We make an
                     // exception for SnapshotVersion.MIN which can happen for
@@ -13997,15 +14211,16 @@ var LocalStore = /** @class */ (function () {
                             !existingDoc.hasPendingWrites) ||
                         doc.version.compareTo(existingDoc.version) >= 0) {
                         documentBuffer.addEntry(doc);
+                        changedDocs = changedDocs.insert(key, doc);
                     }
                     else {
                         debug(LOG_TAG$3, 'Ignoring outdated watch update for ', key, '. Current version:', existingDoc.version, ' Watch version:', doc.version);
                     }
-                }));
-                if (remoteEvent.resolvedLimboDocuments.has(key)) {
-                    promises.push(_this.persistence.referenceDelegate.updateLimboDocument(txn, key));
-                }
-            });
+                    if (remoteEvent.resolvedLimboDocuments.has(key)) {
+                        promises.push(_this.persistence.referenceDelegate.updateLimboDocument(txn, key));
+                    }
+                });
+            }));
             // HACK: The only reason we allow a null snapshot version is so that we
             // can synthesize remote events when we get permission denied errors while
             // trying to resolve the state of a locally cached document that is in
@@ -14026,7 +14241,7 @@ var LocalStore = /** @class */ (function () {
             return PersistencePromise.waitFor(promises)
                 .next(function () { return documentBuffer.apply(txn); })
                 .next(function () {
-                return _this.localDocuments.getDocuments(txn, changedDocKeys);
+                return _this.localDocuments.getLocalViewOfDocuments(txn, changedDocs);
             });
         });
     };
@@ -14753,6 +14968,34 @@ var MemoryRemoteDocumentCache = /** @class */ (function () {
     MemoryRemoteDocumentCache.prototype.getSizedEntry = function (transaction, documentKey) {
         return PersistencePromise.resolve(this.docs.get(documentKey));
     };
+    MemoryRemoteDocumentCache.prototype.getEntries = function (transaction, documentKeys) {
+        var _this = this;
+        var results = nullableMaybeDocumentMap();
+        documentKeys.forEach(function (documentKey) {
+            var entry = _this.docs.get(documentKey);
+            results = results.insert(documentKey, entry ? entry.maybeDocument : null);
+        });
+        return PersistencePromise.resolve(results);
+    };
+    /**
+     * Looks up several entries in the cache.
+     *
+     * @param documentKeys The set of keys entries to look up.
+     * @return A map of MaybeDocuments indexed by key (if a document cannot be
+     *     found, the key will be mapped to null) and a map of sizes indexed by
+     *     key (zero if the key cannot be found).
+     */
+    MemoryRemoteDocumentCache.prototype.getSizedEntries = function (transaction, documentKeys) {
+        var _this = this;
+        var results = nullableMaybeDocumentMap();
+        var sizeMap = new SortedMap(DocumentKey.comparator);
+        documentKeys.forEach(function (documentKey) {
+            var entry = _this.docs.get(documentKey);
+            results = results.insert(documentKey, entry ? entry.maybeDocument : null);
+            sizeMap = sizeMap.insert(documentKey, entry ? entry.size : 0);
+        });
+        return PersistencePromise.resolve({ maybeDocuments: results, sizeMap: sizeMap });
+    };
     MemoryRemoteDocumentCache.prototype.getDocumentsMatchingQuery = function (transaction, query) {
         var results = documentMap();
         // Documents are ordered by key, so we can use a prefix scan to narrow down
@@ -14821,6 +15064,9 @@ var MemoryRemoteDocumentChangeBuffer = /** @class */ (function (_super) {
     };
     MemoryRemoteDocumentChangeBuffer.prototype.getFromCache = function (transaction, documentKey) {
         return this.documentCache.getSizedEntry(transaction, documentKey);
+    };
+    MemoryRemoteDocumentChangeBuffer.prototype.getAllFromCache = function (transaction, documentKeys) {
+        return this.documentCache.getSizedEntries(transaction, documentKeys);
     };
     return MemoryRemoteDocumentChangeBuffer;
 }(RemoteDocumentChangeBuffer));
@@ -16785,23 +17031,7 @@ var RemoteStore = /** @class */ (function () {
                 _this.writeStream.writeMutations(batch.mutations);
             }
         })
-            .catch(function (err) { return _this.ignoreIfPrimaryLeaseLoss(err); });
-    };
-    /**
-     * Verifies the error thrown by an LocalStore operation. If a LocalStore
-     * operation fails because the primary lease has been taken by another client,
-     * we ignore the error. All other errors are re-thrown.
-     *
-     * @param err An error returned by a LocalStore operation.
-     * @return A Promise that resolves after we recovered, or the original error.
-     */
-    RemoteStore.prototype.ignoreIfPrimaryLeaseLoss = function (err) {
-        if (isPrimaryLeaseLostError(err)) {
-            debug(LOG_TAG$8, 'Unexpectedly lost primary lease');
-        }
-        else {
-            throw err;
-        }
+            .catch(ignoreIfPrimaryLeaseLoss);
     };
     RemoteStore.prototype.onMutationResult = function (commitVersion, results) {
         var _this = this;
@@ -16854,7 +17084,6 @@ var RemoteStore = /** @class */ (function () {
     };
     RemoteStore.prototype.handleHandshakeError = function (error$$1) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var _this = this;
             return tslib_1.__generator(this, function (_a) {
                 // Reset the token if it's a permanent error or the error code is
                 // ABORTED, signaling the write stream is no longer valid.
@@ -16863,7 +17092,7 @@ var RemoteStore = /** @class */ (function () {
                     this.writeStream.lastStreamToken = emptyByteString();
                     return [2 /*return*/, this.localStore
                             .setLastStreamToken(emptyByteString())
-                            .catch(function (err) { return _this.ignoreIfPrimaryLeaseLoss(err); })];
+                            .catch(ignoreIfPrimaryLeaseLoss)];
                 }
                 else {
                     // Some other error, don't reset stream token. Our stream logic will
@@ -17831,7 +18060,7 @@ var SyncEngine = /** @class */ (function () {
                                 _this.remoteStore.unlisten(queryView.targetId);
                                 _this.removeAndCleanupQuery(queryView);
                             })
-                                .catch(function (err) { return _this.ignoreIfPrimaryLeaseLoss(err); })];
+                                .catch(ignoreIfPrimaryLeaseLoss)];
                     case 1:
                         _a.sent();
                         _a.label = 2;
@@ -17962,7 +18191,7 @@ var SyncEngine = /** @class */ (function () {
             });
             return _this.emitNewSnapsAndNotifyLocalStore(changes, remoteEvent);
         })
-            .catch(function (err) { return _this.ignoreIfPrimaryLeaseLoss(err); });
+            .catch(ignoreIfPrimaryLeaseLoss);
     };
     /**
      * Applies an OnlineState change to the sync engine and notifies any views of
@@ -18021,7 +18250,7 @@ var SyncEngine = /** @class */ (function () {
                         return [4 /*yield*/, this.localStore
                                 .releaseQuery(queryView_1.query, /* keepPersistedQueryData */ false)
                                 .then(function () { return _this.removeAndCleanupQuery(queryView_1); })
-                                .catch(function (err) { return _this.ignoreIfPrimaryLeaseLoss(err); })];
+                                .catch(ignoreIfPrimaryLeaseLoss)];
                     case 2:
                         _a.sent();
                         this.syncEngineListener.onWatchError(queryView_1.query, err);
@@ -18098,7 +18327,7 @@ var SyncEngine = /** @class */ (function () {
             _this.sharedClientState.updateMutationState(batchId, 'acknowledged');
             return _this.emitNewSnapsAndNotifyLocalStore(changes);
         })
-            .catch(function (err) { return _this.ignoreIfPrimaryLeaseLoss(err); });
+            .catch(ignoreIfPrimaryLeaseLoss);
     };
     SyncEngine.prototype.rejectFailedWrite = function (batchId, error$$1) {
         var _this = this;
@@ -18114,7 +18343,7 @@ var SyncEngine = /** @class */ (function () {
             _this.sharedClientState.updateMutationState(batchId, 'rejected', error$$1);
             return _this.emitNewSnapsAndNotifyLocalStore(changes);
         })
-            .catch(function (err) { return _this.ignoreIfPrimaryLeaseLoss(err); });
+            .catch(ignoreIfPrimaryLeaseLoss);
     };
     SyncEngine.prototype.addMutationCallback = function (batchId, callback) {
         var newCallbacks = this.mutationUserCallbacks[this.currentUser.toKey()];
@@ -18260,29 +18489,6 @@ var SyncEngine = /** @class */ (function () {
                         _a.sent();
                         return [2 /*return*/];
                 }
-            });
-        });
-    };
-    /**
-     * Verifies the error thrown by an LocalStore operation. If a LocalStore
-     * operation fails because the primary lease has been taken by another client,
-     * we ignore the error (the persistence layer will immediately call
-     * `applyPrimaryLease` to propagate the primary state change). All other
-     * errors are re-thrown.
-     *
-     * @param err An error returned by a LocalStore operation.
-     * @return A Promise that resolves after we recovered, or the original error.
-     */
-    SyncEngine.prototype.ignoreIfPrimaryLeaseLoss = function (err) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                if (isPrimaryLeaseLostError(err)) {
-                    debug(LOG_TAG$9, 'Unexpectedly lost primary lease');
-                }
-                else {
-                    throw err;
-                }
-                return [2 /*return*/];
             });
         });
     };
@@ -18573,7 +18779,7 @@ var SyncEngine = /** @class */ (function () {
                                                 _this.remoteStore.unlisten(targetId);
                                                 _this.removeAndCleanupQuery(queryView);
                                             })
-                                                .catch(function (err) { return _this.ignoreIfPrimaryLeaseLoss(err); })];
+                                                .catch(ignoreIfPrimaryLeaseLoss)];
                                     case 1:
                                         _a.sent();
                                         _a.label = 2;
@@ -19679,7 +19885,6 @@ var FirestoreClient = /** @class */ (function () {
                         if (maybeLruGc) {
                             // We're running LRU Garbage collection. Set up the scheduler.
                             this.lruScheduler = new LruScheduler(maybeLruGc, this.asyncQueue, this.localStore);
-                            this.lruScheduler.start();
                         }
                         serializer = this.platform.newSerializer(this.databaseInfo.databaseId);
                         datastore = new Datastore(this.asyncQueue, connection, this.credentials, serializer);
@@ -19706,9 +19911,24 @@ var FirestoreClient = /** @class */ (function () {
                         _a.sent();
                         // NOTE: This will immediately call the listener, so we make sure to
                         // set it after localStore / remoteStore are started.
-                        return [4 /*yield*/, this.persistence.setPrimaryStateListener(function (isPrimary) {
-                                return _this.syncEngine.applyPrimaryState(isPrimary);
-                            })];
+                        return [4 /*yield*/, this.persistence.setPrimaryStateListener(function (isPrimary) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                                return tslib_1.__generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, this.syncEngine.applyPrimaryState(isPrimary)];
+                                        case 1:
+                                            _a.sent();
+                                            if (this.lruScheduler) {
+                                                if (isPrimary && !this.lruScheduler.started) {
+                                                    this.lruScheduler.start();
+                                                }
+                                                else if (!isPrimary) {
+                                                    this.lruScheduler.stop();
+                                                }
+                                            }
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
                     case 3:
                         // NOTE: This will immediately call the listener, so we make sure to
                         // set it after localStore / remoteStore are started.
@@ -100642,7 +100862,7 @@ $(function () {
             defaultNS: 'common',
             ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'miniquiz'],
             lng: startLanguage,
-            preload: ['ja', 'en', 'zh-Hans'] // 対応しているすべての言語を先に読み込んでおく
+            preload: ['ja', 'en', 'zh'] // 対応しているすべての言語を先に読み込んでおく
             ,
             debug: false,
             parseMissingKeyHandler: function (k) { return "[" + k + "]"; },
@@ -106067,19 +106287,19 @@ exports.SettingWindow = function (p) { return function (state, actions) {
                     hyperapp_1.h("select", { class: "ui dropdown", onchange: function (e) { return individualLanguageChange_1(e, 'ui'); } },
                         hyperapp_1.h("option", { value: "ja", selected: state.setting.language.ui === 'ja' }, "\u65E5\u672C\u8A9E"),
                         hyperapp_1.h("option", { value: "en", selected: state.setting.language.ui === 'en' }, "English"),
-                        hyperapp_1.h("option", { value: "zh-Hans", selected: state.setting.language.ui === 'zh-Hans' }, "\u7B80\u4F53\u4E2D\u6587"))),
+                        hyperapp_1.h("option", { value: "zh", selected: state.setting.language.ui === 'zh' }, "\u7B80\u4F53\u4E2D\u6587"))),
                 hyperapp_1.h("div", { class: "inline field" },
                     hyperapp_1.h("label", null, i18next_1.t('表示言語-メガミ、カード名')),
                     hyperapp_1.h("select", { class: "ui dropdown", onchange: function (e) { return individualLanguageChange_1(e, 'uniqueName'); } },
                         hyperapp_1.h("option", { value: "ja", selected: state.setting.language.uniqueName === 'ja' }, "\u65E5\u672C\u8A9E"),
                         hyperapp_1.h("option", { value: "en", selected: state.setting.language.uniqueName === 'en' }, "English"),
-                        hyperapp_1.h("option", { value: "zh-Hans", selected: state.setting.language.uniqueName === 'zh-Hans' }, "\u7B80\u4F53\u4E2D\u6587"))),
+                        hyperapp_1.h("option", { value: "zh", selected: state.setting.language.uniqueName === 'zh' }, "\u7B80\u4F53\u4E2D\u6587"))),
                 hyperapp_1.h("div", { class: "inline field" },
                     hyperapp_1.h("label", null, i18next_1.t('表示言語-カードテキスト')),
                     hyperapp_1.h("select", { class: "ui dropdown", onchange: function (e) { return individualLanguageChange_1(e, 'cardText'); } },
                         hyperapp_1.h("option", { value: "ja", selected: state.setting.language.cardText === 'ja' }, "\u65E5\u672C\u8A9E"),
                         hyperapp_1.h("option", { value: "en", selected: state.setting.language.cardText === 'en' }, "English"),
-                        hyperapp_1.h("option", { value: "zh-Hans", selected: state.setting.language.cardText === 'zh-Hans' }, "\u7B80\u4F53\u4E2D\u6587")))));
+                        hyperapp_1.h("option", { value: "zh", selected: state.setting.language.cardText === 'zh' }, "\u7B80\u4F53\u4E2D\u6587")))));
         }
         return (hyperapp_1.h("div", { id: "SETTING-WINDOW", style: { position: 'absolute', width: "35rem", paddingBottom: '3rem', backgroundColor: "rgba(255, 255, 255, 0.9)", zIndex: const_1.ZIndex.FLOAT_WINDOW }, class: "ui segment draggable ui-widget-content resizable", oncreate: oncreate },
             hyperapp_1.h("div", { class: "ui top attached label" },
@@ -106098,7 +106318,7 @@ exports.SettingWindow = function (p) { return function (state, actions) {
                         hyperapp_1.h("option", { value: "auto", selected: state.setting.language.type === 'auto' }, i18next_1.t('表示言語-指定なし (自動判別)')),
                         hyperapp_1.h("option", { value: "ja", selected: state.setting.language.type === 'allEqual' && state.setting.language.ui === 'ja' }, "\u65E5\u672C\u8A9E"),
                         hyperapp_1.h("option", { value: "en", selected: state.setting.language.type === 'allEqual' && state.setting.language.ui === 'en' }, "English"),
-                        hyperapp_1.h("option", { value: "zh-Hans", selected: state.setting.language.type === 'allEqual' && state.setting.language.ui === 'zh-Hans' }, "\u7B80\u4F53\u4E2D\u6587"),
+                        hyperapp_1.h("option", { value: "zh", selected: state.setting.language.type === 'allEqual' && state.setting.language.ui === 'zh' }, "\u7B80\u4F53\u4E2D\u6587"),
                         hyperapp_1.h("option", { value: "individual", selected: state.setting.language.type === 'individual' }, i18next_1.t('表示言語-個別に指定')))),
                 languageParticleSettingArea)));
     }
@@ -108198,7 +108418,7 @@ var CardData = /** @class */ (function () {
         if (lang === 'en') {
             return en;
         }
-        if (lang === 'zh-Hans') {
+        if (lang === 'zh') {
             return zh;
         }
         return ja;
@@ -108521,7 +108741,7 @@ var CardData = /** @class */ (function () {
                         return "<" + replaced + ">";
                     });
                 }
-                else if (this.languageSetting.cardText === 'zh-Hans') {
+                else if (this.languageSetting.cardText === 'zh') {
                     html = html.replace(/机巧：([红蓝绿紫黄]+)+/g, function (str, arg) {
                         var replaced = arg.replace(/红+/, function (str2) { return "<span class='card-type-attack'>" + str2 + "</span>"; })
                             .replace(/蓝+/, function (str2) { return "<span class='card-type-action'>" + str2 + "</span>"; })
@@ -108959,7 +109179,7 @@ var sakuraba = __importStar(__webpack_require__(/*! sakuraba */ "./src/sakuraba.
 /** メガミの表示名を取得（象徴武器表示あり） */
 function getMegamiDispNameWithSymbol(lang, megami) {
     var data = sakuraba.MEGAMI_DATA[megami];
-    if (lang === 'zh-Hans') {
+    if (lang === 'zh') {
         return data.nameZh + "(" + data.symbolZh + ")";
     }
     else if (lang === 'en') {
@@ -108973,7 +109193,7 @@ exports.getMegamiDispNameWithSymbol = getMegamiDispNameWithSymbol;
 /** メガミの表示名を取得 */
 function getMegamiDispName(lang, megami) {
     var data = sakuraba.MEGAMI_DATA[megami];
-    if (lang === 'zh-Hans') {
+    if (lang === 'zh') {
         return "" + data.nameZh;
     }
     else if (lang === 'en') {
