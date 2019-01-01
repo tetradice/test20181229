@@ -2004,24 +2004,27 @@ app
     .get('/play/:key', function (req, res) {
     var i18n = req.i18n;
     var lang = convertLang(i18n.language); // i18nextが判別した言語から言語を判定
-    if (req.params.lng)
+    if (req.query['lng'])
         setLangCookie(lang, res); // リクエストパラメータに言語があれば、自動判別した言語をcookieに記憶
+    res.header('Content-Language', lang); // 自動判別した言語を設定
     playerRoute(req, res, lang);
 })
     // 卓URL (観戦者用)
     .get('/watch/:tableId', function (req, res) {
     var i18n = req.i18n;
     var lang = convertLang(i18n.language); // i18nextが判別した言語から言語を判定
-    if (req.params.lng)
+    if (req.query['lng'])
         setLangCookie(lang, res); // リクエストパラメータに言語があれば、自動判別した言語をcookieに記憶
+    res.header('Content-Language', lang); // 自動判別した言語を設定
     res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: const_1.VERSION, lang: lang, firebaseAuthInfo: firebaseAuthInfo });
 })
     // トップページ
     .get('/', function (req, res) {
     var i18n = req.i18n;
     var lang = convertLang(i18n.language); // i18nextが判別した言語から言語を判定
-    if (req.params.lng)
+    if (req.query['lng'])
         setLangCookie(lang, res); // リクエストパラメータに言語があれば、自動判別した言語をcookieに記憶
+    res.header('Content-Language', lang); // 自動判別した言語を設定
     res.render('index', { environment: process.env.ENVIRONMENT, version: const_1.VERSION, lang: lang });
 })
     // 新しい卓の作成
