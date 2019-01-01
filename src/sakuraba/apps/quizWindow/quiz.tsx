@@ -1,8 +1,9 @@
-import { CARD_DATA, CardDataItem, MEGAMI_DATA, ALL_CARD_ID_LIST } from "sakuraba";
+import { ALL_CARD_ID_LIST } from "sakuraba";
 import _ from "lodash";
 import { h } from "hyperapp";
 import { t } from "i18next";
 import * as models from "sakuraba/models";
+import * as utils from "sakuraba/utils";
 
 // 指定した配列から1つの要素をランダムに選出して返す
 function pick<T>(array: T[]): T | null{
@@ -66,8 +67,16 @@ export class QuizMaker {
         this.languageSetting = language;
     }
 
+    /** メガミ名、カード名の言語 */
+    get uniqueNameLanguage(): Language {
+        if(this.languageSetting.type === 'auto'){
+            return this.detectedLanguage;
+        } else {
+            return this.languageSetting.uniqueName;
+        }
+    }
     getCardTitleHtml(cardData: models.CardData){
-        let megamiName = MEGAMI_DATA[cardData.megami].name;
+        let megamiName = utils.getMegamiDispName(this.uniqueNameLanguage, cardData.megami);
         if(cardData.megami === 'utsuro' && cardData.baseType === 'special'){
             // ウツロの切札のみ、読み仮名を付与 (読み仮名がないと判別しにくいため)
             return <span><ruby><rb>{cardData.name}</rb><rp>(</rp><rt>{cardData.ruby}</rt><rp>)</rp></ruby> ({megamiName})</span>
@@ -126,7 +135,7 @@ export class QuizMaker {
             }
             // 回答をシャッフルして問題作成
             let cards = _.shuffle([].concat(successCard, failCards));
-            let explanations: hyperapp.Children[] = [t("各切札の消費は下記の通りです。"), <br />];
+            let explanations: hyperapp.Children[] = [t("miniquiz:各切札の消費は下記の通りです。"), <br />];
             cards.forEach((card) => {
                 quiz.addAnswer(this.getCardTitleHtml(card.data), (card === successCard));
                 explanations.push(<br />, `${card.data.name}: ${card.cost}`);
