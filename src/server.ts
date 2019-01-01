@@ -63,7 +63,7 @@ i18next
     , ns: ['common', 'log', 'cardset', 'help-window', 'dialog', 'about-window', 'toppage']
     , load: 'all'
     , debug: false
-    , fallbackLng: false
+    , fallbackLng: 'en'
     , parseMissingKeyHandler: (k: string) => `[${k}]`
     , backend: {
       loadPath: './locales/{{lng}}/{{ns}}.json'
@@ -174,6 +174,17 @@ const tableCreateRoute = (req: express.Request, res: express.Response) => {
 
 }
 
+// i18nextが判別した言語を、シミュレーターが解釈可能な言語に変換する処理
+function convertLang(i18nLang: string): Language {
+  if(i18nLang.startsWith('zh')){
+    return 'zh';
+  } else if(i18nLang.startsWith('ja')){
+    return 'ja';
+  } else {
+    return 'en';
+  }
+}
+
 // 言語をCookieに記憶する処理
 const setLangCookie = (lang: string, res: express.Response) => {
   res.cookie('i18next', lang, {maxAge: 60 * 60 * 24 * 30});
@@ -183,21 +194,23 @@ app
   // 卓URL (プレイヤー)
   .get('/play/:key', (req, res) => {
     let i18n = ((req as any).i18n as i18next.i18n);
-    setLangCookie(i18n.language, res); // 自動判別した言語をcookieに記憶
-    playerRoute(req, res, i18n.language);
+    let lang = convertLang(i18n.language); // i18nextが判別した言語から言語を判定
+    setLangCookie(lang, res); // 自動判別した言語をcookieに記憶
+    playerRoute(req, res, lang);
   })
   // 卓URL (観戦者用)
   .get('/watch/:tableId', (req, res) => {
     let i18n = ((req as any).i18n as i18next.i18n);
-    setLangCookie(i18n.language, res); // 自動判別した言語をcookieに記憶
-    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: i18n.language, firebaseAuthInfo: firebaseAuthInfo})
+    let lang = convertLang(i18n.language); // i18nextが判別した言語から言語を判定
+    setLangCookie(lang, res); // 自動判別した言語をcookieに記憶
+    res.render('board', { tableId: req.params.tableId, side: 'watcher', environment: process.env.ENVIRONMENT, version: VERSION, lang: lang, firebaseAuthInfo: firebaseAuthInfo})
   })
   // トップページ
   .get('/', (req, res) => {
     let i18n = ((req as any).i18n as i18next.i18n);
-    console.log("[*] Language = ", i18n.language);
-    setLangCookie(i18n.language, res); // 自動判別した言語をcookieに記憶
-    res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: i18n.language });
+    let lang = convertLang(i18n.language); // i18nextが判別した言語から言語を判定
+    setLangCookie(lang, res); // 自動判別した言語をcookieに記憶
+    res.render('index', { environment: process.env.ENVIRONMENT, version: VERSION, lang: lang });
   })
   // 新しい卓の作成
   .post('/tables.create', (req, res) => tableCreateRoute(req, res))
