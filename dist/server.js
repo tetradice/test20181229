@@ -1984,7 +1984,7 @@ var tableCreateRoute = function (req, res) {
 // リダイレクト処理 (リダイレクトした場合はtrueを返す)
 function redirectIfHTTP(req, res) {
     // プロダクション環境でなければ何もしない
-    if (process.env.environment !== 'production')
+    if (process.env.ENVIRONMENT !== 'production')
         return false;
     // httpで接続された場合は、httpsにリダイレクト
     var protocol = (req.headers['x-forwarded-proto'] || req.protocol).toLowerCase();

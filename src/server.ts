@@ -177,7 +177,7 @@ const tableCreateRoute = (req: express.Request, res: express.Response) => {
 // リダイレクト処理 (リダイレクトした場合はtrueを返す)
 function redirectIfHTTP(req: express.Request, res: express.Response): boolean {
   // プロダクション環境でなければ何もしない
-  if (process.env.environment !== 'production') return false;
+  if (process.env.ENVIRONMENT !== 'production') return false;
 
   // httpで接続された場合は、httpsにリダイレクト
   let protocol = (req.headers['x-forwarded-proto'] as string || req.protocol).toLowerCase();
