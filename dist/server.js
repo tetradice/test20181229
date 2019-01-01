@@ -1981,6 +1981,19 @@ var tableCreateRoute = function (req, res) {
         });
     });
 };
+// リダイレクト処理 (リダイレクトした場合はtrueを返す)
+function redirectIfHTTP(req, res) {
+    // プロダクション環境でなければ何もしない
+    if (process.env.environment !== 'production')
+        return false;
+    // httpで接続された場合は、httpsにリダイレクト
+    var protocol = (req.headers['x-forwarded-proto'] || req.protocol).toLowerCase();
+    if (protocol === 'http') {
+        res.redirect('https://' + req.host + req.url);
+        return true;
+    }
+    return false;
+}
 // i18nextが判別した言語を、シミュレーターが解釈可能な言語に変換する処理
 function convertLang(i18nLang) {
     if (i18nLang.startsWith('zh')) {
@@ -2002,6 +2015,8 @@ var setLangCookie = function (lang, res) {
 app
     // 卓URL (プレイヤー)
     .get('/play/:key', function (req, res) {
+    if (redirectIfHTTP(req, res))
+        return; // httpで接続された場合は、httpsにリダイレクト
     var i18n = req.i18n;
     var lang = convertLang(i18n.language); // i18nextが判別した言語から言語を判定
     if (req.query['lng'])
@@ -2011,6 +2026,8 @@ app
 })
     // 卓URL (観戦者用)
     .get('/watch/:tableId', function (req, res) {
+    if (redirectIfHTTP(req, res))
+        return; // httpで接続された場合は、httpsにリダイレクト
     var i18n = req.i18n;
     var lang = convertLang(i18n.language); // i18nextが判別した言語から言語を判定
     if (req.query['lng'])
@@ -2020,6 +2037,8 @@ app
 })
     // トップページ
     .get('/', function (req, res) {
+    if (redirectIfHTTP(req, res))
+        return; // httpで接続された場合は、httpsにリダイレクト
     var i18n = req.i18n;
     var lang = convertLang(i18n.language); // i18nextが判別した言語から言語を判定
     if (req.query['lng'])
