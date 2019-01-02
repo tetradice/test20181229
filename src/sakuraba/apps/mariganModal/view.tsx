@@ -51,7 +51,7 @@ const view: View<State, ActionsType> = (state, actions) => {
     });
 
     const oncreate = (elem: HTMLElement) => {
-        $('#COMMON-MODAL').modal({
+        $(elem).modal({
             onShow: () => {
                 let $okButton = $('#COMMON-MODAL .ui.button.positive');
                 $okButton.addClass('disabled');
@@ -68,20 +68,31 @@ const view: View<State, ActionsType> = (state, actions) => {
     };
 
     return(
-        <div class="content" oncreate={oncreate}>
-                    <div class="description" style={{marginBottom: '2em'}}>
-                        <p>{utils.nl2brJsx(t('dialog:山札の底に戻すカードを選択してください。（この操作は一度しか行えません）'))}</p>
-                    </div>
-                    <div class={css.outer}>
-                        <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
-                            {cardElements}
-                        </div>
-                    </div>
-                    <div class="description" style={{marginTop: '1em'}}>
-                        <p>{t('※選択した順番でカードを底に置く順番が決まり、「1」と表示されているカードが一番上に置かれます。')}</p>
 
+        <div id="COMMON-MODAL" class="ui modal small" oncreate={oncreate}>
+            <div class="content">
+                <div class="description" style={{marginBottom: '2em'}}>
+                    <p>{utils.nl2brJsx(t('dialog:山札の底に戻すカードを選択してください。（この操作は一度しか行えません）'))}</p>
+                </div>
+                <div class={css.outer}>
+                    <div class={css.cardArea} id="DECK-BUILD-CARD-AREA">
+                        {cardElements}
+                    </div>
+                </div>
+                <div class="description" style={{marginTop: '1em'}}>
+                    <p>{t('※選択した順番でカードを底に置く順番が決まり、「1」と表示されているカードが一番上に置かれます。')}</p>
+                </div>
+            </div>
+            <div class="actions">
+                <div class="ui positive labeled icon button">
+                    {t('決定')} <i class="checkmark icon"></i>
+                </div>
+                <div class="ui black deny button">
+                    {t('キャンセル')}
+                </div>
             </div>
         </div>
+
     );
 }
 

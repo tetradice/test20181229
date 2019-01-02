@@ -103266,8 +103266,8 @@ var view = function (state, actions) {
         // 確認メッセージ
         utils.confirmModal(i18next_1.t("dialog:カードセットを変更すると、卓は初期状態に戻ります。"), decide);
     };
-    var oncreate = function (elem) {
-        $('#COMMON-MODAL').modal({
+    var onModalCreate = function (elem) {
+        $(elem).modal({
             onApprove: function () {
                 okProc();
             },
@@ -103277,17 +103277,26 @@ var view = function (state, actions) {
             },
             onHidden: function () {
                 actions.hide();
-            }
+            },
+            detachable: false
         }).modal('show');
     };
-    return (hyperapp_1.h("div", { class: "content", oncreate: oncreate },
-        hyperapp_1.h("div", { class: "description", style: "margin-bottom: 2em;" },
-            hyperapp_1.h("p", null, i18next_1.t('dialog:使用するカードセットを選択してください。'))),
-        hyperapp_1.h("div", { class: "ui form" },
-            hyperapp_1.h("div", { class: "fields" },
-                hyperapp_1.h("div", { class: "field" },
-                    hyperapp_1.h("select", { id: "CARDSET-SELECTION", name: "cardSet", onchange: onChange }, cardSetOptions))),
-            hyperapp_1.h("div", { class: "ui error message" }))));
+    return (hyperapp_1.h("div", { style: "position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center;" },
+        hyperapp_1.h("div", { class: "ui modal small", style: { position: 'absolute', zIndex: '10001' }, oncreate: onModalCreate },
+            hyperapp_1.h("div", { class: "content" },
+                hyperapp_1.h("div", { class: "description", style: "margin-bottom: 2em;" },
+                    hyperapp_1.h("p", null, i18next_1.t('dialog:使用するカードセットを選択してください。'))),
+                hyperapp_1.h("div", { class: "ui form" },
+                    hyperapp_1.h("div", { class: "fields" },
+                        hyperapp_1.h("div", { class: "field" },
+                            hyperapp_1.h("select", { id: "CARDSET-SELECTION", name: "cardSet", onchange: onChange }, cardSetOptions))),
+                    hyperapp_1.h("div", { class: "ui error message" }))),
+            hyperapp_1.h("div", { class: "actions" },
+                hyperapp_1.h("div", { class: "ui positive labeled icon button" },
+                    i18next_1.t('決定'),
+                    " ",
+                    hyperapp_1.h("i", { class: "checkmark icon" })),
+                hyperapp_1.h("div", { class: "ui black deny button" }, i18next_1.t('キャンセル'))))));
 };
 exports.default = view;
 
@@ -107724,7 +107733,7 @@ var view = function (state, actions) {
         cardElements.push(hyperapp_1.h(components_1.Card, { clickableClass: true, target: card, cardData: new models.CardData(state.cardSet, card.cardId, state.detectedLanguage, state.setting.language, state.setting.cardImageEnabledTestEn), opened: true, descriptionViewable: true, left: left, top: top, selected: selected, selectedIndex: (selected ? selectedIndex : null), onclick: onclick, zoom: state.zoom }));
     });
     var oncreate = function (elem) {
-        $('#COMMON-MODAL').modal({
+        $(elem).modal({
             onShow: function () {
                 var $okButton = $('#COMMON-MODAL .ui.button.positive');
                 $okButton.addClass('disabled');
@@ -107739,13 +107748,20 @@ var view = function (state, actions) {
             }
         }).modal('show');
     };
-    return (hyperapp_1.h("div", { class: "content", oncreate: oncreate },
-        hyperapp_1.h("div", { class: "description", style: { marginBottom: '2em' } },
-            hyperapp_1.h("p", null, utils.nl2brJsx(i18next_1.t('dialog:山札の底に戻すカードを選択してください。（この操作は一度しか行えません）')))),
-        hyperapp_1.h("div", { class: css.outer },
-            hyperapp_1.h("div", { class: css.cardArea, id: "DECK-BUILD-CARD-AREA" }, cardElements)),
-        hyperapp_1.h("div", { class: "description", style: { marginTop: '1em' } },
-            hyperapp_1.h("p", null, i18next_1.t('※選択した順番でカードを底に置く順番が決まり、「1」と表示されているカードが一番上に置かれます。')))));
+    return (hyperapp_1.h("div", { id: "COMMON-MODAL", class: "ui modal small", oncreate: oncreate },
+        hyperapp_1.h("div", { class: "content" },
+            hyperapp_1.h("div", { class: "description", style: { marginBottom: '2em' } },
+                hyperapp_1.h("p", null, utils.nl2brJsx(i18next_1.t('dialog:山札の底に戻すカードを選択してください。（この操作は一度しか行えません）')))),
+            hyperapp_1.h("div", { class: css.outer },
+                hyperapp_1.h("div", { class: css.cardArea, id: "DECK-BUILD-CARD-AREA" }, cardElements)),
+            hyperapp_1.h("div", { class: "description", style: { marginTop: '1em' } },
+                hyperapp_1.h("p", null, i18next_1.t('※選択した順番でカードを底に置く順番が決まり、「1」と表示されているカードが一番上に置かれます。')))),
+        hyperapp_1.h("div", { class: "actions" },
+            hyperapp_1.h("div", { class: "ui positive labeled icon button" },
+                i18next_1.t('決定'),
+                " ",
+                hyperapp_1.h("i", { class: "checkmark icon" })),
+            hyperapp_1.h("div", { class: "ui black deny button" }, i18next_1.t('キャンセル')))));
 };
 exports.default = view;
 
@@ -107940,7 +107956,7 @@ var view = function (state, actions) {
         };
     };
     var oncreate = function (elem) {
-        $('#COMMON-MODAL').modal({
+        $(elem).modal({
             onApprove: function () {
                 okProc();
             },
@@ -107949,11 +107965,19 @@ var view = function (state, actions) {
             }
         }).modal('show');
     };
-    return (hyperapp_1.h("div", { class: "content", oncreate: oncreate },
-        hyperapp_1.h("div", { class: "description", style: { marginBottom: '2em' } },
-            hyperapp_1.h("p", null, utils.nl2brJsx(i18next_1.t('dialog:使用するメガミを2柱選択してください。')))),
-        hyperapp_1.h("div", { class: css.outer },
-            hyperapp_1.h("div", { class: css.cardArea }, cardElements))));
+    return (hyperapp_1.h("div", { style: "position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;" },
+        hyperapp_1.h("div", { class: "ui modal small", oncreate: oncreate },
+            hyperapp_1.h("div", { class: "content" },
+                hyperapp_1.h("div", { class: "description", style: { marginBottom: '2em' } },
+                    hyperapp_1.h("p", null, utils.nl2brJsx(i18next_1.t('dialog:使用するメガミを2柱選択してください。')))),
+                hyperapp_1.h("div", { class: css.outer },
+                    hyperapp_1.h("div", { class: css.cardArea }, cardElements))),
+            hyperapp_1.h("div", { class: "actions" },
+                hyperapp_1.h("div", { class: "ui positive labeled icon button" },
+                    i18next_1.t('決定'),
+                    " ",
+                    hyperapp_1.h("i", { class: "checkmark icon" })),
+                hyperapp_1.h("div", { class: "ui black deny button" }, i18next_1.t('キャンセル'))))));
 };
 exports.default = view;
 
@@ -108048,6 +108072,7 @@ var lodash_1 = __importDefault(__webpack_require__(/*! lodash */ "./node_modules
 var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
 var i18next_1 = __webpack_require__(/*! i18next */ "./node_modules/i18next/dist/es/index.js");
 var models = __importStar(__webpack_require__(/*! sakuraba/models */ "./src/sakuraba/models/index.ts"));
+var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 // 指定した配列から1つの要素をランダムに選出して返す
 function pick(array) {
     var list = pickMultiple(array, 1);
@@ -108101,8 +108126,21 @@ var QuizMaker = /** @class */ (function () {
         this.cardSet = cardSet;
         this.languageSetting = language;
     }
+    Object.defineProperty(QuizMaker.prototype, "uniqueNameLanguage", {
+        /** メガミ名、カード名の言語 */
+        get: function () {
+            if (this.languageSetting.type === 'auto') {
+                return this.detectedLanguage;
+            }
+            else {
+                return this.languageSetting.uniqueName;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     QuizMaker.prototype.getCardTitleHtml = function (cardData) {
-        var megamiName = sakuraba_1.MEGAMI_DATA[cardData.megami].name;
+        var megamiName = utils.getMegamiDispName(this.uniqueNameLanguage, cardData.megami);
         if (cardData.megami === 'utsuro' && cardData.baseType === 'special') {
             // ウツロの切札のみ、読み仮名を付与 (読み仮名がないと判別しにくいため)
             return hyperapp_1.h("span", null,
@@ -108170,7 +108208,7 @@ var QuizMaker = /** @class */ (function () {
             }
             // 回答をシャッフルして問題作成
             var cards = lodash_1.default.shuffle([].concat(successCard, failCards));
-            var explanations_1 = [i18next_1.t("各切札の消費は下記の通りです。"), hyperapp_1.h("br", null)];
+            var explanations_1 = [i18next_1.t("miniquiz:各切札の消費は下記の通りです。"), hyperapp_1.h("br", null)];
             cards.forEach(function (card) {
                 quiz.addAnswer(_this.getCardTitleHtml(card.data), (card === successCard));
                 explanations_1.push(hyperapp_1.h("br", null), card.data.name + ": " + card.cost);
@@ -109761,7 +109799,7 @@ function confirmModal(desc, yesCallback) {
     var target = '#CONFIRM-MODAL';
     $(target + " .description").html(misc_1.nl2br(desc));
     $("" + target)
-        .modal({ closable: false, onApprove: yesCallback })
+        .modal({ closable: false, onApprove: yesCallback, detachable: false })
         .modal('show');
 }
 exports.confirmModal = confirmModal;

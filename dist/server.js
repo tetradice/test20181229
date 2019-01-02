@@ -1600,7 +1600,7 @@ function confirmModal(desc, yesCallback) {
     var target = '#CONFIRM-MODAL';
     $(target + " .description").html(misc_1.nl2br(desc));
     $("" + target)
-        .modal({ closable: false, onApprove: yesCallback })
+        .modal({ closable: false, onApprove: yesCallback, detachable: false })
         .modal('show');
 }
 exports.confirmModal = confirmModal;

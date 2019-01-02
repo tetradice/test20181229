@@ -30,8 +30,8 @@ const view: View<State, ActionsType> = (state, actions) => {
         utils.confirmModal(t("dialog:カードセットを変更すると、卓は初期状態に戻ります。"), decide);
     };
 
-    const oncreate = (elem: HTMLElement) => {
-        $('#COMMON-MODAL').modal({
+    const onModalCreate = (elem: HTMLElement) => {
+        $(elem).modal({
             onApprove: () => {
                 okProc();
             },
@@ -42,23 +42,36 @@ const view: View<State, ActionsType> = (state, actions) => {
             onHidden: () => {
                 actions.hide();
             }
+            , detachable: false
         }).modal('show');
     };
 
     return (
-        <div class="content" oncreate={oncreate}>
-            <div class="description" style="margin-bottom: 2em;">
-                <p>{t('dialog:使用するカードセットを選択してください。')}</p>
-            </div>
-            <div class="ui form">
-                <div class="fields">
-                    <div class="field">
-                        <select id="CARDSET-SELECTION" name="cardSet" onchange={onChange}>
-                            {cardSetOptions}
-                        </select>
+        <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center;">
+            <div class="ui modal small" style={{position: 'absolute', zIndex: '10001'}} oncreate={onModalCreate}>
+                <div class="content">
+                    <div class="description" style="margin-bottom: 2em;">
+                        <p>{t('dialog:使用するカードセットを選択してください。')}</p>
+                    </div>
+                    <div class="ui form">
+                        <div class="fields">
+                            <div class="field">
+                                <select id="CARDSET-SELECTION" name="cardSet" onchange={onChange}>
+                                    {cardSetOptions}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="ui error message"></div>
                     </div>
                 </div>
-                <div class="ui error message"></div>
+                <div class="actions">
+                    <div class="ui positive labeled icon button">
+                        {t('決定')} <i class="checkmark icon"></i>
+                    </div>
+                    <div class="ui black deny button">
+                        {t('キャンセル')}
+                    </div>
+                </div>
             </div>
         </div>
     );

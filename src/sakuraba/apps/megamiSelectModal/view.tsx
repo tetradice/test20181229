@@ -61,7 +61,7 @@ const view: View<State, ActionsType> = (state, actions) => {
     };
 
     const oncreate = (elem: HTMLElement) => {
-        $('#COMMON-MODAL').modal({
+        $(elem).modal({
             onApprove: () => {
                 okProc();
             },
@@ -72,13 +72,25 @@ const view: View<State, ActionsType> = (state, actions) => {
     };
 
     return (
-        <div class="content" oncreate={oncreate}>
-            <div class="description" style={{ marginBottom: '2em' }}>
-                <p>{utils.nl2brJsx(t('dialog:使用するメガミを2柱選択してください。'))}</p>
-            </div>
-            <div class={css.outer}>
-                <div class={css.cardArea}>
-                    {cardElements}
+        <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;">
+            <div class="ui modal small" oncreate={oncreate}>
+                <div class="content">
+                    <div class="description" style={{ marginBottom: '2em' }}>
+                        <p>{utils.nl2brJsx(t('dialog:使用するメガミを2柱選択してください。'))}</p>
+                    </div>
+                    <div class={css.outer}>
+                        <div class={css.cardArea}>
+                            {cardElements}
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <div class="ui positive labeled icon button">
+                        {t('決定')} <i class="checkmark icon"></i>
+                    </div>
+                    <div class="ui black deny button">
+                        {t('キャンセル')}
+                    </div>
                 </div>
             </div>
         </div>

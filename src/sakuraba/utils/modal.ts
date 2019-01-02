@@ -8,7 +8,7 @@ export function confirmModal(desc: string, yesCallback: (this: JQuery, $element:
     let target = '#CONFIRM-MODAL';
     $(`${target} .description`).html(nl2br(desc));
     $(`${target}`)
-        .modal({closable: false, onApprove:yesCallback})
+        .modal({closable: false, onApprove:yesCallback, detachable: false})
         .modal('show');
 }
 
