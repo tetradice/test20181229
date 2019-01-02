@@ -1,20 +1,20 @@
-import { h, View } from "hyperapp";
-import { CARD_SETS } from "sakuraba";
-import * as utils from "sakuraba/utils";
+import { h } from "hyperapp";
 import { t } from "i18next";
 
 interface Param {
     variation?: 'fullscreen' | 'mini' | 'tiny' | 'small' | 'large';
-    onApprove?(this: JQuery, $element: JQuery): false | void;
-    onDeny?(this: JQuery, $element: JQuery): false | void;
-    onHidden?(this: JQuery): void;
-    closable?: boolean;
+    onShow?: SemanticUI.ModalSettings['onShow']
+    onApprove?: SemanticUI.ModalSettings['onApprove']
+    onDeny?: SemanticUI.ModalSettings['onDeny']
+    onHidden?: SemanticUI.ModalSettings['onHidden']
+    closable?: SemanticUI.ModalSettings['closable']
 }
 
 /** モーダル */
 export const Modal = (p: Param, children: hyperapp.Children) => {
     const onModalCreate = (elem: HTMLElement) => {
         $(elem).modal({
+            onShow: p.onShow,
             onApprove: p.onApprove,
             onDeny: p.onDeny,
             onHidden: p.onHidden,
