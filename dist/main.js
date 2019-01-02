@@ -103529,7 +103529,8 @@ exports.Modal = function (p, children) {
             onApprove: p.onApprove,
             onDeny: p.onDeny,
             onHidden: p.onHidden,
-            detachable: false
+            detachable: false,
+            closable: p.closable
         }).modal('show');
     };
     return (hyperapp_1.h("div", { style: "position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center;" },
@@ -103629,6 +103630,111 @@ __export(__webpack_require__(/*! ./Modal */ "./src/sakuraba/apps/common/componen
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/commonConfirmModal/actions.ts":
+/*!*********************************************************!*\
+  !*** ./src/sakuraba/apps/commonConfirmModal/actions.ts ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.actions = {
+    hide: function () {
+        return { shown: false };
+    },
+    getState: function () { return function (state) { return state; }; }
+};
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/commonConfirmModal/index.ts":
+/*!*******************************************************!*\
+  !*** ./src/sakuraba/apps/commonConfirmModal/index.ts ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var view_1 = __importDefault(__webpack_require__(/*! ./view */ "./src/sakuraba/apps/commonConfirmModal/view.tsx"));
+var actions_1 = __webpack_require__(/*! ./actions */ "./src/sakuraba/apps/commonConfirmModal/actions.ts");
+var state_1 = __webpack_require__(/*! ./state */ "./src/sakuraba/apps/commonConfirmModal/state.ts");
+exports.State = state_1.State;
+function run(state, container) {
+    return hyperapp_1.app(state, actions_1.actions, view_1.default, container);
+}
+exports.run = run;
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/commonConfirmModal/state.ts":
+/*!*******************************************************!*\
+  !*** ./src/sakuraba/apps/commonConfirmModal/state.ts ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var State;
+(function (State) {
+    /** 新しいstateの生成 */
+    function create(message, promiseResolve, promiseReject) {
+        return {
+            shown: true,
+            message: message,
+            promiseResolve: promiseResolve,
+            promiseReject: promiseReject
+        };
+    }
+    State.create = create;
+})(State = exports.State || (exports.State = {}));
+
+
+/***/ }),
+
+/***/ "./src/sakuraba/apps/commonConfirmModal/view.tsx":
+/*!*******************************************************!*\
+  !*** ./src/sakuraba/apps/commonConfirmModal/view.tsx ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var components_1 = __webpack_require__(/*! ../common/components */ "./src/sakuraba/apps/common/components/index.ts");
+// メインビューの定義
+var view = function (state, actions) {
+    if (!state.shown)
+        return null;
+    var onApprove = function () {
+        actions.hide();
+        var currentState = actions.getState();
+        currentState.promiseResolve();
+    };
+    var onHidden = function () {
+        actions.hide();
+    };
+    return (hyperapp_1.h(components_1.Modal, { onApprove: onApprove, onHidden: onHidden, closable: false },
+        hyperapp_1.h("div", { class: "description" }, state.message)));
+};
+exports.default = view;
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/index.ts":
 /*!************************************!*\
   !*** ./src/sakuraba/apps/index.ts ***!
@@ -103656,6 +103762,8 @@ var cardSetSelectModal = __importStar(__webpack_require__(/*! ./cardSetSelectMod
 exports.cardSetSelectModal = cardSetSelectModal;
 var megamiSelectModal = __importStar(__webpack_require__(/*! ./megamiSelectModal */ "./src/sakuraba/apps/megamiSelectModal/index.ts"));
 exports.megamiSelectModal = megamiSelectModal;
+var commonConfirmModal = __importStar(__webpack_require__(/*! ./commonConfirmModal */ "./src/sakuraba/apps/commonConfirmModal/index.ts"));
+exports.commonConfirmModal = commonConfirmModal;
 
 
 /***/ }),
@@ -109814,14 +109922,12 @@ exports.nl2brJsx = nl2brJsx;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var misc_1 = __webpack_require__(/*! ./misc */ "./src/sakuraba/utils/misc.ts");
+var apps_1 = __webpack_require__(/*! sakuraba/apps */ "./src/sakuraba/apps/index.ts");
 function confirmModal(desc, yesCallback) {
     // すべてのポップアップを非表示にする
     $('.fbs-card').popup('hide all');
-    var target = '#CONFIRM-MODAL';
-    $(target + " .description").html(misc_1.nl2br(desc));
-    $("" + target)
-        .modal({ closable: false, onApprove: yesCallback, detachable: false })
-        .modal('show');
+    var initState = apps_1.commonConfirmModal.State.create(misc_1.nl2brJsx(desc), yesCallback, null);
+    apps_1.commonConfirmModal.run(initState, document.getElementById('CONFIRM-MODAL-PLACEHOLDER'));
 }
 exports.confirmModal = confirmModal;
 /** メッセージを表示する */

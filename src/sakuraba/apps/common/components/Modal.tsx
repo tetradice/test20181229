@@ -5,9 +5,10 @@ import { t } from "i18next";
 
 interface Param {
     variation?: 'fullscreen' | 'mini' | 'tiny' | 'small' | 'large';
-    onApprove?(this: JQuery): void;
-    onDeny?(this: JQuery): void;
+    onApprove?(this: JQuery, $element: JQuery): false | void;
+    onDeny?(this: JQuery, $element: JQuery): false | void;
     onHidden?(this: JQuery): void;
+    closable?: boolean;
 }
 
 /** モーダル */
@@ -17,7 +18,8 @@ export const Modal = (p: Param, children: hyperapp.Children) => {
             onApprove: p.onApprove,
             onDeny: p.onDeny,
             onHidden: p.onHidden,
-            detachable: false
+            detachable: false,
+            closable: p.closable
         }).modal('show');
     };
 

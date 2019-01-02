@@ -4,4 +4,6 @@ import * as quizWindow from './quizWindow';
 import * as cardSetSelectModal from './cardSetSelectModal';
 import * as megamiSelectModal from './megamiSelectModal';
 
-export { main, mariganModal, quizWindow, cardSetSelectModal, megamiSelectModal };
+import * as commonConfirmModal from './commonConfirmModal';
+
+export { main, mariganModal, quizWindow, cardSetSelectModal, megamiSelectModal, commonConfirmModal };

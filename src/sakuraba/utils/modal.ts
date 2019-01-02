@@ -1,15 +1,13 @@
-import { nl2br } from "./misc";
+import { nl2br, nl2brJsx } from "./misc";
 import _ from "lodash";
+import { commonConfirmModal } from "sakuraba/apps";
 
-export function confirmModal(desc: string, yesCallback: (this: JQuery, $element: JQuery) => false | void){
+export function confirmModal(desc: string, yesCallback: () => void){
     // すべてのポップアップを非表示にする
     $('.fbs-card').popup('hide all');
 
-    let target = '#CONFIRM-MODAL';
-    $(`${target} .description`).html(nl2br(desc));
-    $(`${target}`)
-        .modal({closable: false, onApprove:yesCallback, detachable: false})
-        .modal('show');
+    let initState = commonConfirmModal.State.create(nl2brJsx(desc), yesCallback, null);
+    commonConfirmModal.run(initState, document.getElementById('CONFIRM-MODAL-PLACEHOLDER'))
 }
 
 /** メッセージを表示する */
