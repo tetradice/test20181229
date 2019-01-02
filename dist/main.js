@@ -103244,6 +103244,7 @@ var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/sr
 var sakuraba_1 = __webpack_require__(/*! sakuraba */ "./src/sakuraba.ts");
 var utils = __importStar(__webpack_require__(/*! sakuraba/utils */ "./src/sakuraba/utils/index.ts"));
 var i18next_1 = __webpack_require__(/*! i18next */ "./node_modules/i18next/dist/es/index.js");
+var components_1 = __webpack_require__(/*! ../common/components */ "./src/sakuraba/apps/common/components/index.ts");
 // メインビューの定義
 var view = function (state, actions) {
     if (!state.shown)
@@ -103266,37 +103267,20 @@ var view = function (state, actions) {
         // 確認メッセージ
         utils.confirmModal(i18next_1.t("dialog:カードセットを変更すると、卓は初期状態に戻ります。"), decide);
     };
-    var onModalCreate = function (elem) {
-        $(elem).modal({
-            onApprove: function () {
-                okProc();
-            },
-            onDeny: function () {
-                // let currentState = actions.getState();
-                // currentState.promiseReject();
-            },
-            onHidden: function () {
-                actions.hide();
-            },
-            detachable: false
-        }).modal('show');
+    var onApprove = function () {
+        okProc();
     };
-    return (hyperapp_1.h("div", { style: "position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center;" },
-        hyperapp_1.h("div", { class: "ui modal small", style: { position: 'absolute', zIndex: '10001' }, oncreate: onModalCreate },
-            hyperapp_1.h("div", { class: "content" },
-                hyperapp_1.h("div", { class: "description", style: "margin-bottom: 2em;" },
-                    hyperapp_1.h("p", null, i18next_1.t('dialog:使用するカードセットを選択してください。'))),
-                hyperapp_1.h("div", { class: "ui form" },
-                    hyperapp_1.h("div", { class: "fields" },
-                        hyperapp_1.h("div", { class: "field" },
-                            hyperapp_1.h("select", { id: "CARDSET-SELECTION", name: "cardSet", onchange: onChange }, cardSetOptions))),
-                    hyperapp_1.h("div", { class: "ui error message" }))),
-            hyperapp_1.h("div", { class: "actions" },
-                hyperapp_1.h("div", { class: "ui positive labeled icon button" },
-                    i18next_1.t('決定'),
-                    " ",
-                    hyperapp_1.h("i", { class: "checkmark icon" })),
-                hyperapp_1.h("div", { class: "ui black deny button" }, i18next_1.t('キャンセル'))))));
+    var onHidden = function () {
+        actions.hide();
+    };
+    return (hyperapp_1.h(components_1.Modal, { onApprove: onApprove, onHidden: onHidden },
+        hyperapp_1.h("div", { class: "description", style: "margin-bottom: 2em;" },
+            hyperapp_1.h("p", null, i18next_1.t('dialog:使用するカードセットを選択してください。'))),
+        hyperapp_1.h("div", { class: "ui form" },
+            hyperapp_1.h("div", { class: "fields" },
+                hyperapp_1.h("div", { class: "field" },
+                    hyperapp_1.h("select", { id: "CARDSET-SELECTION", name: "cardSet", onchange: onChange }, cardSetOptions))),
+            hyperapp_1.h("div", { class: "ui error message" }))));
 };
 exports.default = view;
 
@@ -103526,6 +103510,42 @@ exports.MegamiTarots = function (p) {
 
 /***/ }),
 
+/***/ "./src/sakuraba/apps/common/components/Modal.tsx":
+/*!*******************************************************!*\
+  !*** ./src/sakuraba/apps/common/components/Modal.tsx ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var hyperapp_1 = __webpack_require__(/*! hyperapp */ "./node_modules/hyperapp/src/index.js");
+var i18next_1 = __webpack_require__(/*! i18next */ "./node_modules/i18next/dist/es/index.js");
+/** モーダル */
+exports.Modal = function (p, children) {
+    var onModalCreate = function (elem) {
+        $(elem).modal({
+            onApprove: p.onApprove,
+            onDeny: p.onDeny,
+            onHidden: p.onHidden,
+            detachable: false
+        }).modal('show');
+    };
+    return (hyperapp_1.h("div", { style: "position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center;" },
+        hyperapp_1.h("div", { class: "ui modal " + (p.variation || 'small'), style: { position: 'absolute', zIndex: '10001' }, oncreate: onModalCreate },
+            hyperapp_1.h("div", { class: "content" }, children),
+            hyperapp_1.h("div", { class: "actions" },
+                hyperapp_1.h("div", { class: "ui positive labeled icon button" },
+                    i18next_1.t('決定'),
+                    " ",
+                    hyperapp_1.h("i", { class: "checkmark icon" })),
+                hyperapp_1.h("div", { class: "ui black deny button" }, i18next_1.t('キャンセル'))))));
+};
+
+
+/***/ }),
+
 /***/ "./src/sakuraba/apps/common/components/ProcessButton.tsx":
 /*!***************************************************************!*\
   !*** ./src/sakuraba/apps/common/components/ProcessButton.tsx ***!
@@ -103604,6 +103624,7 @@ __export(__webpack_require__(/*! ./Card */ "./src/sakuraba/apps/common/component
 __export(__webpack_require__(/*! ./ProcessButton */ "./src/sakuraba/apps/common/components/ProcessButton.tsx"));
 __export(__webpack_require__(/*! ./MegamiTarot */ "./src/sakuraba/apps/common/components/MegamiTarot.tsx"));
 __export(__webpack_require__(/*! ./MegamiTarots */ "./src/sakuraba/apps/common/components/MegamiTarots.tsx"));
+__export(__webpack_require__(/*! ./Modal */ "./src/sakuraba/apps/common/components/Modal.tsx"));
 
 
 /***/ }),

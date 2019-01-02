@@ -4,26 +4,26 @@ import * as utils from "sakuraba/utils";
 import { t } from "i18next";
 
 interface Param {
+    variation?: 'fullscreen' | 'mini' | 'tiny' | 'small' | 'large';
+    onApprove?(this: JQuery): void;
+    onDeny?(this: JQuery): void;
+    onHidden?(this: JQuery): void;
 }
+
 /** モーダル */
 export const Modal = (p: Param, children: hyperapp.Children) => {
     const onModalCreate = (elem: HTMLElement) => {
         $(elem).modal({
-            onApprove: () => {
-            },
-            onDeny: () => {
-                // let currentState = actions.getState();
-                // currentState.promiseReject();
-            },
-            onHidden: () => {
-            }
-            , detachable: false
+            onApprove: p.onApprove,
+            onDeny: p.onDeny,
+            onHidden: p.onHidden,
+            detachable: false
         }).modal('show');
     };
 
     return (
         <div style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center;">
-            <div class="ui modal small" style={{position: 'absolute', zIndex: '10001'}} oncreate={onModalCreate}>
+            <div class={`ui modal ${p.variation || 'small'}`} style={{position: 'absolute', zIndex: '10001'}} oncreate={onModalCreate}>
                 <div class="content">
                     {children}
                 </div>
